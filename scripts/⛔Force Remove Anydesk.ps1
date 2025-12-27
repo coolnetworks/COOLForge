@@ -14,16 +14,19 @@
     Each phase logs its actions and the script continues until AnyDesk
     is verified as completely removed from the system.
 
+    When run via Script Launcher, this script inherits all Level.io variables
+    and the library is already loaded.
+
 .NOTES
-    Version:          2025.12.27.03
-    Target Platform:  Level.io RMM
+    Version:          2025.12.27.04
+    Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
-    Level.io Variables Used:
-    - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
-    - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
-    - {{level_device_hostname}}      : Device hostname from Level.io
-    - {{level_tag_names}}            : Comma-separated list of device tags
+    Level.io Variables Used (passed from Script Launcher):
+    - $MspScratchFolder  : MSP-defined scratch folder for persistent storage
+    - $LibraryUrl        : URL to download LevelIO-Common.psm1 library
+    - $DeviceHostname    : Device hostname from Level.io
+    - $DeviceTags        : Comma-separated list of device tags
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
@@ -34,121 +37,24 @@
 #>
 
 # ⛔Force Remove Anydesk
-# Version: 2025.12.27.03
-# Target: Level.io
+# Version: 2025.12.27.04
+# Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au
 # https://github.com/coolnetworks/LevelLib
-$ErrorActionPreference = "SilentlyContinue"
-
-# ============================================================
-# LIBRARY AUTO-UPDATE & IMPORT
-# ============================================================
-$MspScratchFolder = "{{cf_msp_scratch_folder}}"
-$LibraryUrl = "{{cf_ps_module_library_source}}"
-
-$LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
-$LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "LevelIO-Common.psm1"
-
-if (!(Test-Path $LibraryFolder)) {
-    New-Item -Path $LibraryFolder -ItemType Directory -Force | Out-Null
-}
-
-function Get-ModuleVersion {
-    param([string]$Content, [string]$Source = "unknown")
-    if ($Content -match 'Version:\s*([\d\.]+)') {
-        return $Matches[1]
-    }
-    throw "Could not parse version from $Source - invalid or corrupt library content"
-}
-
-$NeedsUpdate = $false
-$LocalVersion = $null
-$LocalContent = $null
-$BackupPath = "$LibraryPath.backup"
-
-if (Test-Path $LibraryPath) {
-    try {
-        $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
-        $LocalVersion = Get-ModuleVersion -Content $LocalContent -Source "local file"
-    }
-    catch {
-        Write-Host "[!] Local library corrupt - will redownload"
-        $NeedsUpdate = $true
-    }
-}
-else {
-    $NeedsUpdate = $true
-    Write-Host "[*] Library not found - downloading..."
-}
-
-try {
-    $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
-    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent -Source "remote URL"
-
-    if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
-        $NeedsUpdate = $true
-        if ($LocalVersion) {
-            Write-Host "[*] Update available: $LocalVersion -> $RemoteVersion"
-        }
-    }
-
-    if ($NeedsUpdate) {
-        # Backup working local copy before updating (if we have a valid one)
-        if ($LocalVersion -and $LocalContent) {
-            Set-Content -Path $BackupPath -Value $LocalContent -Force -ErrorAction Stop
-        }
-
-        # Write new version
-        Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
-
-        # Verify the new file is valid before removing backup
-        try {
-            $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
-            $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
-            # Success - remove backup
-            if (Test-Path $BackupPath) {
-                Remove-Item -Path $BackupPath -Force -ErrorAction SilentlyContinue
-            }
-            Write-Host "[+] Library updated to v$RemoteVersion"
-        }
-        catch {
-            # New file is corrupt - restore backup
-            if (Test-Path $BackupPath) {
-                Write-Host "[!] Downloaded file corrupt - restoring backup"
-                Move-Item -Path $BackupPath -Destination $LibraryPath -Force
-            }
-            throw "Downloaded library failed verification"
-        }
-    }
-}
-catch {
-    # GitHub unreachable or remote content invalid
-    # Clean up any leftover backup
-    if (Test-Path $BackupPath) {
-        Move-Item -Path $BackupPath -Destination $LibraryPath -Force -ErrorAction SilentlyContinue
-    }
-
-    if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
-        Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
-        Write-Host "[X] Error: $($_.Exception.Message)"
-        exit 1
-    }
-    Write-Host "[!] Could not check for updates (using local v$LocalVersion)"
-}
-
-$ModuleContent = Get-Content -Path $LibraryPath -Raw
-New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
 # ============================================================
 # INITIALIZE
 # ============================================================
+# Script Launcher has already loaded the library and passed variables
+# We just need to initialize with the passed-through variables
+
 $Init = Initialize-LevelScript -ScriptName "RemoveAnyDesk" `
                                -MspScratchFolder $MspScratchFolder `
-                               -DeviceHostname "{{level_device_hostname}}" `
-                               -DeviceTags "{{level_tag_names}}" `
+                               -DeviceHostname $DeviceHostname `
+                               -DeviceTags $DeviceTags `
                                -BlockingTags @("❌")
 
 if (-not $Init.Success) {
