@@ -30,7 +30,7 @@ $ScriptToRun = "Test Show Versions.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.06
+    Launcher Version: 2025.12.27.07
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -74,9 +74,14 @@ $ErrorActionPreference = "SilentlyContinue"
 # ============================================================
 # These variables will be passed to the downloaded script
 $MspScratchFolder = "{{cf_msp_scratch_folder}}"
-$LibraryUrl = "{{cf_ps_module_library_source}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
+
+# Library URL - uses custom field if set, otherwise defaults to official repo
+$LibraryUrl = "{{cf_ps_module_library_source}}"
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1"
+}
 
 # Additional custom fields can be added here and they will be available
 # in the downloaded script's scope
@@ -200,7 +205,7 @@ if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.06"
+Write-Host "[*] Script Launcher v2025.12.27.07"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

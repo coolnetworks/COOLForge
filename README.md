@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.18
+**Version:** 2025.12.27.19
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -46,10 +46,10 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 - PowerShell 5.1 or later
 - Custom fields configured in Level.io:
 
-| Custom Field | Example Value | Description |
-|--------------|---------------|-------------|
-| `msp_scratch_folder` | `C:\ProgramData\MSP` | Persistent storage folder on endpoints |
-| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | URL to download the library (scripts URL derived automatically) |
+| Custom Field | Example Value | Required | Description |
+|--------------|---------------|----------|-------------|
+| `msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
+| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
 
 ### Creating a New Script
 
@@ -77,14 +77,14 @@ Invoke-LevelScript -ScriptBlock {
 
 ## Library Auto-Update
 
-Scripts using the template automatically download and update the library on each run using the URL configured in the `ps_module_library_source` custom field.
+Scripts using the template automatically download and update the library on each run.
 
-**Default URL:**
+**Default URL (used if custom field not set):**
 ```
 https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
 ```
 
-> **Tip:** Using a custom field allows you to:
+> **Tip:** Setting the `ps_module_library_source` custom field allows you to:
 > - Fork the library and use your own repository
 > - Use a private GitHub repository with token authentication
 > - Host the library on your own infrastructure
@@ -131,12 +131,12 @@ The Script Launcher lets you run any script from your GitHub repository **withou
 
 Go to **Settings → Custom Fields** and create these fields:
 
-| Field Name | Type | Value |
-|------------|------|-------|
-| `msp_scratch_folder` | Text | `C:\ProgramData\MSP` |
-| `ps_module_library_source` | Text | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` |
+| Field Name | Type | Value | Required |
+|------------|------|-------|----------|
+| `msp_scratch_folder` | Text | `C:\ProgramData\MSP` | **Yes** |
+| `ps_module_library_source` | Text | `https://raw.githubusercontent.com/...` | No (defaults to official repo) |
 
-> **Note:** The scripts URL is derived automatically from the library URL by replacing the filename with `scripts/`. If using your own fork, just update `ps_module_library_source` - no separate scripts URL needed.
+> **Note:** The `ps_module_library_source` field is optional - if not set, scripts use the official LevelLib repository. Set this field only if you're using a fork or private repository.
 
 #### Step 2: Create Scripts in Level.io
 
@@ -563,6 +563,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.19 | 2025-12-27 | Library URL now optional - defaults to official repo if custom field not set |
 | 2025.12.27.18 | 2025-12-27 | Fix launcher validation - remove redundant library URL check after load |
 | 2025.12.27.17 | 2025-12-27 | Derive scripts URL from library URL - no separate custom field needed |
 | 2025.12.27.16 | 2025-12-27 | Move $ScriptToRun to first line of launcher for visibility |
