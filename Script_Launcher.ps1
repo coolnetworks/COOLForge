@@ -1,3 +1,9 @@
+# ============================================================
+# SCRIPT TO RUN - CHANGE THIS VALUE
+# ============================================================
+$ScriptToRun = "Test Show Versions.ps1"
+# ============================================================
+
 <#
 .SYNOPSIS
     Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
@@ -15,7 +21,7 @@
 
     USAGE:
     1. Copy this launcher code into a new Level.io script
-    2. Uncomment and set $ScriptToRun to your script name (e.g., "Test Show Versions.ps1")
+    2. Change $ScriptToRun at the TOP of this script to your script name
     3. Run the script - it will download and execute the matching GitHub script
 
     BENEFITS:
@@ -24,7 +30,7 @@
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.03
+    Launcher Version: 2025.12.27.04
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -32,7 +38,6 @@
     - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
     - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
     - {{cf_script_repo_base_url}}    : Base URL for scripts folder
-    - {{cf_script_to_run}}           : (Optional) Script name from custom field
     - {{level_device_hostname}}      : Device hostname from Level.io
     - {{level_tag_names}}            : Comma-separated list of device tags
 
@@ -44,7 +49,7 @@
     https://github.com/coolnetworks/LevelLib
 
 .EXAMPLE
-    # Set the script to run at the top of the launcher:
+    # Change the script name at the top of the launcher:
     $ScriptToRun = "Test Show Versions.ps1"
     # ... rest of launcher code ...
 
@@ -55,7 +60,7 @@
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.03
+# Launcher Version: 2025.12.27.04
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -63,25 +68,6 @@
 # https://coolnetworks.au
 # https://github.com/coolnetworks/LevelLib
 $ErrorActionPreference = "SilentlyContinue"
-
-# ============================================================
-# SCRIPT TO RUN - SET THIS VALUE
-# ============================================================
-# Option 1: Set the script name directly here (recommended for single-purpose scripts)
-# $ScriptToRun = "Test Show Versions.ps1"
-
-# Option 2: Use custom field (allows changing script without redeploying)
-# $ScriptToRun = "{{cf_script_to_run}}"
-
-# If not set above, try custom field as fallback
-if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
-    $ScriptToRun = "{{cf_script_to_run}}"
-}
-
-# Clean up if custom field wasn't set
-if ($ScriptToRun -eq "{{cf_script_to_run}}") {
-    $ScriptToRun = ""
-}
 
 # ============================================================
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
@@ -201,11 +187,7 @@ New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleCon
 # VALIDATE CONFIGURATION
 # ============================================================
 if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
-    Write-Host "[X] FATAL: No script specified."
-    Write-Host "[X] Options:"
-    Write-Host "[X]   1. Name your Level.io script to match the GitHub script (e.g., 'Test Show Versions.ps1')"
-    Write-Host "[X]   2. Set the 'cf_script_to_run' custom field"
-    Write-Host "[X]   3. Set `$ScriptToRun = 'YourScript.ps1' at the start of this script"
+    Write-Host "[X] FATAL: No script specified. Set `$ScriptToRun at the top of this script."
     exit 1
 }
 
@@ -219,7 +201,7 @@ if ([string]::IsNullOrWhiteSpace($ScriptRepoBaseUrl) -or $ScriptRepoBaseUrl -eq 
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.03"
+Write-Host "[*] Script Launcher v2025.12.27.04"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

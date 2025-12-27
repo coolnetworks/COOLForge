@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.15
+**Version:** 2025.12.27.16
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -146,13 +146,14 @@ Go to **Settings → Custom Fields** and create these fields:
 
 1. In Level.io, create a new PowerShell script
 2. Paste the contents of `Script_Launcher.ps1` into it
-3. **Uncomment and set the script name** near the top:
+3. **Change line 4** at the very top of the script to your script name:
 
 ```powershell
 # ============================================================
-# SCRIPT TO RUN - SET THIS VALUE
+# SCRIPT TO RUN - CHANGE THIS VALUE
 # ============================================================
-$ScriptToRun = "Test Show Versions.ps1"   # <-- Set your script name here
+$ScriptToRun = "Test Show Versions.ps1"   # <-- Change this to your script
+# ============================================================
 ```
 
 4. Save and deploy
@@ -568,6 +569,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.16 | 2025-12-27 | Move $ScriptToRun to first line of launcher for visibility |
 | 2025.12.27.15 | 2025-12-27 | Simplified launcher - set $ScriptToRun directly in script |
 | 2025.12.27.14 | 2025-12-27 | Expanded Script Launcher documentation with step-by-step guide |
 | 2025.12.27.13 | 2025-12-27 | Add Script Launcher for GitHub-based script deployment |
