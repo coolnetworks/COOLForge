@@ -30,7 +30,7 @@ $ScriptToRun = "⛔Force Remove Anydesk.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.09
+    Launcher Version: 2025.12.27.10
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -230,7 +230,7 @@ $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.09"
+Write-Host "[*] Script Launcher v2025.12.27.10"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

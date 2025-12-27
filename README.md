@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.21
+**Version:** 2025.12.27.22
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -688,6 +688,9 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Component | Changes |
 |---------|------|-----------|---------|
+| 2025.12.27.22 | 2025-12-27 | All | Version sync release - Library v20, Launchers v10, README v22 |
+| 2025.12.27.20 | 2025-12-27 | Library | Add alternate emoji corruption patterns (👀→≡ƒæÇ, ⛔→Γ¢ö, etc.) for Level.io encoding |
+| 2025.12.27.10 | 2025-12-27 | Launcher | Version sync with library emoji fixes |
 | 2025.12.27.21 | 2025-12-27 | README | Documentation update - comprehensive function reference, emoji handling guide |
 | 2025.12.27.15 | 2025-12-27 | Library | Add more emojis to Repair-LevelEmoji (🙏 🚨 🛑 ✅ 🔚 🆕) |
 | 2025.12.27.14 | 2025-12-27 | Library | Add Repair-LevelEmoji and Get-LevelUrlEncoded functions for emoji support |
