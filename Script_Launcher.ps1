@@ -13,23 +13,29 @@
     - Passing all Level.io variables to the downloaded script
     - Library auto-update (same as template scripts)
 
+    AUTOMATIC SCRIPT DETECTION:
+    The launcher automatically uses the Level.io script name to find the matching script
+    in your GitHub repository. Simply name your Level.io script the same as your GitHub
+    script (e.g., "Force Remove Anydesk.ps1") and the launcher will find it automatically.
+
     USAGE:
-    1. Deploy this script via Level.io
-    2. Set the $ScriptToRun parameter to the script filename (e.g., "Force Remove Anydesk.ps1")
-    3. All Level.io variables are automatically passed to the downloaded script
+    1. Copy this launcher code into a new Level.io script
+    2. Name the Level.io script the same as your GitHub script (e.g., "Test Show Versions.ps1")
+    3. Run the script - it will automatically download and execute the matching GitHub script
 
     BENEFITS:
-    - Single script to maintain in Level.io
+    - Name-based matching: Level.io script name = GitHub script name
     - Scripts update automatically from GitHub
     - No need to redeploy when scripts change
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.01
+    Launcher Version: 2025.12.27.02
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used:
+    - {{level_script_name}}          : Name of this script in Level.io (used to find GitHub script)
     - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
     - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
     - {{cf_script_repo_base_url}}    : Base URL for scripts folder (e.g., https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts)
@@ -43,20 +49,19 @@
 .LINK
     https://github.com/coolnetworks/LevelLib
 
-.PARAMETER ScriptToRun
-    The filename of the script to download and execute from the scripts folder.
-    Example: "Force Remove Anydesk.ps1"
+.EXAMPLE
+    # Create a Level.io script named "Test Show Versions.ps1"
+    # Paste this launcher code into it
+    # Run the script - it automatically downloads and runs "Test Show Versions.ps1" from GitHub
 
 .EXAMPLE
-    # In Level.io, set the parameter:
-    $ScriptToRun = "Force Remove Anydesk.ps1"
-
-    # The launcher will download from:
-    # {{cf_script_repo_base_url}}/Force%20Remove%20Anydesk.ps1
+    # Override automatic detection by setting $ScriptToRun before the launcher code:
+    $ScriptToRun = "Different Script.ps1"
+    # ... rest of launcher code ...
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.01
+# Launcher Version: 2025.12.27.02
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -66,10 +71,29 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 # ============================================================
-# CONFIGURATION - SET THIS IN LEVEL.IO
+# SCRIPT NAME DETECTION
 # ============================================================
-# The script filename to download and run from the scripts folder
-$ScriptToRun = "{{cf_script_to_run}}"
+# Priority order for determining which script to run:
+# 1. $ScriptToRun if already set (allows override)
+# 2. Level.io script name ({{level_script_name}})
+# 3. Custom field ({{cf_script_to_run}})
+
+$LevelScriptName = "{{level_script_name}}"
+$CustomFieldScript = "{{cf_script_to_run}}"
+
+# Use Level.io script name if available and not a template placeholder
+if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
+    if (-not [string]::IsNullOrWhiteSpace($LevelScriptName) -and $LevelScriptName -ne "{{level_script_name}}") {
+        # Ensure it ends with .ps1
+        if (-not $LevelScriptName.EndsWith(".ps1", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $LevelScriptName = "$LevelScriptName.ps1"
+        }
+        $ScriptToRun = $LevelScriptName
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($CustomFieldScript) -and $CustomFieldScript -ne "{{cf_script_to_run}}") {
+        $ScriptToRun = $CustomFieldScript
+    }
+}
 
 # ============================================================
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
@@ -188,8 +212,12 @@ New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleCon
 # ============================================================
 # VALIDATE CONFIGURATION
 # ============================================================
-if ([string]::IsNullOrWhiteSpace($ScriptToRun) -or $ScriptToRun -eq "{{cf_script_to_run}}") {
-    Write-Host "[X] FATAL: No script specified. Set the 'cf_script_to_run' custom field or parameter."
+if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
+    Write-Host "[X] FATAL: No script specified."
+    Write-Host "[X] Options:"
+    Write-Host "[X]   1. Name your Level.io script to match the GitHub script (e.g., 'Test Show Versions.ps1')"
+    Write-Host "[X]   2. Set the 'cf_script_to_run' custom field"
+    Write-Host "[X]   3. Set `$ScriptToRun = 'YourScript.ps1' at the start of this script"
     exit 1
 }
 
@@ -203,7 +231,7 @@ if ([string]::IsNullOrWhiteSpace($ScriptRepoBaseUrl) -or $ScriptRepoBaseUrl -eq 
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.01"
+Write-Host "[*] Script Launcher v2025.12.27.02"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.14
+**Version:** 2025.12.27.15
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -142,27 +142,41 @@ Go to **Settings → Custom Fields** and create these fields:
 
 > **Note:** If using your own fork, replace `coolnetworks/LevelLib` with your repository path.
 
-#### Step 2: Deploy the Launcher
+#### Step 2: Create Scripts in Level.io
+
+The launcher automatically detects which script to run based on the **Level.io script name**.
 
 1. In Level.io, create a new PowerShell script
-2. Copy the entire contents of `Script_Launcher.ps1` from this repository
-3. Save and deploy to your devices
+2. **Name it exactly the same as your GitHub script** (e.g., `Test Show Versions.ps1`)
+3. Paste the entire contents of `Script_Launcher.ps1` into it
+4. Save and deploy
 
-#### Step 3: Run Scripts from GitHub
+That's it! The launcher will automatically download and run the matching script from GitHub.
 
-**Option A: Set script per-job**
+**Example:**
+```
+Level.io Script Name:  "Test Show Versions.ps1"
+                            ↓
+Launcher downloads:    scripts/Test Show Versions.ps1
+                            ↓
+Executes the script with all Level.io variables
+```
 
-When running the launcher, set the `$ScriptToRun` parameter:
+#### Alternative Methods
+
+If you can't name the Level.io script to match, you have two options:
+
+**Option A: Override at the top of the script**
+
+Add this line at the very beginning (before the launcher code):
 ```powershell
 $ScriptToRun = "Test Show Versions.ps1"
+# ... rest of launcher code ...
 ```
 
 **Option B: Use custom field**
 
-Set `script_to_run` custom field on devices/groups, then in the launcher:
-```powershell
-$ScriptToRun = "{{cf_script_to_run}}"
-```
+Set `script_to_run` custom field on devices/groups, and the launcher will use that value.
 
 ### Available Scripts
 
@@ -554,6 +568,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.15 | 2025-12-27 | Launcher auto-detects script from Level.io script name |
 | 2025.12.27.14 | 2025-12-27 | Expanded Script Launcher documentation with step-by-step guide |
 | 2025.12.27.13 | 2025-12-27 | Add Script Launcher for GitHub-based script deployment |
 | 2025.12.27.12 | 2025-12-27 | Output library version to console when module loads |
