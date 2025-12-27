@@ -605,8 +605,14 @@ function Invoke-LevelApiCall {
     patterns and repairs them to the correct Unicode characters.
 
     Supports:
-    - Stop sign (U+26D4): ⛔
-    - Eyes (U+1F440): 👀
+    - ⛔ Stop sign (U+26D4)
+    - 👀 Eyes (U+1F440)
+    - 🙏 Folded hands (U+1F64F)
+    - 🚨 Police light (U+1F6A8)
+    - 🛑 Stop sign octagon (U+1F6D1)
+    - ✅ Check mark (U+2705)
+    - 🔚 End arrow (U+1F51A)
+    - 🆕 New button (U+1F195)
 
 .PARAMETER Text
     The text string that may contain corrupted emojis.
@@ -631,14 +637,22 @@ function Repair-LevelEmoji {
     # Known emoji mappings: corrupted pattern -> correct Unicode
     # These patterns occur when UTF-8 bytes are interpreted as Windows-1252
     $EmojiRepairs = @{
-        # Stop sign (U+26D4) - UTF-8 bytes E2 9B 94 interpreted as chars
+        # ⛔ Stop sign (U+26D4) - UTF-8: E2 9B 94
         "$([char]0xE2)$([char]0x9B)$([char]0x94)" = [char]0x26D4
-        # Stop sign - double-encoding through Windows-1252
-        "$([char]0xCE)$([char]0x93)$([char]0xC2)$([char]0xA2)$([char]0xC3)$([char]0xB6)" = [char]0x26D4
-        # Eyes (U+1F440) - UTF-8 bytes F0 9F 91 80 interpreted as chars
+        # ✅ Check mark (U+2705) - UTF-8: E2 9C 85
+        "$([char]0xE2)$([char]0x9C)$([char]0x85)" = [char]0x2705
+        # 👀 Eyes (U+1F440) - UTF-8: F0 9F 91 80
         "$([char]0xF0)$([char]0x9F)$([char]0x91)$([char]0x80)" = [char]::ConvertFromUtf32(0x1F440)
-        # Eyes - double-encoding through Windows-1252
-        "$([char]0xC3)$([char]0xB0)$([char]0xC5)$([char]0xB8)$([char]0xE2)$([char]0x80)$([char]0x98)$([char]0xE2)$([char]0x82)$([char]0xAC)" = [char]::ConvertFromUtf32(0x1F440)
+        # 🙏 Folded hands (U+1F64F) - UTF-8: F0 9F 99 8F
+        "$([char]0xF0)$([char]0x9F)$([char]0x99)$([char]0x8F)" = [char]::ConvertFromUtf32(0x1F64F)
+        # 🚨 Police light (U+1F6A8) - UTF-8: F0 9F 9A A8
+        "$([char]0xF0)$([char]0x9F)$([char]0x9A)$([char]0xA8)" = [char]::ConvertFromUtf32(0x1F6A8)
+        # 🛑 Stop sign octagon (U+1F6D1) - UTF-8: F0 9F 9B 91
+        "$([char]0xF0)$([char]0x9F)$([char]0x9B)$([char]0x91)" = [char]::ConvertFromUtf32(0x1F6D1)
+        # 🔚 End arrow (U+1F51A) - UTF-8: F0 9F 94 9A
+        "$([char]0xF0)$([char]0x9F)$([char]0x94)$([char]0x9A)" = [char]::ConvertFromUtf32(0x1F51A)
+        # 🆕 New button (U+1F195) - UTF-8: F0 9F 86 95
+        "$([char]0xF0)$([char]0x9F)$([char]0x86)$([char]0x95)" = [char]::ConvertFromUtf32(0x1F195)
     }
 
     foreach ($corrupted in $EmojiRepairs.Keys) {
@@ -700,7 +714,7 @@ function Get-LevelUrlEncoded {
 # MODULE LOAD MESSAGE
 # ============================================================
 # Display version when module is imported
-$script:ModuleVersion = "2025.12.27.14"
+$script:ModuleVersion = "2025.12.27.15"
 Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
