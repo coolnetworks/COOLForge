@@ -25,16 +25,26 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 
 ---
 
-## Files
+## Repository Structure
 
-| File | Description |
-|------|-------------|
-| `LevelIO-Common.psm1` | Core PowerShell module with all shared functions |
-| `Template_NewScript.ps1` | Template for creating new Level.io scripts |
-| `Script_Launcher.ps1` | Universal launcher that downloads and runs scripts from GitHub |
-| `Test_From_Level.ps1` | Test script to verify library on Level.io endpoints |
-| `Testing_script.ps1` | Local development test script |
-| `scripts/` | Folder containing ready-to-use automation scripts |
+```
+LevelLib/
+├── LevelIO-Common.psm1          # Core PowerShell module
+├── scripts/                     # Ready-to-use automation scripts
+│   ├── ⛔Force Remove Anydesk.ps1
+│   ├── 👀Check for Unauthorized Remote Access Tools.ps1
+│   └── Test Show Versions.ps1
+├── launchers/                   # Pre-configured launchers (copy-paste to Level.io)
+│   ├── ⛔Force Remove Anydesk.ps1
+│   ├── 👀Check for Unauthorized Remote Access Tools.ps1
+│   └── Test Show Versions.ps1
+├── templates/                   # Templates for creating new scripts
+│   ├── Script_Template.ps1      # Template for standalone scripts
+│   └── Launcher_Template.ps1    # Base launcher template
+└── testing/                     # Test scripts
+    ├── Test_Local.ps1           # Local development testing
+    └── Test_From_Level.ps1      # Level.io endpoint testing
+```
 
 ---
 
@@ -53,7 +63,7 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 
 ### Creating a New Script
 
-1. Copy `Template_NewScript.ps1`
+1. Copy `templates/Script_Template.ps1`
 2. Rename to your script name
 3. Change `"YourScriptName"` to a unique identifier
 4. Add your code in the `Invoke-LevelScript` block
@@ -115,7 +125,7 @@ The Script Launcher lets you run any script from your GitHub repository **withou
 
 **Traditional approach:** Deploy each script individually to Level.io. When you update a script, you must redeploy it.
 
-**Launcher approach:** Deploy `Script_Launcher.ps1` once. Your scripts live in GitHub. Update GitHub = all endpoints get the update automatically.
+**Launcher approach:** Deploy a launcher once. Your scripts live in GitHub. Update GitHub = all endpoints get the update automatically.
 
 ### Benefits
 
@@ -140,8 +150,13 @@ Go to **Settings → Custom Fields** and create these fields:
 
 #### Step 2: Create Scripts in Level.io
 
+**Option A: Use a pre-configured launcher**
+1. Copy the contents of a file from `launchers/` (e.g., `launchers/Test Show Versions.ps1`)
+2. Paste into a new Level.io script - it's ready to use!
+
+**Option B: Use the template for a new script**
 1. In Level.io, create a new PowerShell script
-2. Paste the contents of `Script_Launcher.ps1` into it
+2. Paste the contents of `templates/Launcher_Template.ps1` into it
 3. **Change line 4** at the very top of the script to your script name:
 
 ```powershell
@@ -183,6 +198,7 @@ Scripts in the `scripts/` folder are ready to use:
 |--------|-------------|
 | `Test Show Versions.ps1` | Displays version info for all LevelLib components |
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
+| `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs (TeamViewer, AnyDesk, etc.) |
 
 ### How It Works
 
@@ -191,9 +207,10 @@ Level.io                          GitHub Repository
     │                                    │
     ▼                                    │
 ┌─────────────────┐                      │
-│ Script_Launcher │ ◄────────────────────┤ scripts/
-│    .ps1         │   downloads          │  ├── Test Show Versions.ps1
-└────────┬────────┘                      │  └── ⛔Force Remove Anydesk.ps1
+│ Launcher        │ ◄────────────────────┤ scripts/
+│   .ps1          │   downloads          │  ├── Test Show Versions.ps1
+└────────┬────────┘                      │  ├── ⛔Force Remove Anydesk.ps1
+         │                               │  └── 👀Check for Unauthorized...
          │                               │
          │ passes variables              │
          ▼                               │
@@ -224,7 +241,7 @@ The launcher automatically passes these variables to downloaded scripts:
 | `$DeviceHostname` | `{{level_device_hostname}}` | Device hostname |
 | `$DeviceTags` | `{{level_tag_names}}` | Comma-separated device tags |
 
-**Adding more variables:** Edit `Script_Launcher.ps1` to pass additional custom fields to your scripts.
+**Adding more variables:** Edit `templates/Launcher_Template.ps1` to pass additional custom fields to your scripts.
 
 ### Writing Scripts for the Launcher
 
@@ -540,11 +557,11 @@ $Result = Invoke-LevelApiCall -Uri "https://api.example.com/tickets" `
 
 ### Test on Level.io Endpoint
 
-Deploy `Test_From_Level.ps1` to a Level.io endpoint to verify the library works correctly.
+Deploy `testing/Test_From_Level.ps1` to a Level.io endpoint to verify the library works correctly.
 
 ### Local Development Testing
 
-Run `Testing_script.ps1` locally to test changes before committing.
+Run `testing/Test_Local.ps1` locally to test changes before committing.
 
 ---
 
