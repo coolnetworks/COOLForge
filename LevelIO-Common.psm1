@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.27.15
+    Version:    2025.12.27.16
     Target:     Level.io RMM
     Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
 
@@ -713,8 +713,14 @@ function Get-LevelUrlEncoded {
 # ============================================================
 # MODULE LOAD MESSAGE
 # ============================================================
-# Display version when module is imported
-$script:ModuleVersion = "2025.12.27.15"
+# Extract version from header comment (single source of truth)
+# This ensures the displayed version always matches the header
+$script:ModuleContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
+if ($script:ModuleContent -match 'Version:\s*([\d\.]+)') {
+    $script:ModuleVersion = $Matches[1]
+} else {
+    $script:ModuleVersion = "Unknown"
+}
 Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
