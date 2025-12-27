@@ -15,7 +15,7 @@
     is verified as completely removed from the system.
 
 .NOTES
-    Version:          2025.12.27.02
+    Version:          2025.12.27.03
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Failure
 
@@ -34,7 +34,7 @@
 #>
 
 # ⛔Force Remove Anydesk
-# Version: 2025.12.27.02
+# Version: 2025.12.27.03
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Failure
 #
@@ -66,6 +66,8 @@ function Get-ModuleVersion {
 
 $NeedsUpdate = $false
 $LocalVersion = $null
+$LocalContent = $null
+$BackupPath = "$LibraryPath.backup"
 
 if (Test-Path $LibraryPath) {
     try {
@@ -94,11 +96,41 @@ try {
     }
 
     if ($NeedsUpdate) {
+        # Backup working local copy before updating (if we have a valid one)
+        if ($LocalVersion -and $LocalContent) {
+            Set-Content -Path $BackupPath -Value $LocalContent -Force -ErrorAction Stop
+        }
+
+        # Write new version
         Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
-        Write-Host "[+] Library updated to v$RemoteVersion"
+
+        # Verify the new file is valid before removing backup
+        try {
+            $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+            $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
+            # Success - remove backup
+            if (Test-Path $BackupPath) {
+                Remove-Item -Path $BackupPath -Force -ErrorAction SilentlyContinue
+            }
+            Write-Host "[+] Library updated to v$RemoteVersion"
+        }
+        catch {
+            # New file is corrupt - restore backup
+            if (Test-Path $BackupPath) {
+                Write-Host "[!] Downloaded file corrupt - restoring backup"
+                Move-Item -Path $BackupPath -Destination $LibraryPath -Force
+            }
+            throw "Downloaded library failed verification"
+        }
     }
 }
 catch {
+    # GitHub unreachable or remote content invalid
+    # Clean up any leftover backup
+    if (Test-Path $BackupPath) {
+        Move-Item -Path $BackupPath -Destination $LibraryPath -Force -ErrorAction SilentlyContinue
+    }
+
     if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
         Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
         Write-Host "[X] Error: $($_.Exception.Message)"
