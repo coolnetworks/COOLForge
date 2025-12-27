@@ -20,7 +20,7 @@
     5. Optionally configure BlockingTags for tag-based exclusions
 
 .NOTES
-    Template Version: 2025.12.27.13
+    Template Version: 2025.12.27.14
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -57,7 +57,7 @@
 #>
 
 # [SCRIPT NAME HERE]
-# Template Version: 2025.12.27.13
+# Template Version: 2025.12.27.14
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -78,6 +78,11 @@ $ErrorActionPreference = "SilentlyContinue"
 # $LibraryUrl: URL to download the LevelIO-Common library (allows private repos/forks)
 $MspScratchFolder = "{{cf_msp_scratch_folder}}"
 $LibraryUrl = "{{cf_ps_module_library_source}}"
+
+# Default to official repo if custom field not set
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1"
+}
 
 # Define library storage location within the scratch folder
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"

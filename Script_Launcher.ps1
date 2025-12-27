@@ -60,7 +60,7 @@ $ScriptToRun = "Test Show Versions.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.06
+# Launcher Version: 2025.12.27.07
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
