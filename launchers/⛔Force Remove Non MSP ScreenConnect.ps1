@@ -233,7 +233,7 @@ $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.08"
+Write-Host "[*] Script Launcher v2025.12.27.09"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
