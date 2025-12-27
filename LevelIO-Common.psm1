@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.27.13
+    Version:    2025.12.27.15
     Target:     Level.io RMM
     Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
 
