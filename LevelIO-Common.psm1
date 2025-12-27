@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.27.18
+    Version:    2025.12.27.19
     Target:     Level.io RMM
     Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
 
@@ -637,26 +637,55 @@ function Repair-LevelEmoji {
     # Known emoji mappings: corrupted pattern -> correct Unicode
     # These patterns occur when UTF-8 bytes are interpreted as Windows-1252
     # or double-encoded through different code pages
+    # Level.io corruption patterns: UTF-8 bytes interpreted as Windows-1252, then re-encoded as UTF-8
+    # Pattern: F0 9F xx yy -> ð Ÿ (CP1252) -> C3 B0 C5 B8 (UTF-8 of those chars)
+    # But observed: 👀 F0 9F 91 80 -> ≡ƒæÇ (2261 0192 00E6 00C7)
+    # This suggests bytes are interpreted through a complex encoding chain
+
     $EmojiRepairs = @{
+        # ========== BMP Characters (3-byte UTF-8) ==========
+
         # ⛔ Stop sign (U+26D4) - UTF-8: E2 9B 94
         "$([char]0xE2)$([char]0x9B)$([char]0x94)" = [char]0x26D4
-        # ⛔ Stop sign - Alternative corruption: Γ¢ö (CE 93 C2 A2 C3 B6 when URL decoded)
-        # This occurs when Level.io double-encodes or uses different code page
+        # ⛔ Stop sign - Alt corruption: Γ¢ö (observed from Level.io)
         "$([char]0x0393)$([char]0x00A2)$([char]0x00F6)" = [char]0x26D4
+
         # ✅ Check mark (U+2705) - UTF-8: E2 9C 85
         "$([char]0xE2)$([char]0x9C)$([char]0x85)" = [char]0x2705
+        # ✅ Check mark - Alt corruption: Γ£à (predicted pattern)
+        "$([char]0x0393)$([char]0x00A3)$([char]0x00E0)" = [char]0x2705
+
+        # ========== Supplementary Characters (4-byte UTF-8) ==========
+
         # 👀 Eyes (U+1F440) - UTF-8: F0 9F 91 80
         "$([char]0xF0)$([char]0x9F)$([char]0x91)$([char]0x80)" = [char]::ConvertFromUtf32(0x1F440)
+        # 👀 Eyes - Alt corruption: ≡ƒæÇ (observed from Level.io)
+        "$([char]0x2261)$([char]0x0192)$([char]0x00E6)$([char]0x00C7)" = [char]::ConvertFromUtf32(0x1F440)
+
         # 🙏 Folded hands (U+1F64F) - UTF-8: F0 9F 99 8F
         "$([char]0xF0)$([char]0x9F)$([char]0x99)$([char]0x8F)" = [char]::ConvertFromUtf32(0x1F64F)
+        # 🙏 Folded hands - Alt corruption: ≡ƒÖÅ (predicted pattern based on 👀)
+        "$([char]0x2261)$([char]0x0192)$([char]0x00D6)$([char]0x00C5)" = [char]::ConvertFromUtf32(0x1F64F)
+
         # 🚨 Police light (U+1F6A8) - UTF-8: F0 9F 9A A8
         "$([char]0xF0)$([char]0x9F)$([char]0x9A)$([char]0xA8)" = [char]::ConvertFromUtf32(0x1F6A8)
+        # 🚨 Police light - Alt corruption: ≡ƒÜ¿ (predicted pattern)
+        "$([char]0x2261)$([char]0x0192)$([char]0x00DC)$([char]0x00BF)" = [char]::ConvertFromUtf32(0x1F6A8)
+
         # 🛑 Stop sign octagon (U+1F6D1) - UTF-8: F0 9F 9B 91
         "$([char]0xF0)$([char]0x9F)$([char]0x9B)$([char]0x91)" = [char]::ConvertFromUtf32(0x1F6D1)
+        # 🛑 Stop sign octagon - Alt corruption: ≡ƒÜæ (predicted pattern)
+        "$([char]0x2261)$([char]0x0192)$([char]0x00DC)$([char]0x00E6)" = [char]::ConvertFromUtf32(0x1F6D1)
+
         # 🔚 End arrow (U+1F51A) - UTF-8: F0 9F 94 9A
         "$([char]0xF0)$([char]0x9F)$([char]0x94)$([char]0x9A)" = [char]::ConvertFromUtf32(0x1F51A)
+        # 🔚 End arrow - Alt corruption: ≡ƒöÜ (predicted pattern)
+        "$([char]0x2261)$([char]0x0192)$([char]0x00F6)$([char]0x00DC)" = [char]::ConvertFromUtf32(0x1F51A)
+
         # 🆕 New button (U+1F195) - UTF-8: F0 9F 86 95
         "$([char]0xF0)$([char]0x9F)$([char]0x86)$([char]0x95)" = [char]::ConvertFromUtf32(0x1F195)
+        # 🆕 New button - Alt corruption: ≡ƒåò (predicted pattern)
+        "$([char]0x2261)$([char]0x0192)$([char]0x00E5)$([char]0x00F2)" = [char]::ConvertFromUtf32(0x1F195)
     }
 
     foreach ($corrupted in $EmojiRepairs.Keys) {
@@ -720,7 +749,7 @@ function Get-LevelUrlEncoded {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2025.12.27.18"
+$script:ModuleVersion = "2025.12.27.19"
 Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
