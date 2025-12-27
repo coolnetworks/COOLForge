@@ -15,7 +15,7 @@
     is verified as completely removed from the system.
 
 .NOTES
-    Version:          2025.12.27.01
+    Version:          2025.12.27.02
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Failure
 
@@ -34,7 +34,7 @@
 #>
 
 # ⛔Force Remove Anydesk
-# Version: 2025.12.27.01
+# Version: 2025.12.27.02
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Failure
 #
@@ -57,20 +57,25 @@ if (!(Test-Path $LibraryFolder)) {
 }
 
 function Get-ModuleVersion {
-    param([string]$Content)
+    param([string]$Content, [string]$Source = "unknown")
     if ($Content -match 'Version:\s*([\d\.]+)') {
         return $Matches[1]
     }
-    return "0.0.0"
+    throw "Could not parse version from $Source - invalid or corrupt library content"
 }
 
 $NeedsUpdate = $false
-$LocalVersion = "0.0.0"
-$RemoteVersion = "0.0.0"
+$LocalVersion = $null
 
 if (Test-Path $LibraryPath) {
-    $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction SilentlyContinue
-    $LocalVersion = Get-ModuleVersion -Content $LocalContent
+    try {
+        $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+        $LocalVersion = Get-ModuleVersion -Content $LocalContent -Source "local file"
+    }
+    catch {
+        Write-Host "[!] Local library corrupt - will redownload"
+        $NeedsUpdate = $true
+    }
 }
 else {
     $NeedsUpdate = $true
@@ -79,11 +84,13 @@ else {
 
 try {
     $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
-    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
+    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent -Source "remote URL"
 
-    if ([version]$RemoteVersion -gt [version]$LocalVersion) {
+    if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
         $NeedsUpdate = $true
-        Write-Host "[*] Update available: $LocalVersion -> $RemoteVersion"
+        if ($LocalVersion) {
+            Write-Host "[*] Update available: $LocalVersion -> $RemoteVersion"
+        }
     }
 
     if ($NeedsUpdate) {
@@ -92,8 +99,8 @@ try {
     }
 }
 catch {
-    if (!(Test-Path $LibraryPath)) {
-        Write-Host "[X] FATAL: Cannot download library and no local copy exists"
+    if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
+        Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
         Write-Host "[X] Error: $($_.Exception.Message)"
         exit 1
     }

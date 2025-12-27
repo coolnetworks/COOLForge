@@ -20,7 +20,7 @@
     5. Optionally configure BlockingTags for tag-based exclusions
 
 .NOTES
-    Template Version: 2025.12.27.11
+    Template Version: 2025.12.27.12
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Failure
 
@@ -57,7 +57,7 @@
 #>
 
 # [SCRIPT NAME HERE]
-# Template Version: 2025.12.27.11
+# Template Version: 2025.12.27.12
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Failure
 #
@@ -92,22 +92,27 @@ if (!(Test-Path $LibraryFolder)) {
 # Function to extract version number from module content
 # Matches "Version:" followed by version number (handles both .NOTES and comment styles)
 function Get-ModuleVersion {
-    param([string]$Content)
+    param([string]$Content, [string]$Source = "unknown")
     if ($Content -match 'Version:\s*([\d\.]+)') {
         return $Matches[1]
     }
-    return "0.0.0"
+    throw "Could not parse version from $Source - invalid or corrupt library content"
 }
 
-# Version tracking variables
-$NeedsUpdate = $false
-$LocalVersion = "0.0.0"
-$RemoteVersion = "0.0.0"
-
 # Check if library already exists locally and get its version
+$NeedsUpdate = $false
+$LocalVersion = $null
+
 if (Test-Path $LibraryPath) {
-    $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction SilentlyContinue
-    $LocalVersion = Get-ModuleVersion -Content $LocalContent
+    try {
+        $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+        $LocalVersion = Get-ModuleVersion -Content $LocalContent -Source "local file"
+    }
+    catch {
+        # Local file exists but is corrupt - force redownload
+        Write-Host "[!] Local library corrupt - will redownload"
+        $NeedsUpdate = $true
+    }
 }
 else {
     # No local copy exists - must download
@@ -119,12 +124,14 @@ else {
 # Compare versions and update if a newer version is available
 try {
     $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
-    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
+    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent -Source "remote URL"
 
     # Compare versions using PowerShell's [version] type for proper semantic comparison
-    if ([version]$RemoteVersion -gt [version]$LocalVersion) {
+    if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
         $NeedsUpdate = $true
-        Write-Host "[*] Update available: $LocalVersion -> $RemoteVersion"
+        if ($LocalVersion) {
+            Write-Host "[*] Update available: $LocalVersion -> $RemoteVersion"
+        }
     }
 
     # Download and save the new version if needed
@@ -134,14 +141,14 @@ try {
     }
 }
 catch {
-    # GitHub unreachable - check if we have a local fallback
-    if (!(Test-Path $LibraryPath)) {
-        # No local copy and can't download - fatal error
-        Write-Host "[X] FATAL: Cannot download library and no local copy exists"
+    # GitHub unreachable or remote content invalid
+    if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
+        # No valid local copy and can't download - fatal error
+        Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
         Write-Host "[X] Error: $($_.Exception.Message)"
         exit 1
     }
-    # Local copy exists - continue with potentially outdated version
+    # Valid local copy exists - continue with potentially outdated version
     Write-Host "[!] Could not check for updates (using local v$LocalVersion)"
 }
 
