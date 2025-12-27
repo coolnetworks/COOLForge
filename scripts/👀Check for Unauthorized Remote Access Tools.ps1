@@ -18,7 +18,7 @@
     and the library is already loaded.
 
 .NOTES
-    Version:          2025.12.27.01
+    Version:          2025.12.27.02
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected)
 
@@ -41,7 +41,7 @@
 #>
 
 # 👀Check for Unauthorized Remote Access Tools
-# Version: 2025.12.27.01
+# Version: 2025.12.27.02
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success (No unauthorized RATs) | Exit 1 = Alert (RATs detected)
 #
@@ -80,6 +80,20 @@ if (-not (Get-Variable -Name 'ScreenConnectInstanceId' -ErrorAction SilentlyCont
 if (-not (Get-Variable -Name 'IsScreenConnectServer' -ErrorAction SilentlyContinue)) {
     $IsScreenConnectServer = ""
 }
+
+# ============================================================
+# AUTHORIZED RMM TOOLS (Auto-whitelisted)
+# ============================================================
+# These RMM tools are automatically excluded from detection because
+# this script runs via Level.io, which is an authorized RMM platform.
+# Add your organization's authorized RMM tools here.
+$AuthorizedRMMTools = @(
+    "Level.io"      # The RMM platform running this script
+    # Add other authorized RMM tools below:
+    # "Datto RMM"
+    # "NinjaRMM"
+    # "Atera"
+)
 
 # ============================================================
 # RAT DETECTION FUNCTIONS
@@ -212,6 +226,7 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "Tanium";            Processes = @("TaniumClient*");                 Services = @("Tanium*");                       Paths = @("*\Tanium*") }
         @{ Name = "PDQ";               Processes = @("PDQDeploy*", "PDQInventory*");   Services = @("PDQ*");                          Paths = @("*\PDQ*") }
         @{ Name = "ManageEngine";      Processes = @("UEMS*", "DesktopCentral*");      Services = @("ManageEngine*", "DesktopCentral*"); Paths = @("*\ManageEngine*", "*\DesktopCentral*") }
+        @{ Name = "Level.io";          Processes = @("level-*", "level_*");            Services = @("level*");                        Paths = @("*\Level\*", "*\Level.io*") }
     )
 }
 
@@ -346,6 +361,12 @@ Invoke-LevelScript -ScriptBlock {
 
     # Scan for each tool
     foreach ($Tool in $RemoteAccessTools) {
+
+        # Skip authorized RMM tools
+        if ($Tool.Name -in $AuthorizedRMMTools) {
+            Write-LevelLog "$($Tool.Name) is in authorized list - skipping" -Level "DEBUG"
+            continue
+        }
 
         # Handle ScreenConnect whitelisting
         if ($Tool.Name -eq "ScreenConnect") {
