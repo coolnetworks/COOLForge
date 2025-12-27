@@ -33,11 +33,11 @@ LevelLib/
 ├── scripts/                     # Ready-to-use automation scripts
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
-│   └── Test Show Versions.ps1
+│   └── 👀Test Show Versions.ps1
 ├── launchers/                   # Pre-configured launchers (copy-paste to Level.io)
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
-│   └── Test Show Versions.ps1
+│   └── 👀Test Show Versions.ps1
 ├── templates/                   # Templates for creating new scripts
 │   ├── Script_Template.ps1      # Template for standalone scripts
 │   └── Launcher_Template.ps1    # Base launcher template
@@ -151,7 +151,7 @@ Go to **Settings → Custom Fields** and create these fields:
 #### Step 2: Create Scripts in Level.io
 
 **Option A: Use a pre-configured launcher**
-1. Copy the contents of a file from `launchers/` (e.g., `launchers/Test Show Versions.ps1`)
+1. Copy the contents of a file from `launchers/` (e.g., `launchers/👀Test Show Versions.ps1`)
 2. Paste into a new Level.io script - it's ready to use!
 
 **Option B: Use the template for a new script**
@@ -163,7 +163,7 @@ Go to **Settings → Custom Fields** and create these fields:
 # ============================================================
 # SCRIPT TO RUN - CHANGE THIS VALUE
 # ============================================================
-$ScriptToRun = "Test Show Versions.ps1"   # <-- Change this to your script
+$ScriptToRun = "👀Test Show Versions.ps1"   # <-- Change this to your script
 # ============================================================
 ```
 
@@ -173,9 +173,9 @@ $ScriptToRun = "Test Show Versions.ps1"   # <-- Change this to your script
 ```
 Level.io runs launcher
          ↓
-Launcher sees: $ScriptToRun = "Test Show Versions.ps1"
+Launcher sees: $ScriptToRun = "👀Test Show Versions.ps1"
          ↓
-Downloads: scripts/Test Show Versions.ps1 from GitHub
+Downloads: scripts/👀Test Show Versions.ps1 from GitHub
          ↓
 Executes with all Level.io variables
 ```
@@ -196,7 +196,7 @@ Scripts in the `scripts/` folder are ready to use:
 
 | Script | Description |
 |--------|-------------|
-| `Test Show Versions.ps1` | Displays version info for all LevelLib components |
+| `👀Test Show Versions.ps1` | Displays version info for all LevelLib components |
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
 | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs (TeamViewer, AnyDesk, etc.) |
 
@@ -208,7 +208,7 @@ Level.io                          GitHub Repository
     ▼                                    │
 ┌─────────────────┐                      │
 │ Launcher        │ ◄────────────────────┤ scripts/
-│   .ps1          │   downloads          │  ├── Test Show Versions.ps1
+│   .ps1          │   downloads          │  ├── 👀Test Show Versions.ps1
 └────────┬────────┘                      │  ├── ⛔Force Remove Anydesk.ps1
          │                               │  └── 👀Check for Unauthorized...
          │                               │
@@ -287,7 +287,7 @@ C:\ProgramData\MSP\
 ├── Libraries\
 │   └── LevelIO-Common.psm1      # Cached library
 └── Scripts\
-    ├── Test Show Versions.ps1   # Cached scripts
+    ├── 👀Test Show Versions.ps1   # Cached scripts
     └── ⛔Force Remove Anydesk.ps1
 ```
 

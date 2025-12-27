@@ -1,7 +1,7 @@
 # ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Test Show Versions.ps1"
+$ScriptToRun = "👀Test Show Versions.ps1"
 # ============================================================
 
 <#
@@ -50,7 +50,7 @@ $ScriptToRun = "Test Show Versions.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "Test Show Versions.ps1"
+    $ScriptToRun = "👀Test Show Versions.ps1"
     # ... rest of launcher code ...
 
 .EXAMPLE
