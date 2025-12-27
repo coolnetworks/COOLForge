@@ -144,39 +144,39 @@ Go to **Settings → Custom Fields** and create these fields:
 
 #### Step 2: Create Scripts in Level.io
 
-The launcher automatically detects which script to run based on the **Level.io script name**.
-
 1. In Level.io, create a new PowerShell script
-2. **Name it exactly the same as your GitHub script** (e.g., `Test Show Versions.ps1`)
-3. Paste the entire contents of `Script_Launcher.ps1` into it
+2. Paste the contents of `Script_Launcher.ps1` into it
+3. **Uncomment and set the script name** near the top:
+
+```powershell
+# ============================================================
+# SCRIPT TO RUN - SET THIS VALUE
+# ============================================================
+$ScriptToRun = "Test Show Versions.ps1"   # <-- Set your script name here
+```
+
 4. Save and deploy
 
-That's it! The launcher will automatically download and run the matching script from GitHub.
-
-**Example:**
+**Example flow:**
 ```
-Level.io Script Name:  "Test Show Versions.ps1"
-                            ↓
-Launcher downloads:    scripts/Test Show Versions.ps1
-                            ↓
-Executes the script with all Level.io variables
+Level.io runs launcher
+         ↓
+Launcher sees: $ScriptToRun = "Test Show Versions.ps1"
+         ↓
+Downloads: scripts/Test Show Versions.ps1 from GitHub
+         ↓
+Executes with all Level.io variables
 ```
 
-#### Alternative Methods
+#### Using Custom Fields Instead
 
-If you can't name the Level.io script to match, you have two options:
+If you want to change scripts without redeploying, use a custom field:
 
-**Option A: Override at the top of the script**
-
-Add this line at the very beginning (before the launcher code):
 ```powershell
-$ScriptToRun = "Test Show Versions.ps1"
-# ... rest of launcher code ...
+$ScriptToRun = "{{cf_script_to_run}}"
 ```
 
-**Option B: Use custom field**
-
-Set `script_to_run` custom field on devices/groups, and the launcher will use that value.
+Then set `script_to_run` custom field on devices/groups to control which script runs.
 
 ### Available Scripts
 
@@ -568,7 +568,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 2025.12.27.15 | 2025-12-27 | Launcher auto-detects script from Level.io script name |
+| 2025.12.27.15 | 2025-12-27 | Simplified launcher - set $ScriptToRun directly in script |
 | 2025.12.27.14 | 2025-12-27 | Expanded Script Launcher documentation with step-by-step guide |
 | 2025.12.27.13 | 2025-12-27 | Add Script Launcher for GitHub-based script deployment |
 | 2025.12.27.12 | 2025-12-27 | Output library version to console when module loads |
