@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.19
+**Version:** 2025.12.27.20
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -563,6 +563,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.20 | 2025-12-27 | Full release - all scripts use default URL fallback, documentation updated |
 | 2025.12.27.19 | 2025-12-27 | Library URL now optional - defaults to official repo if custom field not set |
 | 2025.12.27.18 | 2025-12-27 | Fix launcher validation - remove redundant library URL check after load |
 | 2025.12.27.17 | 2025-12-27 | Derive scripts URL from library URL - no separate custom field needed |

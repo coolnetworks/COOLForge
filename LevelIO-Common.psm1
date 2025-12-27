@@ -12,13 +12,13 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.27.12
+    Version:    2025.12.27.13
     Target:     Level.io RMM
     Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
 
-    Required Level.io Custom Fields:
-    - {{cf_msp_scratch_folder}}       : Persistent storage folder (e.g., C:\ProgramData\MSP)
-    - {{cf_ps_module_library_source}} : URL to download this module from GitHub or custom host
+    Level.io Custom Fields:
+    - {{cf_msp_scratch_folder}}       : (Required) Persistent storage folder (e.g., C:\ProgramData\MSP)
+    - {{cf_ps_module_library_source}} : (Optional) URL to download this module - defaults to official repo
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
@@ -595,7 +595,7 @@ function Invoke-LevelApiCall {
 # MODULE LOAD MESSAGE
 # ============================================================
 # Display version when module is imported
-$script:ModuleVersion = "2025.12.27.12"
+$script:ModuleVersion = "2025.12.27.13"
 Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
