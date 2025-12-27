@@ -23,7 +23,7 @@
     - Exit 1: One or more tests failed (Alert)
 
 .NOTES
-    Version:          2025.12.27.12
+    Version:          2025.12.27.13
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success (All Tests Passed) | 1 = Alert (Tests Failed)
 
@@ -44,7 +44,7 @@
 #>
 
 # Test_From_Level.ps1
-# Version: 2025.12.27.12
+# Version: 2025.12.27.13
 # Target: Level.io
 # Tests all library functions when deployed via Level.io
 # Exit 0 = Success (All Tests Passed) | Exit 1 = Alert (Tests Failed)
@@ -65,6 +65,11 @@ $ErrorActionPreference = "SilentlyContinue"
 # $LibraryUrl: URL to download the LevelIO-Common library
 $MspScratchFolder = "{{cf_msp_scratch_folder}}"
 $LibraryUrl = "{{cf_ps_module_library_source}}"
+
+# Default to official repo if custom field not set
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1"
+}
 
 # Library storage paths
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
