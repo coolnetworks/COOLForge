@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.13
+**Version:** 2025.12.27.14
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -111,56 +111,163 @@ https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
 
 ## Script Launcher
 
-The Script Launcher provides a single deployment point for running any script from your GitHub repository. Instead of deploying individual scripts to Level.io, you deploy the launcher once and control which script runs via a custom field.
+The Script Launcher lets you run any script from your GitHub repository **without deploying individual scripts to Level.io**. Deploy the launcher once, then run any script by simply changing a custom field value.
+
+### Why Use the Launcher?
+
+**Traditional approach:** Deploy each script individually to Level.io. When you update a script, you must redeploy it.
+
+**Launcher approach:** Deploy `Script_Launcher.ps1` once. Your scripts live in GitHub. Update GitHub = all endpoints get the update automatically.
 
 ### Benefits
 
 - **Single Deployment** — One script in Level.io, unlimited scripts in GitHub
-- **Automatic Updates** — Scripts update automatically when you push to GitHub
-- **No Redeployment** — Change scripts by updating the custom field value
-- **Centralized Management** — All scripts live in your repository
+- **Automatic Updates** — Push to GitHub, endpoints get the new version on next run
+- **No Redeployment** — Change which script runs by updating a custom field
+- **Centralized Management** — All scripts in version control
+- **Backup Safety** — Corrupt downloads automatically restore from working backup
 
-### Setup
+### Step-by-Step Setup
 
-1. Create the `script_repo_base_url` custom field in Level.io:
-   ```
-   https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts
-   ```
+#### Step 1: Create Custom Fields in Level.io
 
-2. Create the `script_to_run` custom field (or set as parameter per-job):
-   ```
-   Force Remove Anydesk.ps1
-   ```
+Go to **Settings → Custom Fields** and create these fields:
 
-3. Deploy `Script_Launcher.ps1` to Level.io
+| Field Name | Type | Value |
+|------------|------|-------|
+| `msp_scratch_folder` | Text | `C:\ProgramData\MSP` |
+| `ps_module_library_source` | Text | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` |
+| `script_repo_base_url` | Text | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts` |
+| `script_to_run` | Text | *(leave empty or set default)* |
 
-### Usage
+> **Note:** If using your own fork, replace `coolnetworks/LevelLib` with your repository path.
 
+#### Step 2: Deploy the Launcher
+
+1. In Level.io, create a new PowerShell script
+2. Copy the entire contents of `Script_Launcher.ps1` from this repository
+3. Save and deploy to your devices
+
+#### Step 3: Run Scripts from GitHub
+
+**Option A: Set script per-job**
+
+When running the launcher, set the `$ScriptToRun` parameter:
 ```powershell
-# In Level.io, set the parameter or custom field:
-$ScriptToRun = "Force Remove Anydesk.ps1"
+$ScriptToRun = "Test Show Versions.ps1"
+```
 
-# Or use the custom field:
+**Option B: Use custom field**
+
+Set `script_to_run` custom field on devices/groups, then in the launcher:
+```powershell
 $ScriptToRun = "{{cf_script_to_run}}"
 ```
 
+### Available Scripts
+
+Scripts in the `scripts/` folder are ready to use:
+
+| Script | Description |
+|--------|-------------|
+| `Test Show Versions.ps1` | Displays version info for all LevelLib components |
+| `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
+
 ### How It Works
 
-1. Launcher downloads and caches the library (same as template scripts)
-2. Launcher downloads the specified script from `scripts/` folder
-3. All Level.io variables are passed to the downloaded script
-4. Downloaded script executes with full access to library functions
-5. Script exit code is passed back to Level.io
+```
+Level.io                          GitHub Repository
+    │                                    │
+    ▼                                    │
+┌─────────────────┐                      │
+│ Script_Launcher │ ◄────────────────────┤ scripts/
+│    .ps1         │   downloads          │  ├── Test Show Versions.ps1
+└────────┬────────┘                      │  └── ⛔Force Remove Anydesk.ps1
+         │                               │
+         │ passes variables              │
+         ▼                               │
+┌─────────────────┐                      │
+│ Downloaded      │ ◄────────────────────┤ LevelIO-Common.psm1
+│ Script          │   library loaded     │
+└────────┬────────┘                      │
+         │                               │
+         ▼                               │
+   Executes with full                    │
+   library functions                     │
+```
 
-### Level.io Variables
+1. **Launcher runs** — Downloads/updates the library from GitHub
+2. **Script downloaded** — Fetches the script specified in `$ScriptToRun`
+3. **Variables passed** — All Level.io variables are injected into the script's scope
+4. **Script executes** — Has full access to library functions (`Write-LevelLog`, etc.)
+5. **Exit code returned** — Script's exit code is passed back to Level.io
+
+### Variables Passed to Scripts
 
 The launcher automatically passes these variables to downloaded scripts:
-- `$MspScratchFolder` — Scratch folder path
-- `$LibraryUrl` — Library download URL
-- `$DeviceHostname` — Device hostname
-- `$DeviceTags` — Device tags
 
-Add additional custom fields to the launcher as needed.
+| Variable | Source | Description |
+|----------|--------|-------------|
+| `$MspScratchFolder` | `{{cf_msp_scratch_folder}}` | Persistent storage folder |
+| `$LibraryUrl` | `{{cf_ps_module_library_source}}` | Library download URL |
+| `$DeviceHostname` | `{{level_device_hostname}}` | Device hostname |
+| `$DeviceTags` | `{{level_tag_names}}` | Comma-separated device tags |
+
+**Adding more variables:** Edit `Script_Launcher.ps1` to pass additional custom fields to your scripts.
+
+### Writing Scripts for the Launcher
+
+Scripts in the `scripts/` folder should follow this pattern:
+
+```powershell
+# My Script
+# Version: 2025.12.27.01
+# Target: Level.io (via Script Launcher)
+
+# Variables are already defined by the launcher:
+# - $MspScratchFolder
+# - $LibraryUrl
+# - $DeviceHostname
+# - $DeviceTags
+
+$Init = Initialize-LevelScript -ScriptName "MyScript" `
+                               -MspScratchFolder $MspScratchFolder `
+                               -DeviceHostname $DeviceHostname `
+                               -DeviceTags $DeviceTags `
+                               -BlockingTags @("❌")
+
+if (-not $Init.Success) { exit 0 }
+
+Invoke-LevelScript -ScriptBlock {
+    Write-LevelLog "Hello from my script!"
+    # Your code here...
+}
+```
+
+**Key differences from standalone scripts:**
+- No library download code needed (launcher handles it)
+- Use `$DeviceHostname` instead of `"{{level_device_hostname}}"`
+- Use `$DeviceTags` instead of `"{{level_tag_names}}"`
+- Library functions are already available
+
+### Caching and Updates
+
+Scripts are cached locally on endpoints:
+
+```
+C:\ProgramData\MSP\
+├── Libraries\
+│   └── LevelIO-Common.psm1      # Cached library
+└── Scripts\
+    ├── Test Show Versions.ps1   # Cached scripts
+    └── ⛔Force Remove Anydesk.ps1
+```
+
+**Update behavior:**
+- Launcher checks GitHub for newer versions on each run
+- If newer version exists, downloads and replaces cached copy
+- If download fails, uses cached version
+- Corrupt downloads are detected and rolled back to backup
 
 ---
 
@@ -447,6 +554,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.14 | 2025-12-27 | Expanded Script Launcher documentation with step-by-step guide |
 | 2025.12.27.13 | 2025-12-27 | Add Script Launcher for GitHub-based script deployment |
 | 2025.12.27.12 | 2025-12-27 | Output library version to console when module loads |
 | 2025.12.27.11 | 2025-12-27 | Add informative message when device is blocked by tag |
