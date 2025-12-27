@@ -23,7 +23,7 @@
     - Exit 1: One or more tests failed
 
 .NOTES
-    Version:          2025.12.27.11
+    Version:          2025.12.27.12
     Target Platform:  Level.io RMM
     Exit Codes:       0 = All Tests Passed | 1 = Tests Failed
 
@@ -44,7 +44,7 @@
 #>
 
 # Test_From_Level.ps1
-# Version: 2025.12.27.11
+# Version: 2025.12.27.12
 # Target: Level.io
 # Tests all library functions when deployed via Level.io
 # Exit 0 = All Tests Passed | Exit 1 = Tests Failed
@@ -78,52 +78,94 @@ if (!(Test-Path $LibraryFolder)) {
 # Function to extract version number from module content
 # Matches "Version:" followed by version number (handles both .NOTES and comment styles)
 function Get-ModuleVersion {
-    param([string]$Content)
+    param([string]$Content, [string]$Source = "unknown")
     if ($Content -match 'Version:\s*([\d\.]+)') {
         return $Matches[1]
     }
-    return "0.0.0"
+    throw "Could not parse version from $Source - invalid or corrupt library content"
 }
 
-# Version comparison and update logic
+# Check if library already exists locally and get its version
 $NeedsUpdate = $false
-$LocalVersion = "0.0.0"
-$RemoteVersion = "0.0.0"
+$LocalVersion = $null
+$LocalContent = $null
+$BackupPath = "$LibraryPath.backup"
 
-# Check local version if library exists
 if (Test-Path $LibraryPath) {
-    $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction SilentlyContinue
-    $LocalVersion = Get-ModuleVersion -Content $LocalContent
+    try {
+        $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+        $LocalVersion = Get-ModuleVersion -Content $LocalContent -Source "local file"
+    }
+    catch {
+        # Local file exists but is corrupt - force redownload
+        Write-Host "[!] Local library corrupt - will redownload"
+        $NeedsUpdate = $true
+    }
 }
 else {
+    # No local copy exists - must download
     $NeedsUpdate = $true
     Write-Host "[*] Library not found - downloading..."
 }
 
-# Fetch and compare with GitHub version
+# Attempt to fetch the latest version from GitHub
+# Compare versions and update if a newer version is available
 try {
     $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
-    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
+    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent -Source "remote URL"
 
-    # Use [version] type for proper version comparison
-    if ([version]$RemoteVersion -gt [version]$LocalVersion) {
+    # Compare versions using PowerShell's [version] type for proper semantic comparison
+    if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
         $NeedsUpdate = $true
-        Write-Host "[*] Update available: $LocalVersion -> $RemoteVersion"
+        if ($LocalVersion) {
+            Write-Host "[*] Update available: $LocalVersion -> $RemoteVersion"
+        }
     }
 
-    # Save updated library
+    # Download and save the new version if needed
     if ($NeedsUpdate) {
+        # Backup working local copy before updating (if we have a valid one)
+        if ($LocalVersion -and $LocalContent) {
+            Set-Content -Path $BackupPath -Value $LocalContent -Force -ErrorAction Stop
+        }
+
+        # Write new version
         Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
-        Write-Host "[+] Library updated to v$RemoteVersion"
+
+        # Verify the new file is valid before removing backup
+        try {
+            $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+            $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
+            # Success - remove backup
+            if (Test-Path $BackupPath) {
+                Remove-Item -Path $BackupPath -Force -ErrorAction SilentlyContinue
+            }
+            Write-Host "[+] Library updated to v$RemoteVersion"
+        }
+        catch {
+            # New file is corrupt - restore backup
+            if (Test-Path $BackupPath) {
+                Write-Host "[!] Downloaded file corrupt - restoring backup"
+                Move-Item -Path $BackupPath -Destination $LibraryPath -Force
+            }
+            throw "Downloaded library failed verification"
+        }
     }
 }
 catch {
-    # Fallback to local copy if GitHub unreachable
-    if (!(Test-Path $LibraryPath)) {
-        Write-Host "[X] FATAL: Cannot download library and no local copy exists"
+    # GitHub unreachable or remote content invalid
+    # Clean up any leftover backup
+    if (Test-Path $BackupPath) {
+        Move-Item -Path $BackupPath -Destination $LibraryPath -Force -ErrorAction SilentlyContinue
+    }
+
+    if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
+        # No valid local copy and can't download - fatal error
+        Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
         Write-Host "[X] Error: $($_.Exception.Message)"
         exit 1
     }
+    # Valid local copy exists - continue with potentially outdated version
     Write-Host "[!] Could not check for updates (using local v$LocalVersion)"
 }
 
