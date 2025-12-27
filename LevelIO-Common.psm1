@@ -592,10 +592,115 @@ function Invoke-LevelApiCall {
 }
 
 # ============================================================
+# EMOJI ENCODING REPAIR
+# ============================================================
+
+<#
+.SYNOPSIS
+    Repairs corrupted UTF-8 emojis in strings.
+
+.DESCRIPTION
+    Level.io and other deployment systems may corrupt UTF-8 emojis when
+    deploying PowerShell scripts. This function detects common corruption
+    patterns and repairs them to the correct Unicode characters.
+
+    Supports:
+    - Stop sign (U+26D4): ⛔
+    - Eyes (U+1F440): 👀
+
+.PARAMETER Text
+    The text string that may contain corrupted emojis.
+
+.OUTPUTS
+    String with emojis repaired to correct Unicode characters.
+
+.EXAMPLE
+    $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
+
+.EXAMPLE
+    # Repair a filename before using it
+    $FileName = Repair-LevelEmoji "⛔Force Remove Anydesk.ps1"
+#>
+function Repair-LevelEmoji {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Text
+    )
+
+    # Known emoji mappings: corrupted pattern -> correct Unicode
+    # These patterns occur when UTF-8 bytes are interpreted as Windows-1252
+    $EmojiRepairs = @{
+        # Stop sign (U+26D4) - UTF-8 bytes E2 9B 94 interpreted as chars
+        "$([char]0xE2)$([char]0x9B)$([char]0x94)" = [char]0x26D4
+        # Stop sign - double-encoding through Windows-1252
+        "$([char]0xCE)$([char]0x93)$([char]0xC2)$([char]0xA2)$([char]0xC3)$([char]0xB6)" = [char]0x26D4
+        # Eyes (U+1F440) - UTF-8 bytes F0 9F 91 80 interpreted as chars
+        "$([char]0xF0)$([char]0x9F)$([char]0x91)$([char]0x80)" = [char]::ConvertFromUtf32(0x1F440)
+        # Eyes - double-encoding through Windows-1252
+        "$([char]0xC3)$([char]0xB0)$([char]0xC5)$([char]0xB8)$([char]0xE2)$([char]0x80)$([char]0x98)$([char]0xE2)$([char]0x82)$([char]0xAC)" = [char]::ConvertFromUtf32(0x1F440)
+    }
+
+    foreach ($corrupted in $EmojiRepairs.Keys) {
+        if ($Text.Contains($corrupted)) {
+            $Text = $Text.Replace($corrupted, $EmojiRepairs[$corrupted])
+        }
+    }
+
+    return $Text
+}
+
+<#
+.SYNOPSIS
+    URL-encodes a string with proper UTF-8 handling for emojis.
+
+.DESCRIPTION
+    Performs percent-encoding on a string, correctly handling Unicode
+    characters including emojis. Unlike [System.Uri]::EscapeDataString(),
+    this function properly encodes UTF-8 bytes for use in URLs.
+
+.PARAMETER Text
+    The text string to URL-encode.
+
+.OUTPUTS
+    URL-encoded string safe for use in HTTP requests.
+
+.EXAMPLE
+    $EncodedName = Get-LevelUrlEncoded -Text "👀Test Show Versions.ps1"
+    # Returns: %F0%9F%91%80Test%20Show%20Versions.ps1
+
+.EXAMPLE
+    $ScriptUrl = "$BaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
+#>
+function Get-LevelUrlEncoded {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Text
+    )
+
+    $Utf8Bytes = [System.Text.Encoding]::UTF8.GetBytes($Text)
+    $Encoded = [System.Text.StringBuilder]::new()
+
+    foreach ($byte in $Utf8Bytes) {
+        if (($byte -ge 0x30 -and $byte -le 0x39) -or  # 0-9
+            ($byte -ge 0x41 -and $byte -le 0x5A) -or  # A-Z
+            ($byte -ge 0x61 -and $byte -le 0x7A) -or  # a-z
+            $byte -eq 0x2D -or $byte -eq 0x2E -or $byte -eq 0x5F -or $byte -eq 0x7E) {  # - . _ ~
+            [void]$Encoded.Append([char]$byte)
+        } else {
+            [void]$Encoded.Append(('%{0:X2}' -f $byte))
+        }
+    }
+
+    return $Encoded.ToString()
+}
+
+# ============================================================
 # MODULE LOAD MESSAGE
 # ============================================================
 # Display version when module is imported
-$script:ModuleVersion = "2025.12.27.13"
+$script:ModuleVersion = "2025.12.27.14"
 Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -609,5 +714,7 @@ Export-ModuleMember -Function @(
     'Complete-LevelScript',
     'Test-LevelAdmin',
     'Get-LevelDeviceInfo',
-    'Invoke-LevelApiCall'
+    'Invoke-LevelApiCall',
+    'Repair-LevelEmoji',
+    'Get-LevelUrlEncoded'
 )

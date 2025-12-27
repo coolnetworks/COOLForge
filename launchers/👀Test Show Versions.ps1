@@ -201,11 +201,18 @@ if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
 }
 
 # ============================================================
+# FIX EMOJI ENCODING
+# ============================================================
+# Level.io may corrupt UTF-8 emojis when deploying scripts.
+# Use library function to repair corrupted emojis.
+$ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
+
+# ============================================================
 # SCRIPT DOWNLOAD & EXECUTION
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.07"
+Write-Host "[*] Script Launcher v2025.12.27.08"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -219,8 +226,8 @@ $SafeScriptName = $ScriptToRun -replace '[<>:"/\\|?*]', '_'
 $ScriptPath = Join-Path -Path $ScriptsFolder -ChildPath $SafeScriptName
 
 # URL-encode the script name for the download URL
-$EncodedScriptName = [System.Uri]::EscapeDataString($ScriptToRun)
-$ScriptUrl = "$ScriptRepoBaseUrl/$EncodedScriptName"
+# Use library function for proper UTF-8 emoji handling
+$ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
 
 # Check for local version
 $ScriptNeedsUpdate = $false
