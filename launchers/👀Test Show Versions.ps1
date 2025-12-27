@@ -30,7 +30,7 @@ $ScriptToRun = "👀Test Show Versions.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.07
+    Launcher Version: 2025.12.27.08
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -60,7 +60,7 @@ $ScriptToRun = "👀Test Show Versions.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.07
+# Launcher Version: 2025.12.27.08
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
