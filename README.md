@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.11
+**Version:** 2025.12.27.12
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -383,6 +383,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.12 | 2025-12-27 | Output library version to console when module loads |
 | 2025.12.27.11 | 2025-12-27 | Add informative message when device is blocked by tag |
 | 2025.12.27.10 | 2025-12-27 | Switch to two-digit daily version format |
 | 2025.12.27.09 | 2025-12-27 | Add default blocking tag (❌) to template |

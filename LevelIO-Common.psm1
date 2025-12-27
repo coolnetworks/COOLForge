@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.27.11
+    Version:    2025.12.27.12
     Target:     Level.io RMM
     Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
 
@@ -590,6 +590,13 @@ function Invoke-LevelApiCall {
         return @{ Success = $false; Error = $_.Exception.Message }
     }
 }
+
+# ============================================================
+# MODULE LOAD MESSAGE
+# ============================================================
+# Display version when module is imported
+$script:ModuleVersion = "2025.12.27.12"
+Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
 # EXPORT MODULE MEMBERS
