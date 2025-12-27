@@ -18,7 +18,7 @@
     and the library is already loaded.
 
 .NOTES
-    Version:          2025.12.27.04
+    Version:          2025.12.27.05
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -37,7 +37,7 @@
 #>
 
 # ⛔Force Remove Anydesk
-# Version: 2025.12.27.04
+# Version: 2025.12.27.05
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -438,6 +438,10 @@ function Remove-AnyDeskScheduledTasks {
 Invoke-LevelScript -ScriptBlock {
 
     Write-LevelLog "Starting AnyDesk removal process"
+
+    # Log device info
+    $DeviceInfo = Get-LevelDeviceInfo
+    Write-LevelLog "Device: $($DeviceInfo.Hostname) | OS: $($DeviceInfo.OS) | Admin: $($DeviceInfo.IsAdmin)"
 
     # Check if admin
     if (-not (Test-LevelAdmin)) {
