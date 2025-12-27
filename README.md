@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.12
+**Version:** 2025.12.27.13
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -31,8 +31,10 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 |------|-------------|
 | `LevelIO-Common.psm1` | Core PowerShell module with all shared functions |
 | `Template_NewScript.ps1` | Template for creating new Level.io scripts |
+| `Script_Launcher.ps1` | Universal launcher that downloads and runs scripts from GitHub |
 | `Test_From_Level.ps1` | Test script to verify library on Level.io endpoints |
 | `Testing_script.ps1` | Local development test script |
+| `scripts/` | Folder containing ready-to-use automation scripts |
 
 ---
 
@@ -48,6 +50,8 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 |--------------|---------------|-------------|
 | `msp_scratch_folder` | `C:\ProgramData\MSP` | Persistent storage folder on endpoints |
 | `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | URL to download the library |
+| `script_repo_base_url` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts` | Base URL for scripts folder (used by Script Launcher) |
+| `script_to_run` | `Force Remove Anydesk.ps1` | Script filename to execute (used by Script Launcher) |
 
 ### Creating a New Script
 
@@ -102,6 +106,61 @@ https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
 
 [!] Could not check for updates (using local v2025.12.27.2)
 ```
+
+---
+
+## Script Launcher
+
+The Script Launcher provides a single deployment point for running any script from your GitHub repository. Instead of deploying individual scripts to Level.io, you deploy the launcher once and control which script runs via a custom field.
+
+### Benefits
+
+- **Single Deployment** — One script in Level.io, unlimited scripts in GitHub
+- **Automatic Updates** — Scripts update automatically when you push to GitHub
+- **No Redeployment** — Change scripts by updating the custom field value
+- **Centralized Management** — All scripts live in your repository
+
+### Setup
+
+1. Create the `script_repo_base_url` custom field in Level.io:
+   ```
+   https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts
+   ```
+
+2. Create the `script_to_run` custom field (or set as parameter per-job):
+   ```
+   Force Remove Anydesk.ps1
+   ```
+
+3. Deploy `Script_Launcher.ps1` to Level.io
+
+### Usage
+
+```powershell
+# In Level.io, set the parameter or custom field:
+$ScriptToRun = "Force Remove Anydesk.ps1"
+
+# Or use the custom field:
+$ScriptToRun = "{{cf_script_to_run}}"
+```
+
+### How It Works
+
+1. Launcher downloads and caches the library (same as template scripts)
+2. Launcher downloads the specified script from `scripts/` folder
+3. All Level.io variables are passed to the downloaded script
+4. Downloaded script executes with full access to library functions
+5. Script exit code is passed back to Level.io
+
+### Level.io Variables
+
+The launcher automatically passes these variables to downloaded scripts:
+- `$MspScratchFolder` — Scratch folder path
+- `$LibraryUrl` — Library download URL
+- `$DeviceHostname` — Device hostname
+- `$DeviceTags` — Device tags
+
+Add additional custom fields to the launcher as needed.
 
 ---
 
@@ -337,6 +396,8 @@ $Result = Invoke-LevelApiCall -Uri "https://api.example.com/tickets" `
 |----------|-------------|---------|
 | `{{cf_msp_scratch_folder}}` | Base path for MSP files | `C:\ProgramData\MSP` |
 | `{{cf_ps_module_library_source}}` | URL to download library | `https://raw.githubusercontent.com/.../LevelIO-Common.psm1` |
+| `{{cf_script_repo_base_url}}` | Base URL for scripts folder | `https://raw.githubusercontent.com/.../scripts` |
+| `{{cf_script_to_run}}` | Script filename for launcher | `Force Remove Anydesk.ps1` |
 | `{{cf_apikey}}` | API key custom field | `sk-xxxxx` |
 | `{{level_device_hostname}}` | Device hostname | `WORKSTATION01` |
 | `{{level_tag_names}}` | Comma-separated device tags | `Production, Windows 11` |
@@ -349,6 +410,9 @@ $Result = Invoke-LevelApiCall -Uri "https://api.example.com/tickets" `
 {{cf_msp_scratch_folder}}\
 ├── Libraries\
 │   └── LevelIO-Common.psm1      # Shared module (auto-downloaded)
+├── Scripts\
+│   ├── Force Remove Anydesk.ps1 # Cached scripts (auto-downloaded by launcher)
+│   └── Other Script.ps1
 └── lockfiles\
     ├── ScriptA.lock             # Active lockfiles
     └── ScriptB.lock
@@ -383,6 +447,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.13 | 2025-12-27 | Add Script Launcher for GitHub-based script deployment |
 | 2025.12.27.12 | 2025-12-27 | Output library version to console when module loads |
 | 2025.12.27.11 | 2025-12-27 | Add informative message when device is blocked by tag |
 | 2025.12.27.10 | 2025-12-27 | Switch to two-digit daily version format |

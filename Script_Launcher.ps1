@@ -1,0 +1,355 @@
+<#
+.SYNOPSIS
+    Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
+
+.DESCRIPTION
+    This launcher script provides a single deployment point for running scripts from your
+    GitHub repository. Instead of deploying individual scripts via Level.io, you deploy
+    this launcher once and it handles:
+
+    - Downloading the requested script from GitHub
+    - Version checking and automatic updates
+    - Backup/restore safety for corrupted downloads
+    - Passing all Level.io variables to the downloaded script
+    - Library auto-update (same as template scripts)
+
+    USAGE:
+    1. Deploy this script via Level.io
+    2. Set the $ScriptToRun parameter to the script filename (e.g., "Force Remove Anydesk.ps1")
+    3. All Level.io variables are automatically passed to the downloaded script
+
+    BENEFITS:
+    - Single script to maintain in Level.io
+    - Scripts update automatically from GitHub
+    - No need to redeploy when scripts change
+    - Centralized script management in your repository
+
+.NOTES
+    Launcher Version: 2025.12.27.01
+    Target Platform:  Level.io RMM
+    Exit Codes:       0 = Success | 1 = Alert (Failure)
+
+    Level.io Variables Used:
+    - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
+    - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
+    - {{cf_script_repo_base_url}}    : Base URL for scripts folder (e.g., https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts)
+    - {{level_device_hostname}}      : Device hostname from Level.io
+    - {{level_tag_names}}            : Comma-separated list of device tags
+
+    Copyright (c) COOLNETWORKS
+    https://coolnetworks.au
+    https://github.com/coolnetworks/LevelLib
+
+.LINK
+    https://github.com/coolnetworks/LevelLib
+
+.PARAMETER ScriptToRun
+    The filename of the script to download and execute from the scripts folder.
+    Example: "Force Remove Anydesk.ps1"
+
+.EXAMPLE
+    # In Level.io, set the parameter:
+    $ScriptToRun = "Force Remove Anydesk.ps1"
+
+    # The launcher will download from:
+    # {{cf_script_repo_base_url}}/Force%20Remove%20Anydesk.ps1
+#>
+
+# Script Launcher
+# Launcher Version: 2025.12.27.01
+# Target: Level.io
+# Exit 0 = Success | Exit 1 = Alert (Failure)
+#
+# Copyright (c) COOLNETWORKS
+# https://coolnetworks.au
+# https://github.com/coolnetworks/LevelLib
+$ErrorActionPreference = "SilentlyContinue"
+
+# ============================================================
+# CONFIGURATION - SET THIS IN LEVEL.IO
+# ============================================================
+# The script filename to download and run from the scripts folder
+$ScriptToRun = "{{cf_script_to_run}}"
+
+# ============================================================
+# LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
+# ============================================================
+# These variables will be passed to the downloaded script
+$MspScratchFolder = "{{cf_msp_scratch_folder}}"
+$LibraryUrl = "{{cf_ps_module_library_source}}"
+$ScriptRepoBaseUrl = "{{cf_script_repo_base_url}}"
+$DeviceHostname = "{{level_device_hostname}}"
+$DeviceTags = "{{level_tag_names}}"
+
+# Additional custom fields can be added here and they will be available
+# in the downloaded script's scope
+# $ApiKey = "{{cf_apikey}}"
+# $CustomField1 = "{{cf_custom_field_1}}"
+
+# ============================================================
+# LIBRARY AUTO-UPDATE & IMPORT
+# ============================================================
+# This section handles automatic downloading and updating of the
+# LevelIO-Common library from GitHub. It ensures scripts always
+# use the latest version while gracefully handling offline scenarios.
+
+# Define library storage location within the scratch folder
+$LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
+$LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "LevelIO-Common.psm1"
+
+# Create Libraries folder if it doesn't exist
+if (!(Test-Path $LibraryFolder)) {
+    New-Item -Path $LibraryFolder -ItemType Directory -Force | Out-Null
+}
+
+# Function to extract version number from content
+function Get-ModuleVersion {
+    param([string]$Content, [string]$Source = "unknown")
+    if ($Content -match 'Version:\s*([\d\.]+)') {
+        return $Matches[1]
+    }
+    throw "Could not parse version from $Source - invalid or corrupt content"
+}
+
+# Check if library already exists locally and get its version
+$NeedsUpdate = $false
+$LocalVersion = $null
+$LocalContent = $null
+$BackupPath = "$LibraryPath.backup"
+
+if (Test-Path $LibraryPath) {
+    try {
+        $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+        $LocalVersion = Get-ModuleVersion -Content $LocalContent -Source "local file"
+    }
+    catch {
+        Write-Host "[!] Local library corrupt - will redownload"
+        $NeedsUpdate = $true
+    }
+}
+else {
+    $NeedsUpdate = $true
+    Write-Host "[*] Library not found - downloading..."
+}
+
+# Attempt to fetch the latest version from GitHub
+try {
+    $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
+    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent -Source "remote URL"
+
+    if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
+        $NeedsUpdate = $true
+        if ($LocalVersion) {
+            Write-Host "[*] Library update available: $LocalVersion -> $RemoteVersion"
+        }
+    }
+
+    if ($NeedsUpdate) {
+        if ($LocalVersion -and $LocalContent) {
+            Set-Content -Path $BackupPath -Value $LocalContent -Force -ErrorAction Stop
+        }
+
+        Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
+
+        try {
+            $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+            $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
+            if (Test-Path $BackupPath) {
+                Remove-Item -Path $BackupPath -Force -ErrorAction SilentlyContinue
+            }
+            Write-Host "[+] Library updated to v$RemoteVersion"
+        }
+        catch {
+            if (Test-Path $BackupPath) {
+                Write-Host "[!] Downloaded library corrupt - restoring backup"
+                Move-Item -Path $BackupPath -Destination $LibraryPath -Force
+            }
+            throw "Downloaded library failed verification"
+        }
+    }
+}
+catch {
+    if (Test-Path $BackupPath) {
+        Move-Item -Path $BackupPath -Destination $LibraryPath -Force -ErrorAction SilentlyContinue
+    }
+
+    if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
+        Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
+        Write-Host "[X] Error: $($_.Exception.Message)"
+        exit 1
+    }
+    Write-Host "[!] Could not check for library updates (using local v$LocalVersion)"
+}
+
+# Import the library module
+$ModuleContent = Get-Content -Path $LibraryPath -Raw
+New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+
+# ============================================================
+# VALIDATE CONFIGURATION
+# ============================================================
+if ([string]::IsNullOrWhiteSpace($ScriptToRun) -or $ScriptToRun -eq "{{cf_script_to_run}}") {
+    Write-Host "[X] FATAL: No script specified. Set the 'cf_script_to_run' custom field or parameter."
+    exit 1
+}
+
+if ([string]::IsNullOrWhiteSpace($ScriptRepoBaseUrl) -or $ScriptRepoBaseUrl -eq "{{cf_script_repo_base_url}}") {
+    Write-Host "[X] FATAL: No script repository URL specified. Set the 'cf_script_repo_base_url' custom field."
+    exit 1
+}
+
+# ============================================================
+# SCRIPT DOWNLOAD & EXECUTION
+# ============================================================
+# Download the requested script from GitHub and execute it
+
+Write-Host "[*] Script Launcher v2025.12.27.01"
+Write-Host "[*] Preparing to run: $ScriptToRun"
+
+# Define script storage location
+$ScriptsFolder = Join-Path -Path $MspScratchFolder -ChildPath "Scripts"
+if (!(Test-Path $ScriptsFolder)) {
+    New-Item -Path $ScriptsFolder -ItemType Directory -Force | Out-Null
+}
+
+# Sanitize script name for filesystem (replace problematic characters)
+$SafeScriptName = $ScriptToRun -replace '[<>:"/\\|?*]', '_'
+$ScriptPath = Join-Path -Path $ScriptsFolder -ChildPath $SafeScriptName
+
+# URL-encode the script name for the download URL
+$EncodedScriptName = [System.Uri]::EscapeDataString($ScriptToRun)
+$ScriptUrl = "$ScriptRepoBaseUrl/$EncodedScriptName"
+
+# Check for local version
+$ScriptNeedsUpdate = $false
+$LocalScriptVersion = $null
+$LocalScriptContent = $null
+$ScriptBackupPath = "$ScriptPath.backup"
+
+if (Test-Path $ScriptPath) {
+    try {
+        $LocalScriptContent = Get-Content -Path $ScriptPath -Raw -ErrorAction Stop
+        $LocalScriptVersion = Get-ModuleVersion -Content $LocalScriptContent -Source "local script"
+    }
+    catch {
+        Write-Host "[!] Local script corrupt or no version - will redownload"
+        $ScriptNeedsUpdate = $true
+    }
+}
+else {
+    $ScriptNeedsUpdate = $true
+    Write-Host "[*] Script not cached - downloading..."
+}
+
+# Download script from GitHub
+try {
+    $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15).Content
+
+    # Try to get version, but don't require it for scripts
+    try {
+        $RemoteScriptVersion = Get-ModuleVersion -Content $RemoteScriptContent -Source "remote script"
+
+        if ($null -eq $LocalScriptVersion -or [version]$RemoteScriptVersion -gt [version]$LocalScriptVersion) {
+            $ScriptNeedsUpdate = $true
+            if ($LocalScriptVersion) {
+                Write-Host "[*] Script update available: $LocalScriptVersion -> $RemoteScriptVersion"
+            }
+        }
+    }
+    catch {
+        # Script doesn't have a version number - always update if we downloaded successfully
+        $ScriptNeedsUpdate = $true
+    }
+
+    if ($ScriptNeedsUpdate) {
+        # Backup working local copy before updating
+        if ($LocalScriptVersion -and $LocalScriptContent) {
+            Set-Content -Path $ScriptBackupPath -Value $LocalScriptContent -Force -ErrorAction Stop
+        }
+
+        # Write new version
+        Set-Content -Path $ScriptPath -Value $RemoteScriptContent -Force -ErrorAction Stop
+
+        # Verify the file was written correctly
+        try {
+            $VerifyScriptContent = Get-Content -Path $ScriptPath -Raw -ErrorAction Stop
+            if ($VerifyScriptContent.Length -lt 50) {
+                throw "Downloaded script appears to be empty or truncated"
+            }
+            # Success - remove backup
+            if (Test-Path $ScriptBackupPath) {
+                Remove-Item -Path $ScriptBackupPath -Force -ErrorAction SilentlyContinue
+            }
+            if ($RemoteScriptVersion) {
+                Write-Host "[+] Script updated to v$RemoteScriptVersion"
+            } else {
+                Write-Host "[+] Script downloaded successfully"
+            }
+        }
+        catch {
+            # New file is corrupt - restore backup
+            if (Test-Path $ScriptBackupPath) {
+                Write-Host "[!] Downloaded script corrupt - restoring backup"
+                Move-Item -Path $ScriptBackupPath -Destination $ScriptPath -Force
+            }
+            throw "Downloaded script failed verification"
+        }
+    }
+}
+catch {
+    # GitHub unreachable or download failed
+    if (Test-Path $ScriptBackupPath) {
+        Move-Item -Path $ScriptBackupPath -Destination $ScriptPath -Force -ErrorAction SilentlyContinue
+    }
+
+    if (!(Test-Path $ScriptPath)) {
+        Write-Host "[X] FATAL: Cannot download script and no local copy exists"
+        Write-Host "[X] URL: $ScriptUrl"
+        Write-Host "[X] Error: $($_.Exception.Message)"
+        exit 1
+    }
+    Write-Host "[!] Could not check for script updates (using cached version)"
+}
+
+# ============================================================
+# EXECUTE THE DOWNLOADED SCRIPT
+# ============================================================
+# The script is executed in a child scope with all Level.io variables available
+
+Write-Host "[*] Executing: $ScriptToRun"
+Write-Host "============================================================"
+
+# Read the script content
+$ScriptContent = Get-Content -Path $ScriptPath -Raw
+
+# Create a scriptblock that:
+# 1. Defines all Level.io variables in the script's scope
+# 2. Executes the downloaded script content
+$ExecutionBlock = @"
+# Level.io variables passed from launcher
+`$MspScratchFolder = '$($MspScratchFolder -replace "'", "''")'
+`$LibraryUrl = '$($LibraryUrl -replace "'", "''")'
+`$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
+`$DeviceTags = '$($DeviceTags -replace "'", "''")'
+
+# Additional custom fields can be added here
+# `$ApiKey = '$($ApiKey -replace "'", "''")'
+
+# The downloaded script content follows:
+$ScriptContent
+"@
+
+# Execute the script
+try {
+    $ScriptBlock = [scriptblock]::Create($ExecutionBlock)
+    & $ScriptBlock
+    $ScriptExitCode = $LASTEXITCODE
+    if ($null -eq $ScriptExitCode) { $ScriptExitCode = 0 }
+}
+catch {
+    Write-Host "[X] Script execution failed: $($_.Exception.Message)"
+    exit 1
+}
+
+# Pass through the script's exit code
+exit $ScriptExitCode
