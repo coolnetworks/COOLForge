@@ -30,7 +30,7 @@ $ScriptToRun = "Test Show Versions.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.05
+    Launcher Version: 2025.12.27.06
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -60,7 +60,7 @@ $ScriptToRun = "Test Show Versions.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.05
+# Launcher Version: 2025.12.27.06
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -195,17 +195,12 @@ if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
     exit 1
 }
 
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
-    Write-Host "[X] FATAL: Library URL not configured. Set the 'cf_ps_module_library_source' custom field."
-    exit 1
-}
-
 # ============================================================
 # SCRIPT DOWNLOAD & EXECUTION
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.05"
+Write-Host "[*] Script Launcher v2025.12.27.06"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
