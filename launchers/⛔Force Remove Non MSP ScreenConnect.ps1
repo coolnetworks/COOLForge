@@ -30,7 +30,7 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.08
+    Launcher Version: 2025.12.27.09
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -64,7 +64,7 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.08
+# Launcher Version: 2025.12.27.09
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -194,6 +194,24 @@ catch {
 # Import the library module
 $ModuleContent = Get-Content -Path $LibraryPath -Raw
 New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+
+# Verify critical functions are available - if not, force redownload
+if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) {
+    Write-Host "[!] Library missing critical functions - forcing redownload"
+    Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
+    try {
+        $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
+        Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
+        $ModuleContent = Get-Content -Path $LibraryPath -Raw
+        Remove-Module -Name "LevelIO-Common" -Force -ErrorAction SilentlyContinue
+        New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+        Write-Host "[+] Library redownloaded successfully"
+    }
+    catch {
+        Write-Host "[X] FATAL: Failed to redownload library: $($_.Exception.Message)"
+        exit 1
+    }
+}
 
 # ============================================================
 # VALIDATE CONFIGURATION
