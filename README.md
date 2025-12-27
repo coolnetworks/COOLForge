@@ -222,7 +222,7 @@ Complete-LevelScript -ExitCode 1 -Message "Database connection failed"
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `-ExitCode` | Int | No | `0` | Exit code (0 = success, 1 = failure) |
+| `-ExitCode` | Int | No | `0` | Exit code (0 = success, 1 = alert/failure) |
 | `-Message` | String | No | `"Script completed"` | Final log message |
 
 ---

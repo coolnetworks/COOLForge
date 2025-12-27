@@ -19,13 +19,13 @@
     using the same auto-update pattern as production scripts.
 
     TEST RESULTS:
-    - Exit 0: All tests passed
-    - Exit 1: One or more tests failed
+    - Exit 0: All tests passed (Success)
+    - Exit 1: One or more tests failed (Alert)
 
 .NOTES
     Version:          2025.12.27.12
     Target Platform:  Level.io RMM
-    Exit Codes:       0 = All Tests Passed | 1 = Tests Failed
+    Exit Codes:       0 = Success (All Tests Passed) | 1 = Alert (Tests Failed)
 
     This script is designed to run on Level.io managed endpoints.
     It uses Level.io template variables for configuration.
@@ -47,7 +47,7 @@
 # Version: 2025.12.27.12
 # Target: Level.io
 # Tests all library functions when deployed via Level.io
-# Exit 0 = All Tests Passed | Exit 1 = Tests Failed
+# Exit 0 = Success (All Tests Passed) | Exit 1 = Alert (Tests Failed)
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au

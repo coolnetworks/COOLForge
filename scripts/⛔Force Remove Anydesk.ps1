@@ -17,7 +17,7 @@
 .NOTES
     Version:          2025.12.27.03
     Target Platform:  Level.io RMM
-    Exit Codes:       0 = Success | 1 = Failure
+    Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used:
     - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
@@ -36,7 +36,7 @@
 # ⛔Force Remove Anydesk
 # Version: 2025.12.27.03
 # Target: Level.io
-# Exit 0 = Success | Exit 1 = Failure
+# Exit 0 = Success | Exit 1 = Alert (Failure)
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au

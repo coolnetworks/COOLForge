@@ -272,7 +272,7 @@ function Write-LevelLog {
     On completion (success or failure):
     - Logs the result
     - Removes the lockfile (unless -NoCleanup)
-    - Exits with appropriate code (0 = success, 1 = failure)
+    - Exits with appropriate code (0 = success, 1 = alert/failure)
 
 .PARAMETER ScriptBlock
     The code to execute. Use { } to define the script block.

@@ -21,13 +21,13 @@
     - Invoke-LevelApiCall    : REST API call functionality with Bearer auth
 
     TEST RESULTS:
-    - Exit 0: All tests passed (green output)
-    - Exit 1: One or more tests failed (red output)
+    - Exit 0: All tests passed - Success (green output)
+    - Exit 1: One or more tests failed - Alert (red output)
 
 .NOTES
     Version:          2025.12.27.11
     Target Platform:  Local development / PowerShell terminal
-    Exit Codes:       0 = All Tests Passed | 1 = Tests Failed
+    Exit Codes:       0 = Success (All Tests Passed) | 1 = Alert (Tests Failed)
 
     Run this script from the repository root to test local library changes
     before committing to GitHub.
@@ -51,7 +51,7 @@
 # Version: 2025.12.27.11
 # Target: Level.io
 # Tests all exported functions from the shared library
-# Exit 0 = All Tests Passed | Exit 1 = Tests Failed
+# Exit 0 = Success (All Tests Passed) | Exit 1 = Alert (Tests Failed)
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au
