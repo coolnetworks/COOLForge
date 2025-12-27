@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.27.17
+    Version:    2025.12.27.18
     Target:     Level.io RMM
     Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
 
@@ -636,9 +636,13 @@ function Repair-LevelEmoji {
 
     # Known emoji mappings: corrupted pattern -> correct Unicode
     # These patterns occur when UTF-8 bytes are interpreted as Windows-1252
+    # or double-encoded through different code pages
     $EmojiRepairs = @{
         # ⛔ Stop sign (U+26D4) - UTF-8: E2 9B 94
         "$([char]0xE2)$([char]0x9B)$([char]0x94)" = [char]0x26D4
+        # ⛔ Stop sign - Alternative corruption: Γ¢ö (CE 93 C2 A2 C3 B6 when URL decoded)
+        # This occurs when Level.io double-encodes or uses different code page
+        "$([char]0x0393)$([char]0x00A2)$([char]0x00F6)" = [char]0x26D4
         # ✅ Check mark (U+2705) - UTF-8: E2 9C 85
         "$([char]0xE2)$([char]0x9C)$([char]0x85)" = [char]0x2705
         # 👀 Eyes (U+1F440) - UTF-8: F0 9F 91 80
@@ -716,7 +720,7 @@ function Get-LevelUrlEncoded {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2025.12.27.17"
+$script:ModuleVersion = "2025.12.27.18"
 Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
