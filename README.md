@@ -32,10 +32,12 @@ LevelLib/
 ├── LevelIO-Common.psm1          # Core PowerShell module
 ├── scripts/                     # Ready-to-use automation scripts
 │   ├── ⛔Force Remove Anydesk.ps1
+│   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
 │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
 │   └── 👀Test Show Versions.ps1
 ├── launchers/                   # Pre-configured launchers (copy-paste to Level.io)
 │   ├── ⛔Force Remove Anydesk.ps1
+│   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
 │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
 │   └── 👀Test Show Versions.ps1
 ├── templates/                   # Templates for creating new scripts
@@ -60,6 +62,8 @@ LevelLib/
 |--------------|---------------|----------|-------------|
 | `msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
 | `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
+| `screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
+| `is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
 
 ### Creating a New Script
 
@@ -198,6 +202,7 @@ Scripts in the `scripts/` folder are ready to use:
 |--------|-------------|
 | `👀Test Show Versions.ps1` | Displays version info for all LevelLib components |
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
+| `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes ScreenConnect instances not matching your MSP's instance ID |
 | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs (TeamViewer, AnyDesk, etc.) |
 
 ### How It Works
