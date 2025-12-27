@@ -1,115 +1,106 @@
-# Level.io PowerShell Automation Library
+# LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.2
+**Version:** 2025.12.27.11
 
-A standardized PowerShell module for COOLNETWORKS Level.io RMM automation scripts.
+A standardized PowerShell module for Level.io RMM automation scripts.
 
-**Website:** [coolnetworks.au](https://coolnetworks.au)
+**Copyright:** [COOLNETWORKS](https://coolnetworks.au)
+**Repository:** [github.com/coolnetworks/LevelLib](https://github.com/coolnetworks/LevelLib)
 
 ---
 
 ## Overview
 
-This library provides a shared set of functions and routines for all Level.io automation scripts, eliminating code duplication and ensuring consistent behavior across your entire script portfolio.
+LevelLib provides a shared set of functions for Level.io automation scripts, eliminating code duplication and ensuring consistent behavior across your script portfolio.
 
 ### Key Features
 
-- **Tag Gate System** — Automatically skip execution on devices with blocking tags (e.g., `❌`)
+- **Tag Gate System** — Skip execution on devices with blocking tags
 - **Lockfile Management** — Prevent concurrent script execution with PID-based lockfiles
-- **Standardized Logging** — Consistent timestamped output with severity levels
-- **Error Handling** — Wrapped execution with automatic cleanup on success or failure
-- **API Helper** — Simplified REST API calls with bearer token authentication
+- **Standardized Logging** — Timestamped output with severity levels
+- **Error Handling** — Wrapped execution with automatic cleanup
+- **API Helper** — REST API calls with bearer token authentication
 - **Device Info** — Quick access to common system properties
+- **Auto-Update** — Scripts automatically download the latest library from GitHub
 
 ---
 
-## Architecture
+## Files
 
-```
-{{cf_msp_scratch_folder}}\
-│
-├── Libraries\
-│   └── LevelIO-Common.psm1      # Shared PowerShell module
-│
-└── lockfiles\
-    ├── ScriptA.lock             # Active lockfiles (auto-managed)
-    ├── ScriptB.lock
-    └── ...
-```
-
-| Component | Purpose |
-|-----------|---------|
-| `Libraries\` | Contains the shared module imported by all scripts |
-| `lockfiles\` | Stores active lockfiles to prevent concurrent runs |
-| `LevelIO-Common.psm1` | The core module with all shared functions |
-
----
-
-## Installation
-
-### Prerequisites
-
-- Level.io agent installed on target devices
-- Custom field `msp_scratch_folder` configured (e.g., `C:\ProgramData\MSP`)
-- PowerShell 5.1 or later
-
-### Deployment
-
-Deploy the library to all managed endpoints using a Level.io policy:
-
-```powershell
-# Deploy-LevelLibrary.ps1
-# Run once per device to install the shared library
-
-$MspScratchFolder = "{{cf_msp_scratch_folder}}"
-$LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
-$LibraryFile = Join-Path -Path $LibraryFolder -ChildPath "LevelIO-Common.psm1"
-
-# Create directory structure
-if (!(Test-Path $LibraryFolder)) {
-    New-Item -Path $LibraryFolder -ItemType Directory -Force | Out-Null
-}
-
-# Download from your hosted location
-$ModuleUrl = "https://your-storage-location/LevelIO-Common.psm1"
-Invoke-WebRequest -Uri $ModuleUrl -OutFile $LibraryFile -UseBasicParsing
-
-Write-Host "[✓] Library deployed successfully"
-exit 0
-```
-
-> **Tip:** Host the module file on Azure Blob Storage, AWS S3, or a private GitHub repository for easy version control and updates.
+| File | Description |
+|------|-------------|
+| `LevelIO-Common.psm1` | Core PowerShell module with all shared functions |
+| `Template_NewScript.ps1` | Template for creating new Level.io scripts |
+| `Test_From_Level.ps1` | Test script to verify library on Level.io endpoints |
+| `Testing_script.ps1` | Local development test script |
 
 ---
 
 ## Quick Start
 
-### Minimal Script Template
+### Prerequisites
+
+- Level.io agent installed on target devices
+- PowerShell 5.1 or later
+- Custom fields configured in Level.io:
+
+| Custom Field | Example Value | Description |
+|--------------|---------------|-------------|
+| `msp_scratch_folder` | `C:\ProgramData\MSP` | Persistent storage folder on endpoints |
+| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | URL to download the library |
+
+### Creating a New Script
+
+1. Copy `Template_NewScript.ps1`
+2. Rename to your script name
+3. Change `"YourScriptName"` to a unique identifier
+4. Add your code in the `Invoke-LevelScript` block
 
 ```powershell
-# MyScript.ps1
-# Target: Level.io
-# Exit 0 = Success | Exit 1 = Failure
-$ErrorActionPreference = "SilentlyContinue"
-
-# Import library
-$LibraryPath = Join-Path -Path "{{cf_msp_scratch_folder}}" -ChildPath "Libraries\LevelIO-Common.psm1"
-if (!(Test-Path $LibraryPath)) { Write-Host "[X] Library not found"; exit 1 }
-Import-Module $LibraryPath -Force
-
-# Initialize (handles tag gate + lockfile automatically)
 $Init = Initialize-LevelScript -ScriptName "MyScript" `
-                               -MspScratchFolder "{{cf_msp_scratch_folder}}" `
+                               -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname "{{level_device_hostname}}" `
-                               -DeviceTags "{{level_tag_names}}"
+                               -DeviceTags "{{level_tag_names}}" `
+                               -BlockingTags @("❌")
 
 if (-not $Init.Success) { exit 0 }
 
-# Execute with automatic error handling and cleanup
 Invoke-LevelScript -ScriptBlock {
     Write-LevelLog "Hello from MyScript!"
     # Your code here...
 }
+```
+
+---
+
+## Library Auto-Update
+
+Scripts using the template automatically download and update the library on each run using the URL configured in the `ps_module_library_source` custom field.
+
+**Default URL:**
+```
+https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
+```
+
+> **Tip:** Using a custom field allows you to:
+> - Fork the library and use your own repository
+> - Use a private GitHub repository with token authentication
+> - Host the library on your own infrastructure
+
+**Behavior:**
+- First run: Downloads and installs library
+- Subsequent runs: Checks for updates, downloads if newer version available
+- Offline: Uses cached local copy
+
+**Output Examples:**
+```
+[*] Library not found - downloading...
+[+] Library updated to v2025.12.27.2
+
+[*] Update available: 2025.12.27.1 -> 2025.12.27.2
+[+] Library updated to v2025.12.27.2
+
+[!] Could not check for updates (using local v2025.12.27.2)
 ```
 
 ---
@@ -127,7 +118,7 @@ $Init = Initialize-LevelScript -ScriptName "MyScript" `
                                -DeviceTags "{{level_tag_names}}"
 ```
 
-#### Parameters
+**Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -139,37 +130,17 @@ $Init = Initialize-LevelScript -ScriptName "MyScript" `
 | `-SkipTagCheck` | Switch | No | `$false` | Bypass tag gate check |
 | `-SkipLockFile` | Switch | No | `$false` | Don't create a lockfile |
 
-#### Return Values
+**Return Values:**
 
 ```powershell
 # Success
 @{ Success = $true; Reason = "Initialized" }
 
 # Blocked by tag
-@{ Success = $false; Reason = "TagBlocked"; Tag = "❌" }
+@{ Success = $false; Reason = "TagBlocked"; Tag = "BlockedTag" }
 
 # Already running
 @{ Success = $false; Reason = "AlreadyRunning"; PID = 1234 }
-```
-
-#### Examples
-
-```powershell
-# Standard initialization
-$Init = Initialize-LevelScript -ScriptName "CleanupTemp" `
-                               -MspScratchFolder "{{cf_msp_scratch_folder}}" `
-                               -DeviceTags "{{level_tag_names}}"
-
-# Multiple blocking tags
-$Init = Initialize-LevelScript -ScriptName "Maintenance" `
-                               -MspScratchFolder "{{cf_msp_scratch_folder}}" `
-                               -DeviceTags "{{level_tag_names}}" `
-                               -BlockingTags @("❌", "🚫", "SKIP")
-
-# Skip all checks (use cautiously)
-$Init = Initialize-LevelScript -ScriptName "QuickCheck" `
-                               -MspScratchFolder "{{cf_msp_scratch_folder}}" `
-                               -SkipTagCheck -SkipLockFile
 ```
 
 ---
@@ -183,31 +154,31 @@ Write-LevelLog "This is a message"
 Write-LevelLog "Something went wrong" -Level "ERROR"
 ```
 
-#### Parameters
+**Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `-Message` | String | Yes | — | The message to log |
 | `-Level` | String | No | `"INFO"` | Severity level |
 
-#### Log Levels
+**Log Levels:**
 
 | Level | Prefix | Use Case |
 |-------|--------|----------|
 | `INFO` | `[*]` | General information |
 | `WARN` | `[!]` | Warnings (non-fatal issues) |
 | `ERROR` | `[X]` | Errors and failures |
-| `SUCCESS` | `[✓]` | Successful completions |
+| `SUCCESS` | `[+]` | Successful completions |
 | `SKIP` | `[-]` | Skipped operations |
 | `DEBUG` | `[D]` | Debug/verbose output |
 
-#### Output Example
+**Output Example:**
 
 ```
-2025-01-15 14:32:01 [*] Starting cleanup process
-2025-01-15 14:32:02 [✓] Removed 15 temporary files
-2025-01-15 14:32:03 [!] Could not access C:\Locked\File.tmp
-2025-01-15 14:32:04 [X] Failed to clear browser cache
+2025-12-27 14:32:01 [*] Starting cleanup process
+2025-12-27 14:32:02 [+] Removed 15 temporary files
+2025-12-27 14:32:03 [!] Could not access C:\Locked\File.tmp
+2025-12-27 14:32:04 [X] Failed to clear browser cache
 ```
 
 ---
@@ -218,19 +189,19 @@ Wraps your main script logic with automatic error handling and cleanup.
 
 ```powershell
 Invoke-LevelScript -ScriptBlock {
-    # Your code here
     Write-LevelLog "Doing work..."
+    # Your code here
 }
 ```
 
-#### Parameters
+**Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `-ScriptBlock` | ScriptBlock | Yes | — | The code to execute |
 | `-NoCleanup` | Switch | No | `$false` | Don't remove lockfile on completion |
 
-#### Behavior
+**Behavior:**
 
 - Executes the script block
 - On success: logs completion, removes lockfile, exits with code `0`
@@ -243,14 +214,11 @@ Invoke-LevelScript -ScriptBlock {
 Manually complete the script with a custom exit code and message.
 
 ```powershell
-# Success
 Complete-LevelScript -ExitCode 0 -Message "All files processed"
-
-# Failure
 Complete-LevelScript -ExitCode 1 -Message "Database connection failed"
 ```
 
-#### Parameters
+**Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -267,7 +235,7 @@ Manually remove the current script's lockfile.
 Remove-LevelLockFile
 ```
 
-> **Note:** This is called automatically by `Invoke-LevelScript` and `Complete-LevelScript`. Only use directly if you need manual control.
+> **Note:** Called automatically by `Invoke-LevelScript` and `Complete-LevelScript`.
 
 ---
 
@@ -282,9 +250,7 @@ if (-not (Test-LevelAdmin)) {
 }
 ```
 
-#### Returns
-
-`$true` if running as administrator, `$false` otherwise.
+**Returns:** `$true` if running as administrator, `$false` otherwise.
 
 ---
 
@@ -297,7 +263,7 @@ $Info = Get-LevelDeviceInfo
 Write-LevelLog "Running on: $($Info.OS) ($($Info.OSVersion))"
 ```
 
-#### Returns
+**Returns:**
 
 ```powershell
 @{
@@ -319,28 +285,28 @@ Write-LevelLog "Running on: $($Info.OS) ($($Info.OSVersion))"
 Makes authenticated REST API calls with standardized error handling.
 
 ```powershell
-$Result = Invoke-LevelApiCall -Uri "https://api.level.io/v1/devices" `
+$Result = Invoke-LevelApiCall -Uri "https://api.example.com/endpoint" `
                               -ApiKey "{{cf_apikey}}" `
                               -Method "GET"
 
 if ($Result.Success) {
-    $Devices = $Result.Data
+    $Data = $Result.Data
 } else {
     Write-LevelLog "API Error: $($Result.Error)" -Level "ERROR"
 }
 ```
 
-#### Parameters
+**Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `-Uri` | String | Yes | — | Full API endpoint URL |
 | `-ApiKey` | String | Yes | — | Bearer token for authentication |
 | `-Method` | String | No | `"GET"` | HTTP method (GET, POST, PUT, DELETE, PATCH) |
-| `-Body` | Hashtable | No | — | Request body (automatically converted to JSON) |
+| `-Body` | Hashtable | No | — | Request body (converted to JSON) |
 | `-TimeoutSec` | Int | No | `30` | Request timeout in seconds |
 
-#### Returns
+**Returns:**
 
 ```powershell
 # Success
@@ -350,7 +316,7 @@ if ($Result.Success) {
 @{ Success = $false; Error = "Connection timed out" }
 ```
 
-#### POST Example
+**POST Example:**
 
 ```powershell
 $Result = Invoke-LevelApiCall -Uri "https://api.example.com/tickets" `
@@ -358,188 +324,58 @@ $Result = Invoke-LevelApiCall -Uri "https://api.example.com/tickets" `
                               -Method "POST" `
                               -Body @{
                                   title = "Automated Alert"
-                                  description = "Disk space low on $env:COMPUTERNAME"
+                                  description = "Disk space low"
                                   priority = "high"
                               }
 ```
 
 ---
 
-## Complete Script Template
+## Level.io Variables
 
-```powershell
-# ============================================================
-# [SCRIPT NAME]
-# Description: [What this script does]
-# Target: Level.io
-# Exit 0 = Success | Exit 1 = Failure
-# ============================================================
-$ErrorActionPreference = "SilentlyContinue"
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{{cf_msp_scratch_folder}}` | Base path for MSP files | `C:\ProgramData\MSP` |
+| `{{cf_ps_module_library_source}}` | URL to download library | `https://raw.githubusercontent.com/.../LevelIO-Common.psm1` |
+| `{{cf_apikey}}` | API key custom field | `sk-xxxxx` |
+| `{{level_device_hostname}}` | Device hostname | `WORKSTATION01` |
+| `{{level_tag_names}}` | Comma-separated device tags | `Production, Windows 11` |
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-$ScriptName = "MyScriptName"  # <-- Change this (used for lockfile)
+---
 
-# ============================================================
-# IMPORT SHARED LIBRARY
-# ============================================================
-$LibraryPath = Join-Path -Path "{{cf_msp_scratch_folder}}" -ChildPath "Libraries\LevelIO-Common.psm1"
-if (!(Test-Path $LibraryPath)) {
-    Write-Host "[X] FATAL: Shared library not found at $LibraryPath"
-    Write-Host "[!] Run the library deployment script first."
-    exit 1
-}
-Import-Module $LibraryPath -Force
+## Architecture
 
-# ============================================================
-# INITIALIZE
-# ============================================================
-$Init = Initialize-LevelScript -ScriptName $ScriptName `
-                               -MspScratchFolder "{{cf_msp_scratch_folder}}" `
-                               -DeviceHostname "{{level_device_hostname}}" `
-                               -DeviceTags "{{level_tag_names}}"
-
-if (-not $Init.Success) {
-    # Script was blocked (tag gate) or already running (lockfile)
-    # Reason is already logged by Initialize-LevelScript
-    exit 0
-}
-
-# ============================================================
-# MAIN SCRIPT LOGIC
-# ============================================================
-Invoke-LevelScript -ScriptBlock {
-
-    # --- Pre-flight Checks ---
-    $DeviceInfo = Get-LevelDeviceInfo
-    Write-LevelLog "Device: $($DeviceInfo.Hostname) | OS: $($DeviceInfo.OS)"
-    
-    if (-not $DeviceInfo.IsAdmin) {
-        throw "This script requires administrator privileges"
-    }
-
-    # --- Your Code Here ---
-    Write-LevelLog "Starting main operation..."
-    
-    # Example: Do some work
-    $TempFiles = Get-ChildItem -Path $env:TEMP -File -ErrorAction SilentlyContinue
-    Write-LevelLog "Found $($TempFiles.Count) files in temp folder"
-    
-    # Example: Conditional logging
-    if ($TempFiles.Count -gt 100) {
-        Write-LevelLog "Temp folder has excessive files" -Level "WARN"
-    }
-    
-    # Example: API call
-    # $ApiResult = Invoke-LevelApiCall -Uri "https://api.example.com/status" -ApiKey "{{cf_apikey}}"
-    
-    Write-LevelLog "Operation completed"
-}
+```
+{{cf_msp_scratch_folder}}\
+├── Libraries\
+│   └── LevelIO-Common.psm1      # Shared module (auto-downloaded)
+└── lockfiles\
+    ├── ScriptA.lock             # Active lockfiles
+    └── ScriptB.lock
 ```
 
 ---
 
-## Level.io Custom Fields Reference
+## Testing
 
-| Custom Field Variable | Description | Example Value |
-|-----------------------|-------------|---------------|
-| `{{cf_msp_scratch_folder}}` | Base path for MSP files | `C:\MSP` |
-| `{{cf_apikey}}` | API key for external services | `sk-xxxxx` |
-| `{{level_device_hostname}}` | Device hostname from Level.io | `WORKSTATION01` |
-| `{{level_tag_names}}` | Comma-separated device tags | `Production, Windows 11, ❌` |
+### Test on Level.io Endpoint
 
----
+Deploy `Test_From_Level.ps1` to a Level.io endpoint to verify the library works correctly.
 
-## Best Practices
+### Local Development Testing
 
-### Script Naming
-
-Use descriptive, unique names for `$ScriptName` to avoid lockfile collisions:
-
-```powershell
-# Good
-$ScriptName = "CleanupTempFiles"
-$ScriptName = "WindowsUpdate-Weekly"
-$ScriptName = "AnyDesk-Removal"
-
-# Bad (too generic, may collide)
-$ScriptName = "Cleanup"
-$ScriptName = "Script1"
-```
-
-### Error Handling
-
-Use `throw` inside `Invoke-LevelScript` to trigger a failure exit:
-
-```powershell
-Invoke-LevelScript -ScriptBlock {
-    $Result = Do-Something
-    
-    if (-not $Result) {
-        throw "Operation failed: expected result was null"
-    }
-}
-```
-
-### Logging Verbosity
-
-Be generous with logging — it helps with troubleshooting in Level.io:
-
-```powershell
-Write-LevelLog "Starting file cleanup in $TargetPath"
-Write-LevelLog "Found $($Files.Count) files to process"
-
-foreach ($File in $Files) {
-    Remove-Item $File.FullName -Force
-    Write-LevelLog "Removed: $($File.Name)" -Level "DEBUG"
-}
-
-Write-LevelLog "Cleanup complete: removed $($Files.Count) files" -Level "SUCCESS"
-```
-
-### Using Multiple Blocking Tags
-
-For scripts that should be skipped on various device states:
-
-```powershell
-$Init = Initialize-LevelScript -ScriptName "Maintenance" `
-                               -MspScratchFolder "{{cf_msp_scratch_folder}}" `
-                               -DeviceTags "{{level_tag_names}}" `
-                               -BlockingTags @("❌", "🔒", "DO-NOT-TOUCH", "Decommissioned")
-```
+Run `Testing_script.ps1` locally to test changes before committing.
 
 ---
 
-## Troubleshooting
+## Versioning
 
-### "Library not found" Error
+Format: `YYYY.MM.DD.N`
 
-**Cause:** The shared module hasn't been deployed to this device.
-
-**Solution:** Run the library deployment script on the device first.
-
-### Script Immediately Exits with Code 0
-
-**Possible Causes:**
-1. Device has a blocking tag (e.g., `❌`)
-2. Script is already running (lockfile exists with active PID)
-
-**Check:** Look at the script output for `[-]` prefixed messages indicating why it was skipped.
-
-### Stale Lockfile Blocking Execution
-
-**Cause:** Previous script run crashed without cleanup (rare).
-
-**Solution:** The library automatically detects stale lockfiles by checking if the PID is still running. If issues persist, manually delete files in `{{cf_msp_scratch_folder}}\lockfiles\`.
-
-### API Calls Failing
-
-**Check:**
-- Verify the API key custom field is correctly set
-- Ensure the endpoint URL is correct
-- Check network/firewall rules on the device
-- Review the error message in `$Result.Error`
+- `YYYY` = Year
+- `MM` = Month
+- `DD` = Day
+- `N` = Release number for that day
 
 ---
 
@@ -547,14 +383,28 @@ $Init = Initialize-LevelScript -ScriptName "Maintenance" `
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 2025.12.27.2 | 2025-12-27 | First public release - GitHub auto-update, removed deploy script |
-| 2025.12.27.1 | 2025-12-27 | Initial release |
+| 2025.12.27.11 | 2025-12-27 | Add informative message when device is blocked by tag |
+| 2025.12.27.10 | 2025-12-27 | Switch to two-digit daily version format |
+| 2025.12.27.09 | 2025-12-27 | Add default blocking tag (❌) to template |
+| 2025.12.27.08 | 2025-12-27 | Fix version regex to match .NOTES format |
+| 2025.12.27.07 | 2025-12-27 | Use New-Module for proper module context with execution policy bypass |
+| 2025.12.27.06 | 2025-12-27 | Fix execution policy bypass for module import on endpoints |
+| 2025.12.27.05 | 2025-12-27 | Fix encoding, use ASCII prefixes, empty default BlockingTags |
+| 2025.12.27.04 | 2025-12-27 | Library URL now configurable via custom field |
+| 2025.12.27.03 | 2025-12-27 | Added comprehensive code documentation |
+| 2025.12.27.02 | 2025-12-27 | First public release - GitHub auto-update |
+
+---
+
+## License
+
+MIT License with Attribution - Free to use with attribution to COOLNETWORKS.
+
+See [LICENSE](LICENSE) for details.
 
 ---
 
 ## Support
 
-For issues or feature requests, contact the COOLNETWORKS IT team.
-
-**Website:** [coolnetworks.au](https://coolnetworks.au)  
-**Maintained by:** COOLNETWORKS
+**Website:** [coolnetworks.au](https://coolnetworks.au)
+**Repository:** [github.com/coolnetworks/LevelLib](https://github.com/coolnetworks/LevelLib)
