@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.20
+**Version:** 2025.12.27.21
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -22,6 +22,8 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 - **API Helper** — REST API calls with bearer token authentication
 - **Device Info** — Quick access to common system properties
 - **Auto-Update** — Scripts automatically download the latest library from GitHub
+- **Emoji Encoding Repair** — Fixes UTF-8 emoji corruption from deployment systems
+- **Script Launcher** — Run scripts from GitHub without redeploying to Level.io
 
 ---
 
@@ -530,6 +532,107 @@ $Result = Invoke-LevelApiCall -Uri "https://api.example.com/tickets" `
 
 ---
 
+### Repair-LevelEmoji
+
+Repairs corrupted UTF-8 emojis in strings. Level.io and other deployment systems may corrupt UTF-8 emojis when deploying scripts. This function detects common corruption patterns and fixes them.
+
+```powershell
+$ScriptName = Repair-LevelEmoji -Text $ScriptName
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-Text` | String | Yes | The text string that may contain corrupted emojis |
+
+**Supported Emojis:**
+
+| Emoji | Name | Unicode |
+|-------|------|---------|
+| ⛔ | Stop sign | U+26D4 |
+| 👀 | Eyes | U+1F440 |
+| 🙏 | Folded hands | U+1F64F |
+| 🚨 | Police light | U+1F6A8 |
+| 🛑 | Stop sign octagon | U+1F6D1 |
+| ✅ | Check mark | U+2705 |
+| 🔚 | End arrow | U+1F51A |
+| 🆕 | New button | U+1F195 |
+
+**Example:**
+
+```powershell
+# The launcher uses this automatically to fix corrupted script names
+$ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
+```
+
+> **Note:** This function is called automatically by the Script Launcher after loading the library. You typically don't need to call it directly unless working with emoji-containing strings in your own scripts.
+
+---
+
+### Get-LevelUrlEncoded
+
+URL-encodes a string with proper UTF-8 handling for emojis. Unlike `[System.Uri]::EscapeDataString()`, this function correctly encodes UTF-8 bytes for use in URLs.
+
+```powershell
+$EncodedName = Get-LevelUrlEncoded -Text "👀Test Script.ps1"
+# Returns: %F0%9F%91%80Test%20Script.ps1
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-Text` | String | Yes | The text string to URL-encode |
+
+**Returns:** URL-encoded string safe for use in HTTP requests.
+
+**Example:**
+
+```powershell
+# Build a URL with an emoji-containing filename
+$ScriptUrl = "$BaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
+```
+
+> **Note:** This function is called automatically by the Script Launcher when downloading scripts. You typically don't need to call it directly unless building custom URLs.
+
+---
+
+## Emoji Handling
+
+### The Problem
+
+When Level.io deploys PowerShell scripts, it may corrupt UTF-8 encoded emojis. For example, the stop sign emoji `⛔` (UTF-8 bytes: `E2 9B 94`) can become corrupted into different character sequences depending on how the script is processed.
+
+### The Solution
+
+LevelLib provides two functions to handle this:
+
+1. **`Repair-LevelEmoji`** — Detects known corruption patterns and repairs them to the correct Unicode characters
+2. **`Get-LevelUrlEncoded`** — Properly URL-encodes strings with UTF-8 emojis for GitHub downloads
+
+### How It Works
+
+The Script Launcher automatically:
+1. Loads the library from GitHub
+2. Calls `Repair-LevelEmoji` on the script name to fix any corruption
+3. Uses `Get-LevelUrlEncoded` to build the correct download URL
+4. Downloads and executes the script
+
+This means you can use emojis in script names without worrying about encoding issues.
+
+### Adding New Emojis
+
+To add support for additional emojis, update the `$EmojiRepairs` hashtable in the `Repair-LevelEmoji` function in `LevelIO-Common.psm1`:
+
+```powershell
+# Get UTF-8 bytes: printf '🔥' | xxd -p  # Returns f09f94a5
+# Add to $EmojiRepairs hashtable:
+"$([char]0xF0)$([char]0x9F)$([char]0x94)$([char]0xA5)" = [char]::ConvertFromUtf32(0x1F525)
+```
+
+---
+
 ## Level.io Variables
 
 | Variable | Description | Example |
@@ -583,27 +686,21 @@ Format: `YYYY.MM.DD.N`
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 2025.12.27.20 | 2025-12-27 | Full release - all scripts use default URL fallback, documentation updated |
-| 2025.12.27.19 | 2025-12-27 | Library URL now optional - defaults to official repo if custom field not set |
-| 2025.12.27.18 | 2025-12-27 | Fix launcher validation - remove redundant library URL check after load |
-| 2025.12.27.17 | 2025-12-27 | Derive scripts URL from library URL - no separate custom field needed |
-| 2025.12.27.16 | 2025-12-27 | Move $ScriptToRun to first line of launcher for visibility |
-| 2025.12.27.15 | 2025-12-27 | Simplified launcher - set $ScriptToRun directly in script |
-| 2025.12.27.14 | 2025-12-27 | Expanded Script Launcher documentation with step-by-step guide |
-| 2025.12.27.13 | 2025-12-27 | Add Script Launcher for GitHub-based script deployment |
-| 2025.12.27.12 | 2025-12-27 | Output library version to console when module loads |
-| 2025.12.27.11 | 2025-12-27 | Add informative message when device is blocked by tag |
-| 2025.12.27.10 | 2025-12-27 | Switch to two-digit daily version format |
-| 2025.12.27.09 | 2025-12-27 | Add default blocking tag (❌) to template |
-| 2025.12.27.08 | 2025-12-27 | Fix version regex to match .NOTES format |
-| 2025.12.27.07 | 2025-12-27 | Use New-Module for proper module context with execution policy bypass |
-| 2025.12.27.06 | 2025-12-27 | Fix execution policy bypass for module import on endpoints |
-| 2025.12.27.05 | 2025-12-27 | Fix encoding, use ASCII prefixes, empty default BlockingTags |
-| 2025.12.27.04 | 2025-12-27 | Library URL now configurable via custom field |
-| 2025.12.27.03 | 2025-12-27 | Added comprehensive code documentation |
-| 2025.12.27.02 | 2025-12-27 | First public release - GitHub auto-update |
+| Version | Date | Component | Changes |
+|---------|------|-----------|---------|
+| 2025.12.27.21 | 2025-12-27 | README | Documentation update - comprehensive function reference, emoji handling guide |
+| 2025.12.27.15 | 2025-12-27 | Library | Add more emojis to Repair-LevelEmoji (🙏 🚨 🛑 ✅ 🔚 🆕) |
+| 2025.12.27.14 | 2025-12-27 | Library | Add Repair-LevelEmoji and Get-LevelUrlEncoded functions for emoji support |
+| 2025.12.27.08 | 2025-12-27 | Launcher | Use library functions for emoji repair and URL encoding |
+| 2025.12.27.20 | 2025-12-27 | All | Full release - all scripts use default URL fallback |
+| 2025.12.27.13 | 2025-12-27 | Library | Add ScreenConnect removal script with MSP whitelisting |
+| 2025.12.27.13 | 2025-12-27 | Library | Output library version to console when module loads |
+| 2025.12.27.07 | 2025-12-27 | Launcher | Add Script Launcher for GitHub-based script deployment |
+| 2025.12.27.11 | 2025-12-27 | Library | Add informative message when device is blocked by tag |
+| 2025.12.27.07 | 2025-12-27 | Library | Use New-Module for proper module context with execution policy bypass |
+| 2025.12.27.05 | 2025-12-27 | Library | Fix encoding, use ASCII prefixes, empty default BlockingTags |
+| 2025.12.27.04 | 2025-12-27 | Library | Library URL now configurable via custom field |
+| 2025.12.27.02 | 2025-12-27 | Library | First public release - GitHub auto-update |
 
 ---
 
