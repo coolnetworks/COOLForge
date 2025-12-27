@@ -30,14 +30,14 @@ $ScriptToRun = "Test Show Versions.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.04
+    Launcher Version: 2025.12.27.05
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used:
     - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
     - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
-    - {{cf_script_repo_base_url}}    : Base URL for scripts folder
+                                       (scripts URL is derived from this automatically)
     - {{level_device_hostname}}      : Device hostname from Level.io
     - {{level_tag_names}}            : Comma-separated list of device tags
 
@@ -60,7 +60,7 @@ $ScriptToRun = "Test Show Versions.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.04
+# Launcher Version: 2025.12.27.05
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -75,7 +75,6 @@ $ErrorActionPreference = "SilentlyContinue"
 # These variables will be passed to the downloaded script
 $MspScratchFolder = "{{cf_msp_scratch_folder}}"
 $LibraryUrl = "{{cf_ps_module_library_source}}"
-$ScriptRepoBaseUrl = "{{cf_script_repo_base_url}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
@@ -83,6 +82,11 @@ $DeviceTags = "{{level_tag_names}}"
 # in the downloaded script's scope
 # $ApiKey = "{{cf_apikey}}"
 # $CustomField1 = "{{cf_custom_field_1}}"
+
+# Derive scripts URL from library URL
+# Example: https://raw.githubusercontent.com/.../main/LevelIO-Common.psm1
+#       -> https://raw.githubusercontent.com/.../main/scripts
+$ScriptRepoBaseUrl = $LibraryUrl -replace '/[^/]+$', '/scripts'
 
 # ============================================================
 # LIBRARY AUTO-UPDATE & IMPORT
@@ -191,8 +195,8 @@ if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
     exit 1
 }
 
-if ([string]::IsNullOrWhiteSpace($ScriptRepoBaseUrl) -or $ScriptRepoBaseUrl -eq "{{cf_script_repo_base_url}}") {
-    Write-Host "[X] FATAL: No script repository URL specified. Set the 'cf_script_repo_base_url' custom field."
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+    Write-Host "[X] FATAL: Library URL not configured. Set the 'cf_ps_module_library_source' custom field."
     exit 1
 }
 
@@ -201,7 +205,7 @@ if ([string]::IsNullOrWhiteSpace($ScriptRepoBaseUrl) -or $ScriptRepoBaseUrl -eq 
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.04"
+Write-Host "[*] Script Launcher v2025.12.27.05"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.16
+**Version:** 2025.12.27.17
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -49,9 +49,7 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 | Custom Field | Example Value | Description |
 |--------------|---------------|-------------|
 | `msp_scratch_folder` | `C:\ProgramData\MSP` | Persistent storage folder on endpoints |
-| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | URL to download the library |
-| `script_repo_base_url` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts` | Base URL for scripts folder (used by Script Launcher) |
-| `script_to_run` | `Force Remove Anydesk.ps1` | Script filename to execute (used by Script Launcher) |
+| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | URL to download the library (scripts URL derived automatically) |
 
 ### Creating a New Script
 
@@ -137,10 +135,8 @@ Go to **Settings → Custom Fields** and create these fields:
 |------------|------|-------|
 | `msp_scratch_folder` | Text | `C:\ProgramData\MSP` |
 | `ps_module_library_source` | Text | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` |
-| `script_repo_base_url` | Text | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/scripts` |
-| `script_to_run` | Text | *(leave empty or set default)* |
 
-> **Note:** If using your own fork, replace `coolnetworks/LevelLib` with your repository path.
+> **Note:** The scripts URL is derived automatically from the library URL by replacing the filename with `scripts/`. If using your own fork, just update `ps_module_library_source` - no separate scripts URL needed.
 
 #### Step 2: Create Scripts in Level.io
 
@@ -517,9 +513,7 @@ $Result = Invoke-LevelApiCall -Uri "https://api.example.com/tickets" `
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `{{cf_msp_scratch_folder}}` | Base path for MSP files | `C:\ProgramData\MSP` |
-| `{{cf_ps_module_library_source}}` | URL to download library | `https://raw.githubusercontent.com/.../LevelIO-Common.psm1` |
-| `{{cf_script_repo_base_url}}` | Base URL for scripts folder | `https://raw.githubusercontent.com/.../scripts` |
-| `{{cf_script_to_run}}` | Script filename for launcher | `Force Remove Anydesk.ps1` |
+| `{{cf_ps_module_library_source}}` | URL to download library (scripts URL derived automatically) | `https://raw.githubusercontent.com/.../LevelIO-Common.psm1` |
 | `{{cf_apikey}}` | API key custom field | `sk-xxxxx` |
 | `{{level_device_hostname}}` | Device hostname | `WORKSTATION01` |
 | `{{level_tag_names}}` | Comma-separated device tags | `Production, Windows 11` |
@@ -569,6 +563,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2025.12.27.17 | 2025-12-27 | Derive scripts URL from library URL - no separate custom field needed |
 | 2025.12.27.16 | 2025-12-27 | Move $ScriptToRun to first line of launcher for visibility |
 | 2025.12.27.15 | 2025-12-27 | Simplified launcher - set $ScriptToRun directly in script |
 | 2025.12.27.14 | 2025-12-27 | Expanded Script Launcher documentation with step-by-step guide |
