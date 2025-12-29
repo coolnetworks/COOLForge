@@ -3,3 +3,6 @@
 
 # Custom field backups (may contain sensitive data)
 /backups/
+
+# Claude Code local settings
+.claude/
