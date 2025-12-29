@@ -686,6 +686,11 @@ function Repair-LevelEmoji {
         "$([char]0xF0)$([char]0x9F)$([char]0x86)$([char]0x95)" = [char]::ConvertFromUtf32(0x1F195)
         # 🆕 New button - Alt corruption: ≡ƒåò (predicted pattern)
         "$([char]0x2261)$([char]0x0192)$([char]0x00E5)$([char]0x00F2)" = [char]::ConvertFromUtf32(0x1F195)
+
+        # 🔧 Wrench (U+1F527) - UTF-8: F0 9F 94 A7
+        "$([char]0xF0)$([char]0x9F)$([char]0x94)$([char]0xA7)" = [char]::ConvertFromUtf32(0x1F527)
+        # 🔧 Wrench - Alt corruption: ≡ƒöº (predicted pattern)
+        "$([char]0x2261)$([char]0x0192)$([char]0x00F6)$([char]0x00BA)" = [char]::ConvertFromUtf32(0x1F527)
     }
 
     foreach ($corrupted in $EmojiRepairs.Keys) {

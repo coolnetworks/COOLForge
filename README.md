@@ -37,7 +37,12 @@ LevelLib/
 │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
 │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
 │   ├── 👀Test Show Versions.ps1
-│   └── 👀Test Variable Output.ps1
+│   ├── 👀Test Variable Output.ps1
+│   ├── 🔧Fix Windows 11 Services.ps1
+│   ├── 🔧Fix Windows 10 Services.ps1
+│   ├── 🔧Fix Windows 8.1 Services.ps1
+│   ├── 🔧Fix Windows 8 Services.ps1
+│   └── 🔧Fix Windows 7 Services.ps1
 ├── launchers/                   # Pre-configured launchers (copy-paste to Level.io)
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
@@ -47,7 +52,8 @@ LevelLib/
 ├── templates/                   # Templates for creating new scripts
 │   ├── Script_Template.ps1      # Template for standalone scripts
 │   └── Launcher_Template.ps1    # Base launcher template
-├── tools/                       # Development tools
+├── tools/                       # Development and setup tools
+│   ├── Setup-LevelLibCustomFields.ps1  # Interactive setup wizard for Level.io custom fields
 │   └── Update-MD5SUMS.ps1       # Generates MD5SUMS file for integrity verification
 └── testing/                     # Test scripts
     ├── Test_Local.ps1           # Local development testing
@@ -62,7 +68,7 @@ LevelLib/
 
 - Level.io agent installed on target devices
 - PowerShell 5.1 or later
-- Custom fields configured in Level.io:
+- Custom fields configured in Level.io (see [Automated Setup](#automated-setup) below)
 
 | Custom Field | Example Value | Required | Description |
 |--------------|---------------|----------|-------------|
@@ -71,6 +77,25 @@ LevelLib/
 | `pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag (defaults to latest from main branch) |
 | `screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
 | `is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
+
+### Automated Setup
+
+Use the setup wizard to automatically create and configure custom fields:
+
+```powershell
+# Download and run the setup script
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/tools/Setup-LevelLibCustomFields.ps1" -OutFile "Setup-LevelLibCustomFields.ps1"
+.\Setup-LevelLibCustomFields.ps1
+```
+
+The wizard will:
+1. Connect to Level.io using your API key
+2. Check which custom fields already exist
+3. Create any missing required fields
+4. Optionally configure version pinning
+5. Set up optional fields (ScreenConnect whitelisting, etc.)
+
+> **Note:** Get your API key from [Level.io Security Settings](https://app.level.io/security)
 
 ### Creating a New Script
 
@@ -254,6 +279,11 @@ Scripts in the `scripts/` folder are ready to use:
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
 | `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes ScreenConnect instances not matching your MSP's instance ID |
 | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs (TeamViewer, AnyDesk, etc.) |
+| `🔧Fix Windows 11 Services.ps1` | Restores Windows 11 services to default startup types |
+| `🔧Fix Windows 10 Services.ps1` | Restores Windows 10 services to default startup types |
+| `🔧Fix Windows 8.1 Services.ps1` | Restores Windows 8.1 services to default startup types |
+| `🔧Fix Windows 8 Services.ps1` | Restores Windows 8 services to default startup types |
+| `🔧Fix Windows 7 Services.ps1` | Restores Windows 7 services to default startup types |
 
 ### How It Works
 
@@ -606,6 +636,7 @@ $ScriptName = Repair-LevelEmoji -Text $ScriptName
 | ✅ | Check mark | U+2705 |
 | 🔚 | End arrow | U+1F51A |
 | 🆕 | New button | U+1F195 |
+| 🔧 | Wrench | U+1F527 |
 
 **Example:**
 

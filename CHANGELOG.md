@@ -12,10 +12,15 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
   - Pin devices to specific release tags (e.g., `v2025.12.29`)
   - Enables staged rollouts, rollback capability, and production stability
   - Launchers v2025.12.29.01 updated with version pinning support
+- **Setup wizard** (`tools/Setup-LevelLibCustomFields.ps1`)
+  - Interactive script to create and configure Level.io custom fields
+  - Uses Level.io API to check existing fields and create missing ones
+  - Suggests version pinning for stability
+  - Handles both required and optional fields
 
 ### Changed
 - Launcher template and all launchers updated to v2025.12.29.01
-- README updated with Version Pinning section
+- README updated with Version Pinning section and Automated Setup instructions
 
 ## [v2025.12.29] - 2025-12-29
 
