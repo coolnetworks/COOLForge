@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.27.20
+    Version:    2025.12.29.02
     Target:     Level.io RMM
     Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
 
@@ -749,26 +749,387 @@ function Get-LevelUrlEncoded {
 }
 
 # ============================================================
+# LEVEL.IO API FUNCTIONS
+# ============================================================
+
+<#
+.SYNOPSIS
+    Retrieves all groups (folders) from Level.io with automatic pagination.
+
+.DESCRIPTION
+    Fetches all groups from the Level.io API, automatically handling pagination
+    to retrieve complete results regardless of the total number of groups.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication. Typically "{{cf_apikey}}".
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of group objects from the Level.io API, or $null on failure.
+    Each group object contains: id, name, parent_id, and other properties.
+
+.EXAMPLE
+    $Groups = Get-LevelGroups -ApiKey "{{cf_apikey}}"
+    Write-LevelLog "Found $($Groups.Count) groups"
+
+.EXAMPLE
+    $Groups = Get-LevelGroups -ApiKey $ApiKey
+    $RootGroups = $Groups | Where-Object { -not $_.parent_id }
+#>
+function Get-LevelGroups {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AllGroups = @()
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/groups?limit=100"
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to fetch groups: $($Result.Error)" -Level "ERROR"
+            return $null
+        }
+
+        $AllGroups += $Result.Data.data
+
+        # Handle pagination
+        $StartingAfter = if ($Result.Data.has_more -and $Result.Data.data.Count -gt 0) {
+            $Result.Data.data[-1].id
+        } else {
+            $null
+        }
+    } while ($StartingAfter)
+
+    return $AllGroups
+}
+
+<#
+.SYNOPSIS
+    Retrieves devices from Level.io with optional filtering and pagination.
+
+.DESCRIPTION
+    Fetches devices from the Level.io API with support for:
+    - Filtering by group ID
+    - Including network interface data (for WOL, etc.)
+    - Automatic pagination for large result sets
+
+.PARAMETER ApiKey
+    Level.io API key for authentication. Typically "{{cf_apikey}}".
+
+.PARAMETER GroupId
+    Optional group ID to filter devices. If not specified, returns all devices.
+
+.PARAMETER IncludeNetworkInterfaces
+    Switch to include network interface data in the response.
+    Required for Wake-on-LAN functionality.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of device objects from the Level.io API, or $null on failure.
+
+.EXAMPLE
+    # Get all devices
+    $Devices = Get-LevelDevices -ApiKey "{{cf_apikey}}"
+
+.EXAMPLE
+    # Get devices in a specific group with network interfaces
+    $Devices = Get-LevelDevices -ApiKey $ApiKey -GroupId $GroupId -IncludeNetworkInterfaces
+
+.EXAMPLE
+    # Get devices from multiple groups
+    $AllDevices = @()
+    foreach ($GroupId in $GroupIds) {
+        $AllDevices += Get-LevelDevices -ApiKey $ApiKey -GroupId $GroupId
+    }
+#>
+function Get-LevelDevices {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$GroupId,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeNetworkInterfaces,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AllDevices = @()
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/devices?limit=100"
+
+        if ($GroupId) {
+            $Uri += "&group_id=$GroupId"
+        }
+
+        if ($IncludeNetworkInterfaces) {
+            $Uri += "&include_network_interfaces=true"
+        }
+
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to fetch devices: $($Result.Error)" -Level "ERROR"
+            return $null
+        }
+
+        $AllDevices += $Result.Data.data
+
+        # Handle pagination
+        $StartingAfter = if ($Result.Data.has_more -and $Result.Data.data.Count -gt 0) {
+            $Result.Data.data[-1].id
+        } else {
+            $null
+        }
+    } while ($StartingAfter)
+
+    return $AllDevices
+}
+
+<#
+.SYNOPSIS
+    Finds a device in Level.io by hostname.
+
+.DESCRIPTION
+    Searches for a device by its hostname, automatically handling pagination
+    to search through all devices if necessary.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication. Typically "{{cf_apikey}}".
+
+.PARAMETER Hostname
+    The hostname to search for. Case-sensitive exact match.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Device object if found, $null if not found or on error.
+
+.EXAMPLE
+    $Device = Find-LevelDevice -ApiKey "{{cf_apikey}}" -Hostname $env:COMPUTERNAME
+    if ($Device) {
+        Write-LevelLog "Found device in group: $($Device.group_id)"
+    }
+
+.EXAMPLE
+    # Find current device and get its group
+    $CurrentDevice = Find-LevelDevice -ApiKey $ApiKey -Hostname "{{level_device_hostname}}"
+#>
+function Find-LevelDevice {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Hostname,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/devices?limit=100"
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to search for device: $($Result.Error)" -Level "ERROR"
+            return $null
+        }
+
+        $Device = $Result.Data.data | Where-Object { $_.hostname -eq $Hostname } | Select-Object -First 1
+
+        if ($Device) {
+            return $Device
+        }
+
+        # Handle pagination
+        $StartingAfter = if ($Result.Data.has_more -and $Result.Data.data.Count -gt 0) {
+            $Result.Data.data[-1].id
+        } else {
+            $null
+        }
+    } while ($StartingAfter)
+
+    return $null
+}
+
+# ============================================================
+# WAKE-ON-LAN
+# ============================================================
+
+<#
+.SYNOPSIS
+    Sends a Wake-on-LAN magic packet to wake a device.
+
+.DESCRIPTION
+    Constructs and broadcasts a WOL magic packet to wake a device from sleep
+    or powered-off state. The magic packet consists of 6 bytes of 0xFF followed
+    by the target MAC address repeated 16 times (102 bytes total).
+
+    Packets are sent via UDP broadcast on port 9.
+
+.PARAMETER MacAddress
+    The MAC address of the target device. Accepts formats:
+    - Colon-separated: XX:XX:XX:XX:XX:XX
+    - Dash-separated: XX-XX-XX-XX-XX-XX
+    - No delimiter: XXXXXXXXXXXX
+
+.PARAMETER Attempts
+    Number of magic packets to send. Default: 10
+    Multiple attempts increase reliability on congested networks.
+
+.PARAMETER DelayMs
+    Milliseconds to wait between packet sends. Default: 500
+
+.OUTPUTS
+    [bool] $true if packets were sent successfully, $false on error.
+
+.EXAMPLE
+    $Success = Send-LevelWakeOnLan -MacAddress "AA:BB:CC:DD:EE:FF"
+    if ($Success) {
+        Write-LevelLog "WOL packet sent"
+    }
+
+.EXAMPLE
+    # Send with more attempts for unreliable network
+    Send-LevelWakeOnLan -MacAddress $Mac -Attempts 20 -DelayMs 250
+
+.NOTES
+    - Device must have WOL enabled in BIOS/UEFI
+    - Device must be on the same broadcast domain (subnet)
+    - Some NICs require WOL to be enabled in device properties
+#>
+function Send-LevelWakeOnLan {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$MacAddress,
+
+        [Parameter(Mandatory = $false)]
+        [int]$Attempts = 10,
+
+        [Parameter(Mandatory = $false)]
+        [int]$DelayMs = 500
+    )
+
+    # Normalize MAC address by removing delimiters
+    $CleanMac = $MacAddress -replace '[:-]', ''
+
+    if ($CleanMac.Length -ne 12) {
+        Write-LevelLog "Invalid MAC address: $MacAddress" -Level "WARN"
+        return $false
+    }
+
+    try {
+        # Convert MAC string to byte array
+        $MacBytes = [byte[]]::new(6)
+        for ($i = 0; $i -lt 6; $i++) {
+            $MacBytes[$i] = [Convert]::ToByte($CleanMac.Substring($i * 2, 2), 16)
+        }
+
+        # Build magic packet: 6 bytes of 0xFF + MAC repeated 16 times = 102 bytes
+        $MagicPacket = [byte[]]::new(102)
+
+        # First 6 bytes are 0xFF
+        for ($i = 0; $i -lt 6; $i++) {
+            $MagicPacket[$i] = 0xFF
+        }
+
+        # Repeat MAC address 16 times
+        for ($i = 0; $i -lt 16; $i++) {
+            [Array]::Copy($MacBytes, 0, $MagicPacket, 6 + ($i * 6), 6)
+        }
+
+        # Broadcast via UDP port 9
+        $UdpClient = New-Object System.Net.Sockets.UdpClient
+        $UdpClient.Connect([System.Net.IPAddress]::Broadcast, 9)
+
+        for ($i = 1; $i -le $Attempts; $i++) {
+            $UdpClient.Send($MagicPacket, $MagicPacket.Length) | Out-Null
+            if ($i -lt $Attempts) {
+                Start-Sleep -Milliseconds $DelayMs
+            }
+        }
+
+        $UdpClient.Close()
+        return $true
+    }
+    catch {
+        Write-LevelLog "Failed to send WOL packet: $($_.Exception.Message)" -Level "ERROR"
+        return $false
+    }
+}
+
+# ============================================================
 # MODULE LOAD MESSAGE
 # ============================================================
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2025.12.27.20"
+$script:ModuleVersion = "2025.12.29.02"
 Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
 
 # ============================================================
 # EXPORT MODULE MEMBERS
 # ============================================================
 Export-ModuleMember -Function @(
+    # Initialization & Execution
     'Initialize-LevelScript',
-    'Write-LevelLog',
     'Invoke-LevelScript',
-    'Remove-LevelLockFile',
     'Complete-LevelScript',
+    'Remove-LevelLockFile',
+
+    # Logging
+    'Write-LevelLog',
+
+    # Device & System Info
     'Test-LevelAdmin',
     'Get-LevelDeviceInfo',
+
+    # API Helpers
     'Invoke-LevelApiCall',
+    'Get-LevelGroups',
+    'Get-LevelDevices',
+    'Find-LevelDevice',
+
+    # Wake-on-LAN
+    'Send-LevelWakeOnLan',
+
+    # Text Processing
     'Repair-LevelEmoji',
     'Get-LevelUrlEncoded'
 )
