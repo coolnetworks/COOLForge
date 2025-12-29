@@ -1,6 +1,6 @@
 # Variables Reference
 
-This document covers Level.io variables used by COOLForgeLib and how to set automation variables from scripts.
+This document covers Level.io variables used by COOLForge_Lib and how to set automation variables from scripts.
 
 ---
 
@@ -15,7 +15,7 @@ This document covers Level.io variables used by COOLForgeLib and how to set auto
 
 ## Level.io Custom Fields
 
-These custom fields are used by COOLForgeLib scripts:
+These custom fields are used by COOLForge_Lib scripts:
 
 | Variable | Description | Required |
 |----------|-------------|----------|

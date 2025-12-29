@@ -1,6 +1,6 @@
 # Emoji Handling
 
-COOLForgeLib includes special handling for UTF-8 emojis in script names, which can become corrupted during deployment.
+COOLForge_Lib includes special handling for UTF-8 emojis in script names, which can become corrupted during deployment.
 
 ---
 
@@ -17,7 +17,7 @@ When Level.io deploys PowerShell scripts, it may corrupt UTF-8 encoded emojis. F
 
 ## The Solution
 
-COOLForgeLib provides two functions to handle this:
+COOLForge_Lib provides two functions to handle this:
 
 1. **`Repair-LevelEmoji`** — Detects known corruption patterns and repairs them to the correct Unicode characters
 2. **`Get-LevelUrlEncoded`** — Properly URL-encodes strings with UTF-8 emojis for GitHub downloads

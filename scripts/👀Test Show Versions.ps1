@@ -82,7 +82,7 @@ function Write-TestResult {
 # ============================================================
 Write-Host ""
 Write-Host "========================================"
-Write-Host "COOLForgeLib Test Suite & Version Info"
+Write-Host "COOLForge_Lib Test Suite & Version Info"
 Write-Host "Running via Script Launcher"
 Write-Host "========================================"
 Write-Host ""

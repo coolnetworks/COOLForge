@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to COOLForgeLib will be documented in this file.
+All notable changes to COOLForge_Lib will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.DD.N).
@@ -65,7 +65,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 ## [v2025.12.27-initial] - 2025-12-27
 
 ### Added
-- Initial release of COOLForgeLib
+- Initial release of COOLForge_Lib
 - **Core library** (`COOLForge-Common.psm1`) with functions:
   - `Initialize-LevelScript` - Tag gate system, lockfile management
   - `Write-LevelLog` - Standardized timestamped logging

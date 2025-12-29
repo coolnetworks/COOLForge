@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Interactive setup script for COOLForgeLib custom fields in Level.io.
+    Interactive setup script for COOLForge_Lib custom fields in Level.io.
 
 .DESCRIPTION
-    This script helps you configure the required custom fields for COOLForgeLib in your
+    This script helps you configure the required custom fields for COOLForge_Lib in your
     Level.io account. It will:
 
     1. Authenticate with the Level.io API using your API key
@@ -67,7 +67,7 @@ Import-Module $ModulePath -Force
 # CONFIGURATION
 # ============================================================
 
-$Script:ConfigFileName = ".COOLForgeLib-setup.json"
+$Script:ConfigFileName = ".COOLForge_Lib-setup.json"
 $Script:ConfigPath = Join-Path $PSScriptRoot $Script:ConfigFileName
 
 # MSP name (set after prompting user)
@@ -127,9 +127,13 @@ $Script:OptionalFields = @(
 # MAIN SCRIPT
 # ============================================================
 
-Write-Header "COOLForgeLib Custom Fields Setup"
+Write-Header "COOLForge_Lib Custom Fields Setup"
 
-Write-Host "This wizard will help you configure the custom fields required for COOLForgeLib."
+Write-Host "This wizard will help you configure the custom fields required for COOLForge_Lib in Level.io."
+Write-Host ""
+Write-Host "For new users:      Create and configure the required custom fields."
+Write-Host "For existing users: Choose which version to run by default (version pinning)."
+Write-Host ""
 Write-Host "You'll need a Level.io API key with permission to manage custom fields."
 Write-Host ""
 Write-Host "Get your API key at: https://app.level.io/security" -ForegroundColor Cyan
@@ -526,7 +530,7 @@ foreach ($Field in $Script:OptionalFields) {
 # Summary
 Write-Header "Setup Complete"
 
-Write-Host "Your COOLForgeLib custom fields are configured!" -ForegroundColor Green
+Write-Host "Your COOLForge_Lib custom fields are configured!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "  1. Deploy a launcher script from the 'launchers/' folder"

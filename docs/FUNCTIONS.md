@@ -1,4 +1,4 @@
-# COOLForgeLib Function Reference
+# COOLForge_Lib Function Reference
 
 This document provides detailed documentation for all functions exported by the COOLForge-Common module.
 

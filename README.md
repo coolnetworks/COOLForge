@@ -1,4 +1,4 @@
-# COOLForgeLib - Level.io PowerShell Automation Library
+# COOLForge_Lib - Level.io PowerShell Automation Library
 
 **Version:** 2025.12.29.02
 
@@ -11,7 +11,7 @@ A standardized PowerShell module for Level.io RMM automation scripts.
 
 ## Overview
 
-COOLForgeLib provides a shared set of functions for Level.io automation scripts, eliminating code duplication and ensuring consistent behavior across your script portfolio.
+COOLForge_Lib provides a shared set of functions for Level.io automation scripts, eliminating code duplication and ensuring consistent behavior across your script portfolio.
 
 ### Key Features
 
@@ -118,7 +118,7 @@ Invoke-LevelScript -ScriptBlock {
 
 | Script | Description |
 |--------|-------------|
-| `👀Test Show Versions.ps1` | Displays version info for all COOLForgeLib components |
+| `👀Test Show Versions.ps1` | Displays version info for all COOLForge_Lib components |
 | `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
 | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs |
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |

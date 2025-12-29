@@ -21,7 +21,7 @@ $LevelApiBase = "https://api.level.io/v2"
 # LOAD SAVED API KEY
 # ============================================================
 
-$ConfigPath = Join-Path $PSScriptRoot ".COOLForgeLib-setup.json"
+$ConfigPath = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
 if (-not $ApiKey -and (Test-Path $ConfigPath)) {
     try {
         $Config = Get-Content $ConfigPath -Raw | ConvertFrom-Json

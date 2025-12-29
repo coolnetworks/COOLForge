@@ -1,10 +1,10 @@
 # Release Process
 
-This document outlines the steps for creating a new COOLForgeLib release.
+This document outlines the steps for creating a new COOLForge_Lib release.
 
 ## Version Format
 
-COOLForgeLib uses [Calendar Versioning](https://calver.org/): `YYYY.MM.DD.NN`
+COOLForge_Lib uses [Calendar Versioning](https://calver.org/): `YYYY.MM.DD.NN`
 - `YYYY.MM.DD` = Release date
 - `NN` = Release number for that day (01, 02, etc.)
 
@@ -18,7 +18,7 @@ Verify all PowerShell files parse without errors:
 
 ```powershell
 $errors = @()
-Get-ChildItem -Path "E:\COOLForgeLib" -Recurse -Filter "*.ps1" | ForEach-Object {
+Get-ChildItem -Path "E:\COOLForge" -Recurse -Filter "*.ps1" | ForEach-Object {
     $parseErrors = $null
     $null = [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$parseErrors)
     if ($parseErrors) {
@@ -77,7 +77,7 @@ Run the update script or generate manually:
 # Or manually
 $files = @("COOLForge-Common.psm1") + (Get-ChildItem "scripts/*.ps1" | ForEach-Object { "scripts/$($_.Name)" })
 $output = @(
-    "# MD5SUMS - Checksums for COOLForgeLib files"
+    "# MD5SUMS - Checksums for COOLForge_Lib files"
     "# Format: MD5_HASH  FILENAME"
     "# Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
     "#"

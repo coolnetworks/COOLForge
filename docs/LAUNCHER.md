@@ -46,7 +46,7 @@ Go to **Settings → Custom Fields** and create these fields:
 | `CoolForge_msp_scratch_folder` | Text | `C:\ProgramData\MSP` | **Yes** |
 | `CoolForge_ps_module_library_source` | Text | `https://raw.githubusercontent.com/...` | No (defaults to official repo) |
 
-> **Note:** The `CoolForge_ps_module_library_source` field is optional - if not set, scripts use the official COOLForgeLib repository. Set this field only if you're using a fork or private repository.
+> **Note:** The `CoolForge_ps_module_library_source` field is optional - if not set, scripts use the official COOLForge_Lib repository. Set this field only if you're using a fork or private repository.
 
 ### Step 2: Create Scripts in Level.io
 
@@ -98,7 +98,7 @@ Scripts in the `scripts/` folder are ready to use:
 
 | Script | Description |
 |--------|-------------|
-| `👀Test Show Versions.ps1` | Displays version info for all COOLForgeLib components |
+| `👀Test Show Versions.ps1` | Displays version info for all COOLForge_Lib components |
 | `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
 | `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes ScreenConnect instances not matching your MSP's instance ID |

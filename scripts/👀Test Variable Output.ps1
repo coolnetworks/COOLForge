@@ -128,7 +128,7 @@ if ((Should-OutputVariable "test_string") -or (Should-OutputVariable "test_hostn
     Write-Host "------------------------------------------------------------"
 
     if (Should-OutputVariable "test_string") {
-        $SimpleString = "Hello from COOLForgeLib"
+        $SimpleString = "Hello from COOLForge_Lib"
         Write-Host "Setting test_string = $SimpleString"
         Write-Output "{{test_string=$SimpleString}}"
         $VariablesSet += "test_string"
@@ -309,7 +309,7 @@ if ((Should-OutputVariable "test_path") -or (Should-OutputVariable "test_spaced"
     Write-Host "------------------------------------------------------------"
 
     if (Should-OutputVariable "test_path") {
-        $PathValue = "C:\Program Files\COOLForgeLib"
+        $PathValue = "C:\Program Files\COOLForge_Lib"
         Write-Host "Setting test_path = $PathValue"
         Write-Output "{{test_path=$PathValue}}"
         $VariablesSet += "test_path"

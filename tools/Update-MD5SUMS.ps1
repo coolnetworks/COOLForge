@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Regenerates the MD5SUMS file for COOLForgeLib.
+    Regenerates the MD5SUMS file for COOLForge_Lib.
 
 .DESCRIPTION
     This script scans all downloadable files (library and scripts) and generates
@@ -24,7 +24,7 @@ $ErrorActionPreference = "Stop"
 # Get repository root (parent of tools folder)
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 
-Write-Host "[*] Generating MD5SUMS for COOLForgeLib" -ForegroundColor Cyan
+Write-Host "[*] Generating MD5SUMS for COOLForge_Lib" -ForegroundColor Cyan
 Write-Host "[*] Repository: $RepoRoot" -ForegroundColor Gray
 
 # Files to checksum (relative to repo root)
@@ -42,7 +42,7 @@ if (Test-Path $ScriptsFolder) {
 
 # Generate checksums
 $Checksums = @()
-$Checksums += "# MD5SUMS - Checksums for COOLForgeLib files"
+$Checksums += "# MD5SUMS - Checksums for COOLForge_Lib files"
 $Checksums += "# Format: MD5_HASH  FILENAME"
 $Checksums += "# Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 $Checksums += "#"

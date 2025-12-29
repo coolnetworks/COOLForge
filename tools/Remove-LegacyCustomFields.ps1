@@ -54,7 +54,7 @@ else {
 }
 
 # Configuration
-$Script:ConfigFileName = ".COOLForgeLib-setup.json"
+$Script:ConfigFileName = ".COOLForge_Lib-setup.json"
 $Script:ConfigPath = Join-Path $PSScriptRoot $Script:ConfigFileName
 
 # Legacy fields to remove

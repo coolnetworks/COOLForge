@@ -677,7 +677,7 @@ function Import-Backup {
 
         if ($Path -match '\.zip$') {
             # Extract from zip to temp, read, then cleanup
-            $TempDir = Join-Path $env:TEMP "coolforgelib_backup_$(Get-Random)"
+            $TempDir = Join-Path $env:TEMP "coolforge_lib_backup_$(Get-Random)"
             New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
 
             Expand-Archive -Path $Path -DestinationPath $TempDir -Force -ErrorAction Stop
@@ -988,7 +988,7 @@ function Get-SavedConfig {
     )
 
     if ([string]::IsNullOrWhiteSpace($Path)) {
-        $Path = Join-Path $PSScriptRoot ".COOLForgeLib-setup.json"
+        $Path = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
     }
 
     if (Test-Path $Path) {
@@ -1019,7 +1019,7 @@ function Save-Config {
     )
 
     if ([string]::IsNullOrWhiteSpace($Path)) {
-        $Path = Join-Path $PSScriptRoot ".COOLForgeLib-setup.json"
+        $Path = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
     }
 
     try {
@@ -1081,7 +1081,7 @@ function Get-GitHubReleases {
     $Uri = "https://api.github.com/repos/$Script:GitHubRepo/releases"
     $Headers = @{
         "Accept"     = "application/vnd.github.v3+json"
-        "User-Agent" = "COOLForgeLib-Setup"
+        "User-Agent" = "COOLForge_Lib-Setup"
     }
 
     try {

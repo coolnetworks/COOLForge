@@ -108,7 +108,7 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
 } elseif ($UsePinnedVersion) {
     # Custom URL provided but version pinning requested - replace branch in URL
     # Pattern: .../coolnetworks/COOLForge/main/... -> .../coolnetworks/COOLForge/$PinnedVersion/...
-    $LibraryUrl = $LibraryUrl -replace '/COOLForgeLib/[^/]+/', "/COOLForgeLib/$PinnedVersion/"
+    $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
 
 # Additional custom fields can be added here and they will be available

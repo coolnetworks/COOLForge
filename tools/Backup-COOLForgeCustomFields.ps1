@@ -113,7 +113,7 @@ Import-Module $ModulePath -Force
 # CONFIGURATION
 # ============================================================
 
-$Script:ConfigPath = Join-Path $PSScriptRoot ".COOLForgeLib-setup.json"
+$Script:ConfigPath = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
 $Script:ResolvedApiKey = $null
 
 # Default backups folder to repo root's backups folder

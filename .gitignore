@@ -1,5 +1,5 @@
-# COOLForgeLib setup config (contains encrypted API key)
-.COOLForgeLib-setup.json
+# COOLForge_Lib setup config (contains encrypted API key)
+.COOLForge_Lib-setup.json
 
 # Custom field backups (may contain sensitive data)
 /backups/

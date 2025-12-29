@@ -40,11 +40,11 @@
     https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
-    # Run from PowerShell terminal in the COOLForgeLib folder:
+    # Run from PowerShell terminal in the COOLForge_Lib folder:
     .\Testing_script.ps1
 
     # Or with explicit path:
-    powershell -ExecutionPolicy Bypass -File "C:\path\to\COOLForgeLib\Testing_script.ps1"
+    powershell -ExecutionPolicy Bypass -File "C:\path\to\COOLForge_Lib\Testing_script.ps1"
 #>
 
 # COOLForge-Common Library Test Script
