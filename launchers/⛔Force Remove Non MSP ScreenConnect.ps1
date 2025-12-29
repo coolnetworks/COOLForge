@@ -1,7 +1,7 @@
 # ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
+$ScriptToRun = "👀Test Show Versions.ps1"
 # ============================================================
 
 <#
@@ -30,7 +30,7 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.10
+    Launcher Version: 2025.12.27.11
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -40,10 +40,6 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
                                        (scripts URL is derived from this automatically)
     - {{level_device_hostname}}      : Device hostname from Level.io
     - {{level_tag_names}}            : Comma-separated list of device tags
-
-    Additional Custom Fields for ScreenConnect:
-    - {{cf_screenconnect_instance_id}} : Your MSP's ScreenConnect instance ID to whitelist
-    - {{cf_is_screenconnect_server}}   : Set to "true" if device hosts ScreenConnect server
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
@@ -64,7 +60,7 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.09
+# Launcher Version: 2025.12.27.11
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -87,14 +83,17 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1"
 }
 
-# ScreenConnect-specific custom fields
-$ScreenConnectInstanceId = "{{cf_screenconnect_instance_id}}"
-$IsScreenConnectServer = "{{cf_is_screenconnect_server}}"
+# Additional custom fields can be added here and they will be available
+# in the downloaded script's scope
+# $ApiKey = "{{cf_apikey}}"
+# $CustomField1 = "{{cf_custom_field_1}}"
 
-# Derive scripts URL from library URL
+# Derive base URL and scripts URL from library URL
 # Example: https://raw.githubusercontent.com/.../main/LevelIO-Common.psm1
 #       -> https://raw.githubusercontent.com/.../main/scripts
-$ScriptRepoBaseUrl = $LibraryUrl -replace '/[^/]+$', '/scripts'
+$RepoBaseUrl = $LibraryUrl -replace '/[^/]+$', ''
+$ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
+$MD5SumsUrl = "$RepoBaseUrl/MD5SUMS"
 
 # ============================================================
 # LIBRARY AUTO-UPDATE & IMPORT
@@ -119,6 +118,39 @@ function Get-ModuleVersion {
         return $Matches[1]
     }
     throw "Could not parse version from $Source - invalid or corrupt content"
+}
+
+# Function to compute MD5 hash of content
+function Get-ContentMD5 {
+    param([string]$Content)
+    $md5 = [System.Security.Cryptography.MD5]::Create()
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($Content)
+    $hash = $md5.ComputeHash($bytes)
+    return ([BitConverter]::ToString($hash) -replace '-', '').ToLower()
+}
+
+# Function to get expected MD5 from MD5SUMS file
+function Get-ExpectedMD5 {
+    param([string]$FileName, [string]$MD5Content)
+    foreach ($line in $MD5Content -split "`n") {
+        $line = $line.Trim()
+        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
+            if ($Matches[2].Trim() -eq $FileName) {
+                return $Matches[1].ToLower()
+            }
+        }
+    }
+    return $null
+}
+
+# Load MD5SUMS file from repository
+$MD5SumsContent = $null
+try {
+    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5SumsUrl -UseBasicParsing -TimeoutSec 5).Content
+}
+catch {
+    Write-Host "[!] Could not download MD5SUMS - checksum verification disabled"
 }
 
 # Check if library already exists locally and get its version
@@ -164,6 +196,19 @@ try {
         try {
             $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
             $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
+
+            # Verify MD5 checksum if available
+            if ($MD5SumsContent) {
+                $ExpectedMD5 = Get-ExpectedMD5 -FileName "LevelIO-Common.psm1" -MD5Content $MD5SumsContent
+                if ($ExpectedMD5) {
+                    $ActualMD5 = Get-ContentMD5 -Content $RemoteContent
+                    if ($ActualMD5 -ne $ExpectedMD5) {
+                        throw "MD5 checksum mismatch: expected $ExpectedMD5, got $ActualMD5"
+                    }
+                    Write-Host "[+] Library checksum verified"
+                }
+            }
+
             if (Test-Path $BackupPath) {
                 Remove-Item -Path $BackupPath -Force -ErrorAction SilentlyContinue
             }
@@ -171,10 +216,10 @@ try {
         }
         catch {
             if (Test-Path $BackupPath) {
-                Write-Host "[!] Downloaded library corrupt - restoring backup"
+                Write-Host "[!] Downloaded library corrupt or checksum failed - restoring backup"
                 Move-Item -Path $BackupPath -Destination $LibraryPath -Force
             }
-            throw "Downloaded library failed verification"
+            throw "Downloaded library failed verification: $($_.Exception.Message)"
         }
     }
 }
@@ -233,7 +278,7 @@ $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.10"
+Write-Host "[*] Script Launcher v2025.12.27.11"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -306,6 +351,20 @@ try {
             if ($VerifyScriptContent.Length -lt 50) {
                 throw "Downloaded script appears to be empty or truncated"
             }
+
+            # Verify MD5 checksum if available
+            if ($MD5SumsContent) {
+                $ScriptMD5Key = "scripts/$ScriptToRun"
+                $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
+                if ($ExpectedScriptMD5) {
+                    $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
+                    if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
+                        throw "MD5 checksum mismatch: expected $ExpectedScriptMD5, got $ActualScriptMD5"
+                    }
+                    Write-Host "[+] Script checksum verified"
+                }
+            }
+
             # Success - remove backup
             if (Test-Path $ScriptBackupPath) {
                 Remove-Item -Path $ScriptBackupPath -Force -ErrorAction SilentlyContinue
@@ -317,12 +376,12 @@ try {
             }
         }
         catch {
-            # New file is corrupt - restore backup
+            # New file is corrupt or checksum failed - restore backup
             if (Test-Path $ScriptBackupPath) {
-                Write-Host "[!] Downloaded script corrupt - restoring backup"
+                Write-Host "[!] Downloaded script corrupt or checksum failed - restoring backup"
                 Move-Item -Path $ScriptBackupPath -Destination $ScriptPath -Force
             }
-            throw "Downloaded script failed verification"
+            throw "Downloaded script failed verification: $($_.Exception.Message)"
         }
     }
 }
@@ -362,9 +421,8 @@ $ExecutionBlock = @"
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
 
-# ScreenConnect-specific variables
-`$ScreenConnectInstanceId = '$($ScreenConnectInstanceId -replace "'", "''")'
-`$IsScreenConnectServer = '$($IsScreenConnectServer -replace "'", "''")'
+# Additional custom fields can be added here
+# `$ApiKey = '$($ApiKey -replace "'", "''")'
 
 # The downloaded script content follows:
 $ScriptContent

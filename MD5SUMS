@@ -1,0 +1,13 @@
+﻿# MD5SUMS - Checksums for LevelLib files
+# Format: MD5_HASH  FILENAME
+# Generated: 2025-12-29 11:04:19
+#
+# Verify with PowerShell:
+#   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
+#   $hash = (Get-FileHash -Path $file -Algorithm MD5).Hash.ToLower()
+#
+4c35f91d6530c776d23d555036c55631  LevelIO-Common.psm1
+823593f0468f5177dbbdf1f50a97cc28  scripts/⛔Force Remove Anydesk.ps1
+5dcbd41a32b213ab602d3eb5551acd4a  scripts/⛔Force Remove Non MSP ScreenConnect.ps1
+d838f66ce6709e724b6ec20af12990d7  scripts/👀Check for Unauthorized Remote Access Tools.ps1
+65cceb41081bc49613f67db848aaad34  scripts/👀Test Show Versions.ps1
