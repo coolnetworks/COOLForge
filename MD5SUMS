@@ -1,21 +1,21 @@
 ﻿# MD5SUMS - Checksums for COOLForgeLib files
 # Format: MD5_HASH  FILENAME
-# Generated: 2025-12-29 14:02:31
+# Generated: 2025-12-29 15:53:31
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
 #   $hash = (Get-FileHash -Path $file -Algorithm MD5).Hash.ToLower()
 #
-92c842dd0434d1cc20b7fe230b51dff2  modules/COOLForge-Common.psm1
-106840e53b8531fc71bed0ca4bc6489e  scripts/⛔Force Remove Anydesk.ps1
-bf13288152b9119c1f76eb3832b7ad79  scripts/⛔Force Remove Non MSP ScreenConnect.ps1
-ae19b0294ac754fb376a8490d56ccdd9  scripts/👀Check for Unauthorized Remote Access Tools.ps1
-953f0e40b7289e94cc112dd9b57e1a10  scripts/👀Test Show Versions.ps1
-ea3b268df51c9a320bb992de465bd479  scripts/👀Test Variable Output.ps1
-eb12b32a81c777b2c360c97b97bdb44e  scripts/🔧Enable System Restore and Create Restore Point.ps1
-eb91d74a4dd672d7b1006eba2c966006  scripts/🔧Fix Windows 10 Services.ps1
-e0fdac93a2668ac1ead2356344452588  scripts/🔧Fix Windows 11 Services.ps1
-9dab5e5ba33355497bf52baa3f7d5013  scripts/🔧Fix Windows 7 Services.ps1
-f094fef9561fe55684ec14d407c8945f  scripts/🔧Fix Windows 8 Services.ps1
-2d1e9d262d37eb6b7696a5b3cc01dea7  scripts/🔧Fix Windows 8.1 Services.ps1
-0eff35605cd0dfa4af2d00687dd7f099  scripts/🙏Wake all devices in parent to level.io folder.ps1
+9b3784a90a5e639b50fdd319c4572995  modules/COOLForge-Common.psm1
+f322f568a9fc08de956c523c316cc197  scripts/⛔Force Remove Anydesk.ps1
+0a875e6bc6cb5ee6a6bcffdddf01e01d  scripts/⛔Force Remove Non MSP ScreenConnect.ps1
+0f3c50ec9411e9e2307bd02e6fd16ab5  scripts/👀Check for Unauthorized Remote Access Tools.ps1
+0bdfe75c1cce37453829ba459b1c2d40  scripts/👀Test Show Versions.ps1
+00a669b41182387e33274c18db86d6c9  scripts/👀Test Variable Output.ps1
+9326542fd6ccfdcdd7b7f7d3960a67ad  scripts/🔧Enable System Restore and Create Restore Point.ps1
+4a31c41c86ce8f7888a6513421d1068d  scripts/🔧Fix Windows 10 Services.ps1
+1d29147a13f7256183d6a968cc9969f3  scripts/🔧Fix Windows 11 Services.ps1
+0dc2e56e7088c93d84254c167a9591ff  scripts/🔧Fix Windows 7 Services.ps1
+3ed631abcec6a4418536132103a2392a  scripts/🔧Fix Windows 8 Services.ps1
+c8eca44986d6a8892521e549b5fa1a5e  scripts/🔧Fix Windows 8.1 Services.ps1
+21eebc3a420575bd8842d4420782c40f  scripts/🙏Wake all devices in parent to level.io folder.ps1
