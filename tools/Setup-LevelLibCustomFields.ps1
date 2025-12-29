@@ -447,6 +447,18 @@ foreach ($Field in $Script:OptionalFields) {
             }
 
             $Created = New-CustomField -Name $Field.Name -DefaultValue $DefaultValue -AdminOnly $Field.AdminOnly
+
+            # If we have a default value but the field was created without it, update it separately
+            # (some APIs don't accept default_value on creation)
+            if ($Created -and -not [string]::IsNullOrWhiteSpace($DefaultValue)) {
+                $CreatedId = $Created.id
+                if ($CreatedId -and [string]::IsNullOrWhiteSpace($Created.default_value)) {
+                    Write-Info "Setting default value..."
+                    if (Update-CustomFieldValue -FieldId $CreatedId -Value $DefaultValue) {
+                        Write-Success "Set default value to: $DefaultValue"
+                    }
+                }
+            }
             if ($Created) {
                 $ExistingFields += $Created
             }
