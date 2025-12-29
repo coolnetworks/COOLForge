@@ -1,14 +1,20 @@
-﻿# MD5SUMS - Checksums for LevelLib files
+# MD5SUMS - Checksums for LevelLib files
 # Format: MD5_HASH  FILENAME
-# Generated: 2025-12-29 11:57:03
+# Generated: 2025-12-29 12:26:21
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
 #   $hash = (Get-FileHash -Path $file -Algorithm MD5).Hash.ToLower()
 #
-4c35f91d6530c776d23d555036c55631  LevelIO-Common.psm1
+da41f6c111ef7c319d330bba3552c720  LevelIO-Common.psm1
 823593f0468f5177dbbdf1f50a97cc28  scripts/⛔Force Remove Anydesk.ps1
 5dcbd41a32b213ab602d3eb5551acd4a  scripts/⛔Force Remove Non MSP ScreenConnect.ps1
 d838f66ce6709e724b6ec20af12990d7  scripts/👀Check for Unauthorized Remote Access Tools.ps1
 65cceb41081bc49613f67db848aaad34  scripts/👀Test Show Versions.ps1
 a68d5103d8b7a64bf9572fc077e9973f  scripts/👀Test Variable Output.ps1
+9bb5be0ae0d4a6d095fc9c4c540d1c21  scripts/🔧Fix Windows 10 Services.ps1
+a75f707641e6944a1d984845abb946c2  scripts/🔧Fix Windows 11 Services.ps1
+2252d8fee0342885369ba7048d176230  scripts/🔧Fix Windows 7 Services.ps1
+2c8919acad6099b6b1015aba20004ade  scripts/🔧Fix Windows 8 Services.ps1
+529227ed02d5e45eebea96f57c46c364  scripts/🔧Fix Windows 8.1 Services.ps1
+494146becee1c719ce89c5f968a9ef30  scripts/🙏Wake all devices in parent to level.io folder.ps1
