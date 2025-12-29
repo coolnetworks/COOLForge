@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.27.22
+**Version:** 2025.12.29.01
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -36,15 +36,19 @@ LevelLib/
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
 │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
-│   └── 👀Test Show Versions.ps1
+│   ├── 👀Test Show Versions.ps1
+│   └── 👀Test Variable Output.ps1
 ├── launchers/                   # Pre-configured launchers (copy-paste to Level.io)
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
 │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
-│   └── 👀Test Show Versions.ps1
+│   ├── 👀Test Show Versions.ps1
+│   └── 👀Test Variable Output.ps1
 ├── templates/                   # Templates for creating new scripts
 │   ├── Script_Template.ps1      # Template for standalone scripts
 │   └── Launcher_Template.ps1    # Base launcher template
+├── tools/                       # Development tools
+│   └── Update-MD5SUMS.ps1       # Generates MD5SUMS file for integrity verification
 └── testing/                     # Test scripts
     ├── Test_Local.ps1           # Local development testing
     └── Test_From_Level.ps1      # Level.io endpoint testing
@@ -203,6 +207,7 @@ Scripts in the `scripts/` folder are ready to use:
 | Script | Description |
 |--------|-------------|
 | `👀Test Show Versions.ps1` | Displays version info for all LevelLib components |
+| `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
 | `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes ScreenConnect instances not matching your MSP's instance ID |
 | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs (TeamViewer, AnyDesk, etc.) |
@@ -598,6 +603,63 @@ $ScriptUrl = "$BaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
 
 ---
 
+## Setting Automation Variables
+
+Level.io allows scripts to set variables during execution that persist and can be used by subsequent automation steps. This is useful for passing data between scripts in a workflow.
+
+### Syntax
+
+Output variables using this format on their own line:
+
+```
+{{variable_name=value}}
+```
+
+Use `Write-Output` (not `Write-Host`) to set variables:
+
+```powershell
+# Set a simple string variable
+$Hostname = $env:COMPUTERNAME
+Write-Output "{{device_hostname=$Hostname}}"
+
+# Set a numeric value
+$DiskFreeGB = [math]::Round((Get-PSDrive C).Free / 1GB, 2)
+Write-Output "{{disk_free_gb=$DiskFreeGB}}"
+
+# Set a boolean
+$IsCompliant = "true"
+Write-Output "{{is_compliant=$IsCompliant}}"
+
+# Set JSON data
+$Info = @{ hostname = $env:COMPUTERNAME; timestamp = (Get-Date).ToString("o") } | ConvertTo-Json -Compress
+Write-Output "{{device_info=$Info}}"
+```
+
+### Using Variables in Subsequent Steps
+
+After a script sets a variable, it's available in later automation steps as:
+
+```
+{{variable_name}}
+```
+
+### Test Script
+
+Use `👀Test Variable Output.ps1` to test all variable output methods. It demonstrates:
+
+- Simple strings and numbers
+- Boolean values
+- Date/time formats (ISO 8601, Unix timestamp)
+- System information (IP, OS, disk space, RAM)
+- JSON-formatted data
+- Special characters and paths
+- Empty/null handling
+- Status/result patterns
+
+**Documentation:** [Level.io - Set Variables Directly from Scripts](https://docs.level.io/en/articles/11509659-set-variables-directly-from-scripts)
+
+---
+
 ## Emoji Handling
 
 ### The Problem
@@ -688,6 +750,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Component | Changes |
 |---------|------|-----------|---------|
+| 2025.12.29.01 | 2025-12-29 | All | Add Test Variable Output script, fix launcher script names, add automation variable documentation |
 | 2025.12.27.22 | 2025-12-27 | All | Version sync release - Library v20, Launchers v10, README v22 |
 | 2025.12.27.20 | 2025-12-27 | Library | Add alternate emoji corruption patterns (👀→≡ƒæÇ, ⛔→Γ¢ö, etc.) for Level.io encoding |
 | 2025.12.27.10 | 2025-12-27 | Launcher | Version sync with library emoji fixes |

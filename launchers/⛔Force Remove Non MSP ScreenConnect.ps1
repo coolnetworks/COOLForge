@@ -1,7 +1,7 @@
 # ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀Test Show Versions.ps1"
+$ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
 # ============================================================
 
 <#
