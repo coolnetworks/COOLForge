@@ -36,7 +36,7 @@ $ScriptToRun = "🔧Fix Windows 11 Services.ps1"
 
     Level.io Variables Used:
     - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
-    - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
+    - {{cf_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
                                        (scripts URL is derived from this automatically)
     - {{cf_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
                                        If not set, uses latest from main branch
@@ -92,11 +92,11 @@ $LibraryUrl = "{{cf_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/LevelIO-Common.psm1"
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/COOLForge-Common.psm1"
 } elseif ($UsePinnedVersion) {
     # Custom URL provided but version pinning requested - replace branch in URL
     # Pattern: .../coolnetworks/COOLForge/main/... -> .../coolnetworks/COOLForge/$PinnedVersion/...
-    $LibraryUrl = $LibraryUrl -replace '/LevelLib/[^/]+/', "/LevelLib/$PinnedVersion/"
+    $LibraryUrl = $LibraryUrl -replace '/COOLForgeLib/[^/]+/', "/COOLForgeLib/$PinnedVersion/"
 }
 
 # Additional custom fields can be added here and they will be available
@@ -105,7 +105,7 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
 # $CustomField1 = "{{cf_custom_field_1}}"
 
 # Derive base URL and scripts URL from library URL
-# Example: https://raw.githubusercontent.com/.../main/LevelIO-Common.psm1
+# Example: https://raw.githubusercontent.com/.../main/COOLForge-Common.psm1
 #       -> https://raw.githubusercontent.com/.../main/scripts
 $RepoBaseUrl = $LibraryUrl -replace '/[^/]+$', ''
 $ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
@@ -115,12 +115,12 @@ $MD5SumsUrl = "$RepoBaseUrl/MD5SUMS"
 # LIBRARY AUTO-UPDATE & IMPORT
 # ============================================================
 # This section handles automatic downloading and updating of the
-# LevelIO-Common library from GitHub. It ensures scripts always
+# COOLForge-Common library from GitHub. It ensures scripts always
 # use the latest version while gracefully handling offline scenarios.
 
 # Define library storage location within the scratch folder
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
-$LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "LevelIO-Common.psm1"
+$LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "COOLForge-Common.psm1"
 
 # Create Libraries folder if it doesn't exist
 if (!(Test-Path $LibraryFolder)) {
@@ -215,7 +215,7 @@ try {
 
             # Verify MD5 checksum if available
             if ($MD5SumsContent) {
-                $ExpectedMD5 = Get-ExpectedMD5 -FileName "LevelIO-Common.psm1" -MD5Content $MD5SumsContent
+                $ExpectedMD5 = Get-ExpectedMD5 -FileName "COOLForge-Common.psm1" -MD5Content $MD5SumsContent
                 if ($ExpectedMD5) {
                     $ActualMD5 = Get-ContentMD5 -Content $RemoteContent
                     if ($ActualMD5 -ne $ExpectedMD5) {
@@ -254,7 +254,7 @@ catch {
 
 # Import the library module
 $ModuleContent = Get-Content -Path $LibraryPath -Raw
-New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
 # Verify critical functions are available - if not, force redownload
 if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) {
@@ -264,8 +264,8 @@ if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) 
         $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
         Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
         $ModuleContent = Get-Content -Path $LibraryPath -Raw
-        Remove-Module -Name "LevelIO-Common" -Force -ErrorAction SilentlyContinue
-        New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+        Remove-Module -Name "COOLForge-Common" -Force -ErrorAction SilentlyContinue
+        New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
         Write-Host "[+] Library redownloaded successfully"
     }
     catch {

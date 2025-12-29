@@ -45,32 +45,32 @@
     For Restore action only: Preview changes without applying them.
 
 .EXAMPLE
-    .\Backup-LevelCustomFields.ps1 -Action Backup
+    .\Backup-COOLForgeCustomFields.ps1 -Action Backup
 
     Creates a backup of all organization and folder custom fields.
 
 .EXAMPLE
-    .\Backup-LevelCustomFields.ps1 -Action Backup -IncludeDevices
+    .\Backup-COOLForgeCustomFields.ps1 -Action Backup -IncludeDevices
 
     Creates a full backup including device-level custom fields.
 
 .EXAMPLE
-    .\Backup-LevelCustomFields.ps1 -Action Restore -BackupPath .\backups\customfields_2025-12-29_120000.zip
+    .\Backup-COOLForgeCustomFields.ps1 -Action Restore -BackupPath .\backups\customfields_2025-12-29_120000.zip
 
     Restores custom field values from the specified backup.
 
 .EXAMPLE
-    .\Backup-LevelCustomFields.ps1 -Action Restore -DryRun
+    .\Backup-COOLForgeCustomFields.ps1 -Action Restore -DryRun
 
     Shows what would be restored from the latest backup without applying changes.
 
 .EXAMPLE
-    .\Backup-LevelCustomFields.ps1 -Action Compare
+    .\Backup-COOLForgeCustomFields.ps1 -Action Compare
 
     Compares the latest backup with current custom field values.
 
 .EXAMPLE
-    .\Backup-LevelCustomFields.ps1 -Action List
+    .\Backup-COOLForgeCustomFields.ps1 -Action List
 
     Lists all available backup files.
 #>
@@ -101,10 +101,10 @@ param(
 # IMPORT SHARED MODULE
 # ============================================================
 
-$ModulePath = Join-Path $PSScriptRoot "LevelLib-CustomFields.psm1"
+$ModulePath = Join-Path $PSScriptRoot "COOLForge-CustomFields.psm1"
 if (-not (Test-Path $ModulePath)) {
     Write-Host "[X] Module not found: $ModulePath" -ForegroundColor Red
-    Write-Host "    Please ensure LevelLib-CustomFields.psm1 is in the same folder as this script." -ForegroundColor Yellow
+    Write-Host "    Please ensure COOLForge-CustomFields.psm1 is in the same folder as this script." -ForegroundColor Yellow
     exit 1
 }
 Import-Module $ModulePath -Force
@@ -113,7 +113,7 @@ Import-Module $ModulePath -Force
 # CONFIGURATION
 # ============================================================
 
-$Script:ConfigPath = Join-Path $PSScriptRoot ".levellib-setup.json"
+$Script:ConfigPath = Join-Path $PSScriptRoot ".COOLForgeLib-setup.json"
 $Script:ResolvedApiKey = $null
 
 # Default backups folder to repo root's backups folder
@@ -372,7 +372,7 @@ if ([string]::IsNullOrWhiteSpace($Script:ResolvedApiKey)) {
 }
 
 # Initialize the module
-Initialize-LevelLibCustomFields -ApiKey $Script:ResolvedApiKey | Out-Null
+Initialize-COOLForgeCustomFields -ApiKey $Script:ResolvedApiKey | Out-Null
 
 # Test API connection
 Write-LevelInfo "Testing API connection..."

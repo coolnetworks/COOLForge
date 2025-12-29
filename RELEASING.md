@@ -1,10 +1,10 @@
 # Release Process
 
-This document outlines the steps for creating a new LevelLib release.
+This document outlines the steps for creating a new COOLForgeLib release.
 
 ## Version Format
 
-LevelLib uses [Calendar Versioning](https://calver.org/): `YYYY.MM.DD.NN`
+COOLForgeLib uses [Calendar Versioning](https://calver.org/): `YYYY.MM.DD.NN`
 - `YYYY.MM.DD` = Release date
 - `NN` = Release number for that day (01, 02, etc.)
 
@@ -18,7 +18,7 @@ Verify all PowerShell files parse without errors:
 
 ```powershell
 $errors = @()
-Get-ChildItem -Path "E:\LevelLib" -Recurse -Filter "*.ps1" | ForEach-Object {
+Get-ChildItem -Path "E:\COOLForgeLib" -Recurse -Filter "*.ps1" | ForEach-Object {
     $parseErrors = $null
     $null = [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$parseErrors)
     if ($parseErrors) {
@@ -45,7 +45,7 @@ To create a missing launcher:
 
 ### 3. Update Module Version (if module changed)
 
-Edit `LevelIO-Common.psm1` in two places:
+Edit `COOLForge-Common.psm1` in two places:
 - Header comment `Version:` (around line 15)
 - `$script:ModuleVersion` variable (near end of file)
 
@@ -75,9 +75,9 @@ Run the update script or generate manually:
 .\tools\Update-MD5SUMS.ps1
 
 # Or manually
-$files = @("LevelIO-Common.psm1") + (Get-ChildItem "scripts/*.ps1" | ForEach-Object { "scripts/$($_.Name)" })
+$files = @("COOLForge-Common.psm1") + (Get-ChildItem "scripts/*.ps1" | ForEach-Object { "scripts/$($_.Name)" })
 $output = @(
-    "# MD5SUMS - Checksums for LevelLib files"
+    "# MD5SUMS - Checksums for COOLForgeLib files"
     "# Format: MD5_HASH  FILENAME"
     "# Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
     "#"

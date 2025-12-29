@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    LevelLib-CustomFields - Module for managing Level.io custom fields.
+    COOLForge-CustomFields - Module for managing Level.io custom fields.
 
 .DESCRIPTION
     This module provides functions for managing Level.io custom fields via the API:
@@ -11,8 +11,8 @@
     - GitHub release integration for version management
 
     This module is used by:
-    - Setup-LevelLibCustomFields.ps1 (interactive setup wizard)
-    - Backup-LevelCustomFields.ps1 (standalone backup/restore CLI)
+    - Setup-COOLForgeCustomFields.ps1 (interactive setup wizard)
+    - Backup-COOLForgeCustomFields.ps1 (standalone backup/restore CLI)
 
 .NOTES
     Version:    2025.12.29.01
@@ -29,8 +29,8 @@
 
 .EXAMPLE
     # Import and initialize the module
-    Import-Module ".\LevelLib-CustomFields.psm1" -Force
-    Initialize-LevelLibCustomFields -ApiKey "your-api-key"
+    Import-Module ".\COOLForge-CustomFields.psm1" -Force
+    Initialize-COOLForgeCustomFields -ApiKey "your-api-key"
 
     # List existing custom fields
     $Fields = Get-ExistingCustomFields
@@ -56,7 +56,7 @@ $Script:ModuleVersion = "2025.12.29.01"
 # INITIALIZATION
 # ============================================================
 
-function Initialize-LevelLibCustomFields {
+function Initialize-COOLForgeCustomFields {
     <#
     .SYNOPSIS
         Initializes the module with API credentials.
@@ -70,7 +70,7 @@ function Initialize-LevelLibCustomFields {
     .PARAMETER GitHubRepo
         GitHub repository for release checks. Defaults to "coolnetworks/COOLForge".
     .EXAMPLE
-        Initialize-LevelLibCustomFields -ApiKey "your-api-key"
+        Initialize-COOLForgeCustomFields -ApiKey "your-api-key"
     #>
     param(
         [Parameter(Mandatory = $true)]
@@ -631,7 +631,7 @@ function Import-Backup {
 
         if ($Path -match '\.zip$') {
             # Extract from zip to temp, read, then cleanup
-            $TempDir = Join-Path $env:TEMP "levellib_backup_$(Get-Random)"
+            $TempDir = Join-Path $env:TEMP "coolforgelib_backup_$(Get-Random)"
             New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
 
             Expand-Archive -Path $Path -DestinationPath $TempDir -Force -ErrorAction Stop
@@ -942,7 +942,7 @@ function Get-SavedConfig {
     )
 
     if ([string]::IsNullOrWhiteSpace($Path)) {
-        $Path = Join-Path $PSScriptRoot ".levellib-setup.json"
+        $Path = Join-Path $PSScriptRoot ".COOLForgeLib-setup.json"
     }
 
     if (Test-Path $Path) {
@@ -973,7 +973,7 @@ function Save-Config {
     )
 
     if ([string]::IsNullOrWhiteSpace($Path)) {
-        $Path = Join-Path $PSScriptRoot ".levellib-setup.json"
+        $Path = Join-Path $PSScriptRoot ".COOLForgeLib-setup.json"
     }
 
     try {
@@ -1035,7 +1035,7 @@ function Get-GitHubReleases {
     $Uri = "https://api.github.com/repos/$Script:GitHubRepo/releases"
     $Headers = @{
         "Accept"     = "application/vnd.github.v3+json"
-        "User-Agent" = "LevelLib-Setup"
+        "User-Agent" = "COOLForgeLib-Setup"
     }
 
     try {
@@ -1167,11 +1167,11 @@ function Select-Version {
 # MODULE EXPORTS
 # ============================================================
 
-Write-Host "[*] LevelLib-CustomFields v$Script:ModuleVersion loaded" -ForegroundColor DarkGray
+Write-Host "[*] COOLForge-CustomFields v$Script:ModuleVersion loaded" -ForegroundColor DarkGray
 
 Export-ModuleMember -Function @(
     # Initialization
-    'Initialize-LevelLibCustomFields',
+    'Initialize-COOLForgeCustomFields',
 
     # UI Helpers
     'Write-Header',

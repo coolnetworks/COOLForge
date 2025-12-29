@@ -1,21 +1,21 @@
-﻿# MD5SUMS - Checksums for LevelLib files
+﻿# MD5SUMS - Checksums for COOLForgeLib files
 # Format: MD5_HASH  FILENAME
-# Generated: 2025-12-29 13:45:03
+# Generated: 2025-12-29 13:52:27
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
 #   $hash = (Get-FileHash -Path $file -Algorithm MD5).Hash.ToLower()
 #
-d6bf6466dd794f3fefe877f5bb059624  LevelIO-Common.psm1
-4203557d84b3dc084552245302c54f20  scripts/⛔Force Remove Anydesk.ps1
-5d7ea4be4e649c1a3027addf2e21f555  scripts/⛔Force Remove Non MSP ScreenConnect.ps1
-d84f96c2989afaf3bd6934c24a643e1a  scripts/👀Check for Unauthorized Remote Access Tools.ps1
-45c123291f5fd04d483e2895f53d0505  scripts/👀Test Show Versions.ps1
-165905d7502bd5cce1179dc8a0211a5d  scripts/👀Test Variable Output.ps1
-9e94d7dcab9ded741daf02221cb9543b  scripts/🔧Enable System Restore and Create Restore Point.ps1
+92c842dd0434d1cc20b7fe230b51dff2  COOLForge-Common.psm1
+106840e53b8531fc71bed0ca4bc6489e  scripts/⛔Force Remove Anydesk.ps1
+bf13288152b9119c1f76eb3832b7ad79  scripts/⛔Force Remove Non MSP ScreenConnect.ps1
+ae19b0294ac754fb376a8490d56ccdd9  scripts/👀Check for Unauthorized Remote Access Tools.ps1
+953f0e40b7289e94cc112dd9b57e1a10  scripts/👀Test Show Versions.ps1
+ea3b268df51c9a320bb992de465bd479  scripts/👀Test Variable Output.ps1
+eb12b32a81c777b2c360c97b97bdb44e  scripts/🔧Enable System Restore and Create Restore Point.ps1
 eb91d74a4dd672d7b1006eba2c966006  scripts/🔧Fix Windows 10 Services.ps1
 e0fdac93a2668ac1ead2356344452588  scripts/🔧Fix Windows 11 Services.ps1
 9dab5e5ba33355497bf52baa3f7d5013  scripts/🔧Fix Windows 7 Services.ps1
 f094fef9561fe55684ec14d407c8945f  scripts/🔧Fix Windows 8 Services.ps1
 2d1e9d262d37eb6b7696a5b3cc01dea7  scripts/🔧Fix Windows 8.1 Services.ps1
-494146becee1c719ce89c5f968a9ef30  scripts/🙏Wake all devices in parent to level.io folder.ps1
+0eff35605cd0dfa4af2d00687dd7f099  scripts/🙏Wake all devices in parent to level.io folder.ps1

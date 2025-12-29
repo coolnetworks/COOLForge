@@ -1,4 +1,4 @@
-# LevelLib - Level.io PowerShell Automation Library
+# COOLForgeLib - Level.io PowerShell Automation Library
 
 **Version:** 2025.12.29.02
 
@@ -11,7 +11,7 @@ A standardized PowerShell module for Level.io RMM automation scripts.
 
 ## Overview
 
-LevelLib provides a shared set of functions for Level.io automation scripts, eliminating code duplication and ensuring consistent behavior across your script portfolio.
+COOLForgeLib provides a shared set of functions for Level.io automation scripts, eliminating code duplication and ensuring consistent behavior across your script portfolio.
 
 ### Key Features
 
@@ -30,8 +30,8 @@ LevelLib provides a shared set of functions for Level.io automation scripts, eli
 ## Repository Structure
 
 ```
-LevelLib/
-├── LevelIO-Common.psm1          # Core PowerShell module
+COOLForgeLib/
+├── COOLForge-Common.psm1          # Core PowerShell module
 ├── scripts/                     # Ready-to-use automation scripts
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
@@ -53,7 +53,7 @@ LevelLib/
 │   ├── Script_Template.ps1      # Template for standalone scripts
 │   └── Launcher_Template.ps1    # Base launcher template
 ├── tools/                       # Development and setup tools
-│   ├── Setup-LevelLibCustomFields.ps1  # Interactive setup wizard for Level.io custom fields
+│   ├── Setup-COOLForgeCustomFields.ps1  # Interactive setup wizard for Level.io custom fields
 │   └── Update-MD5SUMS.ps1       # Generates MD5SUMS file for integrity verification
 └── testing/                     # Test scripts
     ├── Test_Local.ps1           # Local development testing
@@ -73,7 +73,7 @@ LevelLib/
 | Custom Field | Example Value | Required | Description |
 |--------------|---------------|----------|-------------|
 | `msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
-| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
+| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
 | `pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag (defaults to latest from main branch) |
 | `screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
 | `is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
@@ -84,8 +84,8 @@ Use the setup wizard to automatically create and configure custom fields:
 
 ```powershell
 # Download and run the setup script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/tools/Setup-LevelLibCustomFields.ps1" -OutFile "Setup-LevelLibCustomFields.ps1"
-.\Setup-LevelLibCustomFields.ps1
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/tools/Setup-COOLForgeCustomFields.ps1" -OutFile "Setup-COOLForgeCustomFields.ps1"
+.\Setup-COOLForgeCustomFields.ps1
 ```
 
 The wizard will:
@@ -127,7 +127,7 @@ Scripts using the template automatically download and update the library on each
 
 **Default URL (used if custom field not set):**
 ```
-https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1
 ```
 
 > **Tip:** Setting the `ps_module_library_source` custom field allows you to:
@@ -172,10 +172,10 @@ By default, scripts and the launcher use the latest code from the `main` branch.
 **URL transformation:**
 ```
 Default (no pinning):
-https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1
 
 With pin_psmodule_to_version = v2025.12.29:
-https://raw.githubusercontent.com/coolnetworks/COOLForge/v2025.12.29/LevelIO-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/v2025.12.29/COOLForge-Common.psm1
 ```
 
 ### Output Example
@@ -224,7 +224,7 @@ Go to **Settings → Custom Fields** and create these fields:
 | `msp_scratch_folder` | Text | `C:\ProgramData\MSP` | **Yes** |
 | `ps_module_library_source` | Text | `https://raw.githubusercontent.com/...` | No (defaults to official repo) |
 
-> **Note:** The `ps_module_library_source` field is optional - if not set, scripts use the official LevelLib repository. Set this field only if you're using a fork or private repository.
+> **Note:** The `ps_module_library_source` field is optional - if not set, scripts use the official COOLForgeLib repository. Set this field only if you're using a fork or private repository.
 
 #### Step 2: Create Scripts in Level.io
 
@@ -274,7 +274,7 @@ Scripts in the `scripts/` folder are ready to use:
 
 | Script | Description |
 |--------|-------------|
-| `👀Test Show Versions.ps1` | Displays version info for all LevelLib components |
+| `👀Test Show Versions.ps1` | Displays version info for all COOLForgeLib components |
 | `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
 | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
 | `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes ScreenConnect instances not matching your MSP's instance ID |
@@ -300,7 +300,7 @@ Level.io                          GitHub Repository
          │ passes variables              │
          ▼                               │
 ┌─────────────────┐                      │
-│ Downloaded      │ ◄────────────────────┤ LevelIO-Common.psm1
+│ Downloaded      │ ◄────────────────────┤ COOLForge-Common.psm1
 │ Script          │   library loaded     │
 └────────┬────────┘                      │
          │                               │
@@ -370,7 +370,7 @@ Scripts are cached locally on endpoints:
 ```
 C:\ProgramData\MSP\
 ├── Libraries\
-│   └── LevelIO-Common.psm1      # Cached library
+│   └── COOLForge-Common.psm1      # Cached library
 └── Scripts\
     ├── 👀Test Show Versions.ps1   # Cached scripts
     └── ⛔Force Remove Anydesk.ps1
@@ -742,7 +742,7 @@ When Level.io deploys PowerShell scripts, it may corrupt UTF-8 encoded emojis. F
 
 ### The Solution
 
-LevelLib provides two functions to handle this:
+COOLForgeLib provides two functions to handle this:
 
 1. **`Repair-LevelEmoji`** — Detects known corruption patterns and repairs them to the correct Unicode characters
 2. **`Get-LevelUrlEncoded`** — Properly URL-encodes strings with UTF-8 emojis for GitHub downloads
@@ -759,7 +759,7 @@ This means you can use emojis in script names without worrying about encoding is
 
 ### Adding New Emojis
 
-To add support for additional emojis, update the `$EmojiRepairs` hashtable in the `Repair-LevelEmoji` function in `LevelIO-Common.psm1`:
+To add support for additional emojis, update the `$EmojiRepairs` hashtable in the `Repair-LevelEmoji` function in `COOLForge-Common.psm1`:
 
 ```powershell
 # Get UTF-8 bytes: printf '🔥' | xxd -p  # Returns f09f94a5
@@ -774,7 +774,7 @@ To add support for additional emojis, update the `$EmojiRepairs` hashtable in th
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `{{cf_msp_scratch_folder}}` | Base path for MSP files | `C:\ProgramData\MSP` |
-| `{{cf_ps_module_library_source}}` | URL to download library (scripts URL derived automatically) | `https://raw.githubusercontent.com/.../LevelIO-Common.psm1` |
+| `{{cf_ps_module_library_source}}` | URL to download library (scripts URL derived automatically) | `https://raw.githubusercontent.com/.../COOLForge-Common.psm1` |
 | `{{cf_apikey}}` | API key custom field | `sk-xxxxx` |
 | `{{level_device_hostname}}` | Device hostname | `WORKSTATION01` |
 | `{{level_tag_names}}` | Comma-separated device tags | `Production, Windows 11` |
@@ -786,7 +786,7 @@ To add support for additional emojis, update the `$EmojiRepairs` hashtable in th
 ```
 {{cf_msp_scratch_folder}}\
 ├── Libraries\
-│   └── LevelIO-Common.psm1      # Shared module (auto-downloaded)
+│   └── COOLForge-Common.psm1      # Shared module (auto-downloaded)
 ├── Scripts\
 │   ├── Force Remove Anydesk.ps1 # Cached scripts (auto-downloaded by launcher)
 │   └── Other Script.ps1

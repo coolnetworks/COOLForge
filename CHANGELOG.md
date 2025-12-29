@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to LevelLib will be documented in this file.
+All notable changes to COOLForgeLib will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.DD.N).
@@ -12,7 +12,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
   - Pin devices to specific release tags (e.g., `v2025.12.29`)
   - Enables staged rollouts, rollback capability, and production stability
   - Launchers v2025.12.29.01 updated with version pinning support
-- **Setup wizard** (`tools/Setup-LevelLibCustomFields.ps1`)
+- **Setup wizard** (`tools/Setup-COOLForgeCustomFields.ps1`)
   - Interactive script to create and configure Level.io custom fields
   - Uses Level.io API to check existing fields and create missing ones
   - Suggests version pinning for stability
@@ -65,8 +65,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 ## [v2025.12.27-initial] - 2025-12-27
 
 ### Added
-- Initial release of LevelLib
-- **Core library** (`LevelIO-Common.psm1`) with functions:
+- Initial release of COOLForgeLib
+- **Core library** (`COOLForge-Common.psm1`) with functions:
   - `Initialize-LevelScript` - Tag gate system, lockfile management
   - `Write-LevelLog` - Standardized timestamped logging
   - `Invoke-LevelScript` - Wrapped execution with error handling

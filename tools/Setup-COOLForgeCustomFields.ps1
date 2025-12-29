@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Interactive setup script for LevelLib custom fields in Level.io.
+    Interactive setup script for COOLForgeLib custom fields in Level.io.
 
 .DESCRIPTION
-    This script helps you configure the required custom fields for LevelLib in your
+    This script helps you configure the required custom fields for COOLForgeLib in your
     Level.io account. It will:
 
     1. Authenticate with the Level.io API using your API key
@@ -35,12 +35,12 @@
     https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
-    .\Setup-LevelLibCustomFields.ps1
+    .\Setup-COOLForgeCustomFields.ps1
 
     Runs the interactive setup wizard.
 
 .EXAMPLE
-    .\Setup-LevelLibCustomFields.ps1 -ApiKey "your-api-key"
+    .\Setup-COOLForgeCustomFields.ps1 -ApiKey "your-api-key"
 
     Runs setup with API key provided (skips the prompt).
 #>
@@ -55,10 +55,10 @@ param(
 # IMPORT SHARED MODULE
 # ============================================================
 
-$ModulePath = Join-Path $PSScriptRoot "LevelLib-CustomFields.psm1"
+$ModulePath = Join-Path $PSScriptRoot "COOLForge-CustomFields.psm1"
 if (-not (Test-Path $ModulePath)) {
     Write-Host "[X] Module not found: $ModulePath" -ForegroundColor Red
-    Write-Host "    Please ensure LevelLib-CustomFields.psm1 is in the same folder as this script." -ForegroundColor Yellow
+    Write-Host "    Please ensure COOLForge-CustomFields.psm1 is in the same folder as this script." -ForegroundColor Yellow
     exit 1
 }
 Import-Module $ModulePath -Force
@@ -67,7 +67,7 @@ Import-Module $ModulePath -Force
 # CONFIGURATION
 # ============================================================
 
-$Script:ConfigFileName = ".levellib-setup.json"
+$Script:ConfigFileName = ".COOLForgeLib-setup.json"
 $Script:ConfigPath = Join-Path $PSScriptRoot $Script:ConfigFileName
 
 # MSP name (set after prompting user)
@@ -89,7 +89,7 @@ $Script:RequiredFields = @(
 $Script:OptionalFields = @(
     @{
         Name        = "ps_module_library_source"
-        Description = "URL to download LevelIO-Common.psm1 library (leave empty for official repo)"
+        Description = "URL to download COOLForge-Common.psm1 library (leave empty for official repo)"
         Required    = $false
         Default     = ""
         AdminOnly   = $false
@@ -121,9 +121,9 @@ $Script:OptionalFields = @(
 # MAIN SCRIPT
 # ============================================================
 
-Write-Header "LevelLib Custom Fields Setup"
+Write-Header "COOLForgeLib Custom Fields Setup"
 
-Write-Host "This wizard will help you configure the custom fields required for LevelLib."
+Write-Host "This wizard will help you configure the custom fields required for COOLForgeLib."
 Write-Host "You'll need a Level.io API key with permission to manage custom fields."
 Write-Host ""
 Write-Host "Get your API key at: https://app.level.io/security" -ForegroundColor Cyan
@@ -161,7 +161,7 @@ if ([string]::IsNullOrWhiteSpace($Script:ResolvedApiKey)) {
 }
 
 # Initialize the module with API key
-Initialize-LevelLibCustomFields -ApiKey $Script:ResolvedApiKey | Out-Null
+Initialize-COOLForgeCustomFields -ApiKey $Script:ResolvedApiKey | Out-Null
 
 # Test API connection
 Write-Header "Testing API Connection"
@@ -495,7 +495,7 @@ foreach ($Field in $Script:OptionalFields) {
 # Summary
 Write-Header "Setup Complete"
 
-Write-Host "Your LevelLib custom fields are configured!" -ForegroundColor Green
+Write-Host "Your COOLForgeLib custom fields are configured!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "  1. Deploy a launcher script from the 'launchers/' folder"

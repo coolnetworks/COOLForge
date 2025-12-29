@@ -26,7 +26,7 @@
 
     Level.io Variables Used:
     - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
-    - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
+    - {{cf_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
     - {{level_device_hostname}}      : Device hostname from Level.io
     - {{level_tag_names}}            : Comma-separated list of device tags
 
@@ -70,23 +70,23 @@ $ErrorActionPreference = "SilentlyContinue"
 # LIBRARY AUTO-UPDATE & IMPORT
 # ============================================================
 # This section handles automatic downloading and updating of the
-# LevelIO-Common library from GitHub. It ensures scripts always
+# COOLForge-Common library from GitHub. It ensures scripts always
 # use the latest version while gracefully handling offline scenarios.
 
 # Level.io custom fields
 # $MspScratchFolder: Persistent storage folder on the endpoint
-# $LibraryUrl: URL to download the LevelIO-Common library (allows private repos/forks)
+# $LibraryUrl: URL to download the COOLForge-Common library (allows private repos/forks)
 $MspScratchFolder = "{{cf_msp_scratch_folder}}"
 $LibraryUrl = "{{cf_ps_module_library_source}}"
 
 # Default to official repo if custom field not set
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1"
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1"
 }
 
 # Define library storage location within the scratch folder
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
-$LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "LevelIO-Common.psm1"
+$LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "COOLForge-Common.psm1"
 
 # Create Libraries folder if it doesn't exist
 # This is where we'll store the downloaded library
@@ -191,7 +191,7 @@ catch {
 # Import the library module, making all functions available
 # Use New-Module with ScriptBlock to bypass execution policy while maintaining module context
 $ModuleContent = Get-Content -Path $LibraryPath -Raw
-New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
 # ============================================================
 # INITIALIZE

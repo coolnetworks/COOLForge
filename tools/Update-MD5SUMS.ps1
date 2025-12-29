@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Regenerates the MD5SUMS file for LevelLib.
+    Regenerates the MD5SUMS file for COOLForgeLib.
 
 .DESCRIPTION
     This script scans all downloadable files (library and scripts) and generates
@@ -8,7 +8,7 @@
     repository root.
 
     Run this script whenever you update any of the following:
-    - LevelIO-Common.psm1
+    - COOLForge-Common.psm1
     - Any script in the scripts/ folder
 
 .NOTES
@@ -24,12 +24,12 @@ $ErrorActionPreference = "Stop"
 # Get repository root (parent of tools folder)
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 
-Write-Host "[*] Generating MD5SUMS for LevelLib" -ForegroundColor Cyan
+Write-Host "[*] Generating MD5SUMS for COOLForgeLib" -ForegroundColor Cyan
 Write-Host "[*] Repository: $RepoRoot" -ForegroundColor Gray
 
 # Files to checksum (relative to repo root)
 $FilesToHash = @(
-    "LevelIO-Common.psm1"
+    "COOLForge-Common.psm1"
 )
 
 # Add all scripts from scripts folder
@@ -42,7 +42,7 @@ if (Test-Path $ScriptsFolder) {
 
 # Generate checksums
 $Checksums = @()
-$Checksums += "# MD5SUMS - Checksums for LevelLib files"
+$Checksums += "# MD5SUMS - Checksums for COOLForgeLib files"
 $Checksums += "# Format: MD5_HASH  FILENAME"
 $Checksums += "# Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 $Checksums += "#"

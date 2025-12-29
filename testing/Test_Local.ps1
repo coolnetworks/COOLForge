@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Local development test script for LevelIO-Common library.
+    Local development test script for COOLForge-Common library.
 
 .DESCRIPTION
-    This script tests all 8 exported functions from the LevelIO-Common library
+    This script tests all 8 exported functions from the COOLForge-Common library
     in a local development environment. Unlike Test_From_Level.ps1, this script:
 
     - Loads the library directly from $PSScriptRoot (local folder)
@@ -40,14 +40,14 @@
     https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
-    # Run from PowerShell terminal in the LevelLib folder:
+    # Run from PowerShell terminal in the COOLForgeLib folder:
     .\Testing_script.ps1
 
     # Or with explicit path:
-    powershell -ExecutionPolicy Bypass -File "C:\path\to\LevelLib\Testing_script.ps1"
+    powershell -ExecutionPolicy Bypass -File "C:\path\to\COOLForgeLib\Testing_script.ps1"
 #>
 
-# LevelIO-Common Library Test Script
+# COOLForge-Common Library Test Script
 # Version: 2025.12.27.11
 # Target: Level.io
 # Tests all exported functions from the shared library
@@ -100,11 +100,11 @@ function Write-TestResult {
 # This allows testing local changes before pushing to GitHub
 
 Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "LevelIO-Common Library Test Suite" -ForegroundColor Cyan
+Write-Host "COOLForge-Common Library Test Suite" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
 
 # Build path to library in same folder as this script
-$LibraryPath = Join-Path -Path $PSScriptRoot -ChildPath "LevelIO-Common.psm1"
+$LibraryPath = Join-Path -Path $PSScriptRoot -ChildPath "COOLForge-Common.psm1"
 
 # Verify library exists
 if (!(Test-Path $LibraryPath)) {
@@ -114,7 +114,7 @@ if (!(Test-Path $LibraryPath)) {
 
 # Remove module if already loaded to ensure fresh import
 # This is important for testing changes during development
-Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
 Import-Module $LibraryPath -Force
 
 Write-Host "[*] Library loaded from: $LibraryPath`n" -ForegroundColor Gray
@@ -222,7 +222,7 @@ Write-Host "`n--- Testing Initialize-LevelScript ---" -ForegroundColor Yellow
 # Verifies successful init with SkipTagCheck and lockfile creation
 try {
     # Re-import to reset module state (clears $script:Initialized flag)
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     Import-Module $LibraryPath -Force
 
     $Init = Initialize-LevelScript -ScriptName "TestScript1" `
@@ -250,7 +250,7 @@ catch {
 # Test 4b: Tag blocking
 # Verifies that blocking tags prevent script execution
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     Import-Module $LibraryPath -Force
 
     # Device has "BlockMe" tag which matches BlockingTags - should return Success=false
@@ -269,7 +269,7 @@ catch {
 # Test 4c: Skip tag check
 # Verifies SkipTagCheck bypasses tag blocking
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     Import-Module $LibraryPath -Force
 
     # Has blocking tag but SkipTagCheck should allow execution
@@ -289,7 +289,7 @@ catch {
 # Test 4d: Skip lockfile
 # Verifies SkipLockFile prevents lockfile creation
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     Import-Module $LibraryPath -Force
 
     $Init = Initialize-LevelScript -ScriptName "TestScript4" `
@@ -308,7 +308,7 @@ catch {
 # Test 4e: Stale lockfile handling
 # Verifies that lockfiles from dead processes are cleaned up
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     Import-Module $LibraryPath -Force
 
     # Create a stale lockfile with non-existent PID
@@ -339,7 +339,7 @@ catch {
 Write-Host "`n--- Testing Remove-LevelLockFile ---" -ForegroundColor Yellow
 
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     Import-Module $LibraryPath -Force
 
     # Initialize to create a lockfile
@@ -399,7 +399,7 @@ catch {
 
 # Test that Invoke-LevelScript checks for initialization
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     Import-Module $LibraryPath -Force
 
     # Don't call Initialize-LevelScript, just check the function validates
@@ -463,10 +463,10 @@ $ExpectedExports = @(
 )
 
 # Fresh import to get accurate export list
-Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
 Import-Module $LibraryPath -Force
 
-$ExportedFunctions = (Get-Module LevelIO-Common).ExportedFunctions.Keys
+$ExportedFunctions = (Get-Module COOLForge-Common).ExportedFunctions.Keys
 
 # Test each expected function
 foreach ($FuncName in $ExpectedExports) {

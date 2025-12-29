@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    LevelIO-Common - Shared PowerShell module for Level.io automation scripts.
+    COOLForge-Common - Shared PowerShell module for Level.io automation scripts.
 
 .DESCRIPTION
     This module provides a standardized set of functions for Level.io RMM automation scripts:
@@ -14,7 +14,7 @@
 .NOTES
     Version:    2025.12.29.02
     Target:     Level.io RMM
-    Location:   {{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1
+    Location:   {{cf_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
     Level.io Custom Fields:
     - {{cf_msp_scratch_folder}}       : (Required) Persistent storage folder (e.g., C:\ProgramData\MSP)
@@ -29,7 +29,7 @@
 
 .EXAMPLE
     # Import and use the module
-    Import-Module "C:\ProgramData\MSP\Libraries\LevelIO-Common.psm1" -Force
+    Import-Module "C:\ProgramData\MSP\Libraries\COOLForge-Common.psm1" -Force
 
     $Init = Initialize-LevelScript -ScriptName "MyScript" -MspScratchFolder "C:\ProgramData\MSP"
     if ($Init.Success) {
@@ -1101,7 +1101,7 @@ function Send-LevelWakeOnLan {
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
 $script:ModuleVersion = "2025.12.29.02"
-Write-Host "[*] LevelIO-Common v$script:ModuleVersion loaded"
+Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
 # EXPORT MODULE MEMBERS

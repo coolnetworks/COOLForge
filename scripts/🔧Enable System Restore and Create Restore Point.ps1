@@ -17,7 +17,7 @@
     Percentage of disk space to allocate for System Restore. Default: 10
 
 .PARAMETER RestorePointDescription
-    Description for the restore point. Default: "LevelLib Automated Restore Point"
+    Description for the restore point. Default: "COOLForgeLib Automated Restore Point"
 
 .NOTES
     Version:          2025.12.29.01
@@ -47,8 +47,8 @@ $ErrorActionPreference = "Stop"
 # CONFIGURATION
 # ============================================================
 $DiskSpacePercent = 10                                    # Percentage of disk space for restore points
-$RestorePointDescription = "LevelLib Automated Restore Point"
-$ScheduledTaskName = "LevelLib Daily System Restore Point"
+$RestorePointDescription = "COOLForgeLib Automated Restore Point"
+$ScheduledTaskName = "COOLForgeLib Daily System Restore Point"
 
 # ============================================================
 # VALIDATION
@@ -282,7 +282,7 @@ try {
         $PointTime = $LatestPoint.ConvertToDateTime($LatestPoint.CreationTime)
         $TimeDiff = (Get-Date) - $PointTime
 
-        if ($TimeDiff.TotalMinutes -lt 5 -or $LatestPoint.Description -like "*LevelLib*") {
+        if ($TimeDiff.TotalMinutes -lt 5 -or $LatestPoint.Description -like "*COOLForgeLib*") {
             Write-Host "[+] Restore point verified successfully"
             $VerificationPassed = $true
         }
@@ -314,7 +314,7 @@ try {
 $ErrorActionPreference = 'SilentlyContinue'
 $FreqPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore'
 Set-ItemProperty -Path $FreqPath -Name 'SystemRestorePointCreationFrequency' -Value 0 -Type DWord -Force
-Checkpoint-Computer -Description "LevelLib Daily Restore Point - $(Get-Date -Format 'yyyy-MM-dd')" -RestorePointType MODIFY_SETTINGS
+Checkpoint-Computer -Description "COOLForgeLib Daily Restore Point - $(Get-Date -Format 'yyyy-MM-dd')" -RestorePointType MODIFY_SETTINGS
 Remove-ItemProperty -Path $FreqPath -Name 'SystemRestorePointCreationFrequency' -ErrorAction SilentlyContinue
 '@
 
@@ -382,7 +382,7 @@ Remove-ItemProperty -Path $FreqPath -Name 'SystemRestorePointCreationFrequency' 
 </Task>
 "@
 
-        $TempXmlPath = Join-Path $env:TEMP "LevelLibRestoreTask.xml"
+        $TempXmlPath = Join-Path $env:TEMP "COOLForgeLibRestoreTask.xml"
         $TaskXml | Out-File -FilePath $TempXmlPath -Encoding Unicode -Force
 
         & schtasks.exe /Create /TN $ScheduledTaskName /XML $TempXmlPath /F 2>&1 | Out-Null

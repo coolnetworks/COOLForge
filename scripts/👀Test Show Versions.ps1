@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Comprehensive test script for LevelIO-Common library via Script Launcher.
+    Comprehensive test script for COOLForge-Common library via Script Launcher.
 
 .DESCRIPTION
-    This script tests all 8 exported functions from the LevelIO-Common library
+    This script tests all 8 exported functions from the COOLForge-Common library
     and displays version/device information. It verifies:
 
     - Write-LevelLog      : Logging with all severity levels
@@ -29,7 +29,7 @@
 
     Level.io Variables Used (passed from Script Launcher):
     - $MspScratchFolder  : MSP-defined scratch folder for persistent storage
-    - $LibraryUrl        : URL to download LevelIO-Common.psm1 library
+    - $LibraryUrl        : URL to download COOLForge-Common.psm1 library
     - $DeviceHostname    : Device hostname from Level.io
     - $DeviceTags        : Comma-separated list of device tags
 
@@ -82,7 +82,7 @@ function Write-TestResult {
 # ============================================================
 Write-Host ""
 Write-Host "========================================"
-Write-Host "LevelLib Test Suite & Version Info"
+Write-Host "COOLForgeLib Test Suite & Version Info"
 Write-Host "Running via Script Launcher"
 Write-Host "========================================"
 Write-Host ""
@@ -103,11 +103,11 @@ Write-Host ""
 
 # Display library version
 Write-Host "--- Library Version ---"
-$LibraryPath = Join-Path -Path $MspScratchFolder -ChildPath "Libraries\LevelIO-Common.psm1"
+$LibraryPath = Join-Path -Path $MspScratchFolder -ChildPath "Libraries\COOLForge-Common.psm1"
 if (Test-Path $LibraryPath) {
     $LibContent = Get-Content -Path $LibraryPath -Raw -ErrorAction SilentlyContinue
     if ($LibContent -match 'Version:\s*([\d\.]+)') {
-        Write-Host "  LevelIO-Common.psm1: v$($Matches[1])"
+        Write-Host "  COOLForge-Common.psm1: v$($Matches[1])"
     }
 }
 Write-Host ""
@@ -245,9 +245,9 @@ Write-Host "--- Testing Initialize-LevelScript ---"
 
 # Test 4a: Basic initialization with SkipTagCheck
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     $ModuleContent = Get-Content -Path $LibraryPath -Raw
-    New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+    New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
     $Init = Initialize-LevelScript -ScriptName "TestScript1" `
                                    -MspScratchFolder $TestScratchFolder `
@@ -271,9 +271,9 @@ catch {
 
 # Test 4b: Tag blocking functionality
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     $ModuleContent = Get-Content -Path $LibraryPath -Raw
-    New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+    New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
     $TestTags = "Production, Windows 11, NoRun"
     $Init = Initialize-LevelScript -ScriptName "TestScript2" `
@@ -290,9 +290,9 @@ catch {
 
 # Test 4c: SkipTagCheck bypasses blocking
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     $ModuleContent = Get-Content -Path $LibraryPath -Raw
-    New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+    New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
     $TestTags = "Production, NoRun"
     $Init = Initialize-LevelScript -ScriptName "TestScript3" `
@@ -310,9 +310,9 @@ catch {
 
 # Test 4d: SkipLockFile prevents lockfile creation
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     $ModuleContent = Get-Content -Path $LibraryPath -Raw
-    New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+    New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
     $Init = Initialize-LevelScript -ScriptName "TestScript4" `
                                    -MspScratchFolder $TestScratchFolder `
@@ -329,9 +329,9 @@ catch {
 
 # Test 4e: Stale lockfile cleanup
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     $ModuleContent = Get-Content -Path $LibraryPath -Raw
-    New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+    New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
     $StaleLockDir = Join-Path -Path $TestScratchFolder -ChildPath "lockfiles"
     if (!(Test-Path $StaleLockDir)) { New-Item -Path $StaleLockDir -ItemType Directory -Force | Out-Null }
@@ -355,9 +355,9 @@ Write-Host ""
 Write-Host "--- Testing Remove-LevelLockFile ---"
 
 try {
-    Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+    Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
     $ModuleContent = Get-Content -Path $LibraryPath -Raw
-    New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+    New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
     $Init = Initialize-LevelScript -ScriptName "TestScript6" `
                                    -MspScratchFolder $TestScratchFolder `
@@ -429,11 +429,11 @@ $ExpectedExports = @(
     'Invoke-LevelApiCall'
 )
 
-Remove-Module LevelIO-Common -ErrorAction SilentlyContinue
+Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
 $ModuleContent = Get-Content -Path $LibraryPath -Raw
-New-Module -Name "LevelIO-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
-$ExportedFunctions = (Get-Module LevelIO-Common).ExportedFunctions.Keys
+$ExportedFunctions = (Get-Module COOLForge-Common).ExportedFunctions.Keys
 
 foreach ($FuncName in $ExpectedExports) {
     $IsExported = $ExportedFunctions -contains $FuncName

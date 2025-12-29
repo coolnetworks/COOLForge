@@ -23,7 +23,7 @@
     File Name      : Wake all devices in parent to level.io folder.ps1
     Prerequisite   : Level.io API key with device read permissions
     API Version    : Level.io API v2
-    Requires       : LevelIO-Common module
+    Requires       : COOLForge-Common module
 
 .EXAMPLE
     # Wake all devices in parent folder (default behavior)
@@ -43,12 +43,12 @@ $WolDelayMs = 500      # Delay between WOL packet attempts (milliseconds)
 #endregion Configuration
 
 #region Module Import
-# Import the LevelIO-Common module (assumes it's already available)
-$ModulePath = "{{cf_msp_scratch_folder}}\Libraries\LevelIO-Common.psm1"
+# Import the COOLForge-Common module (assumes it's already available)
+$ModulePath = "{{cf_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1"
 if (Test-Path $ModulePath) {
     Import-Module $ModulePath -Force
 } else {
-    Write-Error "LevelIO-Common module not found at: $ModulePath"
+    Write-Error "COOLForge-Common module not found at: $ModulePath"
     exit 1
 }
 #endregion Module Import

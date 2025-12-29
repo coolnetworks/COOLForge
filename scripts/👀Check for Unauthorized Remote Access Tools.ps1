@@ -24,7 +24,7 @@
 
     Level.io Variables Used (passed from Script Launcher):
     - $MspScratchFolder  : MSP-defined scratch folder for persistent storage
-    - $LibraryUrl        : URL to download LevelIO-Common.psm1 library
+    - $LibraryUrl        : URL to download COOLForge-Common.psm1 library
     - $DeviceHostname    : Device hostname from Level.io
     - $DeviceTags        : Comma-separated list of device tags
 
