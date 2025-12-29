@@ -1,6 +1,6 @@
-# MD5SUMS - Checksums for LevelLib files
+﻿# MD5SUMS - Checksums for LevelLib files
 # Format: MD5_HASH  FILENAME
-# Generated: 2025-12-29 12:26:21
+# Generated: 2025-12-29 13:40:50
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
@@ -12,6 +12,7 @@ da41f6c111ef7c319d330bba3552c720  LevelIO-Common.psm1
 d838f66ce6709e724b6ec20af12990d7  scripts/👀Check for Unauthorized Remote Access Tools.ps1
 65cceb41081bc49613f67db848aaad34  scripts/👀Test Show Versions.ps1
 a68d5103d8b7a64bf9572fc077e9973f  scripts/👀Test Variable Output.ps1
+a838dc40b5c542621f0ca2379883a0e2  scripts/🔧Enable System Restore and Create Restore Point.ps1
 9bb5be0ae0d4a6d095fc9c4c540d1c21  scripts/🔧Fix Windows 10 Services.ps1
 a75f707641e6944a1d984845abb946c2  scripts/🔧Fix Windows 11 Services.ps1
 2252d8fee0342885369ba7048d176230  scripts/🔧Fix Windows 7 Services.ps1

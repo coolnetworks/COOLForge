@@ -1,0 +1,5 @@
+# LevelLib setup config (contains encrypted API key)
+.levellib-setup.json
+
+# Custom field backups (may contain sensitive data)
+/backups/
