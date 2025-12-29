@@ -29,10 +29,10 @@
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 #>
 
 # Fix Windows 8.1 Services
@@ -42,7 +42,7 @@
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au
-# https://github.com/coolnetworks/LevelLib
+# https://github.com/coolnetworks/COOLForge
 
 $ErrorActionPreference = "SilentlyContinue"
 

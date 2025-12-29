@@ -45,10 +45,10 @@ $ScriptToRun = "⛔Force Remove Anydesk.ps1"
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
@@ -68,7 +68,7 @@ $ScriptToRun = "⛔Force Remove Anydesk.ps1"
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au
-# https://github.com/coolnetworks/LevelLib
+# https://github.com/coolnetworks/COOLForge
 $ErrorActionPreference = "SilentlyContinue"
 
 # ============================================================
@@ -92,10 +92,10 @@ $LibraryUrl = "{{cf_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/$Branch/LevelIO-Common.psm1"
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/LevelIO-Common.psm1"
 } elseif ($UsePinnedVersion) {
     # Custom URL provided but version pinning requested - replace branch in URL
-    # Pattern: .../coolnetworks/LevelLib/main/... -> .../coolnetworks/LevelLib/$PinnedVersion/...
+    # Pattern: .../coolnetworks/COOLForge/main/... -> .../coolnetworks/COOLForge/$PinnedVersion/...
     $LibraryUrl = $LibraryUrl -replace '/LevelLib/[^/]+/', "/LevelLib/$PinnedVersion/"
 }
 

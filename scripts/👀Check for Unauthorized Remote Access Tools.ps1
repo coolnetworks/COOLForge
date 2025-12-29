@@ -34,10 +34,10 @@
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 #>
 
 # 👀Check for Unauthorized Remote Access Tools
@@ -47,7 +47,7 @@
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au
-# https://github.com/coolnetworks/LevelLib
+# https://github.com/coolnetworks/COOLForge
 
 # ============================================================
 # INITIALIZE

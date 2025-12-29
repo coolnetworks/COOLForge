@@ -22,10 +22,10 @@
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
     # Import and initialize the module
@@ -48,7 +48,7 @@
 # ============================================================
 $Script:ApiKey = $null
 $Script:LevelApiBase = "https://api.level.io/v2"
-$Script:GitHubRepo = "coolnetworks/LevelLib"
+$Script:GitHubRepo = "coolnetworks/COOLForge"
 $Script:Initialized = $false
 $Script:ModuleVersion = "2025.12.29.01"
 
@@ -68,7 +68,7 @@ function Initialize-LevelLibCustomFields {
     .PARAMETER LevelApiBase
         Base URL for Level.io API. Defaults to "https://api.level.io/v2".
     .PARAMETER GitHubRepo
-        GitHub repository for release checks. Defaults to "coolnetworks/LevelLib".
+        GitHub repository for release checks. Defaults to "coolnetworks/COOLForge".
     .EXAMPLE
         Initialize-LevelLibCustomFields -ApiKey "your-api-key"
     #>
@@ -80,7 +80,7 @@ function Initialize-LevelLibCustomFields {
         [string]$LevelApiBase = "https://api.level.io/v2",
 
         [Parameter(Mandatory = $false)]
-        [string]$GitHubRepo = "coolnetworks/LevelLib"
+        [string]$GitHubRepo = "coolnetworks/COOLForge"
     )
 
     $Script:ApiKey = $ApiKey

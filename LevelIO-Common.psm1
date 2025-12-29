@@ -22,10 +22,10 @@
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
     # Import and use the module

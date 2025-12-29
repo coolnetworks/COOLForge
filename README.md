@@ -5,7 +5,7 @@
 A standardized PowerShell module for Level.io RMM automation scripts.
 
 **Copyright:** [COOLNETWORKS](https://coolnetworks.au)
-**Repository:** [github.com/coolnetworks/LevelLib](https://github.com/coolnetworks/LevelLib)
+**Repository:** [github.com/coolnetworks/COOLForge](https://github.com/coolnetworks/COOLForge)
 
 ---
 
@@ -73,7 +73,7 @@ LevelLib/
 | Custom Field | Example Value | Required | Description |
 |--------------|---------------|----------|-------------|
 | `msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
-| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
+| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
 | `pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag (defaults to latest from main branch) |
 | `screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
 | `is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
@@ -84,7 +84,7 @@ Use the setup wizard to automatically create and configure custom fields:
 
 ```powershell
 # Download and run the setup script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/tools/Setup-LevelLibCustomFields.ps1" -OutFile "Setup-LevelLibCustomFields.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/tools/Setup-LevelLibCustomFields.ps1" -OutFile "Setup-LevelLibCustomFields.ps1"
 .\Setup-LevelLibCustomFields.ps1
 ```
 
@@ -127,7 +127,7 @@ Scripts using the template automatically download and update the library on each
 
 **Default URL (used if custom field not set):**
 ```
-https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1
 ```
 
 > **Tip:** Setting the `ps_module_library_source` custom field allows you to:
@@ -172,10 +172,10 @@ By default, scripts and the launcher use the latest code from the `main` branch.
 **URL transformation:**
 ```
 Default (no pinning):
-https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1
 
 With pin_psmodule_to_version = v2025.12.29:
-https://raw.githubusercontent.com/coolnetworks/LevelLib/v2025.12.29/LevelIO-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/v2025.12.29/LevelIO-Common.psm1
 ```
 
 ### Output Example
@@ -856,4 +856,4 @@ See [LICENSE](LICENSE) for details.
 ## Support
 
 **Website:** [coolnetworks.au](https://coolnetworks.au)
-**Repository:** [github.com/coolnetworks/LevelLib](https://github.com/coolnetworks/LevelLib)
+**Repository:** [github.com/coolnetworks/COOLForge](https://github.com/coolnetworks/COOLForge)

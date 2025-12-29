@@ -32,10 +32,10 @@
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
     # Basic usage - just add your code inside the Invoke-LevelScript block:
@@ -63,7 +63,7 @@
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au
-# https://github.com/coolnetworks/LevelLib
+# https://github.com/coolnetworks/COOLForge
 $ErrorActionPreference = "SilentlyContinue"
 
 # ============================================================
@@ -81,7 +81,7 @@ $LibraryUrl = "{{cf_ps_module_library_source}}"
 
 # Default to official repo if custom field not set
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1"
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/LevelIO-Common.psm1"
 }
 
 # Define library storage location within the scratch folder

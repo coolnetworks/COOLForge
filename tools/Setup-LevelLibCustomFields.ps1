@@ -29,10 +29,10 @@
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
     .\Setup-LevelLibCustomFields.ps1
@@ -502,7 +502,7 @@ Write-Host "  1. Deploy a launcher script from the 'launchers/' folder"
 Write-Host "  2. Or copy 'templates/Launcher_Template.ps1' and customize it"
 Write-Host "  3. Test on a single device first"
 Write-Host ""
-Write-Host "Documentation: https://github.com/coolnetworks/LevelLib"
+Write-Host "Documentation: https://github.com/coolnetworks/COOLForge"
 Write-Host ""
 
 # Show final field status

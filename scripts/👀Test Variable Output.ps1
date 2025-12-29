@@ -37,7 +37,7 @@
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
-    https://github.com/coolnetworks/LevelLib
+    https://github.com/coolnetworks/COOLForge
 
 .LINK
     https://docs.level.io/en/articles/11509659-set-variables-directly-from-scripts
@@ -50,7 +50,7 @@
 #
 # Copyright (c) COOLNETWORKS
 # https://coolnetworks.au
-# https://github.com/coolnetworks/LevelLib
+# https://github.com/coolnetworks/COOLForge
 
 # ============================================================
 # CONFIGURATION - VARIABLES TO SET
@@ -323,7 +323,7 @@ if ((Should-OutputVariable "test_path") -or (Should-OutputVariable "test_spaced"
     }
 
     if (Should-OutputVariable "test_url") {
-        $UrlValue = "https://github.com/coolnetworks/LevelLib"
+        $UrlValue = "https://github.com/coolnetworks/COOLForge"
         Write-Host "Setting test_url = $UrlValue"
         Write-Output "{{test_url=$UrlValue}}"
         $VariablesSet += "test_url"
