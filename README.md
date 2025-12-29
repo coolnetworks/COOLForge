@@ -1,6 +1,6 @@
 # LevelLib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.29.01
+**Version:** 2025.12.29.02
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -68,6 +68,7 @@ LevelLib/
 |--------------|---------------|----------|-------------|
 | `msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
 | `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
+| `pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag (defaults to latest from main branch) |
 | `screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
 | `is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
 
@@ -124,6 +125,48 @@ https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
 
 [!] Could not check for updates (using local v2025.12.27.2)
 ```
+
+---
+
+## Version Pinning
+
+By default, scripts and the launcher use the latest code from the `main` branch. You can pin devices to a specific release version using the `pin_psmodule_to_version` custom field.
+
+### When to Use Version Pinning
+
+- **Staged Rollouts** — Test new versions on a subset of devices before fleet-wide deployment
+- **Stability** — Keep production devices on a known-good version
+- **Rollback** — Quickly revert to a previous version if issues arise
+
+### How It Works
+
+1. Create a custom field `pin_psmodule_to_version` in Level.io
+2. Set the value to a release tag (e.g., `v2025.12.29`)
+3. Scripts will download from that tag instead of `main`
+
+**URL transformation:**
+```
+Default (no pinning):
+https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1
+
+With pin_psmodule_to_version = v2025.12.29:
+https://raw.githubusercontent.com/coolnetworks/LevelLib/v2025.12.29/LevelIO-Common.psm1
+```
+
+### Output Example
+
+When version pinning is active:
+```
+[*] Version pinned to: v2025.12.29
+[*] Library not found - downloading...
+[+] Library updated to v2025.12.29.01
+```
+
+### Removing the Pin
+
+To return to the latest version:
+- Clear the `pin_psmodule_to_version` custom field value, or
+- Delete the custom field from the device/group
 
 ---
 
@@ -750,6 +793,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Component | Changes |
 |---------|------|-----------|---------|
+| 2025.12.29.02 | 2025-12-29 | All | Add version pinning via `pin_psmodule_to_version` custom field |
 | 2025.12.29.01 | 2025-12-29 | All | Add Test Variable Output script, fix launcher script names, add automation variable documentation |
 | 2025.12.27.22 | 2025-12-27 | All | Version sync release - Library v20, Launchers v10, README v22 |
 | 2025.12.27.20 | 2025-12-27 | Library | Add alternate emoji corruption patterns (👀→≡ƒæÇ, ⛔→Γ¢ö, etc.) for Level.io encoding |

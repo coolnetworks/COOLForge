@@ -30,7 +30,7 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.27.11
+    Launcher Version: 2025.12.29.01
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -38,6 +38,8 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
     - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
     - {{cf_ps_module_library_source}}: URL to download LevelIO-Common.psm1 library
                                        (scripts URL is derived from this automatically)
+    - {{cf_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
+                                       If not set, uses latest from main branch
     - {{level_device_hostname}}      : Device hostname from Level.io
     - {{level_tag_names}}            : Comma-separated list of device tags
 
@@ -60,7 +62,7 @@ $ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.27.11
+# Launcher Version: 2025.12.29.01
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -77,10 +79,24 @@ $MspScratchFolder = "{{cf_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
+# Version pinning - if set, use specific version tag instead of main branch
+$PinnedVersion = "{{cf_pin_psmodule_to_version}}"
+$UsePinnedVersion = $false
+if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{{cf_pin_psmodule_to_version}}") {
+    $UsePinnedVersion = $true
+    Write-Host "[*] Version pinned to: $PinnedVersion"
+}
+
 # Library URL - uses custom field if set, otherwise defaults to official repo
 $LibraryUrl = "{{cf_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/main/LevelIO-Common.psm1"
+    # Default to official repo - use pinned version or main branch
+    $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/LevelLib/$Branch/LevelIO-Common.psm1"
+} elseif ($UsePinnedVersion) {
+    # Custom URL provided but version pinning requested - replace branch in URL
+    # Pattern: .../coolnetworks/LevelLib/main/... -> .../coolnetworks/LevelLib/$PinnedVersion/...
+    $LibraryUrl = $LibraryUrl -replace '/LevelLib/[^/]+/', "/LevelLib/$PinnedVersion/"
 }
 
 # Additional custom fields can be added here and they will be available
@@ -278,7 +294,7 @@ $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.27.11"
+Write-Host "[*] Script Launcher v2025.12.29.01"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

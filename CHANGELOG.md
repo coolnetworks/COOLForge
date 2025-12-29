@@ -5,6 +5,18 @@ All notable changes to LevelLib will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.DD.N).
 
+## [Unreleased]
+
+### Added
+- **Version pinning** via `pin_psmodule_to_version` custom field
+  - Pin devices to specific release tags (e.g., `v2025.12.29`)
+  - Enables staged rollouts, rollback capability, and production stability
+  - Launchers v2025.12.29.01 updated with version pinning support
+
+### Changed
+- Launcher template and all launchers updated to v2025.12.29.01
+- README updated with Version Pinning section
+
 ## [v2025.12.29] - 2025-12-29
 
 ### Added
