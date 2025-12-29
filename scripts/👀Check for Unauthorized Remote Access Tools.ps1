@@ -70,8 +70,8 @@ if (-not $Init.Success) {
 # ============================================================
 # These can be set via custom fields in the launcher
 # Add to Script_Launcher.ps1:
-#   $ScreenConnectInstanceId = "{{cf_screenconnect_instance_id}}"
-#   $IsScreenConnectServer = "{{cf_is_screenconnect_server}}"
+#   $ScreenConnectInstanceId = "{{cf_CoolForge_screenconnect_instance_id}}"
+#   $IsScreenConnectServer = "{{cf_CoolForge_is_screenconnect_server}}"
 
 # Check if variables exist (passed from launcher), otherwise use empty defaults
 if (-not (Get-Variable -Name 'ScreenConnectInstanceId' -ErrorAction SilentlyContinue)) {

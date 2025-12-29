@@ -13,13 +13,13 @@
     5. Suggest pinning to the current version for stability
 
     REQUIRED CUSTOM FIELDS:
-    - msp_scratch_folder      : Persistent storage folder on endpoints (REQUIRED)
+    - CoolForge_msp_scratch_folder      : Persistent storage folder on endpoints (REQUIRED)
 
     OPTIONAL CUSTOM FIELDS:
-    - ps_module_library_source : Custom library URL (defaults to official repo)
-    - pin_psmodule_to_version  : Pin to specific version tag
-    - screenconnect_instance_id: Your MSP's ScreenConnect instance ID
-    - is_screenconnect_server  : Mark ScreenConnect server devices
+    - CoolForge_ps_module_library_source : Custom library URL (defaults to official repo)
+    - CoolForge_pin_psmodule_to_version  : Pin to specific version tag
+    - CoolForge_screenconnect_instance_id: Your MSP's ScreenConnect instance ID
+    - CoolForge_is_screenconnect_server  : Mark ScreenConnect server devices
 
 .NOTES
     Version:          2025.12.29.02
@@ -76,9 +76,11 @@ $Script:SavedConfig = $null
 $Script:ResolvedApiKey = $null
 
 # Define the custom fields we need (Default for msp_scratch_folder is set dynamically after MSP name prompt)
+# LegacyName is used for backward compatibility migration from old field names
 $Script:RequiredFields = @(
     @{
-        Name        = "msp_scratch_folder"
+        Name        = "CoolForge_msp_scratch_folder"
+        LegacyName  = "msp_scratch_folder"
         Description = "Persistent storage folder for MSP scripts and libraries"
         Required    = $true
         Default     = ""  # Set dynamically based on MSP name
@@ -88,28 +90,32 @@ $Script:RequiredFields = @(
 
 $Script:OptionalFields = @(
     @{
-        Name        = "ps_module_library_source"
+        Name        = "CoolForge_ps_module_library_source"
+        LegacyName  = "ps_module_library_source"
         Description = "URL to download COOLForge-Common.psm1 library (leave empty for official repo)"
         Required    = $false
         Default     = ""
         AdminOnly   = $false
     },
     @{
-        Name        = "pin_psmodule_to_version"
+        Name        = "CoolForge_pin_psmodule_to_version"
+        LegacyName  = "pin_psmodule_to_version"
         Description = "Pin scripts to a specific version tag (e.g., v2025.12.29)"
         Required    = $false
         Default     = ""
         AdminOnly   = $false
     },
     @{
-        Name        = "screenconnect_instance_id"
+        Name        = "CoolForge_screenconnect_instance_id"
+        LegacyName  = "screenconnect_instance_id"
         Description = "Your MSP's ScreenConnect instance ID for whitelisting"
         Required    = $false
         Default     = ""
         AdminOnly   = $true
     },
     @{
-        Name        = "is_screenconnect_server"
+        Name        = "CoolForge_is_screenconnect_server"
+        LegacyName  = "is_screenconnect_server"
         Description = "Set to 'true' on devices hosting ScreenConnect server"
         Required    = $false
         Default     = ""
@@ -135,14 +141,22 @@ if ($Script:SavedConfig) {
     Write-LevelInfo "Found saved configuration."
 }
 
-# Get API Key - check parameter, then saved config, then prompt
+# Get API Key - check parameter, then saved config (new key name, then legacy), then prompt
 if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
     $Script:ResolvedApiKey = $ApiKey
 }
-elseif ($Script:SavedConfig -and $Script:SavedConfig.ApiKeyEncrypted) {
-    $DecryptedKey = Unprotect-ApiKey -EncryptedText $Script:SavedConfig.ApiKeyEncrypted
+elseif ($Script:SavedConfig -and $Script:SavedConfig.CoolForge_ApiKeyEncrypted) {
+    $DecryptedKey = Unprotect-ApiKey -EncryptedText $Script:SavedConfig.CoolForge_ApiKeyEncrypted
     if ($DecryptedKey) {
         Write-LevelInfo "Using saved API key."
+        $Script:ResolvedApiKey = $DecryptedKey
+    }
+}
+elseif ($Script:SavedConfig -and $Script:SavedConfig.ApiKeyEncrypted) {
+    # Legacy key name - migrate on next save
+    $DecryptedKey = Unprotect-ApiKey -EncryptedText $Script:SavedConfig.ApiKeyEncrypted
+    if ($DecryptedKey) {
+        Write-LevelInfo "Using saved API key (will migrate to new format on save)."
         $Script:ResolvedApiKey = $DecryptedKey
     }
 }
@@ -180,10 +194,10 @@ if ($ExistingFields -isnot [array] -and $ExistingFields.data) {
 $FieldCount = if ($ExistingFields -is [array]) { $ExistingFields.Count } else { 1 }
 Write-LevelSuccess "Connected! Found $FieldCount existing custom field(s)."
 
-# API key works - save it immediately for future runs
+# API key works - save it immediately for future runs (using new key names)
 $ConfigToSave = @{
-    ApiKeyEncrypted = Protect-ApiKey -PlainText $Script:ResolvedApiKey
-    LastRun         = (Get-Date).ToString("o")
+    CoolForge_ApiKeyEncrypted = Protect-ApiKey -PlainText $Script:ResolvedApiKey
+    LastRun                   = (Get-Date).ToString("o")
 }
 if ($Script:SavedConfig -and $Script:SavedConfig.CompanyName) {
     $ConfigToSave.CompanyName = $Script:SavedConfig.CompanyName
@@ -288,22 +302,30 @@ else {
 # ============================================================
 Write-Header "MSP Configuration"
 
-# Check if scratch folder field exists and get its current value
-$ScratchFieldInfo = Find-CustomField -Name "msp_scratch_folder" -ExistingFields $ExistingFields
+# Check if scratch folder field exists (check new name first, then legacy)
+$ScratchFieldInfo = Find-CustomField -Name "CoolForge_msp_scratch_folder" -ExistingFields $ExistingFields
+$LegacyScratchFieldInfo = Find-CustomField -Name "msp_scratch_folder" -ExistingFields $ExistingFields
 $CurrentScratchFolder = ""
 $InferredCompanyName = ""
+$UsingLegacyField = $false
 
 if ($ScratchFieldInfo) {
     Write-LevelInfo "Checking existing scratch folder configuration..."
     $ScratchDetails = Get-CustomFieldById -FieldId $ScratchFieldInfo.id
     $CurrentScratchFolder = if ($ScratchDetails) { $ScratchDetails.default_value } else { $ScratchFieldInfo.default_value }
+}
+elseif ($LegacyScratchFieldInfo) {
+    Write-LevelInfo "Found legacy field 'msp_scratch_folder' - will migrate to new name..."
+    $UsingLegacyField = $true
+    $ScratchDetails = Get-CustomFieldById -FieldId $LegacyScratchFieldInfo.id
+    $CurrentScratchFolder = if ($ScratchDetails) { $ScratchDetails.default_value } else { $LegacyScratchFieldInfo.default_value }
+}
 
-    if (-not [string]::IsNullOrWhiteSpace($CurrentScratchFolder)) {
-        Write-Host "  Found existing scratch folder: $CurrentScratchFolder"
-        $InferredCompanyName = Get-CompanyNameFromPath -Path $CurrentScratchFolder
-        if (-not [string]::IsNullOrWhiteSpace($InferredCompanyName)) {
-            Write-Host "  Inferred company name: $InferredCompanyName"
-        }
+if (-not [string]::IsNullOrWhiteSpace($CurrentScratchFolder)) {
+    Write-Host "  Found existing scratch folder: $CurrentScratchFolder"
+    $InferredCompanyName = Get-CompanyNameFromPath -Path $CurrentScratchFolder
+    if (-not [string]::IsNullOrWhiteSpace($InferredCompanyName)) {
+        Write-Host "  Inferred company name: $InferredCompanyName"
     }
 }
 
@@ -358,13 +380,13 @@ Write-LevelSuccess "Scratch folder: $FinalScratchFolder"
 Write-Header "Required Custom Fields"
 
 Write-Host ""
-Write-Host "Field: msp_scratch_folder" -ForegroundColor Cyan
+Write-Host "Field: CoolForge_msp_scratch_folder" -ForegroundColor Cyan
 Write-Host "  Description: Persistent storage folder for MSP scripts and libraries"
 Write-Host "  Required: Yes"
 Write-Host ""
 
 if ($ScratchFieldInfo) {
-    # Field exists - update if value changed
+    # New field exists - update if value changed
     if ([string]::IsNullOrWhiteSpace($CurrentScratchFolder)) {
         Write-LevelInfo "Field exists but has no default value set."
         Write-LevelInfo "Setting default value to: $FinalScratchFolder"
@@ -382,10 +404,28 @@ if ($ScratchFieldInfo) {
         Write-LevelSuccess "Field already configured correctly: $FinalScratchFolder"
     }
 }
+elseif ($UsingLegacyField) {
+    # Legacy field exists - create new field with same value, inform user to update scripts
+    Write-LevelInfo "Creating new field 'CoolForge_msp_scratch_folder' with value from legacy field..."
+    $Created = New-CustomField -Name "CoolForge_msp_scratch_folder" -DefaultValue $FinalScratchFolder -AdminOnly $false
+
+    if ($Created -and -not [string]::IsNullOrWhiteSpace($FinalScratchFolder)) {
+        if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
+            Write-LevelInfo "Setting default value..."
+            if (Update-CustomFieldValue -FieldId $Created.id -Value $FinalScratchFolder) {
+                Write-LevelSuccess "Set default value to: $FinalScratchFolder"
+            }
+        }
+    }
+    if ($Created) {
+        $ExistingFields += $Created
+        Write-LevelWarning "Legacy field 'msp_scratch_folder' still exists - update your scripts to use new field names"
+    }
+}
 else {
     # Field doesn't exist - create it
     Write-LevelWarning "Field does not exist - creating it."
-    $Created = New-CustomField -Name "msp_scratch_folder" -DefaultValue $FinalScratchFolder -AdminOnly $false
+    $Created = New-CustomField -Name "CoolForge_msp_scratch_folder" -DefaultValue $FinalScratchFolder -AdminOnly $false
 
     # If API doesn't set default on creation, update it separately
     if ($Created -and -not [string]::IsNullOrWhiteSpace($FinalScratchFolder)) {
@@ -409,10 +449,34 @@ Write-Host ""
 
 foreach ($Field in $Script:OptionalFields) {
     $Existing = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
+    $LegacyExisting = if ($Field.LegacyName) { Find-CustomField -Name $Field.LegacyName -ExistingFields $ExistingFields } else { $null }
 
     if ($Existing) {
-        # Field exists - just show status
+        # New field exists - just show status
         Write-LevelSuccess "$($Field.Name) - exists"
+    }
+    elseif ($LegacyExisting) {
+        # Legacy field exists - get its value and create new field
+        Write-Host ""
+        Write-Host "Field: $($Field.Name)" -ForegroundColor Cyan
+        Write-Host "  Description: $($Field.Description)"
+        Write-LevelInfo "Legacy field '$($Field.LegacyName)' found - migrating..."
+
+        # Get value from legacy field
+        $LegacyDetails = Get-CustomFieldById -FieldId $LegacyExisting.id
+        $LegacyValue = if ($LegacyDetails) { $LegacyDetails.default_value } else { "" }
+
+        $Created = New-CustomField -Name $Field.Name -DefaultValue $LegacyValue -AdminOnly $Field.AdminOnly
+        if ($Created -and -not [string]::IsNullOrWhiteSpace($LegacyValue)) {
+            if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
+                if (Update-CustomFieldValue -FieldId $Created.id -Value $LegacyValue) {
+                    Write-LevelSuccess "Migrated value: $LegacyValue"
+                }
+            }
+        }
+        if ($Created) {
+            $ExistingFields += $Created
+        }
     }
     else {
         # Field doesn't exist - ask if user wants to create it
@@ -428,7 +492,7 @@ foreach ($Field in $Script:OptionalFields) {
             $DefaultValue = ""
 
             # Special handling for version pinning
-            if ($Field.Name -eq "pin_psmodule_to_version") {
+            if ($Field.Name -eq "CoolForge_pin_psmodule_to_version") {
                 Write-Host ""
                 Write-Host "  TIP: Pinning to a version ensures stability across your fleet." -ForegroundColor Cyan
                 $DefaultValue = Select-Version -CurrentVersion ""
@@ -484,13 +548,13 @@ foreach ($Field in $AllFields) {
 
 Write-Host ""
 
-# Save configuration for next time
+# Save configuration for next time (using new key names)
 Write-Host ""
 if (Read-YesNo -Prompt "Save settings for next time" -Default $true) {
     $ConfigToSave = @{
-        CompanyName     = $Script:MspName
-        ApiKeyEncrypted = Protect-ApiKey -PlainText $Script:ResolvedApiKey
-        LastRun         = (Get-Date).ToString("o")
+        CompanyName               = $Script:MspName
+        CoolForge_ApiKeyEncrypted = Protect-ApiKey -PlainText $Script:ResolvedApiKey
+        LastRun                   = (Get-Date).ToString("o")
     }
 
     if (Save-Config -Config $ConfigToSave -Path $Script:ConfigPath) {

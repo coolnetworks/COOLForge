@@ -31,7 +31,7 @@ COOLForgeLib provides a shared set of functions for Level.io automation scripts,
 
 ```
 COOLForgeLib/
-├── modules/                     # PowerShell modulesn�   +-- COOLForge-CustomFields.psm1  # Level.io custom fields API module
+├── modules/                     # PowerShell modulesn�   +-- COOLForge-CustomFields.psm1  # Level.io custom fields API module
 ├── scripts/                     # Ready-to-use automation scripts
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
@@ -73,11 +73,11 @@ COOLForgeLib/
 
 | Custom Field | Example Value | Required | Description |
 |--------------|---------------|----------|-------------|
-| `msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
-| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
-| `pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag (defaults to latest from main branch) |
-| `screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
-| `is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
+| `CoolForge_msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
+| `CoolForge_ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
+| `CoolForge_pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag (defaults to latest from main branch) |
+| `CoolForge_screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
+| `CoolForge_is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
 
 ### Automated Setup
 
@@ -131,7 +131,7 @@ Scripts using the template automatically download and update the library on each
 https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1
 ```
 
-> **Tip:** Setting the `ps_module_library_source` custom field allows you to:
+> **Tip:** Setting the `CoolForge_ps_module_library_source` custom field allows you to:
 > - Fork the library and use your own repository
 > - Use a private GitHub repository with token authentication
 > - Host the library on your own infrastructure
@@ -156,7 +156,7 @@ https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-
 
 ## Version Pinning
 
-By default, scripts and the launcher use the latest code from the `main` branch. You can pin devices to a specific release version using the `pin_psmodule_to_version` custom field.
+By default, scripts and the launcher use the latest code from the `main` branch. You can pin devices to a specific release version using the `CoolForge_pin_psmodule_to_version` custom field.
 
 ### When to Use Version Pinning
 
@@ -166,7 +166,7 @@ By default, scripts and the launcher use the latest code from the `main` branch.
 
 ### How It Works
 
-1. Create a custom field `pin_psmodule_to_version` in Level.io
+1. Create a custom field `CoolForge_pin_psmodule_to_version` in Level.io
 2. Set the value to a release tag (e.g., `v2025.12.29`)
 3. Scripts will download from that tag instead of `main`
 
@@ -191,7 +191,7 @@ When version pinning is active:
 ### Removing the Pin
 
 To return to the latest version:
-- Clear the `pin_psmodule_to_version` custom field value, or
+- Clear the `CoolForge_pin_psmodule_to_version` custom field value, or
 - Delete the custom field from the device/group
 
 ---
@@ -222,10 +222,10 @@ Go to **Settings → Custom Fields** and create these fields:
 
 | Field Name | Type | Value | Required |
 |------------|------|-------|----------|
-| `msp_scratch_folder` | Text | `C:\ProgramData\MSP` | **Yes** |
-| `ps_module_library_source` | Text | `https://raw.githubusercontent.com/...` | No (defaults to official repo) |
+| `CoolForge_msp_scratch_folder` | Text | `C:\ProgramData\MSP` | **Yes** |
+| `CoolForge_ps_module_library_source` | Text | `https://raw.githubusercontent.com/...` | No (defaults to official repo) |
 
-> **Note:** The `ps_module_library_source` field is optional - if not set, scripts use the official COOLForgeLib repository. Set this field only if you're using a fork or private repository.
+> **Note:** The `CoolForge_ps_module_library_source` field is optional - if not set, scripts use the official COOLForgeLib repository. Set this field only if you're using a fork or private repository.
 
 #### Step 2: Create Scripts in Level.io
 
@@ -322,8 +322,8 @@ The launcher automatically passes these variables to downloaded scripts:
 
 | Variable | Source | Description |
 |----------|--------|-------------|
-| `$MspScratchFolder` | `{{cf_msp_scratch_folder}}` | Persistent storage folder |
-| `$LibraryUrl` | `{{cf_ps_module_library_source}}` | Library download URL |
+| `$MspScratchFolder` | `{{cf_CoolForge_msp_scratch_folder}}` | Persistent storage folder |
+| `$LibraryUrl` | `{{cf_CoolForge_ps_module_library_source}}` | Library download URL |
 | `$DeviceHostname` | `{{level_device_hostname}}` | Device hostname |
 | `$DeviceTags` | `{{level_tag_names}}` | Comma-separated device tags |
 
@@ -393,7 +393,7 @@ Initializes the script environment, checks blocking tags, and creates a lockfile
 
 ```powershell
 $Init = Initialize-LevelScript -ScriptName "MyScript" `
-                               -MspScratchFolder "{{cf_msp_scratch_folder}}" `
+                               -MspScratchFolder "{{cf_CoolForge_msp_scratch_folder}}" `
                                -DeviceHostname "{{level_device_hostname}}" `
                                -DeviceTags "{{level_tag_names}}"
 ```
@@ -774,8 +774,8 @@ To add support for additional emojis, update the `$EmojiRepairs` hashtable in th
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `{{cf_msp_scratch_folder}}` | Base path for MSP files | `C:\ProgramData\MSP` |
-| `{{cf_ps_module_library_source}}` | URL to download library (scripts URL derived automatically) | `https://raw.githubusercontent.com/.../COOLForge-Common.psm1` |
+| `{{cf_CoolForge_msp_scratch_folder}}` | Base path for MSP files | `C:\ProgramData\MSP` |
+| `{{cf_CoolForge_ps_module_library_source}}` | URL to download library (scripts URL derived automatically) | `https://raw.githubusercontent.com/.../COOLForge-Common.psm1` |
 | `{{cf_apikey}}` | API key custom field | `sk-xxxxx` |
 | `{{level_device_hostname}}` | Device hostname | `WORKSTATION01` |
 | `{{level_tag_names}}` | Comma-separated device tags | `Production, Windows 11` |
@@ -785,7 +785,7 @@ To add support for additional emojis, update the `$EmojiRepairs` hashtable in th
 ## Architecture
 
 ```
-{{cf_msp_scratch_folder}}\
+{{cf_CoolForge_msp_scratch_folder}}\
 ├── Libraries\
 │   └── COOLForge-Common.psm1      # Shared module (auto-downloaded)
 ├── Scripts\
@@ -825,7 +825,7 @@ Format: `YYYY.MM.DD.N`
 
 | Version | Date | Component | Changes |
 |---------|------|-----------|---------|
-| 2025.12.29.02 | 2025-12-29 | All | Add version pinning via `pin_psmodule_to_version` custom field |
+| 2025.12.29.02 | 2025-12-29 | All | Add version pinning via `CoolForge_pin_psmodule_to_version` custom field |
 | 2025.12.29.01 | 2025-12-29 | All | Add Test Variable Output script, fix launcher script names, add automation variable documentation |
 | 2025.12.27.22 | 2025-12-27 | All | Version sync release - Library v20, Launchers v10, README v22 |
 | 2025.12.27.20 | 2025-12-27 | Library | Add alternate emoji corruption patterns (👀→≡ƒæÇ, ⛔→Γ¢ö, etc.) for Level.io encoding |

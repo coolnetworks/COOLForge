@@ -35,10 +35,10 @@ $ScriptToRun = "🙏Wake all devices in parent to level.io folder.ps1"
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used:
-    - {{cf_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
-    - {{cf_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
+    - {{cf_CoolForge_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
+    - {{cf_CoolForge_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
                                        (scripts URL is derived from this automatically)
-    - {{cf_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
+    - {{cf_CoolForge_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
                                        If not set, uses latest from main branch
     - {{level_device_hostname}}      : Device hostname from Level.io
     - {{level_tag_names}}            : Comma-separated list of device tags
@@ -75,21 +75,21 @@ $ErrorActionPreference = "SilentlyContinue"
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
 # ============================================================
 # These variables will be passed to the downloaded script
-$MspScratchFolder = "{{cf_msp_scratch_folder}}"
+$MspScratchFolder = "{{cf_CoolForge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
 # Version pinning - if set, use specific version tag instead of main branch
-$PinnedVersion = "{{cf_pin_psmodule_to_version}}"
+$PinnedVersion = "{{cf_CoolForge_pin_psmodule_to_version}}"
 $UsePinnedVersion = $false
-if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{{cf_pin_psmodule_to_version}}") {
+if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{{cf_CoolForge_pin_psmodule_to_version}}") {
     $UsePinnedVersion = $true
     Write-Host "[*] Version pinned to: $PinnedVersion"
 }
 
 # Library URL - uses custom field if set, otherwise defaults to official repo
-$LibraryUrl = "{{cf_ps_module_library_source}}"
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+$LibraryUrl = "{{cf_CoolForge_ps_module_library_source}}"
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"

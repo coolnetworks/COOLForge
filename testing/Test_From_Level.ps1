@@ -63,11 +63,11 @@ $ErrorActionPreference = "SilentlyContinue"
 # Level.io custom fields
 # $MspScratchFolder: Persistent storage folder on the endpoint
 # $LibraryUrl: URL to download the COOLForge-Common library
-$MspScratchFolder = "{{cf_msp_scratch_folder}}"
-$LibraryUrl = "{{cf_ps_module_library_source}}"
+$MspScratchFolder = "{{cf_CoolForge_msp_scratch_folder}}"
+$LibraryUrl = "{{cf_CoolForge_ps_module_library_source}}"
 
 # Default to official repo if custom field not set
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}") {
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1"
 }
 

@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     This script tests the Level.io v2 API endpoints for custom fields and custom field values
-    to understand how to retrieve the msp_scratch_folder value.
+    to understand how to retrieve the CoolForge_msp_scratch_folder value.
 
 .NOTES
     API Documentation: https://levelapi.readme.io/
@@ -83,16 +83,16 @@ if ($Result.Success) {
     $Fields = if ($Result.Data.data) { $Result.Data.data } else { $Result.Data }
     Write-Host "[+] Got $($Fields.Count) custom fields" -ForegroundColor Green
 
-    # Find msp_scratch_folder
-    $MspScratchField = $Fields | Where-Object { $_.name -eq "msp_scratch_folder" }
+    # Find CoolForge_msp_scratch_folder
+    $MspScratchField = $Fields | Where-Object { $_.name -eq "CoolForge_msp_scratch_folder" }
     if ($MspScratchField) {
         Write-Host ""
-        Write-Host "[+] Found msp_scratch_folder:" -ForegroundColor Green
+        Write-Host "[+] Found CoolForge_msp_scratch_folder:" -ForegroundColor Green
         Write-Host ($MspScratchField | ConvertTo-Json -Depth 5) -ForegroundColor White
         $MspScratchFieldId = $MspScratchField.id
     }
     else {
-        Write-Host "[!] msp_scratch_folder not found in first page" -ForegroundColor Yellow
+        Write-Host "[!] CoolForge_msp_scratch_folder not found in first page" -ForegroundColor Yellow
     }
 
     # Check pagination
@@ -145,11 +145,11 @@ do {
 
 Write-Host "[+] Total custom fields: $($AllFields.Count)" -ForegroundColor Green
 
-# Find msp_scratch_folder in all fields
-$MspScratchField = $AllFields | Where-Object { $_.name -eq "msp_scratch_folder" }
+# Find CoolForge_msp_scratch_folder in all fields
+$MspScratchField = $AllFields | Where-Object { $_.name -eq "CoolForge_msp_scratch_folder" }
 if ($MspScratchField) {
     Write-Host ""
-    Write-Host "[+] Found msp_scratch_folder:" -ForegroundColor Green
+    Write-Host "[+] Found CoolForge_msp_scratch_folder:" -ForegroundColor Green
     Write-Host ($MspScratchField | ConvertTo-Json -Depth 5) -ForegroundColor White
     $MspScratchFieldId = $MspScratchField.id
 }
@@ -196,18 +196,18 @@ if ($Result.Success) {
         }
     }
 
-    # Look for msp_scratch_folder value
+    # Look for CoolForge_msp_scratch_folder value
     Write-Host ""
-    Write-Host "Looking for msp_scratch_folder values..." -ForegroundColor DarkGray
-    $MspValues = $Values | Where-Object { $_.custom_field_name -eq "msp_scratch_folder" -or $_.custom_field_id -eq $MspScratchFieldId }
+    Write-Host "Looking for CoolForge_msp_scratch_folder values..." -ForegroundColor DarkGray
+    $MspValues = $Values | Where-Object { $_.custom_field_name -eq "CoolForge_msp_scratch_folder" -or $_.custom_field_id -eq $MspScratchFieldId }
     if ($MspValues) {
-        Write-Host "[+] Found msp_scratch_folder value(s):" -ForegroundColor Green
+        Write-Host "[+] Found CoolForge_msp_scratch_folder value(s):" -ForegroundColor Green
         $MspValues | ForEach-Object {
             Write-Host ($_ | ConvertTo-Json -Depth 5) -ForegroundColor White
         }
     }
     else {
-        Write-Host "[!] No msp_scratch_folder values found in response" -ForegroundColor Yellow
+        Write-Host "[!] No CoolForge_msp_scratch_folder values found in response" -ForegroundColor Yellow
     }
 
     # Check pagination
@@ -231,7 +231,7 @@ if ($MspScratchFieldId) {
     $Result = Invoke-LevelApi -Endpoint "/custom_field_values?custom_field_id=$MspScratchFieldId"
     if ($Result.Success) {
         $Values = if ($Result.Data.data) { $Result.Data.data } else { $Result.Data }
-        Write-Host "[+] Got $($Values.Count) values for msp_scratch_folder" -ForegroundColor Green
+        Write-Host "[+] Got $($Values.Count) values for CoolForge_msp_scratch_folder" -ForegroundColor Green
 
         if ($Values.Count -gt 0) {
             Write-Host ""
@@ -263,17 +263,17 @@ if ($Result.Success) {
     Write-Host "[+] Got $($Values.Count) custom field values with limit=100" -ForegroundColor Green
     Write-Host "has_more: $($Result.Data.has_more)" -ForegroundColor DarkGray
 
-    # Look for msp_scratch_folder
-    $MspValues = $Values | Where-Object { $_.custom_field_name -eq "msp_scratch_folder" -or $_.custom_field_id -eq $MspScratchFieldId }
+    # Look for CoolForge_msp_scratch_folder
+    $MspValues = $Values | Where-Object { $_.custom_field_name -eq "CoolForge_msp_scratch_folder" -or $_.custom_field_id -eq $MspScratchFieldId }
     if ($MspValues) {
         Write-Host ""
-        Write-Host "[+] Found msp_scratch_folder value(s):" -ForegroundColor Green
+        Write-Host "[+] Found CoolForge_msp_scratch_folder value(s):" -ForegroundColor Green
         $MspValues | ForEach-Object {
             Write-Host ($_ | ConvertTo-Json -Depth 5) -ForegroundColor White
         }
     }
     else {
-        Write-Host "[!] No msp_scratch_folder values found" -ForegroundColor Yellow
+        Write-Host "[!] No CoolForge_msp_scratch_folder values found" -ForegroundColor Yellow
 
         # Show all field names we got
         Write-Host ""
@@ -310,11 +310,11 @@ if ($Result.Success -and $Result.Data.has_more) {
             Write-Host "First value on page 2:" -ForegroundColor DarkGray
             Write-Host ($Values2[0] | ConvertTo-Json -Compress) -ForegroundColor White
 
-            # Look for msp_scratch_folder
-            $MspValues2 = $Values2 | Where-Object { $_.custom_field_name -eq "msp_scratch_folder" -or $_.custom_field_id -eq $MspScratchFieldId }
+            # Look for CoolForge_msp_scratch_folder
+            $MspValues2 = $Values2 | Where-Object { $_.custom_field_name -eq "CoolForge_msp_scratch_folder" -or $_.custom_field_id -eq $MspScratchFieldId }
             if ($MspValues2) {
                 Write-Host ""
-                Write-Host "[+] Found msp_scratch_folder on page 2:" -ForegroundColor Green
+                Write-Host "[+] Found CoolForge_msp_scratch_folder on page 2:" -ForegroundColor Green
                 $MspValues2 | ForEach-Object {
                     Write-Host ($_ | ConvertTo-Json -Depth 5) -ForegroundColor White
                 }
@@ -385,12 +385,12 @@ if ($Orgs -and $Orgs.Count -gt 0) {
             Write-Host "[+] Organization custom_fields:" -ForegroundColor Green
             Write-Host ($Result.Data.custom_fields | ConvertTo-Json -Depth 5) -ForegroundColor White
 
-            # Look for msp_scratch_folder
-            if ($Result.Data.custom_fields.msp_scratch_folder -or $Result.Data.custom_fields.cf_msp_scratch_folder) {
-                $Value = $Result.Data.custom_fields.msp_scratch_folder
-                if (-not $Value) { $Value = $Result.Data.custom_fields.cf_msp_scratch_folder }
+            # Look for CoolForge_msp_scratch_folder
+            if ($Result.Data.custom_fields.CoolForge_msp_scratch_folder -or $Result.Data.custom_fields.cf_CoolForge_msp_scratch_folder) {
+                $Value = $Result.Data.custom_fields.CoolForge_msp_scratch_folder
+                if (-not $Value) { $Value = $Result.Data.custom_fields.cf_CoolForge_msp_scratch_folder }
                 Write-Host ""
-                Write-Host "[+] FOUND msp_scratch_folder value: $Value" -ForegroundColor Green
+                Write-Host "[+] FOUND CoolForge_msp_scratch_folder value: $Value" -ForegroundColor Green
             }
         }
     }

@@ -136,12 +136,20 @@ function Resolve-ApiKey {
         return $Script:ApiKey
     }
 
-    # Check saved config
+    # Check saved config (new key name first, then legacy)
     $SavedConfig = Get-SavedConfig -Path $Script:ConfigPath
-    if ($SavedConfig -and $SavedConfig.ApiKeyEncrypted) {
-        $DecryptedKey = Unprotect-ApiKey -EncryptedText $SavedConfig.ApiKeyEncrypted
+    if ($SavedConfig -and $SavedConfig.CoolForge_ApiKeyEncrypted) {
+        $DecryptedKey = Unprotect-ApiKey -EncryptedText $SavedConfig.CoolForge_ApiKeyEncrypted
         if ($DecryptedKey) {
             Write-LevelInfo "Using saved API key."
+            return $DecryptedKey
+        }
+    }
+    elseif ($SavedConfig -and $SavedConfig.ApiKeyEncrypted) {
+        # Legacy key name
+        $DecryptedKey = Unprotect-ApiKey -EncryptedText $SavedConfig.ApiKeyEncrypted
+        if ($DecryptedKey) {
+            Write-LevelInfo "Using saved API key (legacy format)."
             return $DecryptedKey
         }
     }

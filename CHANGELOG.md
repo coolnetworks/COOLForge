@@ -8,7 +8,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 ## [Unreleased]
 
 ### Added
-- **Version pinning** via `pin_psmodule_to_version` custom field
+- **Version pinning** via `CoolForge_pin_psmodule_to_version` custom field
   - Pin devices to specific release tags (e.g., `v2025.12.29`)
   - Enables staged rollouts, rollback capability, and production stability
   - Launchers v2025.12.29.01 updated with version pinning support
