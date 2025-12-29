@@ -8,7 +8,7 @@
     repository root.
 
     Run this script whenever you update any of the following:
-    - COOLForge-Common.psm1
+    - modules/COOLForge-Common.psm1
     - Any script in the scripts/ folder
 
 .NOTES
@@ -29,7 +29,7 @@ Write-Host "[*] Repository: $RepoRoot" -ForegroundColor Gray
 
 # Files to checksum (relative to repo root)
 $FilesToHash = @(
-    "COOLForge-Common.psm1"
+    "modules/COOLForge-Common.psm1"
 )
 
 # Add all scripts from scripts folder

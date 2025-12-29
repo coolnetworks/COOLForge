@@ -92,7 +92,7 @@ $LibraryUrl = "{{cf_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/COOLForge-Common.psm1"
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"
 } elseif ($UsePinnedVersion) {
     # Custom URL provided but version pinning requested - replace branch in URL
     # Pattern: .../coolnetworks/COOLForge/main/... -> .../coolnetworks/COOLForge/$PinnedVersion/...

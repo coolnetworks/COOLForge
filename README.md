@@ -31,7 +31,7 @@ COOLForgeLib provides a shared set of functions for Level.io automation scripts,
 
 ```
 COOLForgeLib/
-├── COOLForge-Common.psm1          # Core PowerShell module
+├── modules/                     # PowerShell modulesn�   +-- COOLForge-CustomFields.psm1  # Level.io custom fields API module
 ├── scripts/                     # Ready-to-use automation scripts
 │   ├── ⛔Force Remove Anydesk.ps1
 │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
@@ -53,8 +53,9 @@ COOLForgeLib/
 │   ├── Script_Template.ps1      # Template for standalone scripts
 │   └── Launcher_Template.ps1    # Base launcher template
 ├── tools/                       # Development and setup tools
-│   ├── Setup-COOLForgeCustomFields.ps1  # Interactive setup wizard for Level.io custom fields
-│   └── Update-MD5SUMS.ps1       # Generates MD5SUMS file for integrity verification
+│   ├── Setup-COOLForgeCustomFields.ps1  # Interactive setup wizard
+│   ├── Backup-COOLForgeCustomFields.ps1 # Backup/restore custom fields
+│   └── Update-MD5SUMS.ps1       # Generates MD5SUMS file
 └── testing/                     # Test scripts
     ├── Test_Local.ps1           # Local development testing
     └── Test_From_Level.ps1      # Level.io endpoint testing
@@ -73,7 +74,7 @@ COOLForgeLib/
 | Custom Field | Example Value | Required | Description |
 |--------------|---------------|----------|-------------|
 | `msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
-| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
+| `ps_module_library_source` | `https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1` | No | URL to download the library (defaults to official repo if not set) |
 | `pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag (defaults to latest from main branch) |
 | `screenconnect_instance_id` | `abc123def456` | No | Your MSP's ScreenConnect instance ID (for ScreenConnect removal script) |
 | `is_screenconnect_server` | `true` | No | Set to "true" on devices hosting ScreenConnect server |
@@ -127,7 +128,7 @@ Scripts using the template automatically download and update the library on each
 
 **Default URL (used if custom field not set):**
 ```
-https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1
 ```
 
 > **Tip:** Setting the `ps_module_library_source` custom field allows you to:
@@ -172,10 +173,10 @@ By default, scripts and the launcher use the latest code from the `main` branch.
 **URL transformation:**
 ```
 Default (no pinning):
-https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1
 
 With pin_psmodule_to_version = v2025.12.29:
-https://raw.githubusercontent.com/coolnetworks/COOLForge/v2025.12.29/COOLForge-Common.psm1
+https://raw.githubusercontent.com/coolnetworks/COOLForge/v2025.12.29/modules/COOLForge-Common.psm1
 ```
 
 ### Output Example

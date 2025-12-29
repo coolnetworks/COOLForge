@@ -1,12 +1,12 @@
 ﻿# MD5SUMS - Checksums for COOLForgeLib files
 # Format: MD5_HASH  FILENAME
-# Generated: 2025-12-29 13:52:27
+# Generated: 2025-12-29 14:02:31
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
 #   $hash = (Get-FileHash -Path $file -Algorithm MD5).Hash.ToLower()
 #
-92c842dd0434d1cc20b7fe230b51dff2  COOLForge-Common.psm1
+92c842dd0434d1cc20b7fe230b51dff2  modules/COOLForge-Common.psm1
 106840e53b8531fc71bed0ca4bc6489e  scripts/⛔Force Remove Anydesk.ps1
 bf13288152b9119c1f76eb3832b7ad79  scripts/⛔Force Remove Non MSP ScreenConnect.ps1
 ae19b0294ac754fb376a8490d56ccdd9  scripts/👀Check for Unauthorized Remote Access Tools.ps1

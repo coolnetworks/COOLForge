@@ -29,7 +29,7 @@
 
 .EXAMPLE
     # Import and initialize the module
-    Import-Module ".\COOLForge-CustomFields.psm1" -Force
+    Import-Module ".\modules\COOLForge-CustomFields.psm1" -Force
     Initialize-COOLForgeCustomFields -ApiKey "your-api-key"
 
     # List existing custom fields

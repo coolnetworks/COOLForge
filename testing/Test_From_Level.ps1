@@ -68,7 +68,7 @@ $LibraryUrl = "{{cf_ps_module_library_source}}"
 
 # Default to official repo if custom field not set
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/COOLForge-Common.psm1"
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1"
 }
 
 # Library storage paths
