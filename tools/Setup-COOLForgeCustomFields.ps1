@@ -172,13 +172,25 @@ if ($null -eq $ExistingFields) {
     exit 1
 }
 
-# Handle both array and object with data property
-if ($ExistingFields.data) {
+# Handle object with data property (not array)
+if ($ExistingFields -isnot [array] -and $ExistingFields.data) {
     $ExistingFields = $ExistingFields.data
 }
 
 $FieldCount = if ($ExistingFields -is [array]) { $ExistingFields.Count } else { 1 }
 Write-LevelSuccess "Connected! Found $FieldCount existing custom field(s)."
+
+# API key works - save it immediately for future runs
+$ConfigToSave = @{
+    ApiKeyEncrypted = Protect-ApiKey -PlainText $Script:ResolvedApiKey
+    LastRun         = (Get-Date).ToString("o")
+}
+if ($Script:SavedConfig -and $Script:SavedConfig.CompanyName) {
+    $ConfigToSave.CompanyName = $Script:SavedConfig.CompanyName
+}
+if (Save-Config -Config $ConfigToSave -Path $Script:ConfigPath) {
+    Write-LevelInfo "API key saved for future runs."
+}
 
 # ============================================================
 # BACKUP & RESTORE
@@ -396,66 +408,22 @@ Write-Host "These fields are optional but enable additional features."
 Write-Host ""
 
 foreach ($Field in $Script:OptionalFields) {
-    Write-Host ""
-    Write-Host "Field: $($Field.Name)" -ForegroundColor Cyan
-    Write-Host "  Description: $($Field.Description)"
-    if ($Field.AdminOnly) {
-        Write-Host "  Admin Only: Yes (values hidden from non-admins)" -ForegroundColor Yellow
-    }
-    Write-Host ""
-
     $Existing = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
 
     if ($Existing) {
-        # Query the field individually to get its current value
-        Write-LevelInfo "Checking current value..."
-        $FieldDetails = Get-CustomFieldById -FieldId $Existing.id
-        $CurrentValue = if ($FieldDetails) { $FieldDetails.default_value } else { $Existing.default_value }
-        $ActualValue = $CurrentValue  # Keep the actual value for logic checks
-
-        if ([string]::IsNullOrWhiteSpace($CurrentValue)) {
-            $CurrentValue = "(not set)"
-        }
-        Write-LevelSuccess "Field already exists!"
-        Write-Host "  Current default value: $CurrentValue"
-
-        # Special handling for version pinning
-        if ($Field.Name -eq "pin_psmodule_to_version") {
-            Write-Host ""
-            if (-not [string]::IsNullOrWhiteSpace($ActualValue)) {
-                Write-Host "  Currently pinned to: $ActualValue" -ForegroundColor Cyan
-            }
-
-            if (Read-YesNo -Prompt "  Would you like to change the version pin" -Default $false) {
-                $SelectedVersion = Select-Version -CurrentVersion $ActualValue
-
-                if ($SelectedVersion -ne $ActualValue) {
-                    if ([string]::IsNullOrWhiteSpace($SelectedVersion)) {
-                        if (Update-CustomFieldValue -FieldId $Existing.id -Value "") {
-                            Write-LevelSuccess "Cleared version pin - will use latest from main"
-                        }
-                    }
-                    else {
-                        if (Update-CustomFieldValue -FieldId $Existing.id -Value $SelectedVersion) {
-                            Write-LevelSuccess "Pinned to version: $SelectedVersion"
-                        }
-                    }
-                }
-                else {
-                    Write-LevelInfo "Version unchanged: $ActualValue"
-                }
-            }
-        }
-        else {
-            $NewValue = Read-UserInput -Prompt "  New value (press Enter to keep current)" -Default ""
-            if (-not [string]::IsNullOrWhiteSpace($NewValue)) {
-                if (Update-CustomFieldValue -FieldId $Existing.id -Value $NewValue) {
-                    Write-LevelSuccess "Updated default value to: $NewValue"
-                }
-            }
-        }
+        # Field exists - just show status
+        Write-LevelSuccess "$($Field.Name) - exists"
     }
     else {
+        # Field doesn't exist - ask if user wants to create it
+        Write-Host ""
+        Write-Host "Field: $($Field.Name)" -ForegroundColor Cyan
+        Write-Host "  Description: $($Field.Description)"
+        if ($Field.AdminOnly) {
+            Write-Host "  Admin Only: Yes (values hidden from non-admins)" -ForegroundColor Yellow
+        }
+        Write-Host ""
+
         if (Read-YesNo -Prompt "  Create this field" -Default $false) {
             $DefaultValue = ""
 
@@ -472,7 +440,6 @@ foreach ($Field in $Script:OptionalFields) {
             $Created = New-CustomField -Name $Field.Name -DefaultValue $DefaultValue -AdminOnly $Field.AdminOnly
 
             # If we have a default value but the field was created without it, update it separately
-            # (some APIs don't accept default_value on creation)
             if ($Created -and -not [string]::IsNullOrWhiteSpace($DefaultValue)) {
                 $CreatedId = $Created.id
                 if ($CreatedId -and [string]::IsNullOrWhiteSpace($Created.default_value)) {

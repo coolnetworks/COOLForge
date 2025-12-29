@@ -288,23 +288,53 @@ function Invoke-LevelApi {
 function Get-ExistingCustomFields {
     <#
     .SYNOPSIS
-        Fetches all existing custom field definitions.
+        Fetches all existing custom field definitions (with pagination).
     #>
     Write-LevelInfo "Fetching existing custom fields..."
-    $Result = Invoke-LevelApi -Endpoint "/custom_fields"
 
-    if (-not $Result.Success) {
-        Write-LevelError "Failed to fetch custom fields: $($Result.Error)"
-        return $null
-    }
+    $AllFields = [System.Collections.Generic.List[object]]::new()
+    $Cursor = $null
 
-    return $Result.Data
+    do {
+        $Endpoint = "/custom_fields"
+        if ($Cursor) {
+            $Endpoint += "?starting_after=$Cursor"
+        }
+
+        $Result = Invoke-LevelApi -Endpoint $Endpoint
+
+        if (-not $Result.Success) {
+            Write-LevelError "Failed to fetch custom fields: $($Result.Error)"
+            return $null
+        }
+
+        $Data = $Result.Data
+        $Fields = if ($Data.data) { $Data.data } else { $Data }
+
+        if ($Fields -and $Fields.Count -gt 0) {
+            foreach ($Field in $Fields) {
+                $AllFields.Add($Field)
+            }
+
+            # Check for more pages
+            $HasMore = $Data.has_more -eq $true
+            if ($HasMore) {
+                $Cursor = $Fields[-1].id
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    } while ($true)
+
+    return @($AllFields)
 }
 
 function Find-CustomField {
     <#
     .SYNOPSIS
-        Finds a custom field by name in a list of fields.
+        Finds a custom field by name or reference in a list of fields.
     #>
     param(
         [string]$Name,
@@ -312,8 +342,8 @@ function Find-CustomField {
     )
 
     foreach ($Field in $ExistingFields) {
-        # Check both 'name' and 'key' properties as API may use either
-        if ($Field.name -eq $Name -or $Field.key -eq $Name) {
+        # Check 'name' and 'reference' properties (API uses 'reference' for script usage)
+        if ($Field.name -eq $Name -or $Field.reference -eq $Name) {
             return $Field
         }
     }
@@ -374,7 +404,7 @@ function Update-CustomFieldValue {
 function Get-CustomFieldById {
     <#
     .SYNOPSIS
-        Gets a single custom field by ID.
+        Gets a single custom field by ID, including its account-level value.
     #>
     param(
         [string]$FieldId
@@ -382,7 +412,23 @@ function Get-CustomFieldById {
 
     $Result = Invoke-LevelApi -Endpoint "/custom_fields/$FieldId"
     if ($Result.Success) {
-        return $Result.Data
+        $Field = $Result.Data
+
+        # Get the account-level value from custom_field_values (use limit=100 to get all)
+        $ValueResult = Invoke-LevelApi -Endpoint "/custom_field_values?limit=100"
+        if ($ValueResult.Success) {
+            $Values = if ($ValueResult.Data.data) { $ValueResult.Data.data } else { $ValueResult.Data }
+
+            # Find the value that matches this field ID
+            foreach ($Val in $Values) {
+                if ($Val.custom_field_id -eq $FieldId) {
+                    $Field | Add-Member -NotePropertyName "default_value" -NotePropertyValue $Val.value -Force
+                    break
+                }
+            }
+        }
+
+        return $Field
     }
     return $null
 }
