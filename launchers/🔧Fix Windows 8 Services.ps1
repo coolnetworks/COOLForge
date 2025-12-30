@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "🔧Fix Windows 8 Services.ps1"
@@ -30,7 +30,7 @@ $ScriptToRun = "🔧Fix Windows 8 Services.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.29.01
+    Launcher Version: 2025.12.30.01
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -52,7 +52,7 @@ $ScriptToRun = "🔧Fix Windows 8 Services.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "🔧Fix Windows 8 Services.ps1"
+    $ScriptToRun = "🔧Fix Windows 10 Services.ps1"
     # ... rest of launcher code ...
 
 .EXAMPLE
@@ -62,7 +62,7 @@ $ScriptToRun = "🔧Fix Windows 8 Services.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.29.01
+# Launcher Version: 2025.12.30.01
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -303,7 +303,7 @@ $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.29.01"
+Write-Host "[*] Script Launcher v2025.12.30.01"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -316,9 +316,33 @@ if (!(Test-Path $ScriptsFolder)) {
 $SafeScriptName = $ScriptToRun -replace '[<>:"/\\|?*]', '_'
 $ScriptPath = Join-Path -Path $ScriptsFolder -ChildPath $SafeScriptName
 
-# URL-encode the script name for the download URL
-# Use library function for proper UTF-8 emoji handling
-$ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
+# Function to find script path from MD5SUMS (supports subfolder organization)
+function Get-ScriptPathFromMD5 {
+    param([string]$ScriptName, [string]$MD5Content)
+    if ([string]::IsNullOrWhiteSpace($MD5Content)) { return $null }
+    foreach ($line in $MD5Content -split "`n") {
+        $line = $line.Trim()
+        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
+        # Match lines ending with the script name (handles subfolders)
+        if ($line -match "^[a-f0-9]{32}\s+(.+[/\\]$([regex]::Escape($ScriptName)))$") {
+            return $Matches[1].Trim()
+        }
+    }
+    return $null
+}
+
+# Find script path from MD5SUMS (supports subfolder organization)
+$ScriptRelativePath = Get-ScriptPathFromMD5 -ScriptName $ScriptToRun -MD5Content $MD5SumsContent
+
+if ($ScriptRelativePath) {
+    # Script found in MD5SUMS - use the full path (includes subfolder)
+    $ScriptUrl = "$RepoBaseUrl/$(Get-LevelUrlEncoded $ScriptRelativePath)"
+    Write-Host "[*] Script location: $ScriptRelativePath"
+} else {
+    # Fallback to flat structure for backwards compatibility
+    $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
+    Write-Host "[!] Script not found in MD5SUMS, using default path"
+}
 
 # Check for local version
 $ScriptNeedsUpdate = $false
@@ -378,9 +402,8 @@ try {
             }
 
             # Verify MD5 checksum if available
-            if ($MD5SumsContent) {
-                $ScriptMD5Key = "scripts/$ScriptToRun"
-                $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
+            if ($MD5SumsContent -and $ScriptRelativePath) {
+                $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptRelativePath -MD5Content $MD5SumsContent
                 if ($ExpectedScriptMD5) {
                     $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
                     if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
