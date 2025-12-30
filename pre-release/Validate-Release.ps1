@@ -247,8 +247,10 @@ $RequiredFiles = @(
     "modules/COOLForge-Common.psm1",
     "templates/Launcher_Template.ps1",
     "templates/What is this folder.md",
-    "tools/Update-MD5SUMS.ps1",
-    "tools/Update-Launchers.ps1"
+    "pre-release/Update-MD5SUMS.ps1",
+    "pre-release/Update-Launchers.ps1",
+    "pre-release/Validate-Release.ps1",
+    "pre-release/Test-Syntax.ps1"
 )
 
 $MissingFiles = @()

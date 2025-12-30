@@ -77,7 +77,7 @@ foreach ($RelativePath in $FilesToHash) {
 
 # Write MD5SUMS file
 $MD5SumsPath = Join-Path $RepoRoot "MD5SUMS"
-$Checksums | Out-File -FilePath $MD5SumsPath -Encoding UTF8 -NoNewline
+$Checksums -join "`n" | Out-File -FilePath $MD5SumsPath -Encoding UTF8 -NoNewline
 Write-Host ""
 Write-Host "[+] MD5SUMS file updated: $MD5SumsPath" -ForegroundColor Cyan
 Write-Host "[+] Total files: $($FilesToHash.Count)" -ForegroundColor Cyan
