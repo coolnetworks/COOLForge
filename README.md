@@ -58,6 +58,41 @@ COOLForge/
 
 ---
 
+## Using Scripts in Level.io
+
+**Scripts are deployed via launchers, not directly.** The launcher handles downloading and auto-updating the actual script from GitHub.
+
+### Step-by-Step
+
+1. **Find the script** you want in the [Available Scripts](#available-scripts) table below
+2. **Open the matching launcher** from the `launchers/` folder (same filename)
+3. **Copy the entire launcher code**
+4. **Create a new script in Level.io:**
+   - Go to Level.io → Automations → Scripts → New Script
+   - **Name:** Use the script name **without** `.ps1` (e.g., `👀Test Show Versions`)
+   - **Language:** PowerShell
+   - **Paste** the launcher code
+   - Save
+5. **Run the script** on a device — the launcher will download and execute the latest version from GitHub
+
+### How It Works
+
+```
+Level.io runs launcher → Launcher downloads script from GitHub → Script executes
+```
+
+- **First run:** Downloads the library and script, caches locally
+- **Subsequent runs:** Checks for updates, downloads if newer version exists
+- **Offline:** Uses cached local copies
+
+### Benefits
+
+- **No redeployment needed** — update scripts in GitHub, devices get updates automatically
+- **Version control** — all script changes tracked in Git
+- **Rollback capability** — pin devices to specific versions if needed
+
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -191,6 +226,14 @@ Format: `YYYY.MM.DD.N`
 MIT License with Attribution - Free to use with attribution to COOLNETWORKS.
 
 See [LICENSE](LICENSE) for details.
+
+---
+
+## TODO
+
+Future improvements and feature requests:
+
+- [ ] **Request `level_current_scriptname` variable from Level.io** — Would allow a single universal launcher that auto-detects which script to run based on its name in Level.io, eliminating the need for per-script `$ScriptToRun` configuration
 
 ---
 
