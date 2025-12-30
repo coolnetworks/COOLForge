@@ -97,6 +97,7 @@ $Script:OptionalFields = @(
         Required    = $false
         Default     = ""
         AdminOnly   = $false
+        Group       = $null
     },
     @{
         Name        = "CoolForge_pin_psmodule_to_version"
@@ -105,6 +106,7 @@ $Script:OptionalFields = @(
         Required    = $false
         Default     = ""
         AdminOnly   = $false
+        Group       = $null
     },
     @{
         Name        = "CoolForge_screenconnect_instance_id"
@@ -113,6 +115,7 @@ $Script:OptionalFields = @(
         Required    = $false
         Default     = ""
         AdminOnly   = $true
+        Group       = "ScreenConnect"
     },
     @{
         Name        = "CoolForge_is_screenconnect_server"
@@ -121,6 +124,7 @@ $Script:OptionalFields = @(
         Required    = $false
         Default     = ""
         AdminOnly   = $false
+        Group       = "ScreenConnect"
     },
     @{
         Name        = "CoolForge_nosleep_duration_min"
@@ -129,8 +133,12 @@ $Script:OptionalFields = @(
         Required    = $false
         Default     = "60"
         AdminOnly   = $false
+        Group       = $null
     }
 )
+
+# Track which feature groups are enabled
+$Script:EnabledGroups = @{}
 
 # ============================================================
 # MAIN SCRIPT
@@ -460,7 +468,18 @@ Write-Header "Optional Custom Fields"
 Write-Host "These fields are optional but enable additional features."
 Write-Host ""
 
+# Ask about feature groups first
+Write-Host "Do you use any of these remote access tools?" -ForegroundColor Cyan
+Write-Host ""
+$Script:EnabledGroups["ScreenConnect"] = Read-YesNo -Prompt "  ScreenConnect (ConnectWise Control)" -Default $false
+Write-Host ""
+
 foreach ($Field in $Script:OptionalFields) {
+    # Skip fields in disabled groups
+    if ($Field.Group -and -not $Script:EnabledGroups[$Field.Group]) {
+        continue
+    }
+
     $Existing = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
     $LegacyExisting = if ($Field.LegacyName) { Find-CustomField -Name $Field.LegacyName -ExistingFields $ExistingFields } else { $null }
 
@@ -553,6 +572,10 @@ Write-Host ""
 Write-Host "Custom Fields Status:" -ForegroundColor Cyan
 $AllFields = $Script:RequiredFields + $Script:OptionalFields
 foreach ($Field in $AllFields) {
+    # Skip fields in disabled groups
+    if ($Field.Group -and -not $Script:EnabledGroups[$Field.Group]) {
+        continue
+    }
     $Existing = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
     $Status = if ($Existing) { "[OK]" } else { "[--]" }
     $Color = if ($Existing) { "Green" } else { "DarkGray" }
