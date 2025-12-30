@@ -21,15 +21,15 @@
     Copyright (c) COOLNETWORKS
 
 .EXAMPLE
-    .\release\Validate-Release.ps1
+    .\pre-release\Validate-Release.ps1
     # Validates repository, reports issues
 
 .EXAMPLE
-    .\release\Validate-Release.ps1 -AutoFix
+    .\pre-release\Validate-Release.ps1 -AutoFix
     # Validates and automatically fixes issues like outdated MD5SUMS
 
 .EXAMPLE
-    .\release\Validate-Release.ps1 -AutoFix -CreateTag
+    .\pre-release\Validate-Release.ps1 -AutoFix -CreateTag
     # Validates, fixes, and creates a release tag
 #>
 
@@ -185,7 +185,7 @@ else {
 
         if ($AutoFix) {
             Write-Host "    [*] Regenerating MD5SUMS..." -ForegroundColor Cyan
-            & "$RepoRoot\release\Update-MD5SUMS.ps1"
+            & "$RepoRoot\pre-release\Update-MD5SUMS.ps1"
             Write-Host "    [+] MD5SUMS regenerated" -ForegroundColor Green
             $ValidationPassed++
         }
@@ -340,7 +340,7 @@ if ($ValidationErrors.Count -eq 0) {
     }
     else {
         Write-Host "To create tag: git tag -a $SuggestedTag -m `"Release $SuggestedTag`"" -ForegroundColor Gray
-        Write-Host "Or run: .\tools\Validate-Release.ps1 -CreateTag" -ForegroundColor Gray
+        Write-Host "Or run: .\pre-release\Validate-Release.ps1 -CreateTag" -ForegroundColor Gray
     }
 
     exit 0
