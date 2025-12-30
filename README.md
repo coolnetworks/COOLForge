@@ -9,6 +9,18 @@ A standardized PowerShell module for Level.io RMM automation scripts.
 
 ---
 
+## Terminology
+
+| Term | Description |
+|------|-------------|
+| **Module** | `COOLForge-Common.psm1` — The PowerShell module containing all shared functions. Auto-downloaded to endpoints. |
+| **Script** | A `.ps1` file in `scripts/` that performs a specific task (e.g., remove AnyDesk, fix services). |
+| **Launcher** | A `.ps1` file in `launchers/` that downloads and runs a script from GitHub. Deploy these to Level.io. |
+| **Template** | Starter files in `templates/` for creating new scripts or launchers. |
+| **Custom Field** | Level.io variables (e.g., `cf_CoolForge_msp_scratch_folder`) that configure script behavior. |
+
+---
+
 ## Overview
 
 COOLForge_Lib provides a shared set of functions for Level.io automation scripts, eliminating code duplication and ensuring consistent behavior across your script portfolio.
@@ -23,7 +35,30 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 - **Device Info** — Quick access to common system properties
 - **Auto-Update** — Scripts automatically download the latest library from GitHub
 - **Emoji Encoding Repair** — Fixes UTF-8 emoji corruption from deployment systems
-- **Script Launcher** — Run scripts from GitHub without redeploying to Level.io
+- **Script Launcher** — Manage scripts in Git, deploy once to Level.io, updates happen automatically
+
+### Module Functions (14 total)
+
+The `COOLForge-Common.psm1` module exports these functions:
+
+| Category | Function | Description |
+|----------|----------|-------------|
+| **Initialization** | `Initialize-LevelScript` | Initialize script, check tags, create lockfile |
+| | `Invoke-LevelScript` | Execute script block with error handling |
+| | `Complete-LevelScript` | End script with custom exit code/message |
+| | `Remove-LevelLockFile` | Manually remove lockfile |
+| **Logging** | `Write-LevelLog` | Timestamped log output with severity levels |
+| **System** | `Test-LevelAdmin` | Check if running as administrator |
+| | `Get-LevelDeviceInfo` | Get device hostname, OS, username, etc. |
+| **API** | `Invoke-LevelApiCall` | Make authenticated REST API calls |
+| | `Get-LevelGroups` | Retrieve all Level.io groups |
+| | `Get-LevelDevices` | Retrieve devices (optionally by group) |
+| | `Find-LevelDevice` | Search for device by hostname |
+| **Network** | `Send-LevelWakeOnLan` | Send WOL magic packet to MAC address |
+| **Text** | `Repair-LevelEmoji` | Fix corrupted UTF-8 emojis |
+| | `Get-LevelUrlEncoded` | URL-encode strings with UTF-8 support |
+
+See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 
 ---
 
@@ -87,9 +122,11 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 
 ### Benefits
 
-- **No redeployment needed** — update scripts in GitHub, devices get updates automatically
-- **Version control** — all script changes tracked in Git
-- **Rollback capability** — pin devices to specific versions if needed
+- **Git-managed scripts** — Edit, review, and track changes using standard Git workflows
+- **Deploy once** — Upload the launcher to Level.io once, never touch it again
+- **Automatic updates** — Push to GitHub, all devices get the update on next run
+- **Rollback capability** — Pin devices to specific versions via custom field
+- **Team collaboration** — Multiple admins can contribute via pull requests
 
 ---
 

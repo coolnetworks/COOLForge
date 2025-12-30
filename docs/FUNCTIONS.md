@@ -16,6 +16,10 @@ This document provides detailed documentation for all functions exported by the 
 - [Invoke-LevelApiCall](#invoke-levelapicall)
 - [Repair-LevelEmoji](#repair-levelemoji)
 - [Get-LevelUrlEncoded](#get-levelurlencoded)
+- [Get-LevelGroups](#get-levelgroups)
+- [Get-LevelDevices](#get-leveldevices)
+- [Find-LevelDevice](#find-leveldevice)
+- [Send-LevelWakeOnLan](#send-levelwakeonlan)
 
 ---
 
@@ -307,6 +311,119 @@ $ScriptUrl = "$BaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
 ```
 
 > **Note:** This function is called automatically by the Script Launcher when downloading scripts. You typically don't need to call it directly unless building custom URLs.
+
+---
+
+## Get-LevelGroups
+
+Retrieves all groups (organizations and folders) from the Level.io API with automatic pagination.
+
+```powershell
+$Groups = Get-LevelGroups -ApiKey "{{cf_apikey}}"
+$RootGroups = $Groups | Where-Object { -not $_.parent_id }
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | Yes | — | Level.io API key (Bearer token) |
+| `-BaseUrl` | String | No | `https://api.level.io/v2` | API base URL |
+
+### Returns
+
+Array of group objects with properties: `id`, `name`, `parent_id`, `type` (organization/folder), etc.
+
+Returns `$null` on error.
+
+---
+
+## Get-LevelDevices
+
+Retrieves devices from the Level.io API with automatic pagination.
+
+```powershell
+# Get all devices
+$AllDevices = Get-LevelDevices -ApiKey "{{cf_apikey}}"
+
+# Get devices in a specific group
+$GroupDevices = Get-LevelDevices -ApiKey "{{cf_apikey}}" -GroupId "grp_123abc"
+
+# Include network interface details (for MAC addresses)
+$DevicesWithNIC = Get-LevelDevices -ApiKey "{{cf_apikey}}" -IncludeNetworkInterfaces
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | Yes | — | Level.io API key (Bearer token) |
+| `-GroupId` | String | No | — | Filter by group ID |
+| `-IncludeNetworkInterfaces` | Switch | No | `$false` | Include NIC details (MAC addresses) |
+| `-BaseUrl` | String | No | `https://api.level.io/v2` | API base URL |
+
+### Returns
+
+Array of device objects with properties: `id`, `hostname`, `os_name`, `group_id`, `network_interfaces` (if requested), etc.
+
+Returns `$null` on error.
+
+---
+
+## Find-LevelDevice
+
+Searches for a specific device by hostname.
+
+```powershell
+$Device = Find-LevelDevice -ApiKey "{{cf_apikey}}" -Hostname "WORKSTATION01"
+if ($Device) {
+    Write-LevelLog "Found device: $($Device.id)"
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | Yes | — | Level.io API key (Bearer token) |
+| `-Hostname` | String | Yes | — | Exact hostname to search for |
+| `-BaseUrl` | String | No | `https://api.level.io/v2` | API base URL |
+
+### Returns
+
+Device object if found, `$null` otherwise.
+
+---
+
+## Send-LevelWakeOnLan
+
+Sends Wake-on-LAN magic packets to wake a device by MAC address.
+
+```powershell
+# Wake a device
+$Success = Send-LevelWakeOnLan -MacAddress "AA:BB:CC:DD:EE:FF"
+
+# Multiple attempts with longer delay
+$Success = Send-LevelWakeOnLan -MacAddress "AA-BB-CC-DD-EE-FF" -Attempts 15 -DelayMs 1000
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-MacAddress` | String | Yes | — | MAC address (accepts `:` or `-` delimiters) |
+| `-Attempts` | Int | No | `10` | Number of magic packets to send |
+| `-DelayMs` | Int | No | `500` | Delay between packets (milliseconds) |
+
+### Returns
+
+`$true` if packets sent successfully, `$false` on error.
+
+### Requirements
+
+- Target device must have Wake-on-LAN enabled in BIOS/UEFI
+- Target NIC must support WOL and have it enabled in device properties
+- Sending device must be on the same network segment (or use directed broadcast)
 
 ---
 
