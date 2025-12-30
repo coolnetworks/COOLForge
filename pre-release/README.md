@@ -2,7 +2,42 @@
 
 This folder contains scripts that should be run before creating a release or committing code changes. These tools ensure code quality, consistency, and release readiness.
 
+## Script Inventory Cache
+
+The pre-release tools use a cached inventory (`.cache/script-inventory.json`) to track all PowerShell files in the repository. This ensures nothing gets missed when updating MD5 checksums or checking launcher completeness.
+
+The cache is automatically generated when needed and excluded from git (via `.gitignore`).
+
+---
+
 ## Scripts
+
+### Update-ScriptInventory.ps1
+
+Generates a comprehensive inventory of all PowerShell files in the repository.
+
+**Usage:**
+```powershell
+.\pre-release\Update-ScriptInventory.ps1
+```
+
+**What it does:**
+- Scans all categories: scripts/, launchers/, modules/, templates/, pre-release/, tools/
+- Generates JSON inventory with file paths, sizes, and modification dates
+- Saves to `.cache/script-inventory.json`
+- Provides breakdown by category and subcategory
+
+**When to run:**
+- Usually not needed manually (other scripts auto-generate when needed)
+- Can run manually to see full repository inventory
+- Useful for auditing what files exist in each category
+
+**Output includes:**
+- Total file count across all categories
+- Scripts grouped by subcategory (Check, Fix, Remove, Utility)
+- File metadata (path, name, size, last modified)
+
+---
 
 ### Test-Syntax.ps1
 
@@ -32,15 +67,25 @@ Regenerates the `MD5SUMS` file with checksums for all tracked files.
 
 **Usage:**
 ```powershell
+# Direct file scanning (original method)
 .\pre-release\Update-MD5SUMS.ps1
+
+# Use inventory cache (faster, ensures completeness)
+.\pre-release\Update-MD5SUMS.ps1 -UseCache
 ```
 
 **What it does:**
-- Scans `modules/COOLForge-Common.psm1`
+- Scans `modules/COOLForge-Common.psm1` (only the library downloaded by launchers)
 - Scans all scripts in `scripts/` folder (recursive, includes category subfolders)
 - Scans `templates/What is this folder.md`
 - Generates MD5 checksum for each file
 - Updates `MD5SUMS` file at repository root
+
+**With -UseCache:**
+- Uses script inventory cache for file list
+- Auto-generates inventory if cache missing
+- Ensures no scripts are accidentally missed
+- Slightly faster for large repositories
 
 **When to run:**
 - After modifying any library, script, or template files
@@ -57,7 +102,11 @@ Synchronizes all launcher files with the launcher template.
 
 **Usage:**
 ```powershell
+# Update all launchers from template
 .\pre-release\Update-Launchers.ps1
+
+# Update and check for missing/orphaned launchers
+.\pre-release\Update-Launchers.ps1 -CheckCompleteness
 ```
 
 **What it does:**
@@ -67,10 +116,17 @@ Synchronizes all launcher files with the launcher template.
 - Updates version numbers and code logic
 - Changes comments from "CHANGE THIS VALUE" to "PRE-CONFIGURED"
 
+**With -CheckCompleteness:**
+- Uses script inventory cache to verify every script has a launcher
+- Reports scripts without launchers (missing launchers)
+- Reports launchers without matching scripts (orphaned launchers)
+- Helps ensure no script gets left behind
+
 **When to run:**
 - After modifying `templates/Launcher_Template.ps1`
 - Before committing template changes
 - To ensure all launchers have consistent code
+- When adding new scripts (use -CheckCompleteness to verify launcher exists)
 
 **Critical:** Always run this after changing the launcher template. Never commit a template change without updating all launchers.
 

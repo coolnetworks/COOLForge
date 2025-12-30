@@ -23,4 +23,3 @@ abf72097145ecb3cc80bce88c3719f52  scripts/Fix/🔧Prevent Sleep.ps1
 106840e53b8531fc71bed0ca4bc6489e  scripts/Remove/⛔Force Remove Anydesk.ps1
 bf13288152b9119c1f76eb3832b7ad79  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 486438567ec4036770a56b5e0de6db1a  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1
-00ea155a1511111b070aa4f3202ee8f6  templates/What is this folder.md

@@ -249,6 +249,7 @@ $RequiredFiles = @(
     "templates/What is this folder.md",
     "pre-release/Update-MD5SUMS.ps1",
     "pre-release/Update-Launchers.ps1",
+    "pre-release/Update-ScriptInventory.ps1",
     "pre-release/Validate-Release.ps1",
     "pre-release/Test-Syntax.ps1"
 )
