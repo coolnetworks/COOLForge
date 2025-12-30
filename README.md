@@ -71,6 +71,7 @@ See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 | [Version Pinning](docs/VERSION-PINNING.md) | Pin devices to specific library versions |
 | [Emoji Handling](docs/EMOJI-HANDLING.md) | UTF-8 emoji corruption repair |
 | [Variables Reference](docs/VARIABLES.md) | Level.io variables and setting automation variables |
+| [Folder Structure](docs/FOLDER-STRUCTURE.md) | Script category organization |
 | [Changelog](CHANGELOG.md) | Version history and changes |
 | [Release Process](RELEASING.md) | How to create new releases |
 
@@ -84,6 +85,18 @@ COOLForge/
 │   ├── COOLForge-Common.psm1    # Main library module
 │   └── COOLForge-CustomFields.psm1  # Level.io custom fields API module
 ├── scripts/                     # Ready-to-use automation scripts
+│   ├── Check/                   # Audits, compliance, health monitoring
+│   ├── Configure/               # Settings changes
+│   ├── Deploy/                  # Install software, deploy configs
+│   ├── Fix/                     # Repair and remediation
+│   ├── Maintain/                # Scheduled maintenance
+│   ├── Provision/               # New device/user setup
+│   ├── Remove/                  # Uninstall, cleanup
+│   ├── Report/                  # Generate reports, inventory
+│   ├── Secure/                  # Hardening, security policies
+│   ├── Update/                  # Patch, upgrade software
+│   └── Utility/                 # Miscellaneous tools
+├── automations/                 # Multi-step automation workflows (same structure)
 ├── launchers/                   # Pre-configured launchers (copy-paste to Level.io)
 ├── templates/                   # Templates for creating new scripts
 ├── tools/                       # Development and setup tools
@@ -143,6 +156,7 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 | `CoolForge_msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
 | `CoolForge_ps_module_library_source` | *(leave empty)* | No | URL to download the library (defaults to official repo) |
 | `CoolForge_pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag |
+| `CoolForge_nosleep_duration_min` | `60` | No | Duration in minutes to prevent sleep (default: 60) |
 
 ### Automated Setup
 
@@ -188,20 +202,23 @@ Invoke-LevelScript -ScriptBlock {
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `👀Test Show Versions.ps1` | Displays version info for all COOLForge_Lib components |
-| `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
-| `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs |
-| `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
-| `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes non-whitelisted ScreenConnect |
-| `🔧Fix Windows 11 Services.ps1` | Restores Windows 11 services to defaults |
-| `🔧Fix Windows 10 Services.ps1` | Restores Windows 10 services to defaults |
-| `🔧Fix Windows 8.1 Services.ps1` | Restores Windows 8.1 services to defaults |
-| `🔧Fix Windows 8 Services.ps1` | Restores Windows 8 services to defaults |
-| `🔧Fix Windows 7 Services.ps1` | Restores Windows 7 services to defaults |
-| `🔧Enable System Restore and Create Restore Point.ps1` | Enables System Restore |
-| `🙏Wake all devices in parent to level.io folder.ps1` | Wakes devices in folder hierarchy |
+Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-STRUCTURE.md) for details.
+
+| Folder | Script | Description |
+|--------|--------|-------------|
+| Check | `👀Test Show Versions.ps1` | Displays version info for all COOLForge_Lib components |
+| Check | `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
+| Check | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs |
+| Remove | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
+| Remove | `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes non-whitelisted ScreenConnect |
+| Fix | `🔧Fix Windows 11 Services.ps1` | Restores Windows 11 services to defaults |
+| Fix | `🔧Fix Windows 10 Services.ps1` | Restores Windows 10 services to defaults |
+| Fix | `🔧Fix Windows 8.1 Services.ps1` | Restores Windows 8.1 services to defaults |
+| Fix | `🔧Fix Windows 8 Services.ps1` | Restores Windows 8 services to defaults |
+| Fix | `🔧Fix Windows 7 Services.ps1` | Restores Windows 7 services to defaults |
+| Fix | `🔧Enable System Restore and Create Restore Point.ps1` | Enables System Restore |
+| Fix | `🔧Prevent Sleep.ps1` | Temporarily prevents device from sleeping with auto-restore |
+| Utility | `🙏Wake all devices in parent to level.io folder.ps1` | Wakes devices in folder hierarchy |
 
 ---
 

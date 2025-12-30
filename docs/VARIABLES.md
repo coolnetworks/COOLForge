@@ -24,6 +24,7 @@ These custom fields are used by COOLForge_Lib scripts:
 | `{{cf_CoolForge_pin_psmodule_to_version}}` | Pin to specific version tag (e.g., `v2025.12.29`) | No |
 | `{{cf_CoolForge_screenconnect_instance_id}}` | Your MSP's ScreenConnect instance ID | No |
 | `{{cf_CoolForge_is_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
+| `{{cf_CoolForge_nosleep_duration_min}}` | Duration in minutes to prevent device from sleeping (default: 60) | No |
 
 ---
 
@@ -90,7 +91,7 @@ After a script sets a variable, it's available in later automation steps as:
 
 ## Test Script
 
-Use `👀Test Variable Output.ps1` to test all variable output methods. It demonstrates:
+Use `scripts/Check/👀Test Variable Output.ps1` to test all variable output methods. It demonstrates:
 
 - Simple strings and numbers
 - Boolean values
@@ -109,3 +110,4 @@ Use `👀Test Variable Output.ps1` to test all variable output methods. It demon
 
 - [Main README](../README.md)
 - [Function Reference](FUNCTIONS.md)
+- [Folder Structure](FOLDER-STRUCTURE.md)
