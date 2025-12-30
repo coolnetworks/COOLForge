@@ -21,15 +21,15 @@
     Copyright (c) COOLNETWORKS
 
 .EXAMPLE
-    .\tools\Validate-Release.ps1
+    .\release\Validate-Release.ps1
     # Validates repository, reports issues
 
 .EXAMPLE
-    .\tools\Validate-Release.ps1 -AutoFix
+    .\release\Validate-Release.ps1 -AutoFix
     # Validates and automatically fixes issues like outdated MD5SUMS
 
 .EXAMPLE
-    .\tools\Validate-Release.ps1 -AutoFix -CreateTag
+    .\release\Validate-Release.ps1 -AutoFix -CreateTag
     # Validates, fixes, and creates a release tag
 #>
 
@@ -185,7 +185,7 @@ else {
 
         if ($AutoFix) {
             Write-Host "    [*] Regenerating MD5SUMS..." -ForegroundColor Cyan
-            & "$RepoRoot\tools\Update-MD5SUMS.ps1"
+            & "$RepoRoot\release\Update-MD5SUMS.ps1"
             Write-Host "    [+] MD5SUMS regenerated" -ForegroundColor Green
             $ValidationPassed++
         }
