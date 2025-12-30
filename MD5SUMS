@@ -1,6 +1,6 @@
-﻿# MD5SUMS - Checksums for COOLForge_Lib files
+# MD5SUMS - Checksums for COOLForge_Lib files
 # Format: MD5_HASH  FILENAME
-# Generated: 2025-12-30
+# Generated: 2025-12-31
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
@@ -9,17 +9,18 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
+
 f9bb2e368a5a2f4d3f7a122399c86608  modules/COOLForge-Common.psm1
 00ea155a1511111b070aa4f3202ee8f6  templates/What is this folder.md
-f322f568a9fc08de956c523c316cc197  scripts/Remove/⛔Force Remove Anydesk.ps1
-0a875e6bc6cb5ee6a6bcffdddf01e01d  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-4d690957abd1965dd13bf7d47eb6c454  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-cde307a9e4adcd7faf56205670e51d37  scripts/Check/👀Test Show Versions.ps1
-42f5c6b98c2819328f683c7291df1af3  scripts/Check/👀Test Variable Output.ps1
-162886a998a3dcdaa74d28bddae3f12d  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-4a31c41c86ce8f7888a6513421d1068d  scripts/Fix/🔧Fix Windows 10 Services.ps1
-1d29147a13f7256183d6a968cc9969f3  scripts/Fix/🔧Fix Windows 11 Services.ps1
-0dc2e56e7088c93d84254c167a9591ff  scripts/Fix/🔧Fix Windows 7 Services.ps1
-3ed631abcec6a4418536132103a2392a  scripts/Fix/🔧Fix Windows 8 Services.ps1
-c8eca44986d6a8892521e549b5fa1a5e  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-486438567ec4036770a56b5e0de6db1a  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1
+106840e53b8531fc71bed0ca4bc6489e  scripts/Remove/?Force Remove Anydesk.ps1
+bf13288152b9119c1f76eb3832b7ad79  scripts/Remove/?Force Remove Non MSP ScreenConnect.ps1
+4d690957abd1965dd13bf7d47eb6c454  scripts/Check/??Check for Unauthorized Remote Access Tools.ps1
+cde307a9e4adcd7faf56205670e51d37  scripts/Check/??Test Show Versions.ps1
+42f5c6b98c2819328f683c7291df1af3  scripts/Check/??Test Variable Output.ps1
+162886a998a3dcdaa74d28bddae3f12d  scripts/Fix/??Enable System Restore and Create Restore Point.ps1
+eb91d74a4dd672d7b1006eba2c966006  scripts/Fix/??Fix Windows 10 Services.ps1
+e0fdac93a2668ac1ead2356344452588  scripts/Fix/??Fix Windows 11 Services.ps1
+9dab5e5ba33355497bf52baa3f7d5013  scripts/Fix/??Fix Windows 7 Services.ps1
+f094fef9561fe55684ec14d407c8945f  scripts/Fix/??Fix Windows 8 Services.ps1
+2d1e9d262d37eb6b7696a5b3cc01dea7  scripts/Fix/??Fix Windows 8.1 Services.ps1
+486438567ec4036770a56b5e0de6db1a  scripts/Utility/??Wake all devices in parent to level.io folder.ps1

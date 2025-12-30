@@ -30,7 +30,7 @@ $ScriptToRun = "??Fix Windows 8.1 Services.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.29.01
+    Launcher Version: 2025.12.31.01
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -64,7 +64,7 @@ $ScriptToRun = "??Fix Windows 8.1 Services.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.29.01
+# Launcher Version: 2025.12.31.01
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -381,7 +381,7 @@ $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.29.01"
+Write-Host "[*] Script Launcher v2025.12.31.01"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

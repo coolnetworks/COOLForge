@@ -66,9 +66,11 @@ See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 
 | Document | Description |
 |----------|-------------|
+| [Why COOLForge?](docs/WHY.md) | **Start here** — Problems COOLForge solves and design philosophy |
 | [Function Reference](docs/FUNCTIONS.md) | Complete documentation for all library functions |
 | [Script Launcher Guide](docs/LAUNCHER.md) | How to use the launcher to run scripts from GitHub |
-| [Version Pinning](docs/VERSION-PINNING.md) | Pin devices to specific library versions |
+| [Private Fork Guide](docs/PRIVATE-FORK.md) | Using COOLForge with a private GitHub repository |
+| [Version Pinning](docs/VERSION-PINNING.md) | Pin devices to specific library versions for testing and rollback |
 | [Emoji Handling](docs/EMOJI-HANDLING.md) | UTF-8 emoji corruption repair |
 | [Variables Reference](docs/VARIABLES.md) | Level.io variables and setting automation variables |
 | [Folder Structure](docs/FOLDER-STRUCTURE.md) | Script category organization |

@@ -4,5 +4,8 @@
 # Custom field backups (may contain sensitive data)
 /backups/
 
+# Generated configuration files (contain local paths)
+/config/
+
 # Claude Code local settings
 .claude/
