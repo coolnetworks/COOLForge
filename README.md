@@ -156,6 +156,7 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 | `CoolForge_msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
 | `CoolForge_ps_module_library_source` | *(leave empty)* | No | URL to download the library (defaults to official repo) |
 | `CoolForge_pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag |
+| `CoolForge_pat` | `ghp_abc123xyz...` | No | GitHub PAT for private repos (admin-only, see [Private Fork Guide](docs/PRIVATE-FORK.md)) |
 | `CoolForge_nosleep_duration_min` | `60` | No | Duration in minutes to prevent sleep (default: 60) |
 
 ### Automated Setup
@@ -272,6 +273,17 @@ Format: `YYYY.MM.DD.N`
 - `MM` = Month
 - `DD` = Day
 - `N` = Release number for that day
+
+---
+
+## Using with a Private Fork
+
+You can fork COOLForge to your own repository. For private forks, see [Private Fork Guide](docs/PRIVATE-FORK.md) for authentication options.
+
+**Quick setup:**
+1. Fork the repository
+2. Keep it public (recommended) or use a GitHub Personal Access Token for private repos
+3. Set `CoolForge_ps_module_library_source` to your fork's URL
 
 ---
 

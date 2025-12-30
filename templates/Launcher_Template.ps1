@@ -40,6 +40,8 @@ $ScriptToRun = "👀Test Show Versions.ps1"
                                                   (scripts URL is derived from this automatically)
     - {{cf_CoolForge_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
                                                   If not set, uses latest from main branch
+    - {{cf_CoolForge_pat}}                     : (Optional) GitHub Personal Access Token for private repos
+                                                  Admin-only custom field - token is never logged or visible
     - {{level_device_hostname}}                : Device hostname from Level.io
     - {{level_tag_names}}                      : Comma-separated list of device tags
 
@@ -83,6 +85,12 @@ if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
+# GitHub Personal Access Token for private repositories (admin-only custom field)
+$GitHubPAT = "{{cf_CoolForge_pat}}"
+if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_CoolForge_pat}}") {
+    $GitHubPAT = $null
+}
+
 # Version pinning - if set, use specific version tag instead of main branch
 # Check new field name first, then legacy
 $PinnedVersion = "{{cf_CoolForge_pin_psmodule_to_version}}"
@@ -116,12 +124,38 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
 # $ApiKey = "{{cf_apikey}}"
 # $CustomField1 = "{{cf_custom_field_1}}"
 
+# ============================================================
+# GITHUB PAT INJECTION HELPER
+# ============================================================
+# Function to inject GitHub PAT into URL if needed
+function Add-GitHubToken {
+    param([string]$Url, [string]$Token)
+
+    # Only inject if:
+    # 1. Token is provided
+    # 2. URL is a GitHub raw content URL
+    # 3. URL doesn't already contain a token
+    if ([string]::IsNullOrWhiteSpace($Token)) { return $Url }
+    if ($Url -notmatch 'raw\.githubusercontent\.com') { return $Url }
+    if ($Url -match '@raw\.githubusercontent\.com') { return $Url }
+
+    # Inject token: https://raw.githubusercontent.com -> https://TOKEN@raw.githubusercontent.com
+    return $Url -replace '(https://)raw\.githubusercontent\.com', "`$1$Token@raw.githubusercontent.com"
+}
+
 # Derive base URL and scripts URL from library URL
 # Example: https://raw.githubusercontent.com/.../main/COOLForge-Common.psm1
 #       -> https://raw.githubusercontent.com/.../main/scripts
 $RepoBaseUrl = $LibraryUrl -replace '/[^/]+$', ''
 $ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
 $MD5SumsUrl = "$RepoBaseUrl/MD5SUMS"
+
+# Inject PAT if provided (for private repositories)
+if ($GitHubPAT) {
+    $LibraryUrl = Add-GitHubToken -Url $LibraryUrl -Token $GitHubPAT
+    $MD5SumsUrl = Add-GitHubToken -Url $MD5SumsUrl -Token $GitHubPAT
+    $ScriptRepoBaseUrl = Add-GitHubToken -Url $ScriptRepoBaseUrl -Token $GitHubPAT
+}
 
 # ============================================================
 # LIBRARY AUTO-UPDATE & IMPORT
