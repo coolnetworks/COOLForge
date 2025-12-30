@@ -7,6 +7,23 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 
 ## [Unreleased]
 
+## [v2025.12.30] - 2025-12-30
+
+### Added
+- **Terminology section** in README explaining Module, Script, Launcher, Template, Custom Field
+- **Module functions summary** table in README showing all 14 exported functions
+- **Launcher usage guide** with step-by-step instructions for deploying to Level.io
+- **Auto-update test script** (`testing/Test_AutoUpdate_Dev.ps1`) for dev branch testing
+- **Documentation for 4 additional functions**: `Get-LevelGroups`, `Get-LevelDevices`, `Find-LevelDevice`, `Send-LevelWakeOnLan`
+
+### Changed
+- Renamed project from COOLForgeLib to COOLForge_Lib throughout codebase
+- Config filename changed from `.COOLForgeLib-setup.json` to `.COOLForge_Lib-setup.json`
+- Fixed regex bug in launchers: URL path now uses `/COOLForge/` instead of `/COOLForgeLib/`
+- Updated benefits section to emphasize Git-based script management
+
+## [v2025.12.29] - 2025-12-29
+
 ### Added
 - **Version pinning** via `CoolForge_pin_psmodule_to_version` custom field
   - Pin devices to specific release tags (e.g., `v2025.12.29`)
@@ -22,7 +39,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - Launcher template and all launchers updated to v2025.12.29.01
 - README updated with Version Pinning section and Automated Setup instructions
 
-## [v2025.12.29] - 2025-12-29
+## [v2025.12.29-prev] - 2025-12-29
 
 ### Added
 - **Test Variable Output script** (`👀Test Variable Output.ps1`) - Demonstrates all methods for setting Level.io automation variables

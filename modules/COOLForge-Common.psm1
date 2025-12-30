@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.29.02
+    Version:    2025.12.30.01
     Target:     Level.io RMM
     Location:   {{cf_CoolForge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -1100,7 +1100,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2025.12.29.02"
+$script:ModuleVersion = "2025.12.30.01"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
