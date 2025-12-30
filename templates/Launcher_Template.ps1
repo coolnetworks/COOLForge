@@ -321,6 +321,47 @@ if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) 
 }
 
 # ============================================================
+# COPY DOCUMENTATION TO SCRATCH FOLDER
+# ============================================================
+# Copy "What is this folder.md" to scratch folder if it changed
+$ReadmeUrl = "$RepoBaseUrl/templates/What is this folder.md"
+$ReadmeDestPath = Join-Path -Path $MspScratchFolder -ChildPath "What is this folder.md"
+
+try {
+    $ReadmeRemoteContent = (Invoke-WebRequest -Uri $ReadmeUrl -UseBasicParsing -TimeoutSec 5).Content
+    $NeedsReadmeUpdate = $false
+
+    if (Test-Path $ReadmeDestPath) {
+        $ReadmeLocalContent = Get-Content -Path $ReadmeDestPath -Raw -ErrorAction SilentlyContinue
+        if ($ReadmeLocalContent -ne $ReadmeRemoteContent) {
+            $NeedsReadmeUpdate = $true
+        }
+    }
+    else {
+        $NeedsReadmeUpdate = $true
+    }
+
+    if ($NeedsReadmeUpdate) {
+        Set-Content -Path $ReadmeDestPath -Value $ReadmeRemoteContent -Force -ErrorAction Stop
+
+        # Verify checksum if MD5SUMS available
+        if ($MD5SumsContent) {
+            $ExpectedReadmeMD5 = Get-ExpectedMD5 -FileName "templates/What is this folder.md" -MD5Content $MD5SumsContent
+            if ($ExpectedReadmeMD5) {
+                $ActualReadmeMD5 = Get-ContentMD5 -Content $ReadmeRemoteContent
+                if ($ActualReadmeMD5 -eq $ExpectedReadmeMD5) {
+                    Write-Host "[+] Documentation updated and verified"
+                }
+            }
+        }
+    }
+}
+catch {
+    # Non-critical - don't fail if readme can't be downloaded
+    Write-Host "[!] Could not update scratch folder documentation"
+}
+
+# ============================================================
 # VALIDATE CONFIGURATION
 # ============================================================
 if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {

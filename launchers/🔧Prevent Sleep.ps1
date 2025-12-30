@@ -1,7 +1,7 @@
-﻿# ============================================================
+# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "🔧Prevent Sleep.ps1"
+$ScriptToRun = "??Prevent Sleep.ps1"
 # ============================================================
 
 <#
@@ -30,18 +30,20 @@ $ScriptToRun = "🔧Prevent Sleep.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.30.01
+    Launcher Version: 2025.12.29.01
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used:
     - {{cf_CoolForge_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
     - {{cf_CoolForge_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
-                                       (scripts URL is derived from this automatically)
+                                                  (scripts URL is derived from this automatically)
     - {{cf_CoolForge_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
-                                       If not set, uses latest from main branch
-    - {{level_device_hostname}}      : Device hostname from Level.io
-    - {{level_tag_names}}            : Comma-separated list of device tags
+                                                  If not set, uses latest from main branch
+    - {{cf_CoolForge_pat}}                     : (Optional) GitHub Personal Access Token for private repos
+                                                  Admin-only custom field - token is never logged or visible
+    - {{level_device_hostname}}                : Device hostname from Level.io
+    - {{level_tag_names}}                      : Comma-separated list of device tags
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
@@ -52,17 +54,17 @@ $ScriptToRun = "🔧Prevent Sleep.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "🔧Fix Windows 10 Services.ps1"
+    $ScriptToRun = "??Prevent Sleep.ps1"
     # ... rest of launcher code ...
 
 .EXAMPLE
     # Or use a custom field to control which script runs:
-    $ScriptToRun = "{{cf_script_to_run}}"
+    $ScriptToRun = "??Prevent Sleep.ps1"
     # ... rest of launcher code ...
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.30.01
+# Launcher Version: 2025.12.29.01
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -75,6 +77,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
 # ============================================================
 # These variables will be passed to the downloaded script
+# Supports both new (CoolForge_*) and legacy field names for backward compatibility
 $MspScratchFolder = "{{cf_CoolForge_msp_scratch_folder}}"
 if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_CoolForge_msp_scratch_folder}}") {
     $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
@@ -82,7 +85,14 @@ if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
+# GitHub Personal Access Token for private repositories (admin-only custom field)
+$GitHubPAT = "{{cf_CoolForge_pat}}"
+if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_CoolForge_pat}}") {
+    $GitHubPAT = $null
+}
+
 # Version pinning - if set, use specific version tag instead of main branch
+# Check new field name first, then legacy
 $PinnedVersion = "{{cf_CoolForge_pin_psmodule_to_version}}"
 if ([string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -eq "{{cf_CoolForge_pin_psmodule_to_version}}") {
     $PinnedVersion = "{{cf_pin_psmodule_to_version}}"  # Fallback to legacy
@@ -94,11 +104,12 @@ if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{
 }
 
 # Library URL - uses custom field if set, otherwise defaults to official repo
+# Check new field name first, then legacy
 $LibraryUrl = "{{cf_CoolForge_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}") {
     $LibraryUrl = "{{cf_ps_module_library_source}}"  # Fallback to legacy
 }
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"
@@ -113,12 +124,38 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForg
 # $ApiKey = "{{cf_apikey}}"
 # $CustomField1 = "{{cf_custom_field_1}}"
 
+# ============================================================
+# GITHUB PAT INJECTION HELPER
+# ============================================================
+# Function to inject GitHub PAT into URL if needed
+function Add-GitHubToken {
+    param([string]$Url, [string]$Token)
+
+    # Only inject if:
+    # 1. Token is provided
+    # 2. URL is a GitHub raw content URL
+    # 3. URL doesn't already contain a token
+    if ([string]::IsNullOrWhiteSpace($Token)) { return $Url }
+    if ($Url -notmatch 'raw\.githubusercontent\.com') { return $Url }
+    if ($Url -match '@raw\.githubusercontent\.com') { return $Url }
+
+    # Inject token: https://raw.githubusercontent.com -> https://TOKEN@raw.githubusercontent.com
+    return $Url -replace '(https://)raw\.githubusercontent\.com', "`$1$Token@raw.githubusercontent.com"
+}
+
 # Derive base URL and scripts URL from library URL
 # Example: https://raw.githubusercontent.com/.../main/COOLForge-Common.psm1
 #       -> https://raw.githubusercontent.com/.../main/scripts
 $RepoBaseUrl = $LibraryUrl -replace '/[^/]+$', ''
 $ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
 $MD5SumsUrl = "$RepoBaseUrl/MD5SUMS"
+
+# Inject PAT if provided (for private repositories)
+if ($GitHubPAT) {
+    $LibraryUrl = Add-GitHubToken -Url $LibraryUrl -Token $GitHubPAT
+    $MD5SumsUrl = Add-GitHubToken -Url $MD5SumsUrl -Token $GitHubPAT
+    $ScriptRepoBaseUrl = Add-GitHubToken -Url $ScriptRepoBaseUrl -Token $GitHubPAT
+}
 
 # ============================================================
 # LIBRARY AUTO-UPDATE & IMPORT
@@ -284,6 +321,47 @@ if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) 
 }
 
 # ============================================================
+# COPY DOCUMENTATION TO SCRATCH FOLDER
+# ============================================================
+# Copy "What is this folder.md" to scratch folder if it changed
+$ReadmeUrl = "$RepoBaseUrl/templates/What is this folder.md"
+$ReadmeDestPath = Join-Path -Path $MspScratchFolder -ChildPath "What is this folder.md"
+
+try {
+    $ReadmeRemoteContent = (Invoke-WebRequest -Uri $ReadmeUrl -UseBasicParsing -TimeoutSec 5).Content
+    $NeedsReadmeUpdate = $false
+
+    if (Test-Path $ReadmeDestPath) {
+        $ReadmeLocalContent = Get-Content -Path $ReadmeDestPath -Raw -ErrorAction SilentlyContinue
+        if ($ReadmeLocalContent -ne $ReadmeRemoteContent) {
+            $NeedsReadmeUpdate = $true
+        }
+    }
+    else {
+        $NeedsReadmeUpdate = $true
+    }
+
+    if ($NeedsReadmeUpdate) {
+        Set-Content -Path $ReadmeDestPath -Value $ReadmeRemoteContent -Force -ErrorAction Stop
+
+        # Verify checksum if MD5SUMS available
+        if ($MD5SumsContent) {
+            $ExpectedReadmeMD5 = Get-ExpectedMD5 -FileName "templates/What is this folder.md" -MD5Content $MD5SumsContent
+            if ($ExpectedReadmeMD5) {
+                $ActualReadmeMD5 = Get-ContentMD5 -Content $ReadmeRemoteContent
+                if ($ActualReadmeMD5 -eq $ExpectedReadmeMD5) {
+                    Write-Host "[+] Documentation updated and verified"
+                }
+            }
+        }
+    }
+}
+catch {
+    # Non-critical - don't fail if readme can't be downloaded
+    Write-Host "[!] Could not update scratch folder documentation"
+}
+
+# ============================================================
 # VALIDATE CONFIGURATION
 # ============================================================
 if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
@@ -303,7 +381,7 @@ $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.30.01"
+Write-Host "[*] Script Launcher v2025.12.29.01"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -316,33 +394,9 @@ if (!(Test-Path $ScriptsFolder)) {
 $SafeScriptName = $ScriptToRun -replace '[<>:"/\\|?*]', '_'
 $ScriptPath = Join-Path -Path $ScriptsFolder -ChildPath $SafeScriptName
 
-# Function to find script path from MD5SUMS (supports subfolder organization)
-function Get-ScriptPathFromMD5 {
-    param([string]$ScriptName, [string]$MD5Content)
-    if ([string]::IsNullOrWhiteSpace($MD5Content)) { return $null }
-    foreach ($line in $MD5Content -split "`n") {
-        $line = $line.Trim()
-        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
-        # Match lines ending with the script name (handles subfolders)
-        if ($line -match "^[a-f0-9]{32}\s+(.+[/\\]$([regex]::Escape($ScriptName)))$") {
-            return $Matches[1].Trim()
-        }
-    }
-    return $null
-}
-
-# Find script path from MD5SUMS (supports subfolder organization)
-$ScriptRelativePath = Get-ScriptPathFromMD5 -ScriptName $ScriptToRun -MD5Content $MD5SumsContent
-
-if ($ScriptRelativePath) {
-    # Script found in MD5SUMS - use the full path (includes subfolder)
-    $ScriptUrl = "$RepoBaseUrl/$(Get-LevelUrlEncoded $ScriptRelativePath)"
-    Write-Host "[*] Script location: $ScriptRelativePath"
-} else {
-    # Fallback to flat structure for backwards compatibility
-    $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
-    Write-Host "[!] Script not found in MD5SUMS, using default path"
-}
+# URL-encode the script name for the download URL
+# Use library function for proper UTF-8 emoji handling
+$ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
 
 # Check for local version
 $ScriptNeedsUpdate = $false
@@ -402,8 +456,9 @@ try {
             }
 
             # Verify MD5 checksum if available
-            if ($MD5SumsContent -and $ScriptRelativePath) {
-                $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptRelativePath -MD5Content $MD5SumsContent
+            if ($MD5SumsContent) {
+                $ScriptMD5Key = "scripts/$ScriptToRun"
+                $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
                 if ($ExpectedScriptMD5) {
                     $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
                     if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
@@ -490,3 +545,4 @@ catch {
 
 # Pass through the script's exit code
 exit $ScriptExitCode
+
