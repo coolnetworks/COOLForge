@@ -20,6 +20,7 @@
     - CoolForge_pin_psmodule_to_version  : Pin to specific version tag
     - CoolForge_screenconnect_instance_id: Your MSP's ScreenConnect instance ID
     - CoolForge_is_screenconnect_server  : Mark ScreenConnect server devices
+    - CoolForge_nosleep_duration_min     : Duration in minutes to prevent sleep (default: 60)
 
 .NOTES
     Version:          2025.12.29.02
@@ -119,6 +120,14 @@ $Script:OptionalFields = @(
         Description = "Set to 'true' on devices hosting ScreenConnect server"
         Required    = $false
         Default     = ""
+        AdminOnly   = $false
+    },
+    @{
+        Name        = "CoolForge_nosleep_duration_min"
+        LegacyName  = $null
+        Description = "Duration in minutes to prevent device from sleeping (default: 60)"
+        Required    = $false
+        Default     = "60"
         AdminOnly   = $false
     }
 )
