@@ -8,6 +8,10 @@
     - PowerShell syntax validation
     - MD5SUMS verification and regeneration if needed
     - Launcher version consistency
+    - Launcher completeness (orphaned launchers detection)
+    - Script emoji prefix validation
+    - TODO comment detection
+    - Required files check
     - Provides release tag suggestions (dev-prefixed for dev branch)
 
 .PARAMETER AutoFix
@@ -236,9 +240,140 @@ if ($TemplateVersion) {
 }
 
 # ============================================================
-# 5. REQUIRED FILES CHECK
+# 5. LAUNCHER COMPLETENESS CHECK
 # ============================================================
-Write-Host "[5/6] Checking required files..." -ForegroundColor Yellow
+Write-Host "[5/9] Checking launcher completeness..." -ForegroundColor Yellow
+
+$InventoryPath = Join-Path $RepoRoot ".cache\script-inventory.json"
+
+# Generate inventory if missing
+if (!(Test-Path $InventoryPath)) {
+    Write-Host "    [*] Generating inventory cache..." -ForegroundColor Gray
+    & "$RepoRoot\pre-release\Update-ScriptInventory.ps1" | Out-Null
+}
+
+if (Test-Path $InventoryPath) {
+    $Inventory = Get-Content -Path $InventoryPath -Raw | ConvertFrom-Json
+
+    # Get all script names
+    $AllScripts = @()
+    foreach ($Script in $Inventory.Categories.Scripts) {
+        $AllScripts += $Script.Name
+    }
+
+    # Get all launcher names
+    $AllLaunchers = @()
+    foreach ($Launcher in $Inventory.Categories.Launchers) {
+        $AllLaunchers += $Launcher.Name
+    }
+
+    # Find orphaned launchers (launcher without matching script)
+    $OrphanedLaunchers = @()
+    foreach ($LauncherName in $AllLaunchers) {
+        if ($LauncherName -notin $AllScripts) {
+            $OrphanedLaunchers += $LauncherName
+        }
+    }
+
+    # Find missing launchers (script without launcher)
+    $MissingLaunchers = @()
+    foreach ($ScriptName in $AllScripts) {
+        if ($ScriptName -notin $AllLaunchers) {
+            $MissingLaunchers += $ScriptName
+        }
+    }
+
+    if ($OrphanedLaunchers.Count -eq 0 -and $MissingLaunchers.Count -eq 0) {
+        Write-Host "    All scripts have matching launchers" -ForegroundColor Green
+        $ValidationPassed++
+    }
+    else {
+        if ($OrphanedLaunchers.Count -gt 0) {
+            $ValidationErrors += "$($OrphanedLaunchers.Count) orphaned launcher(s) (no matching script)"
+            foreach ($Orphan in $OrphanedLaunchers) {
+                Write-Host "    [X] Orphaned launcher: $Orphan" -ForegroundColor Red
+            }
+        }
+        if ($MissingLaunchers.Count -gt 0) {
+            $ValidationErrors += "$($MissingLaunchers.Count) script(s) without launchers"
+            foreach ($Missing in $MissingLaunchers) {
+                Write-Host "    [X] Missing launcher for: $Missing" -ForegroundColor Red
+            }
+        }
+    }
+}
+else {
+    $ValidationWarnings += "Could not check launcher completeness (inventory cache missing)"
+}
+
+# ============================================================
+# 6. EMOJI PREFIX VALIDATION
+# ============================================================
+Write-Host "[6/9] Validating emoji prefixes..." -ForegroundColor Yellow
+
+$CategoryEmojis = @{
+    "Check" = [char]::ConvertFromUtf32(0x1F440)    # 👀
+    "Fix" = [char]::ConvertFromUtf32(0x1F527)      # 🔧
+    "Remove" = [char]::ConvertFromUtf32(0x26D4)    # ⛔
+    "Utility" = [char]::ConvertFromUtf32(0x1F64F)  # 🙏
+}
+
+$EmojiErrors = 0
+foreach ($Category in $CategoryEmojis.Keys) {
+    $CategoryPath = Join-Path $RepoRoot "scripts\$Category"
+    if (Test-Path $CategoryPath) {
+        $Scripts = Get-ChildItem -Path $CategoryPath -Filter "*.ps1" -File
+        foreach ($Script in $Scripts) {
+            # Check if file starts with alphanumeric (should start with emoji, not letter/number)
+            if ($Script.Name -match '^[a-zA-Z0-9]') {
+                Write-Host "    [X] Missing emoji prefix: scripts/$Category/$($Script.Name)" -ForegroundColor Red
+                $EmojiErrors++
+            }
+        }
+    }
+}
+
+if ($EmojiErrors -eq 0) {
+    Write-Host "    All scripts have emoji prefixes" -ForegroundColor Green
+    $ValidationPassed++
+}
+else {
+    $ValidationErrors += "$EmojiErrors script(s) missing emoji prefix"
+}
+
+# ============================================================
+# 7. TODO COMMENT CHECK
+# ============================================================
+Write-Host "[7/9] Checking for TODO comments..." -ForegroundColor Yellow
+
+$TodoFiles = @()
+$ScriptsFolder = Join-Path $RepoRoot "scripts"
+if (Test-Path $ScriptsFolder) {
+    $AllScriptFiles = Get-ChildItem -Path $ScriptsFolder -Filter "*.ps1" -Recurse -File
+    foreach ($File in $AllScriptFiles) {
+        $Content = Get-Content -Path $File.FullName -Raw -ErrorAction SilentlyContinue
+        if ($Content -match 'TODO:') {
+            $RelPath = $File.FullName.Substring($RepoRoot.Length + 1)
+            $TodoFiles += $RelPath
+        }
+    }
+}
+
+if ($TodoFiles.Count -eq 0) {
+    Write-Host "    No TODO comments found in scripts" -ForegroundColor Green
+    $ValidationPassed++
+}
+else {
+    $ValidationWarnings += "$($TodoFiles.Count) script(s) contain TODO comments"
+    foreach ($TodoFile in $TodoFiles) {
+        Write-Host "    [!] TODO found in: $TodoFile" -ForegroundColor Yellow
+    }
+}
+
+# ============================================================
+# 8. REQUIRED FILES CHECK
+# ============================================================
+Write-Host "[8/9] Checking required files..." -ForegroundColor Yellow
 
 $RequiredFiles = @(
     "README.md",
@@ -271,9 +406,9 @@ else {
 }
 
 # ============================================================
-# 6. SUGGEST RELEASE TAG
+# 9. SUGGEST RELEASE TAG
 # ============================================================
-Write-Host "[6/6] Suggesting release tag..." -ForegroundColor Yellow
+Write-Host "[9/9] Suggesting release tag..." -ForegroundColor Yellow
 
 $Today = Get-Date -Format "yyyy.MM.dd"
 $IsDevBranch = $CurrentBranch -eq "dev"
@@ -319,7 +454,7 @@ Write-Host "Validation Summary" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 
 if ($ValidationErrors.Count -eq 0) {
-    Write-Host "[+] VALIDATION PASSED ($ValidationPassed/6 checks)" -ForegroundColor Green
+    Write-Host "[+] VALIDATION PASSED ($ValidationPassed/9 checks)" -ForegroundColor Green
     Write-Host ""
 
     if ($ValidationWarnings.Count -gt 0) {

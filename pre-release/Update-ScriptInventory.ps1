@@ -85,6 +85,19 @@ function Add-FilesToInventory {
             $FileInfo.Subcategory = $Matches[1]
         }
 
+        # Extract version from launchers
+        if ($Category -eq "Launchers") {
+            try {
+                $Content = Get-Content -Path $File.FullName -Raw -Encoding UTF8
+                if ($Content -match 'Version:\s*(\d+\.\d+\.\d+\.\d+)') {
+                    $FileInfo.Version = $Matches[1]
+                }
+            }
+            catch {
+                # Version extraction failed, skip
+            }
+        }
+
         $FileList += $FileInfo
         Write-Host "  [+] $RelativePath" -ForegroundColor Green
     }
