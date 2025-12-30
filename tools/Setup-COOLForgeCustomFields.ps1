@@ -82,9 +82,9 @@ $Script:RequiredFields = @(
     @{
         Name        = "CoolForge_msp_scratch_folder"
         LegacyName  = "msp_scratch_folder"
-        Description = "Persistent storage folder for MSP scripts and libraries"
+        Description = "Persistent storage folder for MSP scripts and libraries (default: C:\ProgramData\COOLForge)"
         Required    = $true
-        Default     = ""  # Set dynamically based on MSP name
+        Default     = ""  # Set dynamically based on MSP/company name (defaults to COOLForge)
         AdminOnly   = $false
     }
 )
@@ -353,10 +353,11 @@ if (-not [string]::IsNullOrWhiteSpace($CurrentScratchFolder)) {
 Write-Host ""
 Write-Host "Your company name will be used for the scratch folder path."
 Write-Host "Example: 'Contoso' -> C:\ProgramData\Contoso"
+Write-Host "Example: 'COOLForge' -> C:\ProgramData\COOLForge (default)"
 Write-Host ""
 
-# Default to: inferred from scratch folder > saved config > "MSP"
-$DefaultCompanyName = "MSP"
+# Default to: inferred from scratch folder > saved config > "COOLForge"
+$DefaultCompanyName = "COOLForge"
 if (-not [string]::IsNullOrWhiteSpace($InferredCompanyName)) {
     $DefaultCompanyName = $InferredCompanyName
 }
@@ -365,14 +366,14 @@ elseif ($Script:SavedConfig -and $Script:SavedConfig.CompanyName) {
     Write-LevelInfo "Using saved company name: $DefaultCompanyName"
 }
 
-$Script:MspName = Read-UserInput -Prompt "Enter your company name" -Default $DefaultCompanyName
+$Script:MspName = Read-UserInput -Prompt "Enter your company name (or press Enter for COOLForge)" -Default $DefaultCompanyName
 
 # Sanitize MSP name for use in folder path (remove invalid characters, but allow spaces)
 $Script:MspName = $Script:MspName -replace '[<>:"/\\|?*]', ''
 $Script:MspName = $Script:MspName.Trim()
 
 if ([string]::IsNullOrWhiteSpace($Script:MspName)) {
-    $Script:MspName = "MSP"
+    $Script:MspName = "COOLForge"
 }
 
 # Build the suggested scratch folder path
