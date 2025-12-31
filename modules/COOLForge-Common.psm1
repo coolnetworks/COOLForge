@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.30.01
+    Version:    2025.12.31.01
     Target:     Level.io RMM
     Location:   {{cf_CoolForge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -480,6 +480,136 @@ function Get-LevelDeviceInfo {
         IsAdmin    = Test-LevelAdmin
         PowerShell = $PSVersionTable.PSVersion.ToString()
         ScriptPID  = $PID
+    }
+}
+
+# ============================================================
+# SOFTWARE POLICY DETECTION
+# ============================================================
+
+<#
+.SYNOPSIS
+    Determines software policy requirements from device tags.
+
+.DESCRIPTION
+    Parses device tags to identify policy requirements for a specific software package.
+    Supports tag-based policy enforcement using emoji prefixes:
+
+    - 🙏 (pray)       = Request/Recommend installation
+    - ⛔ (no entry)   = Block/Must not be installed
+    - 🛑 (stop sign)  = Stop/Remove if present
+    - 📌 (pin)        = Pin/Must be installed (enforce presence)
+    - ✅ (check mark) = Approved/Verified (compliant state)
+
+    This enables a single "multilaunch" script pattern where one script can handle
+    any software package by simply changing the software name parameter.
+
+.PARAMETER SoftwareName
+    The name of the software to check policy for (e.g., "unchecky", "7zip", "vlc").
+    Case-insensitive. Matched against tags in the format: {emoji}{softwarename}
+
+.PARAMETER DeviceTags
+    Comma-separated list of device tags. Typically "{{level_tag_names}}".
+    Example: "🙏unchecky,📌7zip,✅chrome,production,windows"
+
+.OUTPUTS
+    Hashtable with policy information:
+    - SoftwareName: The software being checked
+    - HasPolicy: $true if any policy tag was found, $false otherwise
+    - PolicyActions: Array of actions required (Request, Block, Remove, Pin, Approved)
+    - MatchedTags: Array of full tag strings that matched
+    - RawTags: Array of all device tags
+
+.EXAMPLE
+    # Check policy for Unchecky from Level.io tags
+    $Policy = Get-SoftwarePolicy -SoftwareName "unchecky" -DeviceTags "{{level_tag_names}}"
+    if ($Policy.HasPolicy) {
+        Write-LevelLog "Policy actions: $($Policy.PolicyActions -join ', ')"
+        Write-LevelLog "Matched tags: $($Policy.MatchedTags -join ', ')"
+    }
+
+.EXAMPLE
+    # Check multiple software packages
+    foreach ($Software in @("unchecky", "7zip", "vlc")) {
+        $Policy = Get-SoftwarePolicy -SoftwareName $Software -DeviceTags $DeviceTags
+        if ($Policy.HasPolicy) {
+            Write-Host "$Software requires: $($Policy.PolicyActions -join ', ')"
+        }
+    }
+
+.EXAMPLE
+    # Use in a multilaunch check script
+    $SoftwareName = "unchecky"  # Change this for different software
+    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
+
+    if ($Policy.HasPolicy) {
+        if ("Pin" -in $Policy.PolicyActions) {
+            # Check if software is installed
+        }
+        if ("Remove" -in $Policy.PolicyActions) {
+            # Check if software needs removal
+        }
+    }
+
+.NOTES
+    Tag format is case-insensitive: "📌Unchecky", "📌unchecky", "📌UNCHECKY" all match.
+    Multiple policy tags for the same software are supported and all will be returned.
+#>
+function Get-SoftwarePolicy {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SoftwareName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceTags = ""
+    )
+
+    # Define emoji to action mapping
+    # Using Unicode codepoints for reliability across platforms
+    $EmojiMap = @{
+        ([char]::ConvertFromUtf32(0x1F64F)) = "Request"    # 🙏 Pray
+        ([char]0x26D4)                      = "Block"      # ⛔ No entry
+        ([char]::ConvertFromUtf32(0x1F6D1)) = "Remove"     # 🛑 Stop sign
+        ([char]::ConvertFromUtf32(0x1F4CC)) = "Pin"        # 📌 Pushpin
+        ([char]0x2705)                      = "Approved"   # ✅ Check mark
+    }
+
+    # Parse tags into array
+    $TagArray = if ($DeviceTags) {
+        $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+    } else {
+        @()
+    }
+
+    # Track matching tags and actions
+    $MatchedTags = @()
+    $PolicyActions = @()
+
+    # Check each tag for software policy match
+    foreach ($Tag in $TagArray) {
+        # Check if tag starts with any policy emoji
+        foreach ($Emoji in $EmojiMap.Keys) {
+            if ($Tag -like "$Emoji*") {
+                # Extract software name from tag (everything after emoji)
+                $TagSoftware = $Tag.Substring($Emoji.Length).Trim()
+
+                # Case-insensitive match
+                if ($TagSoftware -eq $SoftwareName) {
+                    $MatchedTags += $Tag
+                    $PolicyActions += $EmojiMap[$Emoji]
+                }
+            }
+        }
+    }
+
+    # Return policy information
+    return @{
+        SoftwareName   = $SoftwareName
+        HasPolicy      = ($MatchedTags.Count -gt 0)
+        PolicyActions  = ($PolicyActions | Select-Object -Unique)
+        MatchedTags    = $MatchedTags
+        RawTags        = $TagArray
     }
 }
 
@@ -1100,7 +1230,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2025.12.30.01"
+$script:ModuleVersion = "2025.12.31.01"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -1119,6 +1249,9 @@ Export-ModuleMember -Function @(
     # Device & System Info
     'Test-LevelAdmin',
     'Get-LevelDeviceInfo',
+
+    # Software Policy
+    'Get-SoftwarePolicy',
 
     # API Helpers
     'Invoke-LevelApiCall',
