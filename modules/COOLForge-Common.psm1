@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.11
+    Version:    2026.01.01.12
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -509,6 +509,91 @@ function Get-LevelDeviceInfo {
 }
 
 # ============================================================
+# EMOJI PATTERN DEFINITIONS (Single Source of Truth)
+# ============================================================
+
+<#
+.SYNOPSIS
+    Returns the centralized emoji-to-action mapping table.
+
+.DESCRIPTION
+    This function is the SINGLE SOURCE OF TRUTH for all emoji pattern handling.
+    It returns a hashtable mapping both correct UTF-8 emojis and their Level.io
+    corrupted byte patterns to action names.
+
+    Level.io corrupts UTF-8 emojis when passing {{level_tag_names}} through
+    double-encoding (UTF-8 -> Windows-1252 -> UTF-8).
+
+    All functions that need to interpret emoji tags should call this function
+    rather than maintaining their own emoji tables.
+
+.OUTPUTS
+    Hashtable mapping emoji patterns (correct and corrupted) to action names.
+
+.EXAMPLE
+    $EmojiMap = Get-EmojiMap
+    foreach ($Emoji in $EmojiMap.Keys) {
+        if ($Tag.StartsWith($Emoji)) {
+            $Action = $EmojiMap[$Emoji]
+        }
+    }
+#>
+function Get-EmojiMap {
+    # Observed corruption patterns from Level.io:
+    # ✅ (U+2705) -> CE 93 C2 A3 C3 A0 (displays as: Γ£à)
+    # 📌 (U+1F4CC) -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: ≡ƒôî)
+    # 🙏 (U+1F64F) -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: ≡ƒÖÅ)
+    # 🛑 (U+1F6D1) -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: ≡ƒ¢æ)
+    # ⛔ (U+26D4) -> CE 93 C2 A2 C3 B6 (displays as: Γ¢ö)
+    # 🪟 (U+1FA9F) -> E2 89 A1 C6 92 C2 AC C6 92 (displays as: ≡ƒ¬ƒ)
+    # 🚨 (U+1F6A8) -> E2 89 A1 C6 92 C3 9C C2 BF (displays as: ≡ƒÜ¿)
+    # 🐧 (U+1F427) -> E2 89 A1 C6 92 C3 89 C2 BA (displays as: ≡ƒÉº)
+    # 🌀 (U+1F300) -> E2 89 A1 C6 92 C3 AE C3 87 (displays as: ≡ƒîÇ)
+    # 🛰️ (U+1F6F0) -> E2 89 A1 C6 92 C2 A2 E2 96 91 E2 88 A9 E2 95 95 C3 85
+
+    # Build corrupted string patterns from observed byte sequences
+    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # ✅
+    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # 📌
+    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # 🙏
+    $CorruptedStop = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # 🛑
+    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # ⛔
+    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # 🪟
+    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # 🚨
+    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # 🐧
+    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # 🌀
+    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # 🛰️
+
+    return @{
+        # Correct UTF-8 emojis
+        "🙏" = "Request"      # U+1F64F Pray/Folded hands - Request/Recommend installation
+        "⛔" = "Block"        # U+26D4 No entry - Block/Must not be installed
+        "🛑" = "Remove"       # U+1F6D1 Stop sign - Stop/Remove if present
+        "📌" = "Pin"          # U+1F4CC Pushpin - Pin/Must be installed (enforce)
+        "✅" = "Installed"    # U+2705 Check mark - Already installed/Present
+        "❌" = "Denied"       # U+274C Cross mark - Denied/Not allowed
+        "🪟" = "Windows"      # U+1FA9F Window - Windows platform tag
+        "🚨" = "Alert"        # U+1F6A8 Police light - Alert/Critical
+        "🐧" = "Linux"        # U+1F427 Penguin - Linux platform tag
+        "🌀" = "AdelaideMRI"  # U+1F300 Cyclone - AdelaideMRI client tag
+        "🛰️" = "Satellite"    # U+1F6F0 Satellite - Satellite/remote site
+        "👀" = "Check"        # U+1F440 Eyes - Check/Monitor script
+        "🔧" = "Fix"          # U+1F527 Wrench - Fix/Repair script
+        "🔄" = "Maintain"     # U+1F504 Counterclockwise - Maintenance script
+        # Level.io corrupted patterns
+        $CorruptedCheckmark = "Installed"
+        $CorruptedPin = "Pin"
+        $CorruptedPray = "Request"
+        $CorruptedStop = "Remove"
+        $CorruptedNoEntry = "Block"
+        $CorruptedWindow = "Windows"
+        $CorruptedAlert = "Alert"
+        $CorruptedPenguin = "Linux"
+        $CorruptedCyclone = "AdelaideMRI"
+        $CorruptedSatellite = "Satellite"
+    }
+}
+
+# ============================================================
 # SOFTWARE POLICY DETECTION
 # ============================================================
 
@@ -593,61 +678,8 @@ function Get-SoftwarePolicy {
         [switch]$ShowDebug
     )
 
-    # Level.io corrupts UTF-8 emojis when passing {{level_tag_names}}
-    # The bytes get double-encoded through Windows-1252 or similar
-    # We need to match both correct AND corrupted patterns
-    #
-    # Observed corruption patterns from Level.io:
-    # ✅ (U+2705) -> CE 93 C2 A3 C3 A0 (displays as: Γ£à)
-    # 📌 (U+1F4CC) -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: ≡ƒôî)
-    # 🙏 (U+1F64F) -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: ≡ƒÖÅ)
-    # 🛑 (U+1F6D1) -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: ≡ƒ¢æ)
-    # ⛔ (U+26D4) -> CE 93 C2 A2 C3 B6 (displays as: Γ¢ö)
-    # 🪟 (U+1FA9F) -> E2 89 A1 C6 92 C2 AC C6 92 (displays as: ≡ƒ¬ƒ)
-    # 🚨 (U+1F6A8) -> E2 89 A1 C6 92 C3 9C C2 BF (displays as: ≡ƒÜ¿)
-    # 🐧 (U+1F427) -> E2 89 A1 C6 92 C3 89 C2 BA (displays as: ≡ƒÉº)
-    # 🌀 (U+1F300) -> E2 89 A1 C6 92 C3 AE C3 87 (displays as: ≡ƒîÇ)
-    # 🛰️ (U+1F6F0) -> E2 89 A1 C6 92 C2 A2 E2 96 91 E2 88 A9 E2 95 95 C3 85
-
-    # Build corrupted string patterns from observed byte sequences
-    # Level.io corrupts UTF-8 emojis through double-encoding (UTF-8 -> Windows-1252 -> UTF-8)
-    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # ✅
-    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # 📌
-    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # 🙏
-    $CorruptedStop = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # 🛑
-    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # ⛔
-    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # 🪟
-    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # 🚨
-    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # 🐧
-    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # 🌀
-    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # 🛰️
-
-    # Define emoji to action mapping - include both correct AND corrupted forms
-    $EmojiMap = @{
-        # Correct UTF-8 emojis
-        "🙏" = "Request"    # U+1F64F Pray/Folded hands - Request/Recommend installation
-        "⛔" = "Block"      # U+26D4 No entry - Block/Must not be installed
-        "🛑" = "Remove"     # U+1F6D1 Stop sign - Stop/Remove if present
-        "📌" = "Pin"        # U+1F4CC Pushpin - Pin/Must be installed (enforce)
-        "✅" = "Installed"  # U+2705 Check mark - Already installed/Present
-        "❌" = "Denied"     # U+274C Cross mark - Denied/Not allowed
-        "🪟" = "Windows"    # U+1FA9F Window - Windows platform tag
-        "🚨" = "Alert"      # U+1F6A8 Police light - Alert/Critical
-        "🐧" = "Linux"      # U+1F427 Penguin - Linux platform tag
-        "🌀" = "AdelaideMRI" # U+1F300 Cyclone - AdelaideMRI client tag
-        "🛰️" = "Satellite"   # U+1F6F0 Satellite - Satellite/remote site
-        # Level.io corrupted patterns
-        $CorruptedCheckmark = "Installed"
-        $CorruptedPin = "Pin"
-        $CorruptedPray = "Request"
-        $CorruptedStop = "Remove"
-        $CorruptedNoEntry = "Block"
-        $CorruptedWindow = "Windows"
-        $CorruptedAlert = "Alert"
-        $CorruptedPenguin = "Linux"
-        $CorruptedCyclone = "AdelaideMRI"
-        $CorruptedSatellite = "Satellite"
-    }
+    # Get centralized emoji map (single source of truth)
+    $EmojiMap = Get-EmojiMap
 
     # Parse tags into array
     $TagArray = if ($DeviceTags) {
@@ -1481,7 +1513,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.11"
+$script:ModuleVersion = "2026.01.01.12"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -1501,7 +1533,8 @@ Export-ModuleMember -Function @(
     'Test-LevelAdmin',
     'Get-LevelDeviceInfo',
 
-    # Software Policy
+    # Software Policy & Emoji Handling
+    'Get-EmojiMap',
     'Get-SoftwarePolicy',
     'Invoke-SoftwarePolicyCheck',
 
