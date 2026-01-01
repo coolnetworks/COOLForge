@@ -14,11 +14,11 @@
 .NOTES
     Version:    2025.12.31.02
     Target:     Level.io RMM
-    Location:   {{cf_CoolForge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
+    Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
     Level.io Custom Fields:
-    - {{cf_CoolForge_msp_scratch_folder}}       : (Required) Persistent storage folder (e.g., C:\ProgramData\MSP)
-    - {{cf_CoolForge_ps_module_library_source}} : (Optional) URL to download this module - defaults to official repo
+    - {{cf_coolforge_msp_scratch_folder}}       : (Required) Persistent storage folder (e.g., C:\ProgramData\MSP)
+    - {{cf_coolforge_ps_module_library_source}} : (Optional) URL to download this module - defaults to official repo
 
     Copyright (c) COOLNETWORKS
     https://coolnetworks.au
@@ -69,7 +69,7 @@ $script:Initialized = $false        # Flag to ensure initialization
     Example: "CleanupTempFiles", "WindowsUpdate-Weekly"
 
 .PARAMETER MspScratchFolder
-    Base path for MSP files. Typically "{{cf_CoolForge_msp_scratch_folder}}".
+    Base path for MSP files. Typically "{{cf_coolforge_msp_scratch_folder}}".
     Lockfiles are stored in: $MspScratchFolder\lockfiles\
 
 .PARAMETER DeviceHostname
@@ -98,7 +98,7 @@ $script:Initialized = $false        # Flag to ensure initialization
 
 .EXAMPLE
     $Init = Initialize-LevelScript -ScriptName "MyScript" `
-                                   -MspScratchFolder "{{cf_CoolForge_msp_scratch_folder}}" `
+                                   -MspScratchFolder "{{cf_coolforge_msp_scratch_folder}}" `
                                    -DeviceHostname "{{level_device_hostname}}" `
                                    -DeviceTags "{{level_tag_names}}"
     if (-not $Init.Success) { exit 0 }
