@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.01
+    Version:    2026.01.01.02
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -587,17 +587,20 @@ function Get-SoftwarePolicy {
         [string]$SoftwareName,
 
         [Parameter(Mandatory = $false)]
-        [string]$DeviceTags = ""
+        [string]$DeviceTags = "",
+
+        [Parameter(Mandatory = $false)]
+        [switch]$ShowDebug
     )
 
-    # Define emoji to action mapping
-    # Using Unicode codepoints for reliability across platforms
+    # Define emoji to action mapping using actual emoji characters
+    # This avoids issues with surrogate pair handling in PowerShell
     $EmojiMap = @{
-        ([char]::ConvertFromUtf32(0x1F64F)) = "Request"    # 🙏 Pray
-        ([char]0x26D4)                      = "Block"      # ⛔ No entry
-        ([char]::ConvertFromUtf32(0x1F6D1)) = "Remove"     # 🛑 Stop sign
-        ([char]::ConvertFromUtf32(0x1F4CC)) = "Pin"        # 📌 Pushpin
-        ([char]0x2705)                      = "Approved"   # ✅ Check mark
+        "🙏" = "Request"    # U+1F64F Pray/Folded hands
+        "⛔" = "Block"      # U+26D4 No entry
+        "🛑" = "Remove"     # U+1F6D1 Stop sign
+        "📌" = "Pin"        # U+1F4CC Pushpin
+        "✅" = "Approved"   # U+2705 Check mark
     }
 
     # Parse tags into array
@@ -611,18 +614,35 @@ function Get-SoftwarePolicy {
     $MatchedTags = @()
     $PolicyActions = @()
 
+    if ($ShowDebug) {
+        Write-Host "[DEBUG] Checking $($TagArray.Count) tags for '$SoftwareName' policy"
+    }
+
     # Check each tag for software policy match
     foreach ($Tag in $TagArray) {
+        if ($ShowDebug) {
+            $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
+            $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+            Write-Host "[DEBUG] Tag: '$Tag' | Bytes: $hexBytes"
+        }
+
         # Check if tag starts with any policy emoji
         foreach ($Emoji in $EmojiMap.Keys) {
-            if ($Tag -like "$Emoji*") {
+            if ($Tag.StartsWith($Emoji)) {
                 # Extract software name from tag (everything after emoji)
                 $TagSoftware = $Tag.Substring($Emoji.Length).Trim()
 
+                if ($ShowDebug) {
+                    Write-Host "[DEBUG]   Matched emoji '$Emoji' -> software name: '$TagSoftware'"
+                }
+
                 # Case-insensitive match
-                if ($TagSoftware -eq $SoftwareName) {
+                if ($TagSoftware -ieq $SoftwareName) {
                     $MatchedTags += $Tag
                     $PolicyActions += $EmojiMap[$Emoji]
+                    if ($ShowDebug) {
+                        Write-Host "[DEBUG]   MATCH! Action: $($EmojiMap[$Emoji])"
+                    }
                 }
             }
         }

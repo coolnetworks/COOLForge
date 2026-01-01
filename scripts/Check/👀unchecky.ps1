@@ -32,7 +32,7 @@
     4. Deploy via launcher - the same script handles all software packages!
 
 .NOTES
-    Version:          2026.01.01.02
+    Version:          2026.01.01.03
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -50,7 +50,7 @@
 #>
 
 # Multi-launch Software Policy Check
-# Version: 2026.01.01.02
+# Version: 2026.01.01.03
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -84,7 +84,7 @@ if (-not $Init.Success) {
 # MAIN SCRIPT LOGIC
 # ============================================================
 # Use -NoExit when running from launcher so it can show log file afterwards
-$ScriptVersion = "2026.01.01.02"
+$ScriptVersion = "2026.01.01.03"
 $InvokeParams = @{ ScriptBlock = {
 
     Write-LevelLog "Software Policy Check - $SoftwareName (v$ScriptVersion)"
@@ -113,7 +113,7 @@ $InvokeParams = @{ ScriptBlock = {
 
     # Get software policy from device tags
     Write-LevelLog "Checking for '$SoftwareName' policy tags..."
-    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
+    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags -ShowDebug
 
     # Display results
     Write-Host ""
