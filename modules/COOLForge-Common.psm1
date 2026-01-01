@@ -575,7 +575,7 @@ function Get-EmojiMap {
         "🚫" = "Block"        # U+1F6AB No entry sign - Block install, leave existing
         "🛑" = "Block"        # U+1F6D1 Stop sign - Block install, leave existing (alt)
         # Status/Protection
-        "📌" = "Pin"          # U+1F4CC Pushpin - Pin/protect from removal
+        "📌" = "Pin"          # U+1F4CC Pushpin - Pin/protect from removal or reinstall
         "✅" = "Has"          # U+2705 Check mark - Has/installed status
         "👀" = "Verify"       # U+1F440 Eyes - Verify/check and report
 
@@ -873,7 +873,7 @@ function Invoke-SoftwarePolicyCheck {
         Write-Host "  Install/reinstall     : 🙏$SoftwareName"
         Write-Host "  Remove if present     : ⛔$SoftwareName"
         Write-Host "  Block install         : 🚫$SoftwareName or 🛑$SoftwareName"
-        Write-Host "  Pin (protect)         : 📌$SoftwareName"
+        Write-Host "  Pin (lock state)      : 📌$SoftwareName"
         Write-Host "  Has (installed)       : ✅$SoftwareName"
         Write-Host "  Skip (hands off)      : ❌$SoftwareName"
         Write-Host "  Verify status         : 👀$SoftwareName"
@@ -896,7 +896,7 @@ function Invoke-SoftwarePolicyCheck {
                 "Install" { "Install - Install/reinstall software" }
                 "Remove"  { "Remove - Uninstall if present" }
                 "Block"   { "Block - Never install, leave existing" }
-                "Pin"     { "Pin - Protect from removal" }
+                "Pin"     { "Pin - Protect from removal or reinstall" }
                 "Has"     { "Has - Status: installed" }
                 "Verify"  { "Verify - Check and report status" }
             }
