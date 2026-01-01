@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.13
+    Version:    2026.01.01.14
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -787,13 +787,63 @@ function Get-SoftwarePolicy {
         }
     }
 
+    # Get unique actions
+    $UniqueActions = $PolicyActions | Select-Object -Unique
+
+    # ============================================================
+    # PRIORITY RESOLUTION LOGIC
+    # ============================================================
+    # Priority order (highest to lowest):
+    # 1. Skip     - Exit immediately, no action
+    # 2. Pin      - Lock state (blocks Install AND Remove)
+    # 3. Block    - Blocks Install only
+    # 4. Remove   - Uninstall if present (wins over Install)
+    # 5. Install  - Install/reinstall
+    # 6. Has      - Verify installed + remediate
+
+    $IsSkipped = "Skip" -in $UniqueActions
+    $IsPinned = "Pin" -in $UniqueActions
+    $IsBlocked = "Block" -in $UniqueActions
+    $HasRemove = "Remove" -in $UniqueActions
+    $HasInstall = "Install" -in $UniqueActions
+    $HasVerify = "Has" -in $UniqueActions
+
+    # Determine what actions are allowed
+    $CanInstall = -not $IsSkipped -and -not $IsPinned -and -not $IsBlocked
+    $CanRemove = -not $IsSkipped -and -not $IsPinned
+
+    # Resolve final action (only one primary action)
+    $ResolvedAction = $null
+    if ($IsSkipped) {
+        $ResolvedAction = "Skip"
+    }
+    elseif ($HasRemove -and $CanRemove) {
+        $ResolvedAction = "Remove"
+    }
+    elseif ($HasInstall -and $CanInstall) {
+        $ResolvedAction = "Install"
+    }
+
+    # Verify runs if Has tag is present and we're not removing
+    $ShouldVerify = $HasVerify -and ($ResolvedAction -ne "Remove")
+
     # Return policy information
     return @{
+        # Raw detection
         SoftwareName   = $SoftwareName
         HasPolicy      = ($MatchedTags.Count -gt 0)
-        PolicyActions  = ($PolicyActions | Select-Object -Unique)
+        PolicyActions  = $UniqueActions
         MatchedTags    = $MatchedTags
         RawTags        = $TagArray
+
+        # Resolved state
+        IsSkipped      = $IsSkipped
+        IsPinned       = $IsPinned
+        IsBlocked      = $IsBlocked
+        CanInstall     = $CanInstall
+        CanRemove      = $CanRemove
+        ResolvedAction = $ResolvedAction
+        ShouldVerify   = $ShouldVerify
     }
 }
 
@@ -876,9 +926,8 @@ function Invoke-SoftwarePolicyCheck {
         Write-Host "  Pin (lock state)      : 📌$SoftwareName"
         Write-Host "  Has (installed)       : ✅$SoftwareName"
         Write-Host "  Skip (hands off)      : ❌$SoftwareName"
-        Write-Host "  Verify status         : 👀$SoftwareName"
         Write-Host ""
-        Write-LevelLog "No action required" -Level "SUCCESS"
+        Write-LevelLog "Resolved Action: NONE" -Level "INFO"
     }
     else {
         Write-LevelLog "Policy tags detected: $($Policy.MatchedTags.Count)" -Level "SUCCESS"
@@ -889,21 +938,36 @@ function Invoke-SoftwarePolicyCheck {
         }
         Write-Host ""
 
-        Write-LevelLog "Required actions:" -Level "INFO"
+        # Show raw actions detected
+        Write-LevelLog "Actions detected:" -Level "INFO"
         foreach ($Action in $Policy.PolicyActions) {
-            $ActionDescription = switch ($Action) {
-                "Skip"    { "Skip - Hands off (managed elsewhere)" }
-                "Install" { "Install - Install/reinstall software" }
-                "Remove"  { "Remove - Uninstall if present" }
-                "Block"   { "Block - Never install, leave existing" }
-                "Pin"     { "Pin - Protect from removal or reinstall" }
-                "Has"     { "Has - Status: installed" }
-                "Verify"  { "Verify - Check and report status" }
-            }
-            Write-Host "  - $Action : $ActionDescription"
+            Write-Host "  - $Action"
         }
         Write-Host ""
-        Write-LevelLog "Policy check complete" -Level "SUCCESS"
+
+        # Show state flags
+        Write-LevelLog "State:" -Level "INFO"
+        if ($Policy.IsSkipped) { Write-Host "  - SKIPPED (hands off)" }
+        if ($Policy.IsPinned) { Write-Host "  - PINNED (state locked)" }
+        if ($Policy.IsBlocked) { Write-Host "  - BLOCKED (install prevented)" }
+        if (-not $Policy.IsSkipped -and -not $Policy.IsPinned -and -not $Policy.IsBlocked) {
+            Write-Host "  - CanInstall: $($Policy.CanInstall)"
+            Write-Host "  - CanRemove: $($Policy.CanRemove)"
+        }
+        Write-Host ""
+
+        # Show resolved action
+        $ResolvedDescription = switch ($Policy.ResolvedAction) {
+            "Skip"    { "SKIP - Hands off (managed elsewhere)" }
+            "Install" { "INSTALL - Install/reinstall software" }
+            "Remove"  { "REMOVE - Uninstall if present" }
+            $null     { "NONE - No action (state locked or blocked)" }
+        }
+        Write-LevelLog "Resolved Action: $ResolvedDescription" -Level "INFO"
+
+        if ($Policy.ShouldVerify) {
+            Write-LevelLog "Verify: YES - Check installation health" -Level "INFO"
+        }
     }
 
     return $Policy
@@ -1526,7 +1590,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.13"
+$script:ModuleVersion = "2026.01.01.14"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================

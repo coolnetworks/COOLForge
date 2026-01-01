@@ -1,22 +1,22 @@
 <#
 .SYNOPSIS
-    Debug script for testing all emoji tag patterns in Level.io.
+    Debug script for testing software policy enforcement.
 
 .DESCRIPTION
-    This script tests the COOLForge emoji tag matching system by checking
-    for DEBUG tags with all supported emoji prefixes. Use this to verify
-    that emoji tags are being correctly parsed from Level.io.
+    This script demonstrates the COOLForge policy check pattern. It reads
+    device tags from Level.io, resolves the policy action, and reports
+    what would happen.
 
     SUPPORTED POLICY TAGS:
-    - 🙏DEBUG = Request/Recommend installation
-    - ⛔DEBUG = Block/Must not be installed
-    - 🛑DEBUG = Stop/Remove if present
-    - 📌DEBUG = Pin/Must be installed (enforce presence)
-    - ✅DEBUG = Installed/Already present
-    - ❌DEBUG = Denied/Not allowed
+    - 🙏DEBUG = Install/reinstall
+    - ⛔DEBUG = Remove if present
+    - 🚫DEBUG or 🛑DEBUG = Block install
+    - 📌DEBUG = Pin (lock state)
+    - ✅DEBUG = Has (verify installed)
+    - ❌DEBUG = Skip (hands off)
 
 .NOTES
-    Version:          2026.01.01.01
+    Version:          2026.01.01.03
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -33,8 +33,8 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# Debug Tag Pattern Test Script
-# Version: 2026.01.01.01
+# Debug Policy Check Script
+# Version: 2026.01.01.03
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -45,15 +45,47 @@
 # ============================================================
 # CONFIGURATION
 # ============================================================
-# SOFTWARE TO CHECK: This tests all emoji patterns for "DEBUG"
 $SoftwareName = "DEBUG"
+
+# Install mode: "Reinstall" = always uninstall first (for config updates)
+#               "Install"   = only install if missing
+$InstallMode = "Reinstall"
+
+# ============================================================
+# SOFTWARE-SPECIFIC ROUTINES
+# ============================================================
+
+function Install-Software {
+    Write-LevelLog "ROUTINE: Install-Software" -Level "INFO"
+    Write-Host "  - Download DEBUG installer"
+    Write-Host "  - Run silent install with current config"
+    Write-Host "  - Verify installation"
+}
+
+function Remove-Software {
+    Write-LevelLog "ROUTINE: Remove-Software" -Level "INFO"
+    Write-Host "  - Find uninstaller"
+    Write-Host "  - Run silent uninstall"
+    Write-Host "  - Clean up remnants"
+}
+
+function Test-SoftwareInstalled {
+    Write-LevelLog "ROUTINE: Test-SoftwareInstalled" -Level "INFO"
+    Write-Host "  - Check registry for DEBUG"
+    Write-Host "  - Check Program Files"
+    return $false  # Placeholder - would return actual state
+}
+
+function Test-SoftwareHealthy {
+    Write-LevelLog "ROUTINE: Test-SoftwareHealthy" -Level "INFO"
+    Write-Host "  - Check if services running"
+    Write-Host "  - Verify config files"
+    return $true  # Placeholder - would return actual state
+}
 
 # ============================================================
 # INITIALIZE
 # ============================================================
-# Script Launcher has already loaded the library and passed variables
-# We just need to initialize with the passed-through variables
-
 $Init = Initialize-LevelScript -ScriptName "SoftwarePolicy-$SoftwareName" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
@@ -66,18 +98,87 @@ if (-not $Init.Success) {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-# Use -NoExit when running from launcher so it can show log file afterwards
-$ScriptVersion = "2026.01.01.01"
+$ScriptVersion = "2026.01.01.03"
 $InvokeParams = @{ ScriptBlock = {
 
-    Write-LevelLog "Emoji Tag Debug Test (v$ScriptVersion)"
+    Write-LevelLog "Policy Check Script (v$ScriptVersion)"
+    Write-LevelLog "Install Mode: $InstallMode"
     Write-Host ""
 
-    # Run the policy check - all logic is in the library
+    # Run the policy check - detects tags and resolves action
     $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName -DeviceTags $DeviceTags
 
     Write-Host ""
-    Write-LevelLog "Debug test completed successfully" -Level "SUCCESS"
+    Write-LevelLog "========================================" -Level "INFO"
+    Write-LevelLog "EXECUTION PLAN" -Level "INFO"
+    Write-LevelLog "========================================" -Level "INFO"
+    Write-Host ""
+
+    # Execute based on resolved action
+    switch ($Policy.ResolvedAction) {
+        "Skip" {
+            Write-LevelLog "ACTION: SKIP - No routines will run" -Level "INFO"
+        }
+        "Install" {
+            Write-LevelLog "ACTION: INSTALL" -Level "INFO"
+
+            # Check if already installed
+            $Installed = Test-SoftwareInstalled
+
+            if ($InstallMode -eq "Reinstall") {
+                if ($Installed) {
+                    Write-LevelLog "Reinstall mode - removing existing first..." -Level "INFO"
+                    Remove-Software
+                }
+                Install-Software
+            }
+            else {
+                # InstallMode = "Install" - only if missing
+                if ($Installed) {
+                    Write-LevelLog "Already installed, skipping install" -Level "INFO"
+                }
+                else {
+                    Install-Software
+                }
+            }
+        }
+        "Remove" {
+            Write-LevelLog "ACTION: REMOVE" -Level "INFO"
+            Remove-Software
+        }
+        $null {
+            if ($Policy.IsPinned) {
+                Write-LevelLog "ACTION: PINNED - State locked, no changes" -Level "INFO"
+            }
+            elseif ($Policy.IsBlocked) {
+                Write-LevelLog "ACTION: BLOCKED - Install prevented" -Level "INFO"
+            }
+            else {
+                Write-LevelLog "ACTION: NONE - No policy tags found" -Level "INFO"
+            }
+        }
+    }
+
+    Write-Host ""
+
+    # Run verification if needed
+    if ($Policy.ShouldVerify) {
+        Write-LevelLog "VERIFY: Running health check" -Level "INFO"
+        $Installed = Test-SoftwareInstalled
+        if ($Installed) {
+            $Healthy = Test-SoftwareHealthy
+            if ($Healthy) {
+                Write-LevelLog "Health check: PASSED" -Level "SUCCESS"
+            } else {
+                Write-LevelLog "Health check: FAILED - Would remediate" -Level "WARNING"
+            }
+        } else {
+            Write-LevelLog "Health check: NOT INSTALLED" -Level "WARNING"
+        }
+    }
+
+    Write-Host ""
+    Write-LevelLog "Policy check completed" -Level "SUCCESS"
 }}
 if ($RunningFromLauncher) { $InvokeParams.NoExit = $true }
 Invoke-LevelScript @InvokeParams
