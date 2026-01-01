@@ -291,3 +291,34 @@ These tags are used for filtering, not software policy:
 | 🛰️ | Satellite/remote site |
 | 🔧 | Fix/Repair script |
 | 🔄 | Maintenance script |
+
+## Emoji Corruption Handling
+
+Level.io corrupts emoji characters when passing them through its variable system. COOLForge handles this automatically.
+
+### How It Works
+
+1. **Get-EmojiMap** contains both clean and corrupted patterns for all emojis
+2. **Get-SoftwarePolicy** matches tags against both patterns
+3. Unrecognized patterns are logged to `EmojiTags.log` for discovery
+
+### Adding New Emoji Patterns
+
+When you encounter a new emoji that isn't being matched:
+
+1. Check `$MspScratchFolder\Logs\EmojiTags.log` for the corrupted byte pattern
+2. Add the pattern to `Get-EmojiMap` in `COOLForge-Common.psm1`:
+
+```powershell
+# In the corrupted patterns section:
+$CorruptedNewEmoji = [System.Text.Encoding]::UTF8.GetString([byte[]](0xXX, 0xXX, ...))
+
+# In the return hashtable:
+$CorruptedNewEmoji = "ActionName"
+```
+
+### Code Guidelines
+
+- **Never hardcode emoji patterns** outside of Get-EmojiMap
+- **Use Unicode references in comments**: `# U+1F64F` not the actual emoji
+- **Test with debug launcher** before deploying new scripts
