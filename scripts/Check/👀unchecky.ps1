@@ -32,7 +32,7 @@
     4. Deploy via launcher - the same script handles all software packages!
 
 .NOTES
-    Version:          2026.01.01.01
+    Version:          2026.01.01.02
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -50,7 +50,7 @@
 #>
 
 # Multi-launch Software Policy Check
-# Version: 2026.01.01.01
+# Version: 2026.01.01.02
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -84,9 +84,10 @@ if (-not $Init.Success) {
 # MAIN SCRIPT LOGIC
 # ============================================================
 # Use -NoExit when running from launcher so it can show log file afterwards
+$ScriptVersion = "2026.01.01.02"
 $InvokeParams = @{ ScriptBlock = {
 
-    Write-LevelLog "Software Policy Check - $SoftwareName"
+    Write-LevelLog "Software Policy Check - $SoftwareName (v$ScriptVersion)"
     Write-Host ""
 
     # Log device info
@@ -94,18 +95,24 @@ $InvokeParams = @{ ScriptBlock = {
     Write-LevelLog "Device: $($DeviceInfo.Hostname) | OS: $($DeviceInfo.OS)"
     Write-Host ""
 
-    # Get software policy from device tags
-    Write-LevelLog "Checking device tags for policy requirements..."
-    Write-LevelLog "DEBUG: DeviceTags value = '$DeviceTags'" -Level "INFO"
+    # Show all device tags
+    Write-LevelLog "Device Tags:"
     if ($DeviceTags) {
-        $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() }
-        Write-LevelLog "DEBUG: Parsed tags:" -Level "INFO"
-        foreach ($tag in $TagArray) {
-            $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($tag)
-            $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
-            Write-LevelLog "  Tag: '$tag' | Bytes: $hexBytes" -Level "INFO"
+        $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+        if ($TagArray.Count -gt 0) {
+            foreach ($tag in $TagArray) {
+                Write-Host "  - $tag"
+            }
+        } else {
+            Write-Host "  (no tags)"
         }
+    } else {
+        Write-Host "  (no tags)"
     }
+    Write-Host ""
+
+    # Get software policy from device tags
+    Write-LevelLog "Checking for '$SoftwareName' policy tags..."
     $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
 
     # Display results
