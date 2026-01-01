@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.07
+    Version:    2026.01.01.08
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -683,19 +683,26 @@ function Get-SoftwarePolicy {
         }
     }
 
-    # Log unknown emoji patterns to file for future reference
-    if ($UnknownEmojiTags.Count -gt 0 -and $script:ScratchFolder) {
-        $UnknownEmojiLogPath = Join-Path $script:ScratchFolder "UnknownEmojiPatterns.log"
-        $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    # Log unknown emoji patterns to file and console for future reference
+    if ($UnknownEmojiTags.Count -gt 0) {
         foreach ($UnknownTag in $UnknownEmojiTags) {
             $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($UnknownTag)
             $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
-            $LogEntry = "$Timestamp | Tag: '$UnknownTag' | Bytes: $hexBytes"
-            # Only log if not already in the file (avoid duplicates)
-            $ExistingContent = if (Test-Path $UnknownEmojiLogPath) { Get-Content $UnknownEmojiLogPath -Raw -ErrorAction SilentlyContinue } else { "" }
-            if ($ExistingContent -notmatch [regex]::Escape("Bytes: $hexBytes")) {
-                $LogEntry | Out-File -FilePath $UnknownEmojiLogPath -Append -Encoding UTF8 -ErrorAction SilentlyContinue
-                Write-Host "[!] Unknown emoji pattern detected in tag '$UnknownTag' - logged for review"
+
+            # Always output to console so we can see the bytes
+            Write-Host "[!] Unknown emoji pattern: '$UnknownTag'"
+            Write-Host "[!]   Bytes: $hexBytes"
+
+            # Also log to file if scratch folder available
+            if ($script:ScratchFolder) {
+                $UnknownEmojiLogPath = Join-Path $script:ScratchFolder "UnknownEmojiPatterns.log"
+                $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                $LogEntry = "$Timestamp | Tag: '$UnknownTag' | Bytes: $hexBytes"
+                # Only log if not already in the file (avoid duplicates)
+                $ExistingContent = if (Test-Path $UnknownEmojiLogPath) { Get-Content $UnknownEmojiLogPath -Raw -ErrorAction SilentlyContinue } else { "" }
+                if ($ExistingContent -notmatch [regex]::Escape("Bytes: $hexBytes")) {
+                    $LogEntry | Out-File -FilePath $UnknownEmojiLogPath -Append -Encoding UTF8 -ErrorAction SilentlyContinue
+                }
             }
         }
     }
@@ -1437,7 +1444,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.07"
+$script:ModuleVersion = "2026.01.01.08"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
