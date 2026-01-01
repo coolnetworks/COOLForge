@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.03
+    Version:    2026.01.01.04
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -541,7 +541,7 @@ function Get-LevelDeviceInfo {
     Hashtable with policy information:
     - SoftwareName: The software being checked
     - HasPolicy: $true if any policy tag was found, $false otherwise
-    - PolicyActions: Array of actions required (Request, Block, Remove, Pin, Approved)
+    - PolicyActions: Array of actions required (Request, Block, Remove, Pin, Installed)
     - MatchedTags: Array of full tag strings that matched
     - RawTags: Array of all device tags
 
@@ -611,13 +611,13 @@ function Get-SoftwarePolicy {
     # Define emoji to action mapping - include both correct AND corrupted forms
     $EmojiMap = @{
         # Correct UTF-8 emojis
-        "🙏" = "Request"    # U+1F64F Pray/Folded hands
-        "⛔" = "Block"      # U+26D4 No entry
-        "🛑" = "Remove"     # U+1F6D1 Stop sign
-        "📌" = "Pin"        # U+1F4CC Pushpin
-        "✅" = "Approved"   # U+2705 Check mark
+        "🙏" = "Request"    # U+1F64F Pray/Folded hands - Request/Recommend installation
+        "⛔" = "Block"      # U+26D4 No entry - Block/Must not be installed
+        "🛑" = "Remove"     # U+1F6D1 Stop sign - Stop/Remove if present
+        "📌" = "Pin"        # U+1F4CC Pushpin - Pin/Must be installed (enforce)
+        "✅" = "Installed"  # U+2705 Check mark - Already installed/Present
         # Level.io corrupted patterns
-        $CorruptedCheckmark = "Approved"
+        $CorruptedCheckmark = "Installed"
         $CorruptedPin = "Pin"
         $CorruptedPray = "Request"
     }

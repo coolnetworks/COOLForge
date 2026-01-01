@@ -17,7 +17,7 @@
     - ⛔unchecky = Block/Must not be installed
     - 🛑unchecky = Stop/Remove if present
     - 📌unchecky = Pin/Must be installed (enforce presence)
-    - ✅unchecky = Approved/Verified (compliant state)
+    - ✅unchecky = Installed/Already present
 
     INITIAL VERSION:
     This initial implementation simply reports which policy tags are active.
@@ -32,7 +32,7 @@
     4. Deploy via launcher - the same script handles all software packages!
 
 .NOTES
-    Version:          2026.01.01.03
+    Version:          2026.01.01.04
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -50,7 +50,7 @@
 #>
 
 # Multi-launch Software Policy Check
-# Version: 2026.01.01.03
+# Version: 2026.01.01.04
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -84,7 +84,7 @@ if (-not $Init.Success) {
 # MAIN SCRIPT LOGIC
 # ============================================================
 # Use -NoExit when running from launcher so it can show log file afterwards
-$ScriptVersion = "2026.01.01.03"
+$ScriptVersion = "2026.01.01.04"
 $InvokeParams = @{ ScriptBlock = {
 
     Write-LevelLog "Software Policy Check - $SoftwareName (v$ScriptVersion)"
@@ -132,7 +132,7 @@ $InvokeParams = @{ ScriptBlock = {
         Write-Host "  ⛔$SoftwareName - Block/Must not be installed"
         Write-Host "  🛑$SoftwareName - Stop/Remove if present"
         Write-Host "  📌$SoftwareName - Pin/Must be installed"
-        Write-Host "  ✅$SoftwareName - Approved/Verified"
+        Write-Host "  ✅$SoftwareName - Installed/Already present"
         Write-Host ""
         Write-LevelLog "No action required" -Level "SUCCESS"
     }
@@ -148,11 +148,11 @@ $InvokeParams = @{ ScriptBlock = {
         Write-LevelLog "Required actions:" -Level "INFO"
         foreach ($Action in $Policy.PolicyActions) {
             $ActionDescription = switch ($Action) {
-                "Request"  { "Request/Recommend installation" }
-                "Block"    { "Block - Must not be installed" }
-                "Remove"   { "Remove - Stop if present" }
-                "Pin"      { "Pin - Must be installed (enforce)" }
-                "Approved" { "Approved - Verified compliant" }
+                "Request"   { "Request/Recommend installation" }
+                "Block"     { "Block - Must not be installed" }
+                "Remove"    { "Remove - Stop if present" }
+                "Pin"       { "Pin - Must be installed (enforce)" }
+                "Installed" { "Installed - Already present" }
             }
             Write-Host "  - $Action : $ActionDescription"
         }
