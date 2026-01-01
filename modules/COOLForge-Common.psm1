@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.06
+    Version:    2026.01.01.07
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -633,6 +633,7 @@ function Get-SoftwarePolicy {
     # Track matching tags and actions
     $MatchedTags = @()
     $PolicyActions = @()
+    $UnknownEmojiTags = @()
 
     if ($ShowDebug) {
         Write-Host "[DEBUG] Checking $($TagArray.Count) tags for '$SoftwareName' policy"
@@ -647,8 +648,10 @@ function Get-SoftwarePolicy {
         }
 
         # Check if tag starts with any policy emoji (correct or corrupted)
+        $MatchedKnownEmoji = $false
         foreach ($Emoji in $EmojiMap.Keys) {
             if ($Tag.StartsWith($Emoji)) {
+                $MatchedKnownEmoji = $true
                 # Extract software name from tag (everything after emoji)
                 $TagSoftware = $Tag.Substring($Emoji.Length).Trim()
 
@@ -664,6 +667,35 @@ function Get-SoftwarePolicy {
                         Write-Host "[DEBUG]   MATCH! Action: $($EmojiMap[$Emoji])"
                     }
                 }
+                break
+            }
+        }
+
+        # Detect unknown emoji patterns - tags starting with non-ASCII that we didn't recognize
+        if (-not $MatchedKnownEmoji) {
+            $FirstChar = $Tag[0]
+            $FirstCharCode = [int][char]$FirstChar
+            # Check if first character is outside basic ASCII (potential emoji or corrupted emoji)
+            # ASCII printable range is 0x20-0x7E, anything above 0x7F could be emoji/unicode
+            if ($FirstCharCode -gt 0x7F -or ($FirstCharCode -lt 0x20 -and $FirstCharCode -ne 0x09)) {
+                $UnknownEmojiTags += $Tag
+            }
+        }
+    }
+
+    # Log unknown emoji patterns to file for future reference
+    if ($UnknownEmojiTags.Count -gt 0 -and $script:ScratchFolder) {
+        $UnknownEmojiLogPath = Join-Path $script:ScratchFolder "UnknownEmojiPatterns.log"
+        $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        foreach ($UnknownTag in $UnknownEmojiTags) {
+            $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($UnknownTag)
+            $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+            $LogEntry = "$Timestamp | Tag: '$UnknownTag' | Bytes: $hexBytes"
+            # Only log if not already in the file (avoid duplicates)
+            $ExistingContent = if (Test-Path $UnknownEmojiLogPath) { Get-Content $UnknownEmojiLogPath -Raw -ErrorAction SilentlyContinue } else { "" }
+            if ($ExistingContent -notmatch [regex]::Escape("Bytes: $hexBytes")) {
+                $LogEntry | Out-File -FilePath $UnknownEmojiLogPath -Append -Encoding UTF8 -ErrorAction SilentlyContinue
+                Write-Host "[!] Unknown emoji pattern detected in tag '$UnknownTag' - logged for review"
             }
         }
     }
@@ -1405,7 +1437,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.06"
+$script:ModuleVersion = "2026.01.01.07"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
