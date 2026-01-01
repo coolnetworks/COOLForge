@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.02
+    Version:    2026.01.01.03
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -593,14 +593,33 @@ function Get-SoftwarePolicy {
         [switch]$ShowDebug
     )
 
-    # Define emoji to action mapping using actual emoji characters
-    # This avoids issues with surrogate pair handling in PowerShell
+    # Level.io corrupts UTF-8 emojis when passing {{level_tag_names}}
+    # The bytes get double-encoded through Windows-1252 or similar
+    # We need to match both correct AND corrupted patterns
+    #
+    # Observed corruption patterns from Level.io:
+    # ✅ (U+2705, E2 9C 85) -> CE 93 C2 A3 C3 A0 (displays as: Γ£à or similar)
+    # 📌 (U+1F4CC) -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: ≡ƒôî or similar)
+    # 🙏 (U+1F64F) -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: ≡ƒÖÅ or similar)
+    # 🛑 (U+1F6D1) -> corrupted pattern TBD
+
+    # Build corrupted string patterns from observed byte sequences
+    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))
+    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))
+    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))
+
+    # Define emoji to action mapping - include both correct AND corrupted forms
     $EmojiMap = @{
+        # Correct UTF-8 emojis
         "🙏" = "Request"    # U+1F64F Pray/Folded hands
         "⛔" = "Block"      # U+26D4 No entry
         "🛑" = "Remove"     # U+1F6D1 Stop sign
         "📌" = "Pin"        # U+1F4CC Pushpin
         "✅" = "Approved"   # U+2705 Check mark
+        # Level.io corrupted patterns
+        $CorruptedCheckmark = "Approved"
+        $CorruptedPin = "Pin"
+        $CorruptedPray = "Request"
     }
 
     # Parse tags into array
@@ -626,14 +645,14 @@ function Get-SoftwarePolicy {
             Write-Host "[DEBUG] Tag: '$Tag' | Bytes: $hexBytes"
         }
 
-        # Check if tag starts with any policy emoji
+        # Check if tag starts with any policy emoji (correct or corrupted)
         foreach ($Emoji in $EmojiMap.Keys) {
             if ($Tag.StartsWith($Emoji)) {
                 # Extract software name from tag (everything after emoji)
                 $TagSoftware = $Tag.Substring($Emoji.Length).Trim()
 
                 if ($ShowDebug) {
-                    Write-Host "[DEBUG]   Matched emoji '$Emoji' -> software name: '$TagSoftware'"
+                    Write-Host "[DEBUG]   Matched prefix -> software name: '$TagSoftware'"
                 }
 
                 # Case-insensitive match
