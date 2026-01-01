@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.10
+    Version:    2026.01.01.11
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -604,6 +604,10 @@ function Get-SoftwarePolicy {
     # 🛑 (U+1F6D1) -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: ≡ƒ¢æ)
     # ⛔ (U+26D4) -> CE 93 C2 A2 C3 B6 (displays as: Γ¢ö)
     # 🪟 (U+1FA9F) -> E2 89 A1 C6 92 C2 AC C6 92 (displays as: ≡ƒ¬ƒ)
+    # 🚨 (U+1F6A8) -> E2 89 A1 C6 92 C3 9C C2 BF (displays as: ≡ƒÜ¿)
+    # 🐧 (U+1F427) -> E2 89 A1 C6 92 C3 89 C2 BA (displays as: ≡ƒÉº)
+    # 🌀 (U+1F300) -> E2 89 A1 C6 92 C3 AE C3 87 (displays as: ≡ƒîÇ)
+    # 🛰️ (U+1F6F0) -> E2 89 A1 C6 92 C2 A2 E2 96 91 E2 88 A9 E2 95 95 C3 85
 
     # Build corrupted string patterns from observed byte sequences
     # Level.io corrupts UTF-8 emojis through double-encoding (UTF-8 -> Windows-1252 -> UTF-8)
@@ -613,6 +617,10 @@ function Get-SoftwarePolicy {
     $CorruptedStop = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # 🛑
     $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # ⛔
     $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # 🪟
+    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # 🚨
+    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # 🐧
+    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # 🌀
+    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # 🛰️
 
     # Define emoji to action mapping - include both correct AND corrupted forms
     $EmojiMap = @{
@@ -624,6 +632,10 @@ function Get-SoftwarePolicy {
         "✅" = "Installed"  # U+2705 Check mark - Already installed/Present
         "❌" = "Denied"     # U+274C Cross mark - Denied/Not allowed
         "🪟" = "Windows"    # U+1FA9F Window - Windows platform tag
+        "🚨" = "Alert"      # U+1F6A8 Police light - Alert/Critical
+        "🐧" = "Linux"      # U+1F427 Penguin - Linux platform tag
+        "🌀" = "AdelaideMRI" # U+1F300 Cyclone - AdelaideMRI client tag
+        "🛰️" = "Satellite"   # U+1F6F0 Satellite - Satellite/remote site
         # Level.io corrupted patterns
         $CorruptedCheckmark = "Installed"
         $CorruptedPin = "Pin"
@@ -631,6 +643,10 @@ function Get-SoftwarePolicy {
         $CorruptedStop = "Remove"
         $CorruptedNoEntry = "Block"
         $CorruptedWindow = "Windows"
+        $CorruptedAlert = "Alert"
+        $CorruptedPenguin = "Linux"
+        $CorruptedCyclone = "AdelaideMRI"
+        $CorruptedSatellite = "Satellite"
     }
 
     # Parse tags into array
@@ -1465,7 +1481,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.10"
+$script:ModuleVersion = "2026.01.01.11"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
