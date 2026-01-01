@@ -660,5 +660,21 @@ catch {
     exit 1
 }
 
+# ============================================================
+# SHOW LOG FILE
+# ============================================================
+Write-Host ""
+Write-Host "============================================================"
+Write-Host "SHOWING LOG FILE"
+Write-Host "============================================================"
+$LogDate = Get-Date -Format "yyyy-MM-dd"
+$LogFile = Join-Path (Join-Path $MspScratchFolder "Logs") "COOLForge_$LogDate.log"
+if (Test-Path $LogFile) {
+    Get-Content $LogFile -Encoding UTF8
+} else {
+    Write-Host "[!] Log file not found: $LogFile"
+}
+Write-Host "============================================================"
+
 # Pass through the script's exit code
 exit $ScriptExitCode
