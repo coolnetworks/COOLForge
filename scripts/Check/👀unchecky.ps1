@@ -95,6 +95,16 @@ Invoke-LevelScript -ScriptBlock {
 
     # Get software policy from device tags
     Write-LevelLog "Checking device tags for policy requirements..."
+    Write-LevelLog "DEBUG: DeviceTags value = '$DeviceTags'" -Level "INFO"
+    if ($DeviceTags) {
+        $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() }
+        Write-LevelLog "DEBUG: Parsed tags:" -Level "INFO"
+        foreach ($tag in $TagArray) {
+            $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($tag)
+            $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+            Write-LevelLog "  Tag: '$tag' | Bytes: $hexBytes" -Level "INFO"
+        }
+    }
     $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
 
     # Display results
