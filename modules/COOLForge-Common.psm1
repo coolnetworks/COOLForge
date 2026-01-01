@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.05
+    Version:    2026.01.01.06
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -616,6 +616,7 @@ function Get-SoftwarePolicy {
         "🛑" = "Remove"     # U+1F6D1 Stop sign - Stop/Remove if present
         "📌" = "Pin"        # U+1F4CC Pushpin - Pin/Must be installed (enforce)
         "✅" = "Installed"  # U+2705 Check mark - Already installed/Present
+        "❌" = "Denied"     # U+274C Cross mark - Denied/Not allowed
         # Level.io corrupted patterns
         $CorruptedCheckmark = "Installed"
         $CorruptedPin = "Pin"
@@ -755,6 +756,7 @@ function Invoke-SoftwarePolicyCheck {
         Write-Host "  Remove if present     : 🛑$SoftwareName"
         Write-Host "  Must be installed     : 📌$SoftwareName"
         Write-Host "  Mark as installed     : ✅$SoftwareName"
+        Write-Host "  Denied/Not allowed    : ❌$SoftwareName"
         Write-Host ""
         Write-LevelLog "No action required" -Level "SUCCESS"
     }
@@ -775,6 +777,7 @@ function Invoke-SoftwarePolicyCheck {
                 "Remove"    { "Remove if present" }
                 "Pin"       { "Pin - Must be installed (enforce)" }
                 "Installed" { "Installed - Already present" }
+                "Denied"    { "Denied - Not allowed" }
             }
             Write-Host "  - $Action : $ActionDescription"
         }
@@ -1402,7 +1405,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2025.12.31.02"
+$script:ModuleVersion = "2026.01.01.06"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
