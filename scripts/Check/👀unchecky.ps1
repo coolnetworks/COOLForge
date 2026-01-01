@@ -83,7 +83,8 @@ if (-not $Init.Success) {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-Invoke-LevelScript -ScriptBlock {
+# Use -NoExit when running from launcher so it can show log file afterwards
+$InvokeParams = @{ ScriptBlock = {
 
     Write-LevelLog "Software Policy Check - $SoftwareName"
     Write-Host ""
@@ -169,4 +170,6 @@ Invoke-LevelScript -ScriptBlock {
 
     Write-Host ""
     Write-LevelLog "Check completed successfully" -Level "SUCCESS"
-}
+}}
+if ($RunningFromLauncher) { $InvokeParams.NoExit = $true }
+Invoke-LevelScript @InvokeParams

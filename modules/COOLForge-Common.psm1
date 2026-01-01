@@ -326,13 +326,16 @@ function Invoke-LevelScript {
         [scriptblock]$ScriptBlock,
 
         [Parameter(Mandatory = $false)]
-        [switch]$NoCleanup
+        [switch]$NoCleanup,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoExit
     )
 
     # Ensure initialization was called
     if (-not $script:Initialized) {
         Write-LevelLog "ERROR: Initialize-LevelScript must be called first!" -Level "ERROR"
-        exit 1
+        if ($NoExit) { return 1 } else { exit 1 }
     }
 
     try {
@@ -344,7 +347,7 @@ function Invoke-LevelScript {
         if (-not $NoCleanup) {
             Remove-LevelLockFile
         }
-        exit 0
+        if ($NoExit) { return 0 } else { exit 0 }
     }
     catch {
         Write-LevelLog "FATAL: $($_.Exception.Message)" -Level "ERROR"
@@ -353,7 +356,7 @@ function Invoke-LevelScript {
         if (-not $NoCleanup) {
             Remove-LevelLockFile
         }
-        exit 1
+        if ($NoExit) { return 1 } else { exit 1 }
     }
 }
 

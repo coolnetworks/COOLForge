@@ -641,6 +641,9 @@ $ExecutionBlock = @"
 # Library is already loaded by launcher - skip library import in script
 `$UseLibrary = `$true
 
+# Tell scripts not to exit - launcher will handle exit after showing log
+`$RunningFromLauncher = `$true
+
 # Additional custom fields can be added here
 # `$ApiKey = '$($ApiKey -replace "'", "''")'
 
