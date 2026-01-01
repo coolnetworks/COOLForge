@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.31.01
+    Version:    2025.12.31.02
     Target:     Level.io RMM
     Location:   {{cf_CoolForge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -143,6 +143,7 @@ function Initialize-LevelScript {
     # Set module variables
     $script:ScriptName = $ScriptName
     $script:DeviceHostname = $DeviceHostname
+    $script:ScratchFolder = $MspScratchFolder
     $script:LockFilePath = Join-Path -Path $MspScratchFolder -ChildPath "lockfiles"
     $script:LockFile = Join-Path -Path $script:LockFilePath -ChildPath "$ScriptName.lock"
 
@@ -256,7 +257,28 @@ function Write-LevelLog {
         "DEBUG"   { "[D]" }
     }
 
-    Write-Host "$Timestamp $Prefix $Message"
+    $LogMessage = "$Timestamp $Prefix $Message"
+    Write-Host $LogMessage
+
+    # Also write to log file if scratch folder is available
+    if ($script:ScratchFolder) {
+        $LogFolder = Join-Path $script:ScratchFolder "Logs"
+        if (-not (Test-Path $LogFolder)) {
+            New-Item -Path $LogFolder -ItemType Directory -Force | Out-Null
+        }
+
+        # Log file named by date for daily rotation
+        $LogDate = Get-Date -Format "yyyy-MM-dd"
+        $LogFile = Join-Path $LogFolder "COOLForge_$LogDate.log"
+
+        try {
+            # Append to log file with UTF-8 encoding
+            $LogMessage | Out-File -FilePath $LogFile -Append -Encoding UTF8 -ErrorAction SilentlyContinue
+        }
+        catch {
+            # Silently ignore logging errors - don't break script execution
+        }
+    }
 }
 
 # ============================================================
@@ -1230,7 +1252,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2025.12.31.01"
+$script:ModuleVersion = "2025.12.31.02"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
