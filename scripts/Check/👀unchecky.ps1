@@ -32,7 +32,7 @@
     4. Deploy via launcher - the same script handles all software packages!
 
 .NOTES
-    Version:          2026.01.01.04
+    Version:          2026.01.01.05
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -50,7 +50,7 @@
 #>
 
 # Multi-launch Software Policy Check
-# Version: 2026.01.01.04
+# Version: 2026.01.01.05
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -84,96 +84,14 @@ if (-not $Init.Success) {
 # MAIN SCRIPT LOGIC
 # ============================================================
 # Use -NoExit when running from launcher so it can show log file afterwards
-$ScriptVersion = "2026.01.01.04"
+$ScriptVersion = "2026.01.01.05"
 $InvokeParams = @{ ScriptBlock = {
 
-    Write-LevelLog "Software Policy Check - $SoftwareName (v$ScriptVersion)"
+    Write-LevelLog "Software Policy Check (v$ScriptVersion)"
     Write-Host ""
 
-    # Log device info
-    $DeviceInfo = Get-LevelDeviceInfo
-    Write-LevelLog "Device: $($DeviceInfo.Hostname) | OS: $($DeviceInfo.OS)"
-    Write-Host ""
-
-    # Show all device tags
-    Write-LevelLog "Device Tags:"
-    if ($DeviceTags) {
-        $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-        if ($TagArray.Count -gt 0) {
-            foreach ($tag in $TagArray) {
-                Write-Host "  - $tag"
-            }
-        } else {
-            Write-Host "  (no tags)"
-        }
-    } else {
-        Write-Host "  (no tags)"
-    }
-    Write-Host ""
-
-    # Get software policy from device tags
-    Write-LevelLog "Checking for '$SoftwareName' policy tags..."
-    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags -ShowDebug
-
-    # Display results
-    Write-Host ""
-    Write-LevelLog "========================================" -Level "INFO"
-    Write-LevelLog "Software Policy Detection Results" -Level "INFO"
-    Write-LevelLog "========================================" -Level "INFO"
-    Write-Host ""
-    Write-LevelLog "Software: $($Policy.SoftwareName)" -Level "INFO"
-    Write-Host ""
-
-    if (-not $Policy.HasPolicy) {
-        Write-LevelLog "No policy tags found for this software" -Level "INFO"
-        Write-Host ""
-        Write-LevelLog "To set a policy, add one of these tags in Level.io:" -Level "INFO"
-        Write-Host "  🙏$SoftwareName - Request/Recommend installation"
-        Write-Host "  ⛔$SoftwareName - Block/Must not be installed"
-        Write-Host "  🛑$SoftwareName - Stop/Remove if present"
-        Write-Host "  📌$SoftwareName - Pin/Must be installed"
-        Write-Host "  ✅$SoftwareName - Installed/Already present"
-        Write-Host ""
-        Write-LevelLog "No action required" -Level "SUCCESS"
-    }
-    else {
-        Write-LevelLog "Policy tags detected: $($Policy.MatchedTags.Count)" -Level "SUCCESS"
-        Write-Host ""
-
-        foreach ($Tag in $Policy.MatchedTags) {
-            Write-Host "  Tag: $Tag"
-        }
-        Write-Host ""
-
-        Write-LevelLog "Required actions:" -Level "INFO"
-        foreach ($Action in $Policy.PolicyActions) {
-            $ActionDescription = switch ($Action) {
-                "Request"   { "Request/Recommend installation" }
-                "Block"     { "Block - Must not be installed" }
-                "Remove"    { "Remove - Stop if present" }
-                "Pin"       { "Pin - Must be installed (enforce)" }
-                "Installed" { "Installed - Already present" }
-            }
-            Write-Host "  - $Action : $ActionDescription"
-        }
-        Write-Host ""
-
-        # Debug: Show all device tags
-        Write-LevelLog "All device tags ($($Policy.RawTags.Count)):" -Level "DEBUG"
-        if ($Policy.RawTags.Count -gt 0) {
-            foreach ($Tag in $Policy.RawTags) {
-                Write-Host "  - $Tag"
-            }
-        } else {
-            Write-Host "  (no tags set)"
-        }
-        Write-Host ""
-
-        Write-LevelLog "Policy detection complete" -Level "SUCCESS"
-        Write-Host ""
-        Write-LevelLog "NOTE: This is the initial version - it only detects policy tags." -Level "INFO"
-        Write-LevelLog "Future versions will check actual software installation status." -Level "INFO"
-    }
+    # Run the policy check - all logic is in the library
+    $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName -DeviceTags $DeviceTags
 
     Write-Host ""
     Write-LevelLog "Check completed successfully" -Level "SUCCESS"

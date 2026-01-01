@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.04
+    Version:    2026.01.01.05
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -679,6 +679,114 @@ function Get-SoftwarePolicy {
 
 <#
 .SYNOPSIS
+    Performs a complete software policy check and outputs results.
+
+.DESCRIPTION
+    High-level function that checks device tags for software policy requirements
+    and outputs formatted results. This is the main entry point for software
+    policy checking scripts.
+
+    The function:
+    1. Displays device information
+    2. Lists all device tags
+    3. Checks for policy tags matching the software name
+    4. Reports matched policies and required actions
+
+.PARAMETER SoftwareName
+    The name of the software to check (e.g., "unchecky", "7zip").
+
+.PARAMETER DeviceTags
+    Comma-separated list of device tags from Level.io.
+
+.EXAMPLE
+    Invoke-SoftwarePolicyCheck -SoftwareName "unchecky" -DeviceTags $DeviceTags
+
+.OUTPUTS
+    Returns the policy hashtable from Get-SoftwarePolicy.
+#>
+function Invoke-SoftwarePolicyCheck {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SoftwareName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceTags = ""
+    )
+
+    # Log device info
+    $DeviceInfo = Get-LevelDeviceInfo
+    Write-LevelLog "Device: $($DeviceInfo.Hostname) | OS: $($DeviceInfo.OS)"
+    Write-Host ""
+
+    # Show all device tags
+    Write-LevelLog "Device Tags:"
+    if ($DeviceTags) {
+        $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+        if ($TagArray.Count -gt 0) {
+            foreach ($tag in $TagArray) {
+                Write-Host "  - $tag"
+            }
+        } else {
+            Write-Host "  (no tags)"
+        }
+    } else {
+        Write-Host "  (no tags)"
+    }
+    Write-Host ""
+
+    # Get software policy from device tags
+    Write-LevelLog "Checking for '$SoftwareName' policy tags..."
+    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
+
+    # Display results
+    Write-Host ""
+    Write-LevelLog "========================================" -Level "INFO"
+    Write-LevelLog "Software Policy Results: $SoftwareName" -Level "INFO"
+    Write-LevelLog "========================================" -Level "INFO"
+    Write-Host ""
+
+    if (-not $Policy.HasPolicy) {
+        Write-LevelLog "No policy tags found for this software" -Level "INFO"
+        Write-Host ""
+        Write-LevelLog "To set a policy, add one of these tags in Level.io:" -Level "INFO"
+        Write-Host "  Request installation  : 🙏$SoftwareName"
+        Write-Host "  Block installation    : ⛔$SoftwareName"
+        Write-Host "  Remove if present     : 🛑$SoftwareName"
+        Write-Host "  Must be installed     : 📌$SoftwareName"
+        Write-Host "  Mark as installed     : ✅$SoftwareName"
+        Write-Host ""
+        Write-LevelLog "No action required" -Level "SUCCESS"
+    }
+    else {
+        Write-LevelLog "Policy tags detected: $($Policy.MatchedTags.Count)" -Level "SUCCESS"
+        Write-Host ""
+
+        foreach ($Tag in $Policy.MatchedTags) {
+            Write-Host "  Tag: $Tag"
+        }
+        Write-Host ""
+
+        Write-LevelLog "Required actions:" -Level "INFO"
+        foreach ($Action in $Policy.PolicyActions) {
+            $ActionDescription = switch ($Action) {
+                "Request"   { "Request/Recommend installation" }
+                "Block"     { "Block - Must not be installed" }
+                "Remove"    { "Remove if present" }
+                "Pin"       { "Pin - Must be installed (enforce)" }
+                "Installed" { "Installed - Already present" }
+            }
+            Write-Host "  - $Action : $ActionDescription"
+        }
+        Write-Host ""
+        Write-LevelLog "Policy check complete" -Level "SUCCESS"
+    }
+
+    return $Policy
+}
+
+<#
+.SYNOPSIS
     Makes authenticated REST API calls with standardized error handling.
 
 .DESCRIPTION
@@ -1316,6 +1424,7 @@ Export-ModuleMember -Function @(
 
     # Software Policy
     'Get-SoftwarePolicy',
+    'Invoke-SoftwarePolicyCheck',
 
     # API Helpers
     'Invoke-LevelApiCall',
