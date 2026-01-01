@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.08
+    Version:    2026.01.01.09
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -598,15 +598,21 @@ function Get-SoftwarePolicy {
     # We need to match both correct AND corrupted patterns
     #
     # Observed corruption patterns from Level.io:
-    # ✅ (U+2705, E2 9C 85) -> CE 93 C2 A3 C3 A0 (displays as: Γ£à or similar)
-    # 📌 (U+1F4CC) -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: ≡ƒôî or similar)
-    # 🙏 (U+1F64F) -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: ≡ƒÖÅ or similar)
-    # 🛑 (U+1F6D1) -> corrupted pattern TBD
+    # ✅ (U+2705) -> CE 93 C2 A3 C3 A0 (displays as: Γ£à)
+    # 📌 (U+1F4CC) -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: ≡ƒôî)
+    # 🙏 (U+1F64F) -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: ≡ƒÖÅ)
+    # 🛑 (U+1F6D1) -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: ≡ƒ¢æ)
+    # ⛔ (U+26D4) -> CE 93 C2 A2 C3 B6 (displays as: Γ¢ö)
+    # 🪟 (U+1FA9F) -> E2 89 A1 C6 92 C2 AC C6 92 (displays as: ≡ƒ¬ƒ)
 
     # Build corrupted string patterns from observed byte sequences
-    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))
-    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))
-    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))
+    # Level.io corrupts UTF-8 emojis through double-encoding (UTF-8 -> Windows-1252 -> UTF-8)
+    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # ✅
+    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # 📌
+    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # 🙏
+    $CorruptedStop = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # 🛑
+    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # ⛔
+    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # 🪟
 
     # Define emoji to action mapping - include both correct AND corrupted forms
     $EmojiMap = @{
@@ -617,10 +623,14 @@ function Get-SoftwarePolicy {
         "📌" = "Pin"        # U+1F4CC Pushpin - Pin/Must be installed (enforce)
         "✅" = "Installed"  # U+2705 Check mark - Already installed/Present
         "❌" = "Denied"     # U+274C Cross mark - Denied/Not allowed
+        "🪟" = "Windows"    # U+1FA9F Window - Windows platform tag
         # Level.io corrupted patterns
         $CorruptedCheckmark = "Installed"
         $CorruptedPin = "Pin"
         $CorruptedPray = "Request"
+        $CorruptedStop = "Remove"
+        $CorruptedNoEntry = "Block"
+        $CorruptedWindow = "Windows"
     }
 
     # Parse tags into array
@@ -796,6 +806,7 @@ function Invoke-SoftwarePolicyCheck {
         Write-Host "  Must be installed     : 📌$SoftwareName"
         Write-Host "  Mark as installed     : ✅$SoftwareName"
         Write-Host "  Denied/Not allowed    : ❌$SoftwareName"
+        Write-Host "  Windows platform      : 🪟$SoftwareName"
         Write-Host ""
         Write-LevelLog "No action required" -Level "SUCCESS"
     }
@@ -817,6 +828,7 @@ function Invoke-SoftwarePolicyCheck {
                 "Pin"       { "Pin - Must be installed (enforce)" }
                 "Installed" { "Installed - Already present" }
                 "Denied"    { "Denied - Not allowed" }
+                "Windows"   { "Windows platform tag" }
             }
             Write-Host "  - $Action : $ActionDescription"
         }
@@ -1444,7 +1456,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.08"
+$script:ModuleVersion = "2026.01.01.09"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
