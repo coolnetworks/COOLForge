@@ -32,7 +32,7 @@
     4. Deploy via launcher - the same script handles all software packages!
 
 .NOTES
-    Version:          2025.12.31.01
+    Version:          2026.01.01.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -50,7 +50,7 @@
 #>
 
 # Multi-launch Software Policy Check
-# Version: 2025.12.31.01
+# Version: 2026.01.01.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
