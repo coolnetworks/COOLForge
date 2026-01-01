@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.12
+    Version:    2026.01.01.13
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -564,27 +564,40 @@ function Get-EmojiMap {
     $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # 🛰️
 
     return @{
-        # Correct UTF-8 emojis
-        "🙏" = "Request"      # U+1F64F Pray/Folded hands - Request/Recommend installation
-        "⛔" = "Block"        # U+26D4 No entry - Block/Must not be installed
-        "🛑" = "Remove"       # U+1F6D1 Stop sign - Stop/Remove if present
-        "📌" = "Pin"          # U+1F4CC Pushpin - Pin/Must be installed (enforce)
-        "✅" = "Installed"    # U+2705 Check mark - Already installed/Present
-        "❌" = "Denied"       # U+274C Cross mark - Denied/Not allowed
+        # ============================================================
+        # SOFTWARE POLICY TAGS
+        # ============================================================
+        # Skip/Hands-off
+        "❌" = "Skip"         # U+274C Cross mark - Skip (machine or software)
+        # Actions
+        "🙏" = "Install"      # U+1F64F Pray/Folded hands - Install/reinstall
+        "⛔" = "Remove"       # U+26D4 No entry - Remove if present
+        "🚫" = "Block"        # U+1F6AB No entry sign - Block install, leave existing
+        "🛑" = "Block"        # U+1F6D1 Stop sign - Block install, leave existing (alt)
+        # Status/Protection
+        "📌" = "Pin"          # U+1F4CC Pushpin - Pin/protect from removal
+        "✅" = "Has"          # U+2705 Check mark - Has/installed status
+        "👀" = "Verify"       # U+1F440 Eyes - Verify/check and report
+
+        # ============================================================
+        # PLATFORM/CATEGORY TAGS
+        # ============================================================
         "🪟" = "Windows"      # U+1FA9F Window - Windows platform tag
         "🚨" = "Alert"        # U+1F6A8 Police light - Alert/Critical
         "🐧" = "Linux"        # U+1F427 Penguin - Linux platform tag
         "🌀" = "AdelaideMRI"  # U+1F300 Cyclone - AdelaideMRI client tag
         "🛰️" = "Satellite"    # U+1F6F0 Satellite - Satellite/remote site
-        "👀" = "Check"        # U+1F440 Eyes - Check/Monitor script
         "🔧" = "Fix"          # U+1F527 Wrench - Fix/Repair script
         "🔄" = "Maintain"     # U+1F504 Counterclockwise - Maintenance script
-        # Level.io corrupted patterns
-        $CorruptedCheckmark = "Installed"
+
+        # ============================================================
+        # LEVEL.IO CORRUPTED PATTERNS
+        # ============================================================
+        $CorruptedCheckmark = "Has"
         $CorruptedPin = "Pin"
-        $CorruptedPray = "Request"
-        $CorruptedStop = "Remove"
-        $CorruptedNoEntry = "Block"
+        $CorruptedPray = "Install"
+        $CorruptedStop = "Block"
+        $CorruptedNoEntry = "Remove"
         $CorruptedWindow = "Windows"
         $CorruptedAlert = "Alert"
         $CorruptedPenguin = "Linux"
@@ -857,13 +870,13 @@ function Invoke-SoftwarePolicyCheck {
         Write-LevelLog "No policy tags found for this software" -Level "INFO"
         Write-Host ""
         Write-LevelLog "To set a policy, add one of these tags in Level.io:" -Level "INFO"
-        Write-Host "  Request installation  : 🙏$SoftwareName"
-        Write-Host "  Block installation    : ⛔$SoftwareName"
-        Write-Host "  Remove if present     : 🛑$SoftwareName"
-        Write-Host "  Must be installed     : 📌$SoftwareName"
-        Write-Host "  Mark as installed     : ✅$SoftwareName"
-        Write-Host "  Denied/Not allowed    : ❌$SoftwareName"
-        Write-Host "  Windows platform      : 🪟$SoftwareName"
+        Write-Host "  Install/reinstall     : 🙏$SoftwareName"
+        Write-Host "  Remove if present     : ⛔$SoftwareName"
+        Write-Host "  Block install         : 🚫$SoftwareName or 🛑$SoftwareName"
+        Write-Host "  Pin (protect)         : 📌$SoftwareName"
+        Write-Host "  Has (installed)       : ✅$SoftwareName"
+        Write-Host "  Skip (hands off)      : ❌$SoftwareName"
+        Write-Host "  Verify status         : 👀$SoftwareName"
         Write-Host ""
         Write-LevelLog "No action required" -Level "SUCCESS"
     }
@@ -879,13 +892,13 @@ function Invoke-SoftwarePolicyCheck {
         Write-LevelLog "Required actions:" -Level "INFO"
         foreach ($Action in $Policy.PolicyActions) {
             $ActionDescription = switch ($Action) {
-                "Request"   { "Request/Recommend installation" }
-                "Block"     { "Block - Must not be installed" }
-                "Remove"    { "Remove if present" }
-                "Pin"       { "Pin - Must be installed (enforce)" }
-                "Installed" { "Installed - Already present" }
-                "Denied"    { "Denied - Not allowed" }
-                "Windows"   { "Windows platform tag" }
+                "Skip"    { "Skip - Hands off (managed elsewhere)" }
+                "Install" { "Install - Install/reinstall software" }
+                "Remove"  { "Remove - Uninstall if present" }
+                "Block"   { "Block - Never install, leave existing" }
+                "Pin"     { "Pin - Protect from removal" }
+                "Has"     { "Has - Status: installed" }
+                "Verify"  { "Verify - Check and report status" }
             }
             Write-Host "  - $Action : $ActionDescription"
         }
@@ -1513,7 +1526,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.12"
+$script:ModuleVersion = "2026.01.01.13"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
