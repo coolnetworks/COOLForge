@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2025.12.31.02
+    Version:    2026.01.01.01
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
