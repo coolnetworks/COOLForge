@@ -9,6 +9,7 @@
 
 # Cache files (generated inventory and temporary data)
 /.cache/
+*.cache
 
 # Claude Code local settings
 .claude/
