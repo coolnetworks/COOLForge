@@ -29,7 +29,6 @@
     API Documentation: https://levelapi.readme.io/
 
     Copyright (c) COOLNETWORKS
-    https://coolnetworks.au
     https://github.com/coolnetworks/COOLForge
 
 .LINK

@@ -46,7 +46,6 @@ $ScriptToRun = "??Test Variable Output.ps1"
     - {{level_tag_names}}                      : Comma-separated list of device tags
 
     Copyright (c) COOLNETWORKS
-    https://coolnetworks.au
     https://github.com/coolnetworks/COOLForge
 
 .LINK
@@ -69,7 +68,6 @@ $ScriptToRun = "??Test Variable Output.ps1"
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
 # Copyright (c) COOLNETWORKS
-# https://coolnetworks.au
 # https://github.com/coolnetworks/COOLForge
 $ErrorActionPreference = "SilentlyContinue"
 

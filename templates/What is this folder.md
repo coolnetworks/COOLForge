@@ -33,6 +33,5 @@ If you need to clear it:
 
 ## Learn more
 
-**Website:** [coolnetworks.au](https://coolnetworks.au)
 **Repository:** [github.com/coolnetworks/COOLForge](https://github.com/coolnetworks/COOLForge)
 **Documentation:** [github.com/coolnetworks/COOLForge/tree/main/docs](https://github.com/coolnetworks/COOLForge/tree/main/docs)

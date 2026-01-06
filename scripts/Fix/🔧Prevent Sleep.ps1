@@ -34,7 +34,6 @@
     - CoolForge_msp_scratch_folder   : MSP scratch folder (used to derive MSP name)
 
     Copyright (c) COOLNETWORKS
-    https://coolnetworks.au
     https://github.com/coolnetworks/COOLForge
 
 .LINK
@@ -47,7 +46,6 @@
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
 # Copyright (c) COOLNETWORKS
-# https://coolnetworks.au
 # https://github.com/coolnetworks/COOLForge
 
 $ErrorActionPreference = "Stop"

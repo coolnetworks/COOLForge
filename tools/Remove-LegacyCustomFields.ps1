@@ -26,7 +26,6 @@
     Target Platform:  Windows PowerShell 5.1+
 
     Copyright (c) COOLNETWORKS
-    https://coolnetworks.au
     https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE

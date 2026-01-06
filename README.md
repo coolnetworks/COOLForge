@@ -4,7 +4,7 @@
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
-**Copyright:** [COOLNETWORKS](https://coolnetworks.au)
+**Copyright:** COOLNETWORKS
 **Repository:** [github.com/coolnetworks/COOLForge](https://github.com/coolnetworks/COOLForge)
 
 ---
@@ -308,5 +308,4 @@ Future improvements and feature requests:
 
 ## Support
 
-**Website:** [coolnetworks.au](https://coolnetworks.au)
 **Repository:** [github.com/coolnetworks/COOLForge](https://github.com/coolnetworks/COOLForge)
