@@ -33,7 +33,6 @@
     - $IsScreenConnectServer   : Set to "true" if device is a ScreenConnect server
 
     Copyright (c) COOLNETWORKS
-    https://coolnetworks.au
     https://github.com/coolnetworks/COOLForge
 
 .LINK
@@ -46,7 +45,6 @@
 # Exit 0 = Success (No unauthorized RATs) | Exit 1 = Alert (RATs detected)
 #
 # Copyright (c) COOLNETWORKS
-# https://coolnetworks.au
 # https://github.com/coolnetworks/COOLForge
 
 # ============================================================

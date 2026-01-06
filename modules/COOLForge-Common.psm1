@@ -21,7 +21,6 @@
     - {{cf_coolforge_ps_module_library_source}} : (Optional) URL to download this module - defaults to official repo
 
     Copyright (c) COOLNETWORKS
-    https://coolnetworks.au
     https://github.com/coolnetworks/COOLForge
 
 .LINK

@@ -34,7 +34,6 @@
     - $DeviceTags        : Comma-separated list of device tags
 
     Copyright (c) COOLNETWORKS
-    https://coolnetworks.au
     https://github.com/coolnetworks/COOLForge
 
 .LINK
@@ -47,7 +46,6 @@
 # Exit 0 = Success (All Tests Passed) | Exit 1 = Alert (Tests Failed)
 #
 # Copyright (c) COOLNETWORKS
-# https://coolnetworks.au
 # https://github.com/coolnetworks/COOLForge
 
 # ============================================================
