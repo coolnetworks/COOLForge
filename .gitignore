@@ -4,6 +4,9 @@
 # Custom field backups (may contain sensitive data)
 /backups/
 
+# Device custom fields export (contains customer data)
+DeviceCustomFields.csv
+
 # Generated configuration files (contain local paths)
 /config/
 
