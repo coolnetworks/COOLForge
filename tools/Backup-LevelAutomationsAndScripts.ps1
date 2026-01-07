@@ -55,6 +55,36 @@ if (-not (Test-Path $OutputDir)) {
 $Token | Out-File $tokenCacheFile -Encoding UTF8 -NoNewline
 Write-Host "Token cached to: $tokenCacheFile" -ForegroundColor Gray
 
+# Use script-scoped token so it can be refreshed
+$script:CurrentToken = $Token
+
+function Request-NewToken {
+    Write-Host ""
+    Write-Host "TOKEN EXPIRED or INVALID" -ForegroundColor Red
+    Write-Host "To get a new JWT token:" -ForegroundColor Yellow
+    Write-Host "  1. Log into app.level.io in your browser"
+    Write-Host "  2. Open DevTools (F12) > Network tab"
+    Write-Host "  3. Click anything in Level.io to trigger a request"
+    Write-Host "  4. Click any 'graphql' request in the list"
+    Write-Host "  5. Go to Headers > Request Headers > Authorization"
+    Write-Host "  6. Copy the value (starts with 'eyJ...')"
+    Write-Host ""
+    $newToken = Read-Host "Enter new JWT token (or 'q' to quit)"
+
+    if ($newToken -eq 'q' -or [string]::IsNullOrWhiteSpace($newToken)) {
+        Write-Host "Exiting..." -ForegroundColor Yellow
+        exit 1
+    }
+
+    $script:CurrentToken = $newToken.Trim()
+
+    # Cache the new token
+    $script:CurrentToken | Out-File $tokenCacheFile -Encoding UTF8 -NoNewline
+    Write-Host "New token cached." -ForegroundColor Green
+
+    return $script:CurrentToken
+}
+
 function Invoke-LevelGraphQL {
     param(
         [string]$OperationName,
@@ -63,13 +93,6 @@ function Invoke-LevelGraphQL {
         [int]$MaxRetries = 3
     )
 
-    $headers = @{
-        "Authorization" = $Token
-        "Content-Type" = "application/json"
-        "Origin" = "https://app.level.io"
-        "Referer" = "https://app.level.io/"
-    }
-
     $body = @{
         operationName = $OperationName
         query = $Query
@@ -77,18 +100,40 @@ function Invoke-LevelGraphQL {
     } | ConvertTo-Json -Depth 10 -Compress
 
     for ($retry = 0; $retry -lt $MaxRetries; $retry++) {
+        $headers = @{
+            "Authorization" = $script:CurrentToken
+            "Content-Type" = "application/json"
+            "Origin" = "https://app.level.io"
+            "Referer" = "https://app.level.io/"
+        }
+
         try {
-            $response = Invoke-WebRequest -Uri "https://api.level.io/graphql" -Method POST -Headers $headers -Body $body -UseBasicParsing
+            $response = Invoke-WebRequest -Uri "https://api.level.io/graphql" -Method POST -Headers $headers -Body $body -UseBasicParsing -TimeoutSec 60
             $json = $response.Content | ConvertFrom-Json
 
             if ($json.errors) {
-                throw "GraphQL Error: $($json.errors[0].message)"
+                $errorMsg = $json.errors[0].message
+                # Check for auth-related errors
+                if ($errorMsg -match 'unauthorized|unauthenticated|expired|invalid token|jwt|auth' -or $json.errors[0].extensions.code -eq 'UNAUTHENTICATED') {
+                    Write-Host "    Auth error: $errorMsg" -ForegroundColor Red
+                    Request-NewToken
+                    continue  # Retry with new token
+                }
+                throw "GraphQL Error: $errorMsg"
             }
 
             return $json.data
         } catch {
+            $errText = $_.Exception.Message
+            # Check for 401/403 HTTP errors
+            if ($errText -match '401|403|Unauthorized|Forbidden') {
+                Write-Host "    HTTP Auth error: $errText" -ForegroundColor Red
+                Request-NewToken
+                continue  # Retry with new token
+            }
+
             if ($retry -lt $MaxRetries - 1) {
-                Write-Host "    Retry $($retry + 1)..." -ForegroundColor Yellow
+                Write-Host "    Retry $($retry + 1) of $MaxRetries..." -ForegroundColor Yellow
                 Start-Sleep -Seconds (2 * ($retry + 1))
             } else {
                 throw
@@ -291,7 +336,30 @@ Write-Host "  Saved to: $scriptsDir" -ForegroundColor Gray
 Write-Host ""
 Write-Host "=== Exporting Automations ===" -ForegroundColor Cyan
 
-# First get all automation groups
+# Fetch automations with pagination on the automations within each group
+$automationsInGroupQuery = @"
+query AutomationsInGroup(`$groupId: ID!, `$first: Int, `$after: String) {
+  group(groupId: `$groupId) {
+    ... on AutomationGroup {
+      id
+      name
+      automations(first: `$first, after: `$after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          id
+          name
+          enabled
+        }
+      }
+    }
+  }
+}
+"@
+
+# First, get all automation groups
 $groupsQuery = @"
 query GroupsList {
   groups(type: AUTOMATION_GROUP) {
@@ -300,13 +368,6 @@ query GroupsList {
       ... on AutomationGroup {
         name
         parentId
-        automations {
-          nodes {
-            id
-            name
-            enabled
-          }
-        }
       }
     }
   }
@@ -315,22 +376,130 @@ query GroupsList {
 
 Write-Host "  Fetching automation groups..." -ForegroundColor Gray
 $groupsResult = Invoke-LevelGraphQL -OperationName "GroupsList" -Query $groupsQuery
+$allGroups = $groupsResult.groups.nodes
+Write-Host "  Found $($allGroups.Count) groups" -ForegroundColor Gray
 
 $allAutomationIds = @()
-foreach ($group in $groupsResult.groups.nodes) {
-    if ($group.automations -and $group.automations.nodes) {
-        foreach ($a in $group.automations.nodes) {
-            $allAutomationIds += @{
-                id = $a.id
-                name = $a.name
-                enabled = $a.enabled
-                groupName = $group.name
+$groupNum = 0
+
+foreach ($group in $allGroups) {
+    $groupNum++
+    Write-Host "  [$groupNum/$($allGroups.Count)] Fetching automations in: $($group.name)" -ForegroundColor Gray
+
+    $hasNextPage = $true
+    $cursor = $null
+    $groupAutomationCount = 0
+
+    while ($hasNextPage) {
+        try {
+            $vars = @{ groupId = $group.id; first = 100 }
+            if ($cursor) { $vars.after = $cursor }
+
+            $groupResult = Invoke-LevelGraphQL -OperationName "AutomationsInGroup" -Query $automationsInGroupQuery -Variables $vars
+
+            if ($groupResult.group.automations -and $groupResult.group.automations.nodes) {
+                foreach ($a in $groupResult.group.automations.nodes) {
+                    # Check if already added (avoid duplicates)
+                    if (-not ($allAutomationIds | Where-Object { $_.id -eq $a.id })) {
+                        $allAutomationIds += @{
+                            id = $a.id
+                            name = $a.name
+                            enabled = $a.enabled
+                            groupName = $group.name
+                        }
+                        $groupAutomationCount++
+                    }
+                }
+
+                $hasNextPage = $groupResult.group.automations.pageInfo.hasNextPage
+                $cursor = $groupResult.group.automations.pageInfo.endCursor
+            } else {
+                $hasNextPage = $false
             }
+        } catch {
+            Write-Host "    Error fetching group: $($_.Exception.Message)" -ForegroundColor Red
+            $hasNextPage = $false
         }
+
+        if ($hasNextPage) {
+            Start-Sleep -Milliseconds 500
+        }
+    }
+
+    if ($groupAutomationCount -gt 0) {
+        Write-Host "    Found $groupAutomationCount automations" -ForegroundColor DarkGray
+    }
+
+    # Small delay between group fetches
+    if ($groupNum -lt $allGroups.Count) {
+        $delay = Get-Random -Minimum 1 -Maximum 2
+        Start-Sleep -Seconds $delay
     }
 }
 
-Write-Host "  Found $($allAutomationIds.Count) automations in $($groupsResult.groups.nodes.Count) groups" -ForegroundColor Green
+# Also fetch ungrouped/unassigned automations
+Write-Host "  Fetching ungrouped automations..." -ForegroundColor Gray
+
+$ungroupedQuery = @"
+query UngroupedAutomations(`$first: Int, `$after: String) {
+  automations(first: `$first, after: `$after, filter: { ungrouped: true }) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      id
+      name
+      enabled
+    }
+  }
+}
+"@
+
+$hasNextPage = $true
+$cursor = $null
+$ungroupedCount = 0
+
+while ($hasNextPage) {
+    try {
+        $vars = @{ first = 100 }
+        if ($cursor) { $vars.after = $cursor }
+
+        $ungroupedResult = Invoke-LevelGraphQL -OperationName "UngroupedAutomations" -Query $ungroupedQuery -Variables $vars
+
+        if ($ungroupedResult.automations -and $ungroupedResult.automations.nodes) {
+            foreach ($a in $ungroupedResult.automations.nodes) {
+                if (-not ($allAutomationIds | Where-Object { $_.id -eq $a.id })) {
+                    $allAutomationIds += @{
+                        id = $a.id
+                        name = $a.name
+                        enabled = $a.enabled
+                        groupName = "Ungrouped"
+                    }
+                    $ungroupedCount++
+                }
+            }
+
+            $hasNextPage = $ungroupedResult.automations.pageInfo.hasNextPage
+            $cursor = $ungroupedResult.automations.pageInfo.endCursor
+        } else {
+            $hasNextPage = $false
+        }
+    } catch {
+        Write-Host "    Note: Could not fetch ungrouped automations (may not be supported): $($_.Exception.Message)" -ForegroundColor DarkGray
+        $hasNextPage = $false
+    }
+
+    if ($hasNextPage) {
+        Start-Sleep -Milliseconds 500
+    }
+}
+
+if ($ungroupedCount -gt 0) {
+    Write-Host "    Found $ungroupedCount ungrouped automations" -ForegroundColor DarkGray
+}
+
+Write-Host "  Found $($allAutomationIds.Count) automations total" -ForegroundColor Green
 
 # Fetch full details for each automation
 $automationDetailQuery = @"
@@ -557,7 +726,8 @@ $i = 0
 
 foreach ($auto in $allAutomationIds) {
     $i++
-    Write-Host "  [$i/$($allAutomationIds.Count)] Fetching: $($auto.name)" -ForegroundColor Gray
+    $pct = [math]::Round(($i / $allAutomationIds.Count) * 100)
+    Write-Host "  [$i/$($allAutomationIds.Count)] ($pct%) Fetching: $($auto.name)" -ForegroundColor Gray
 
     try {
         $detail = Invoke-LevelGraphQL -OperationName "AutomationPage" -Query $automationDetailQuery -Variables @{ automationId = $auto.id }
@@ -567,14 +737,17 @@ foreach ($auto in $allAutomationIds) {
         $safeName = $auto.name -replace '[\\/:*?"<>|]', '_'
         $jsonPath = Join-Path $automationsDir "$safeName.json"
         $detail.automation | ConvertTo-Json -Depth 20 | Out-File $jsonPath -Encoding UTF8
+        Write-Host "    Saved: $safeName.json" -ForegroundColor DarkGray
     } catch {
-        Write-Host "    Error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "    ERROR on automation $($auto.id): $($_.Exception.Message)" -ForegroundColor Red
+        # Continue with next automation instead of stopping
     }
 
-    # Rate limiting - random 30-60 second gap to avoid detection
-    $delay = Get-Random -Minimum 3 -Maximum 12
-    Write-Host "    Waiting $delay seconds..." -ForegroundColor DarkGray
-    Start-Sleep -Seconds $delay
+    # Rate limiting - reduced delay (1-3 seconds)
+    if ($i -lt $allAutomationIds.Count) {
+        $delay = Get-Random -Minimum 1 -Maximum 3
+        Start-Sleep -Seconds $delay
+    }
 }
 
 # Save combined export

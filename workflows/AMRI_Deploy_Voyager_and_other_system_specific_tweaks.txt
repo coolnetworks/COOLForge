@@ -1,0 +1,174 @@
+﻿======================================================================
+  AMRI Deploy Voyager and other system specific tweaks
+  Group: ONBOARDING | Status: DISABLED
+======================================================================
+
+  /================================================\
+ ||  CALLED FROM: AMRI Initial Onboard Automation  ||
+  \================================================/
+         |
+         v
+  +----------------------------------------------+
+  |  Run Script: Set Hosts file for AdelaideMRI  |
+  +----------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------+
+  |  InstallWinget  |
+  +-----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------------+
+  |  Install: 7zip.7zip  |
+  +----------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------+
+  |  Install: Google.Chrome  |
+  +--------------------------+
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------+
+  |  DownloadFile  |
+  +----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------+
+  |  DownloadFile  |
+  +----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------+
+  |  DownloadFile  |
+  +----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------+
+  |  DownloadFile  |
+  +----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------------------+
+  |  Run Script: 🙏SCREENCONNECT  |
+  +-------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------+
+  |  Run Automation:  |
+  +-------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------------------------------+
+  |  Run Script: AMRI Deploy Background for desktop  |
+  +--------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------------------------+
+  |  Run Script: SET: background to phonebook  |
+  +--------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------------------------------------+
+  |  Run Script: Extract Voyager to Programdata  |
+  +----------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------------+
+  |  Run Script: Extract Webviewer  |
+  +---------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------------------------------------+
+  |  Run Script: Recreate Voyager for the Company  |
+  +------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------------------------+
+  |  Run Script: AMIR Set Voyager Permissions  |
+  +--------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------------------------------+
+  |  Run Script: Install Radreport Chrome Launcher  |
+  +-------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------------------------------------------------+
+  |  Run Script: Create Link to Voyager WebViewer on desktop  |
+  +-----------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------+
+  |  Run Automation:  |
+  +-------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------------------+
+  |  Run Script: Deploy Voyager Launcher  |
+  +---------------------------------------+
+         |
+         v
+  +--------------------------------------------+
+  |  Run Script: AMIR Set Voyager Permissions  |
+  +--------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

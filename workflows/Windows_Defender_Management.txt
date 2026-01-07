@@ -1,0 +1,74 @@
+﻿======================================================================
+  Windows Defender Management
+  Group: Imported | Status: DISABLED
+======================================================================
+
+  /===========================\
+ ||  SCHEDULE: Daily @ 13:00  ||
+  \===========================/
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+         |
+         v
+  +-------------------------+
+  |  WindowsDefenderUpdate  |
+  +-------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------------------------+
+  |  Run Script: Low Profile Defender  |
+  +------------------------------------+
+         |
+         v
+  +----------------------------------+
+  |  WindowsDefenderScan [DISABLED]  |
+  +----------------------------------+
+         |
+         v
+  /----------------------------------------\
+ <   IF: [Windows Defender Scan] = failed   >
+  \----------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------+
+  |  ALERT [WARNING]: Create Alert [DISABLED]  |
+  +--------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

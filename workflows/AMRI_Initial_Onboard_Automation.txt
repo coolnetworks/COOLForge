@@ -1,0 +1,149 @@
+﻿======================================================================
+  AMRI Initial Onboard Automation
+  Group: ONBOARDING | Status: DISABLED
+======================================================================
+
+  /=========================================================\
+ ||  CALLED FROM: Try Resetting system back to pre-install  ||
+  \=========================================================/
+         |
+         v
+  /=====================\
+ ||  DeviceEntersGroup  ||
+  \=====================/
+         |
+         v
+  /--------------------------\
+ <   IF: GROUP = ONBOARDING   >
+  \--------------------------/
+         |
+         v
+  +------------------------------+
+  |  WaitForApproval [DISABLED]  |
+  +------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------------------+
+  |  Run Script: SET: Sleep to 6 hours  |
+  +-------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------------------------------------+
+  |  Run Script: SET: Unlimited System Restore [DISABLED]  |
+  +--------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------+
+  |  Install Windows Updates  |
+  +---------------------------+
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------+
+  |  Install Windows Updates  |
+  +---------------------------+
+         |
+         v
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------------------+
+  |  Run Script: Create users  |
+  +----------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------+
+  |  Run Automation:  |
+  +-------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------------+
+  |  Run Script: SET: Sleep revert  |
+  +---------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------------+
+  |  Run Script: SET: Sleep revert  |
+  +---------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

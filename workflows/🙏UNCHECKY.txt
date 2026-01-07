@@ -1,0 +1,109 @@
+﻿======================================================================
+  🙏UNCHECKY
+  Group: Software Install/update | Status: DISABLED
+======================================================================
+
+  /===========================\
+ ||  TAG APPLIED: 🙏UNCHECKY  ||
+  \===========================/
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+         |
+         v
+  /=================\
+ ||  DeviceMonitor  ||
+  \=================/
+         |
+         v
+  /------------------------\
+ <   IF: Tag = 🛑UNCHECKY   >
+  \------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------------------------------+
+  |  Remove Tags: ⛔UNCHECKY, ✅UNCHECKY, 🙏UNCHECKY  |
+  +-------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /------------------------\
+ <   IF: Tag = 🛑UNCHECKY   >
+  \------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------+
+  |  Apply Tags: ⛔UNCHECKY  |
+  +-------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /------------------------------------------------------\
+ <   IF: $EXITFLOW contains "TRUE" AND Tag = 🛑UNCHECKY   >
+  \------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------+
+  |  EXIT AUTOMATION  |
+  +-------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------+
+  |  DownloadFile  |
+  +----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------------------------------------+
+  |  Run Script: INSTALL: C:\CN_Tools\unchecky_setup.exe  |
+  +-------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------+
+  |  Remove Tags: 🙏UNCHECKY  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------------+
+  |  Apply Tags: ✅UNCHECKY  |
+  +-------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

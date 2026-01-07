@@ -1,7 +1,7 @@
-# ============================================================
+﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "🔧Fix Windows 10 Services.ps1"
+$ScriptToRun = "ðŸ”§Fix Windows 10 Services.ps1"
 # ============================================================
 
 <#
@@ -53,12 +53,12 @@ $ScriptToRun = "🔧Fix Windows 10 Services.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "🔧Fix Windows 10 Services.ps1"
+    $ScriptToRun = "ðŸ‘€Test Show Versions.ps1"
     # ... rest of launcher code ...
 
 .EXAMPLE
     # Or use a custom field to control which script runs:
-    $ScriptToRun = "🔧Fix Windows 10 Services.ps1"
+    $ScriptToRun = "{{cf_script_to_run}}"
     # ... rest of launcher code ...
 #>
 
@@ -375,6 +375,41 @@ if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
 $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
 
 # ============================================================
+# RESOLVE SCRIPT PATH FROM MD5SUMS
+# ============================================================
+# Scripts are organized in subfolders (Check/, Fix/, Remove/, etc.)
+# Parse MD5SUMS to find the actual path for the script name.
+
+function Get-ScriptPathFromMD5 {
+    param([string]$ScriptName, [string]$MD5Content)
+
+    if ([string]::IsNullOrWhiteSpace($MD5Content)) { return $null }
+
+    foreach ($line in $MD5Content -split "`n") {
+        $line = $line.Trim()
+        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
+            $FilePath = $Matches[2].Trim()
+            # Check if filename matches (case-insensitive)
+            $FileName = Split-Path $FilePath -Leaf
+            if ($FileName -eq $ScriptName) {
+                return $FilePath
+            }
+        }
+    }
+    return $null
+}
+
+# Try to resolve the full path from MD5SUMS
+$ScriptRelativePath = $null
+if ($MD5SumsContent) {
+    $ScriptRelativePath = Get-ScriptPathFromMD5 -ScriptName $ScriptToRun -MD5Content $MD5SumsContent
+    if ($ScriptRelativePath) {
+        Write-Host "[*] Resolved script path: $ScriptRelativePath"
+    }
+}
+
+# ============================================================
 # SCRIPT DOWNLOAD & EXECUTION
 # ============================================================
 # Download the requested script from GitHub and execute it
@@ -392,9 +427,15 @@ if (!(Test-Path $ScriptsFolder)) {
 $SafeScriptName = $ScriptToRun -replace '[<>:"/\\|?*]', '_'
 $ScriptPath = Join-Path -Path $ScriptsFolder -ChildPath $SafeScriptName
 
-# URL-encode the script name for the download URL
-# Use library function for proper UTF-8 emoji handling
-$ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
+# Build script URL - use resolved path from MD5SUMS if available, otherwise fallback to flat structure
+if ($ScriptRelativePath) {
+    # Use the full path from MD5SUMS (e.g., "scripts/Check/ScriptName.ps1")
+    $ScriptUrl = "$RepoBaseUrl/$(Get-LevelUrlEncoded $ScriptRelativePath)"
+} else {
+    # Fallback: assume script is directly in /scripts/ folder
+    Write-Host "[!] Script not found in MD5SUMS - trying flat path"
+    $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
+}
 
 # Check for local version
 $ScriptNeedsUpdate = $false
@@ -455,7 +496,8 @@ try {
 
             # Verify MD5 checksum if available
             if ($MD5SumsContent) {
-                $ScriptMD5Key = "scripts/$ScriptToRun"
+                # Use resolved path if available, otherwise construct from script name
+                $ScriptMD5Key = if ($ScriptRelativePath) { $ScriptRelativePath } else { "scripts/$ScriptToRun" }
                 $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
                 if ($ExpectedScriptMD5) {
                     $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
@@ -543,4 +585,3 @@ catch {
 
 # Pass through the script's exit code
 exit $ScriptExitCode
-

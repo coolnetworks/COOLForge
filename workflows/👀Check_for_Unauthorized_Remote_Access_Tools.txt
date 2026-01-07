@@ -1,0 +1,449 @@
+======================================================================
+  Check for Unauthorized Remote Access Tools
+  Version: 2025.12.27.02
+  Type: LAUNCHER + SCRIPT (GitHub-hosted)
+======================================================================
+
+This workflow shows the complete execution path from Level.io trigger
+through launcher to the actual detection script.
+
+
+PHASE 1: LEVEL.IO TRIGGER
+======================================================================
+
+  /==========================================\
+ ||  LEVEL.IO AUTOMATION TRIGGER             ||
+ ||  (Manual, Schedule, or Tag Applied)      ||
+  \==========================================/
+         |
+         v
+  +----------------------------------------------+
+  |  Level.io executes launcher script on device |
+  |  Passes custom fields as variables:          |
+  |    - {{cf_coolforge_msp_scratch_folder}}     |
+  |    - {{cf_coolforge_ps_module_library_source}}|
+  |    - {{level_device_hostname}}               |
+  |    - {{level_tag_names}}                     |
+  +----------------------------------------------+
+         |
+         v
+
+PHASE 2: LAUNCHER EXECUTION
+======================================================================
+
+  +----------------------------------------------+
+  |  Set $ScriptToRun =                          |
+  |  "Check for Unauthorized Remote Access Tools"|
+  +----------------------------------------------+
+         |
+         v
+  +----------------------------------------------+
+  |  Parse Level.io custom fields                |
+  |  - $MspScratchFolder                         |
+  |  - $DeviceHostname                           |
+  |  - $DeviceTags                               |
+  |  - $GitHubPAT (optional, for private repos)  |
+  |  - $PinnedVersion (optional)                 |
+  +----------------------------------------------+
+         |
+         v
+  /----------------------------------------------\
+ <  Is $LibraryUrl set in custom fields?          >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +-----------------+    +-------------------------------+
+  |  Use custom URL |    |  Default to official repo:    |
+  +-----------------+    |  github.com/coolnetworks/     |
+         |               |  COOLForge/main/modules/      |
+         |               |  COOLForge-Common.psm1        |
+         |               +-------------------------------+
+         |                        |
+         +------------+-----------+
+                      |
+                      v
+  +----------------------------------------------+
+  |  Download MD5SUMS from repo (for integrity)  |
+  +----------------------------------------------+
+         |
+         v
+  /----------------------------------------------\
+ <  Does COOLForge-Common.psm1 exist locally?     >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +--------------------+   +------------------------+
+  |  Read local version|   |  $NeedsUpdate = $true  |
+  +--------------------+   +------------------------+
+         |                        |
+         v                        |
+  /----------------------------------------------\
+ <  Is remote version newer than local?           >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        |
+  +--------------------+     |
+  |  $NeedsUpdate=true |     |
+  +--------------------+     |
+         |                   |
+         +--------+----------+
+                  |
+                  v
+  /----------------------------------------------\
+ <  $NeedsUpdate?                                 >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        |
+  +----------------------------------------------+
+  |  1. Backup existing library (if any)         |
+  |  2. Download new version from GitHub         |
+  |  3. Verify MD5 checksum                      |
+  |  4. Write to Libraries folder                |
+  +----------------------------------------------+
+         |                        |
+         +------------+-----------+
+                      |
+                      v
+  +----------------------------------------------+
+  |  Import-Module COOLForge-Common.psm1         |
+  +----------------------------------------------+
+         |
+         v
+  /----------------------------------------------\
+ <  Critical functions available?                 >
+ <  (Repair-LevelEmoji exists?)                   >
+  \----------------------------------------------/
+    |Yes                     |No
+    |                        v
+    |              +----------------------------+
+    |              |  Force redownload library  |
+    |              +----------------------------+
+    |                        |
+    +------------+-----------+
+                 |
+                 v
+  +----------------------------------------------+
+  |  Repair-LevelEmoji on $ScriptToRun           |
+  |  (Fix Level.io UTF-8 emoji corruption)       |
+  +----------------------------------------------+
+         |
+         v
+  +----------------------------------------------+
+  |  Derive script URL from library URL:         |
+  |  .../main/scripts/Check/                     |
+  |    Check for Unauthorized Remote Access      |
+  |    Tools.ps1                                 |
+  +----------------------------------------------+
+         |
+         v
+  /----------------------------------------------\
+ <  Does script exist locally in cache?           >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +--------------------+   +------------------------+
+  |  Read local version|   |  $ScriptNeedsUpdate=   |
+  +--------------------+   |  $true                 |
+         |                 +------------------------+
+         v                        |
+  /----------------------------------------------\
+ <  Is remote script version newer?               >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        |
+  +------------------------+  |
+  |  $ScriptNeedsUpdate=   |  |
+  |  $true                 |  |
+  +------------------------+  |
+         |                    |
+         +---------+----------+
+                   |
+                   v
+  /----------------------------------------------\
+ <  $ScriptNeedsUpdate?                           >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        |
+  +----------------------------------------------+
+  |  1. Backup existing script (if any)          |
+  |  2. Download script from GitHub              |
+  |  3. Verify MD5 checksum                      |
+  |  4. Write to Scripts folder                  |
+  +----------------------------------------------+
+         |                        |
+         +------------+-----------+
+                      |
+                      v
+  +----------------------------------------------+
+  |  Create execution block:                     |
+  |  - Inject $MspScratchFolder                  |
+  |  - Inject $LibraryUrl                        |
+  |  - Inject $DeviceHostname                    |
+  |  - Inject $DeviceTags                        |
+  |  - Append script content                     |
+  +----------------------------------------------+
+         |
+         v
+  +----------------------------------------------+
+  |  Execute script via [scriptblock]::Create()  |
+  +----------------------------------------------+
+         |
+         v
+
+PHASE 3: RAT DETECTION SCRIPT EXECUTION
+======================================================================
+
+  +----------------------------------------------+
+  |  Initialize-LevelScript                      |
+  |  - ScriptName: "RATDetection"                |
+  |  - BlockingTags: @("X")                      |
+  +----------------------------------------------+
+         |
+         v
+  /----------------------------------------------\
+ <  Does device have blocking tag "X"?            >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +--------------------+     |
+  |  exit 0 (blocked)  |     |
+  +--------------------+     |
+                             |
+                             v
+  +----------------------------------------------+
+  |  Create lockfile (prevent concurrent runs)   |
+  +----------------------------------------------+
+         |
+         v
+  +----------------------------------------------+
+  |  Load 55+ Remote Access Tool definitions:    |
+  |  - AnyDesk, TeamViewer, RustDesk             |
+  |  - ScreenConnect, Splashtop, LogMeIn         |
+  |  - GoToAssist, RemotePC, BeyondTrust         |
+  |  - VNC variants (Real, Tight, Ultra, Tiger)  |
+  |  - Radmin, Chrome Remote Desktop             |
+  |  - Ammyy Admin, SimpleHelp, Supremo          |
+  |  - Zoho Assist, ISL Online, Parsec           |
+  |  - Action1, Atera, N-able, Datto, Ninja      |
+  |  - Kaseya, Syncro, Pulseway, ManageEngine    |
+  |  - ...and 25+ more                           |
+  +----------------------------------------------+
+         |
+         v
+  +----------------------------------------------+
+  |  Gather system information:                  |
+  |  1. Get installed software from registry     |
+  |     (HKLM + HKCU Uninstall keys)             |
+  |  2. Get running processes                    |
+  |  3. Get all Windows services                 |
+  +----------------------------------------------+
+         |
+         v
+  /----------------------------------------------\
+ <  Is $IsScreenConnectServer = "true"?           >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +------------------------+  |
+  |  Skip ScreenConnect    |  |
+  |  detection entirely    |  |
+  +------------------------+  |
+                             |
+                             v
+            +----------------+
+            |
+            v (for each tool in definitions)
+  /----------------------------------------------\
+ <  Is tool in $AuthorizedRMMTools?               >
+ <  (Default: Level.io)                           >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +------------------------+  |
+  |  Skip (authorized)     |  |
+  +------------------------+  |
+                             |
+                             v
+  /----------------------------------------------\
+ <  Is tool ScreenConnect AND has whitelist?      >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +------------------------+  |
+  |  Get-ScreenConnect-    |  |
+  |  InstanceID:           |  |
+  |  - Check services      |  |
+  |  - Check registry      |  |
+  |  - Check install dirs  |  |
+  +------------------------+  |
+         |                    |
+         v                    |
+  /----------------------------------------------\
+ <  Instance ID matches whitelist?                >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +------------------------+  |
+  |  Skip (whitelisted)    |  |
+  +------------------------+  |
+                             |
+                             +----> (continue with check)
+                             |
+                             v
+  +----------------------------------------------+
+  |  Test-ToolPresence:                          |
+  |  1. Match process names (wildcards)          |
+  |  2. Match service names (wildcards)          |
+  |  3. Match installed software (DisplayName)   |
+  |  4. Search common directories:               |
+  |     - C:\Program Files                       |
+  |     - C:\Program Files (x86)                 |
+  |     - %LOCALAPPDATA%                         |
+  |     - %APPDATA%                              |
+  |     - %ProgramData%                          |
+  +----------------------------------------------+
+         |
+         v
+  /----------------------------------------------\
+ <  Tool detected?                                >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +------------------------+  |
+  |  Add to $DetectedTools |  |
+  |  with detection method |  |
+  +------------------------+  |
+         |                    |
+         +--------+-----------+
+                  |
+                  v (next tool)
+                  |
+  (after all tools checked)
+         |
+         v
+
+PHASE 4: RESULTS AND EXIT
+======================================================================
+
+  /----------------------------------------------\
+ <  $DetectedTools.Count > 0?                     >
+  \----------------------------------------------/
+    |Yes                     |No
+    v                        v
+  +--------------------------+  +-------------------------+
+  |  Write-LevelLog:         |  |  Write-LevelLog:        |
+  |  "DETECTED: X tools"     |  |  "No unauthorized RATs  |
+  |                          |  |   detected"             |
+  |  For each detection:     |  +-------------------------+
+  |  - Log tool name         |           |
+  |  - Log detection method  |           v
+  |    (process/service/     |  +-------------------------+
+  |     installed/directory) |  |  Remove lockfile        |
+  |                          |  +-------------------------+
+  |  "ACTION REQUIRED:       |           |
+  |   Review and remediate"  |           v
+  +--------------------------+  +-------------------------+
+         |                      |  exit 0 (SUCCESS)       |
+         v                      +-------------------------+
+  +----------------------------------------------+
+  |  Complete-LevelScript -ExitCode 1            |
+  |  (Triggers Level.io alert)                   |
+  +----------------------------------------------+
+         |
+         v
+  +----------------------------------------------+
+  |  Remove lockfile                             |
+  +----------------------------------------------+
+         |
+         v
+  +----------------------------------------------+
+  |  exit 1 (ALERT)                              |
+  +----------------------------------------------+
+         |
+         v
+  (( DONE - Level.io receives exit code ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+
+----------------------------------------------------------------------
+FILES INVOLVED
+----------------------------------------------------------------------
+
+  LAUNCHER (deployed to Level.io):
+    launchers/Check for Unauthorized Remote Access Tools.ps1
+    - Sets $ScriptToRun
+    - Downloads/caches library and script
+    - Handles versioning and MD5 verification
+    - Passes Level.io variables to script
+
+  SCRIPT (auto-downloaded from GitHub):
+    scripts/Check/Check for Unauthorized Remote Access Tools.ps1
+    - Contains RAT detection logic
+    - 55+ tool definitions
+    - ScreenConnect whitelisting
+    - Lockfile management
+
+  LIBRARY (auto-downloaded from GitHub):
+    modules/COOLForge-Common.psm1
+    - Initialize-LevelScript (tag gates, lockfiles)
+    - Invoke-LevelScript (error handling wrapper)
+    - Write-LevelLog (standardized logging)
+    - Complete-LevelScript (clean exit)
+    - Repair-LevelEmoji (fix UTF-8 corruption)
+
+
+----------------------------------------------------------------------
+CUSTOM FIELDS USED
+----------------------------------------------------------------------
+
+  REQUIRED:
+    cf_coolforge_msp_scratch_folder
+      Storage location for cached scripts/libraries
+      Example: C:\ProgramData\MSP
+
+  OPTIONAL:
+    cf_coolforge_ps_module_library_source
+      Override GitHub URL for library download
+      Default: github.com/coolnetworks/COOLForge
+
+    cf_coolforge_screenconnect_instance_id
+      Whitelist your org's ScreenConnect instance
+      Example: 983fa4f3c185dd21
+
+    cf_coolforge_is_screenconnect_server
+      Set to "true" on ScreenConnect server machines
+      Excludes all ScreenConnect detection
+
+
+----------------------------------------------------------------------
+EXIT CODES
+----------------------------------------------------------------------
+
+  0 = SUCCESS
+      - No unauthorized remote access tools detected
+      - OR device blocked by tag (graceful skip)
+      - OR script already running (lockfile exists)
+
+  1 = ALERT
+      - Unauthorized remote access tools detected
+      - Level.io triggers alert/notification
+
+

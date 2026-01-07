@@ -1,0 +1,130 @@
+﻿======================================================================
+  Windows Setup GENERAL CLIENT
+  Group: Imported | Status: DISABLED
+======================================================================
+
+  /========================\
+ ||  TAG APPLIED: 🙏SETUP  ||
+  \========================/
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+         |
+         v
+  +-------------------------------------+
+  |  Install Windows Updates (retry:2)  |
+  +-------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------------+
+  |  Apply Tags: ✅HUNTRESS  |
+  +-------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------------------------+
+  |  Run Script: Windows - Add Admin  |
+  +-----------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------------------------------+
+  |  Run Script: Windows - Disable Sleep on AC Power  |
+  +---------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------------------+
+  |  Run Script: Windows - Set Time Zone  |
+  +---------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------------------------+
+  |  Run Script: Windows - Set SSID  |
+  +----------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------------------+
+  |  Apply Tags: VPN [DISABLED]  |
+  +------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------------------------------------+
+  |  Run Script: Windows - Join Company Domain [DISABLED]  |
+  +--------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------------------------+
+  |  Apply Tags: 🙏OFFICE [DISABLED]  |
+  +-----------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /---------------------------\
+ <   IF: CUSTOM_FIELD = true   >
+  \---------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------------------+
+  |  Apply Tags: ✅ [DISABLED]  |
+  +----------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------------------------------------------+
+  |  Install: Google.Chrome, unchecky, 7zip (retry:2)  |
+  +----------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------------------------+
+  |  Upgrade Winget Packages (retry:2)  |
+  +-------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------------------------------------------+
+  |  Run Script: Windows - Add a URL shortcut to users  |
+  |  desktop [DISABLED]                                 |
+  +-----------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------------------------+
+  |  Remove Tags: 🙏SETUP [DISABLED]  |
+  +-----------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------------------+
+  |  Restart Device [DISABLED]  |
+  +-----------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

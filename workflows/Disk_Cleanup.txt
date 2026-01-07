@@ -1,0 +1,110 @@
+﻿======================================================================
+  Disk Cleanup
+  Group: General | Status: DISABLED
+======================================================================
+
+  /=================\
+ ||  DeviceMonitor  ||
+  \=================/
+         |
+         v
+  /===========================\
+ ||  TAG APPLIED: 🚨DISKFULL  ||
+  \===========================/
+         |
+         v
+  /=================\
+ ||  DeviceMonitor  ||
+  \=================/
+         |
+         v
+  /-------------------------------\
+ <   IF: Platform = Windows, Mac   >
+  \-------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------+
+  |  NotifyUser  |
+  +--------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------+
+  |  Run Script: Windows - Cleanup Disk Space  |
+  +--------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /----------------------\
+ <   IF: Platform = Mac   >
+  \----------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------------------------------+
+  |  Run Script: macOS - Cleanup Disk Space  |
+  +------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /------------------------\
+ <   IF: Platform = Linux   >
+  \------------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------------------------------+
+  |  Run Script: Linux - Cleanup Disk Space  |
+  +------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /-----------------------------------------------------\
+ <   IF: GROUP = 🏢1️⃣AdelaideMRI AND OS = Windows 10,   >
+ <   Windows 11                                          >
+  \-----------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------+
+  |  Run Automation:  |
+  +-------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------+
+  |  Remove Tags: 🚨DISKFULL  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

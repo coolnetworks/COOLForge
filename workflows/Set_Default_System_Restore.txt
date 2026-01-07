@@ -1,0 +1,60 @@
+﻿======================================================================
+  Set Default System Restore
+  Group: Set Policy | Status: DISABLED
+======================================================================
+
+  /===========================================\
+ ||  TAG APPLIED: SET: NORMAL SYSTEM RESTORE  ||
+  \===========================================/
+         |
+         v
+  +---------------------------------------------+
+  |  Run Script: SET: Unlimited System Restore  |
+  +---------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------------------------------+
+  |  Apply Tags: ✅DEFAULT SYSTEM RESTORE SET  |
+  +-------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------------------------------------------+
+  |  Remove Tags: 🙏UNLIMTED SYSTEM RESTORE, SET: NORMAL  |
+  |  SYSTEM RESTORE, UNLIMITED SYSTEM RESTORE ENABLED     |
+  +-------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

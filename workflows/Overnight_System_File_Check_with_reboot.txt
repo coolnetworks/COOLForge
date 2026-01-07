@@ -1,0 +1,126 @@
+﻿======================================================================
+  Overnight System File Check with reboot
+  Group: General | Status: DISABLED
+======================================================================
+
+  /===================================\
+ ||  TAG APPLIED: 🙏DO SFC AFTER 6PM  ||
+  \===================================/
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------------------+
+  |  Run Script: SFC /SCANNOW  |
+  +----------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------------------------+
+  |  Run Script: DISM /Online /Cleanup-Image  |
+  |  /StartComponentCleanup                   |
+  +-------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------------------+
+  |  Run Script: DISM /Online /Cleanup-Image /CheckHealth  |
+  +--------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------------------------------------+
+  |  Run Script: DISM /Online /Cleanup-Image /ScanHealth  |
+  +-------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /-------------------------------------------------\
+ <   IF: Platform = Windows AND Platform = Windows   >
+  \-------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------------------------------------------------+
+  |  Run Script: DISM /Online /Cleanup-Image /RestoreHealth  |
+  +----------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------------------+
+  |  Run Script: SFC /SCANNOW  |
+  +----------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------------------------------+
+  |  Run Script: echo Y |CHKDSK C: /F /V /R  |
+  |  /offlinescanandfix                      |
+  +------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------+
+  |  Remove Tags: 🙏 SFC NOW  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

@@ -1,0 +1,266 @@
+﻿======================================================================
+  BASELINE SOFTWARE FOR MANAGED CLIENTS
+  Group: General | Status: DISABLED
+======================================================================
+
+  /===============================\
+ ||  TAG APPLIED: 🙏BASELINEEVAL  ||
+  \===============================/
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+         |
+         v
+  /=====================================\
+ ||  CALLED FROM: MUST DO ALL MACHINES  ||
+  \=====================================/
+         |
+         v
+  +---------------------------+
+  |  Delay 10 min [DISABLED]  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------------------+
+  |  POWERSHELL: Write-Output ((Get-Service | Where-Ob...  |
+  +--------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------------------+
+  |  POWERSHELL: Write-Output ((Get-ItemProperty @("HK...  |
+  +--------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /------------------------\
+ <   IF: Platform = Linux   >
+  \------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------------+
+  |  BASH: systemctl list-units --type=service -...  |
+  +--------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /----------------------\
+ <   IF: Platform = Mac   >
+  \----------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------------------------------+
+  |  ZSH: launchctl list | awk '{if (NR > 1) pr...  |
+  +-------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsServices contains   >
+ <   "ScreenConnect Client (983fa4f3c185dd21)"              >
+  \--------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------+
+  |  Apply Tags: ✅SC  |
+  +-------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /---------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsServices !contains   >
+ <   "ScreenConnect Client (983fa4f3c185dd21)"               >
+  \---------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------+
+  |  Apply Tags: 🙏SC  |
+  +--------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------+
+  |  Delay 1 min [DISABLED]  |
+  +--------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsPrograms contains   >
+ <   "Google Chrome"                                        >
+  \--------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-----------------------+
+  |  Apply Tags: ✅CHROME  |
+  +-----------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /---------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsPrograms !contains   >
+ <   "Google Chrome"                                         >
+  \---------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------------+
+  |  Apply Tags: 🙏CHROME  |
+  +------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------+
+  |  Delay 1 min  |
+  +---------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsPrograms contains   >
+ <   "Splashtop"                                            >
+  \--------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------+
+  |  Apply Tags: ✅DNSFILTER  |
+  +--------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsServices contains   >
+ <   "DNS Agent"                                            >
+  \--------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------+
+  |  Apply Tags: ✅DNSFILTER  |
+  +--------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /-------------------------------------------------------\
+ <   IF: $WindowsServices !contains "DNS Agent" AND OS =   >
+ <   Windows 11, Windows 10                                >
+  \-------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------+
+  |  Apply Tags: 🙏DNSFILTER  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------+
+  |  Delay 1 min  |
+  +---------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsServices contains   >
+ <   "HuntressAgent"                                        >
+  \--------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------+
+  |  Apply Tags: ✅HUNTRESS  |
+  +-------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /---------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsServices !contains   >
+ <   "HuntressAgent"                                         >
+  \---------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------+
+  |  Apply Tags: 🙏HUNTRESS  |
+  +--------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------+
+  |  Delay 1 min  |
+  +---------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsServices contains   >
+ <   "unchecky"                                             >
+  \--------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------------+
+  |  Apply Tags: ✅UNCHECKY  |
+  +-------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /---------------------------------------------------------\
+ <   IF: Platform = Windows AND $WindowsServices !contains   >
+ <   "unchecky"                                              >
+  \---------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------+
+  |  Apply Tags: 🙏UNCHECKY  |
+  +--------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /----------------------------------------------------\
+ <   IF: Platform = Linux AND $LinuxServices contains   >
+ <   "nginx"                                            >
+  \----------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-----------------------+
+  |  Apply Tags: 🌐NGINX  |
+  +-----------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------------------------------------\
+ <   IF: Platform = Mac AND $MacServices contains "adobe"   >
+  \--------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------------------+
+  |  Apply Tags: ✅ACROBATREADER  |
+  +------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +----------------------------------------------+
+  |  Remove Tags: 🙏BASELINEEVAL, 🙏SETBASELINE  |
+  +----------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "??Prevent Sleep.ps1"
+$ScriptToRun = "Extract and Set ScreenConnect Device URL.ps1"
 # ============================================================
 
 <#

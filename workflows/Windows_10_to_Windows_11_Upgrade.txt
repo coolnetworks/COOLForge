@@ -1,0 +1,111 @@
+﻿======================================================================
+  Windows 10 to Windows 11 Upgrade
+  Group: Imported | Status: DISABLED
+======================================================================
+
+  /===================================\
+ ||  TAG APPLIED: WINDOWS 11 UPGRADE  ||
+  \===================================/
+         |
+         v
+  /-----------------------\
+ <   IF: OS = Windows 10   >
+  \-----------------------/
+         |
+         v
+  /-----------------------\
+ <   IF: OS = Windows 10   >
+  \-----------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------------------------------+
+  |  Run Script: Windows 11 Upgrade - Hardware Check  |
+  +---------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /-----------------------\
+ <   IF: OS = Windows 10   >
+  \-----------------------/
+    |Yes            |No
+    v               |(skip)
+  +---------------------------+
+  |  UserApproval [DISABLED]  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /-----------------------\
+ <   IF: OS = Windows 10   >
+  \-----------------------/
+    |Yes            |No
+    v               |(skip)
+  +-----------------------------------------------+
+  |  Run Script: Windows - Upgrade to Windows 11  |
+  +-----------------------------------------------+
+         |
+         v
+  /----------------------------------------\
+ <   IF: [Upgrade to Windows 11] = failed   >
+  \----------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------------------------------------------+
+  |  ALERT [WARNING]: Windows 11 Upgrade Failed Alert  |
+  +----------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /-----------------------------------------------------\
+ <   IF: OS = Windows 10 AND [Upgrade to Windows 11] =   >
+ <   success                                             >
+  \-----------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------+
+  |  UserApproval  |
+  +----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /-----------------------------------------------------\
+ <   IF: OS = Windows 10 AND [Upgrade to Windows 11] =   >
+ <   success                                             >
+  \-----------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

@@ -1,0 +1,116 @@
+﻿======================================================================
+  🙏HUNTRESS
+  Group: Imported | Status: DISABLED
+======================================================================
+
+  /===========================\
+ ||  TAG APPLIED: 🙏HUNTRESS  ||
+  \===========================/
+         |
+         v
+  /-------------------------------------------------------\
+ <   IF: Tag != 🛑HUNTRESS🪟🍎🐧, 📌HUNTRESS AND Tag = ✅   >
+  \-------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------------+
+  |  Remove Tags: ⛔HUNTRESS, ✅HUNTRESS , 🙏HUNTRESS  |
+  +--------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /---------------------------------------------------------\
+ <   IF: $BLOCK contains "true" AND Tag = 🛑HUNTRESS🪟🍎🐧   >
+  \---------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +-------------------+
+  |  EXIT AUTOMATION  |
+  +-------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------------------------+
+  |  Run Script: 🙏Huntress (retry:2)  |
+  +------------------------------------+
+         |
+         v
+  /-----------------------------------------------------------\
+ <   IF: [Install Huntress on Windows] = failed AND Platform   >
+ <   = Windows                                                 >
+  \-----------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------------+
+  |  ALERT [WARNING]: Huntress Install Failed Alert  |
+  +--------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /----------------------\
+ <   IF: Platform = Mac   >
+  \----------------------/
+    |Yes            |No
+    v               |(skip)
+  +------------------------------------------+
+  |  Run Script: Install Huntress (retry:2)  |
+  +------------------------------------------+
+         |
+         v
+  /-----------------------------------------------------------\
+ <   IF: [Install Huntress on macOS] = failed AND Platform =   >
+ <   Mac                                                       >
+  \-----------------------------------------------------------/
+    |Yes            |No
+    v               |(skip)
+  +--------------------------------------------------+
+  |  ALERT [WARNING]: Huntress Install Failed macOS  |
+  +--------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------+
+  |  Remove Tags: 🙏HUNTRESS  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-------------------------+
+  |  Apply Tags: ✅HUNTRESS  |
+  +-------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+

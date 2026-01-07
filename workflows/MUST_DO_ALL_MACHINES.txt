@@ -1,0 +1,119 @@
+﻿======================================================================
+  MUST DO ALL MACHINES
+  Group: General | Status: DISABLED
+======================================================================
+
+  /=================\
+ ||  DeviceCreated  ||
+  \=================/
+         |
+         v
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+         |
+         v
+  +-------------------------------+
+  |  Run Script: CN_Tools Folder  |
+  +-------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------+
+  |  Delay 15 min [DISABLED]  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------------------+
+  |  Run Script: Windows - Set Time Zone  |
+  +---------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------+
+  |  InstallWinget  |
+  +-----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +------------------+
+  |  Restart Device  |
+  +------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  /--------------------------\
+ <   IF: Platform = Windows   >
+  \--------------------------/
+    |Yes            |No
+    v               |(skip)
+  +----------------------------------------------------------+
+  |  Run Script: ensure machine wakes up daily to run stuff  |
+  +----------------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +--------------------------+
+  |  Run Script: Enable WOL  |
+  +--------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------+
+  |  Apply Tags: ✅  |
+  +-----------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +-----------------------------+
+  |  Run Automation: (retry:3)  |
+  +-----------------------------+
+         |
+         v
+  +-----------------------------------------------------+
+  |  Run Script: EXPORT: Level folder path to registry  |
+  +-----------------------------------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------+
+  |  Install Windows Updates  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  +---------------------------+
+  |  Install Windows Updates  |
+  +---------------------------+
+    |               |Fail
+    v               +---> (( STOP ))
+  (( DONE ))
+
+
+----------------------------------------------------------------------
+LEGEND
+----------------------------------------------------------------------
+
+  /==========\
+ ||  TEXT   ||   TRIGGER - Event that starts the automation
+  \==========/
+
+  /----------\
+ <   TEXT    >   CONDITION - Decision point (IF statement)
+  \----------/
+
+  +----------+
+  |  TEXT    |   ACTION - Task to execute
+  +----------+
+
+  (( TEXT ))     TERMINAL - End state (DONE or STOP)
+
+  (retry:N)      Action will retry N times on failure
+  [DISABLED]     Action is disabled and will be skipped
+
+  Flow:
+    |            Normal flow downward
+    v
+
+    |Yes         Condition met - execute action
+    |No (skip)   Condition not met - skip action
+
+    |Fail        Action failed - stop automation
+    +---> (( STOP ))
+
