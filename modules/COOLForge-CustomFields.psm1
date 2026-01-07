@@ -15,7 +15,7 @@
     - Backup-COOLForgeCustomFields.ps1 (standalone backup/restore CLI)
 
 .NOTES
-    Version:    2025.12.29.01
+    Version:    2026.01.07.01
     Target:     Windows PowerShell 5.1+
 
     API Documentation: https://levelapi.readme.io/
@@ -161,12 +161,12 @@ function Read-UserInput {
     }
 
     Write-Host $FullPrompt -NoNewline -ForegroundColor Yellow
-    $Input = Read-Host
+    $UserInput = Read-Host
 
-    if ([string]::IsNullOrWhiteSpace($Input)) {
+    if ([string]::IsNullOrWhiteSpace($UserInput)) {
         return $Default
     }
-    return $Input
+    return $UserInput
 }
 
 function Read-YesNo {
@@ -181,13 +181,13 @@ function Read-YesNo {
 
     $DefaultText = if ($Default) { "Y/n" } else { "y/N" }
     Write-Host "$Prompt [$DefaultText]: " -NoNewline -ForegroundColor Yellow
-    $Input = Read-Host
+    $UserInput = Read-Host
 
-    if ([string]::IsNullOrWhiteSpace($Input)) {
+    if ([string]::IsNullOrWhiteSpace($UserInput)) {
         return $Default
     }
 
-    return $Input.ToLower() -eq "y" -or $Input.ToLower() -eq "yes"
+    return $UserInput.ToLower() -eq "y" -or $UserInput.ToLower() -eq "yes"
 }
 
 function Get-CompanyNameFromPath {
@@ -385,19 +385,160 @@ function New-CustomField {
 function Update-CustomFieldValue {
     <#
     .SYNOPSIS
-        Updates a custom field's default value.
+        Updates a custom field's global/account-level value.
+    .DESCRIPTION
+        Uses PATCH /custom_field_values with assigned_to_id=null to set the
+        global organization-level value for a custom field.
+    .PARAMETER FieldId
+        The ID of the custom field to update.
+    .PARAMETER Value
+        The value to set.
+    .PARAMETER AllowEmpty
+        If set to $true, allows setting an empty value. Default is $false.
     #>
     param(
+        [Parameter(Mandatory = $true)]
         [string]$FieldId,
-        [string]$Value
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [bool]$AllowEmpty = $false
     )
 
-    $Body = @{
-        default_value = $Value
+    # Safety check - don't accidentally clear values
+    if (-not $AllowEmpty -and [string]::IsNullOrWhiteSpace($Value)) {
+        Write-LevelWarning "Skipping update - value is empty (use -AllowEmpty to override)"
+        Write-LevelWarning "  FieldId: $FieldId"
+        Write-LevelWarning "  Value: '$Value'"
+        return $false
     }
 
-    $Result = Invoke-LevelApi -Endpoint "/custom_fields/$FieldId" -Method "PATCH" -Body $Body
-    return $Result.Success
+    Write-LevelInfo "Setting global value for field $FieldId to '$Value'..."
+
+    # PATCH /custom_field_values with assigned_to_id=null sets global value
+    $Body = @{
+        custom_field_id = $FieldId
+        assigned_to_id  = $null
+        value           = $Value
+    }
+
+    $Result = Invoke-LevelApi -Endpoint "/custom_field_values" -Method "PATCH" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelSuccess "Set global value: '$Value'"
+
+        # Verify by reading back
+        Write-LevelInfo "Verifying..."
+        $VerifyResult = Invoke-LevelApi -Endpoint "/custom_field_values?limit=100" -Method "GET"
+        if ($VerifyResult.Success) {
+            $Values = if ($VerifyResult.Data.data) { $VerifyResult.Data.data } else { @($VerifyResult.Data) }
+            $GlobalValue = $Values | Where-Object { $_.custom_field_id -eq $FieldId -and [string]::IsNullOrEmpty($_.assigned_to_id) } | Select-Object -First 1
+            if ($GlobalValue -and $GlobalValue.value -eq $Value) {
+                Write-LevelSuccess "VERIFIED: Global value = '$($GlobalValue.value)'"
+            }
+            elseif ($GlobalValue) {
+                Write-LevelWarning "MISMATCH: Expected '$Value' but got '$($GlobalValue.value)'"
+            }
+            else {
+                Write-LevelWarning "Could not find global value in verification"
+            }
+        }
+        return $true
+    }
+    else {
+        Write-LevelError "Failed to set global value: $($Result.Error)"
+        return $false
+    }
+}
+
+function Remove-CustomFieldValue {
+    <#
+    .SYNOPSIS
+        Clears a custom field's global/account-level value by deleting and recreating the field.
+    .DESCRIPTION
+        The Level.io API doesn't support clearing values directly. This function
+        deletes the custom field and recreates it with an empty value.
+    .PARAMETER FieldId
+        The ID of the custom field whose global value should be cleared.
+    .PARAMETER FieldName
+        The name of the custom field (required to recreate it).
+    .PARAMETER AdminOnly
+        Whether the field should be admin-only when recreated.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldName,
+
+        [Parameter(Mandatory = $false)]
+        [bool]$AdminOnly = $false
+    )
+
+    Write-LevelInfo "Clearing value by deleting and recreating field '$FieldName'..."
+
+    # Delete the field
+    $DeleteResult = Invoke-LevelApi -Endpoint "/custom_fields/$FieldId" -Method "DELETE"
+
+    if (-not $DeleteResult.Success) {
+        Write-LevelError "Failed to delete field: $($DeleteResult.Error)"
+        return $null
+    }
+
+    Write-LevelSuccess "Deleted field"
+
+    # Recreate it with empty value
+    Start-Sleep -Milliseconds 500  # Brief pause to let API settle
+
+    $Created = New-CustomField -Name $FieldName -DefaultValue "" -AdminOnly $AdminOnly
+
+    if ($Created) {
+        Write-LevelSuccess "Recreated field with empty value"
+        return $Created
+    }
+    else {
+        Write-LevelError "Failed to recreate field"
+        return $null
+    }
+}
+
+function Remove-CustomField {
+    <#
+    .SYNOPSIS
+        Deletes a custom field by ID.
+    .DESCRIPTION
+        Permanently removes a custom field definition from Level.io.
+        WARNING: This will also remove all values associated with this field.
+    .PARAMETER FieldId
+        The ID of the custom field to delete.
+    .PARAMETER FieldName
+        Optional name of the field (for display purposes only).
+    .EXAMPLE
+        Remove-CustomField -FieldId "cf_abc123" -FieldName "old_field_name"
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$FieldName = ""
+    )
+
+    $DisplayName = if ($FieldName) { "'$FieldName'" } else { $FieldId }
+
+    $Result = Invoke-LevelApi -Endpoint "/custom_fields/$FieldId" -Method "DELETE"
+
+    if ($Result.Success) {
+        Write-LevelSuccess "Deleted custom field: $DisplayName"
+        return $true
+    }
+    else {
+        Write-LevelError "Failed to delete custom field $DisplayName`: $($Result.Error)"
+        return $false
+    }
 }
 
 function Get-CustomFieldById {
@@ -1234,6 +1375,8 @@ Export-ModuleMember -Function @(
     'Find-CustomField',
     'New-CustomField',
     'Update-CustomFieldValue',
+    'Remove-CustomFieldValue',
+    'Remove-CustomField',
     'Get-CustomFieldById',
 
     # Hierarchy Navigation

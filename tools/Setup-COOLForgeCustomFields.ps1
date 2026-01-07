@@ -1,29 +1,38 @@
 <#
 .SYNOPSIS
-    Interactive setup script for COOLForge_Lib custom fields in Level.io.
+    Interactive setup script for COOLForge custom fields in Level.io.
 
 .DESCRIPTION
-    This script helps you configure the required custom fields for COOLForge_Lib in your
+    This script helps you configure the required custom fields for COOLForge in your
     Level.io account. It will:
 
     1. Authenticate with the Level.io API using your API key
-    2. Check which custom fields already exist
-    3. Create any missing required fields
-    4. Optionally set default values for fields
-    5. Suggest pinning to the current version for stability
+    2. Scan for all existing custom fields (new and legacy names)
+    3. Show existing values and let you choose which to migrate
+    4. Create new lowercase fields (coolforge_*) via Level.io API
+    5. Optionally delete legacy fields after migration
+    6. Suggest pinning to the current version for stability
 
     REQUIRED CUSTOM FIELDS:
-    - CoolForge_msp_scratch_folder      : Persistent storage folder on endpoints (REQUIRED)
+    - coolforge_msp_scratch_folder       : Persistent storage folder on endpoints (REQUIRED)
 
     OPTIONAL CUSTOM FIELDS:
-    - CoolForge_ps_module_library_source : Custom library URL (defaults to official repo)
-    - CoolForge_pin_psmodule_to_version  : Pin to specific version tag
-    - CoolForge_screenconnect_instance_id: Your MSP's ScreenConnect instance ID
-    - CoolForge_is_screenconnect_server  : Mark ScreenConnect server devices
-    - CoolForge_nosleep_duration_min     : Duration in minutes to prevent sleep (default: 60)
+    - coolforge_ps_module_library_source : Custom library URL (defaults to official repo)
+    - coolforge_pin_psmodule_to_version  : Pin to specific version tag
+    - coolforge_screenconnect_instance_id: Your MSP's ScreenConnect instance ID
+    - coolforge_is_screenconnect_server  : Mark ScreenConnect server devices
+    - coolforge_nosleep_duration_min     : Duration in minutes to prevent sleep (default: 60)
+
+    LEGACY FIELD MIGRATION:
+    The script automatically detects legacy field names (e.g., msp_scratch_folder,
+    CoolForge_msp_scratch_folder) and offers to migrate values to new lowercase names.
+    After migration, you can optionally delete the legacy fields.
+
+    NOTE: Level.io automatically adds the 'cf_' prefix when referencing fields in scripts.
+    So 'coolforge_msp_scratch_folder' becomes '{{cf_coolforge_msp_scratch_folder}}'.
 
 .NOTES
-    Version:          2025.12.29.02
+    Version:          2026.01.07.02
     Target Platform:  Windows PowerShell 5.1+
 
     API Documentation: https://levelapi.readme.io/
@@ -77,10 +86,11 @@ $Script:ResolvedApiKey = $null
 
 # Define the custom fields we need (Default for msp_scratch_folder is set dynamically after MSP name prompt)
 # LegacyName is used for backward compatibility migration from old field names
+# Core required fields
 $Script:RequiredFields = @(
     @{
-        Name        = "CoolForge_msp_scratch_folder"
-        LegacyName  = "msp_scratch_folder"
+        Name        = "coolforge_msp_scratch_folder"
+        LegacyNames = @("msp_scratch_folder")
         Description = "Persistent storage folder for MSP scripts and libraries (default: C:\ProgramData\COOLForge)"
         Required    = $true
         Default     = ""  # Set dynamically based on MSP/company name (defaults to COOLForge)
@@ -88,51 +98,84 @@ $Script:RequiredFields = @(
     }
 )
 
+# Optional core fields (no feature group)
 $Script:OptionalFields = @(
     @{
-        Name        = "CoolForge_ps_module_library_source"
-        LegacyName  = "ps_module_library_source"
+        Name        = "coolforge_ps_module_library_source"
+        LegacyNames = @("ps_module_library_source")
         Description = "URL to download COOLForge-Common.psm1 library (leave empty for official repo)"
         Required    = $false
         Default     = ""
         AdminOnly   = $false
-        Group       = $null
     },
     @{
-        Name        = "CoolForge_pin_psmodule_to_version"
-        LegacyName  = "pin_psmodule_to_version"
+        Name        = "coolforge_pin_psmodule_to_version"
+        LegacyNames = @("pin_psmodule_to_version")
         Description = "Pin scripts to a specific version tag (e.g., v2025.12.29)"
         Required    = $false
         Default     = ""
         AdminOnly   = $false
-        Group       = $null
     },
     @{
-        Name        = "CoolForge_screenconnect_instance_id"
-        LegacyName  = "screenconnect_instance_id"
-        Description = "Your MSP's ScreenConnect instance ID for whitelisting"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $true
-        Group       = "ScreenConnect"
-    },
-    @{
-        Name        = "CoolForge_is_screenconnect_server"
-        LegacyName  = "is_screenconnect_server"
-        Description = "Set to 'true' on devices hosting ScreenConnect server"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $false
-        Group       = "ScreenConnect"
-    },
-    @{
-        Name        = "CoolForge_nosleep_duration_min"
-        LegacyName  = $null
+        Name        = "coolforge_nosleep_duration_min"
+        LegacyNames = @()
         Description = "Duration in minutes to prevent device from sleeping (default: 60)"
         Required    = $false
         Default     = "60"
         AdminOnly   = $false
-        Group       = $null
+    }
+)
+
+# ScreenConnect feature fields
+$Script:ScreenConnectFields = @(
+    @{
+        Name        = "coolforge_screenconnect_instance_id"
+        LegacyNames = @("screenconnect_instance_id", "screenconnect_instance")
+        Description = "Your MSP's ScreenConnect instance ID for whitelisting"
+        Required    = $false
+        Default     = ""
+        AdminOnly   = $true
+    },
+    @{
+        Name        = "coolforge_screenconnect_baseurl"
+        LegacyNames = @("screenconnect_baseurl")
+        Description = "Your ScreenConnect server URL (e.g., https://support.example.com)"
+        Required    = $false
+        Default     = ""
+        AdminOnly   = $false
+    },
+    @{
+        Name        = "coolforge_screenconnect_api_user"
+        LegacyNames = @("screenconnect_api_user")
+        Description = "ScreenConnect API username for automation"
+        Required    = $false
+        Default     = ""
+        AdminOnly   = $true
+    },
+    @{
+        Name        = "coolforge_screenconnect_api_password"
+        LegacyNames = @("screenconnect_api_password")
+        Description = "ScreenConnect API password for automation"
+        Required    = $false
+        Default     = ""
+        AdminOnly   = $true
+    },
+    @{
+        Name        = "coolforge_is_screenconnect_server"
+        LegacyNames = @("is_screenconnect_server")
+        Description = "Set to 'true' on devices hosting ScreenConnect server"
+        Required    = $false
+        Default     = ""
+        AdminOnly   = $false
+    },
+    @{
+        Name        = "coolforge_screenconnect_device_url"
+        LegacyNames = @("screenconnect_url")
+        Description = "Per-device ScreenConnect URL (populated automatically)"
+        Required    = $false
+        Default     = ""
+        AdminOnly   = $false
+        AutoCreate  = $true  # Create silently without prompting
     }
 )
 
@@ -322,23 +365,103 @@ else {
 # ============================================================
 Write-Header "MSP Configuration"
 
-# Check if scratch folder field exists (check new name first, then legacy)
-$ScratchFieldInfo = Find-CustomField -Name "CoolForge_msp_scratch_folder" -ExistingFields $ExistingFields
-$LegacyScratchFieldInfo = Find-CustomField -Name "msp_scratch_folder" -ExistingFields $ExistingFields
+# Check for all matching fields (new name + all legacy names)
+$ScratchFieldDef = $Script:RequiredFields[0]
+$AllMatchingFields = @()
+
+# Check new name first
+$NewField = Find-CustomField -Name $ScratchFieldDef.Name -ExistingFields $ExistingFields
+if ($NewField) {
+    $Details = Get-CustomFieldById -FieldId $NewField.id
+    $Value = if ($Details) { $Details.default_value } else { $NewField.default_value }
+    $AllMatchingFields += @{
+        Name   = $ScratchFieldDef.Name
+        Id     = $NewField.id
+        Value  = $Value
+        IsNew  = $true
+    }
+}
+
+# Check all legacy names
+foreach ($LegacyName in $ScratchFieldDef.LegacyNames) {
+    $LegacyField = Find-CustomField -Name $LegacyName -ExistingFields $ExistingFields
+    if ($LegacyField) {
+        $Details = Get-CustomFieldById -FieldId $LegacyField.id
+        $Value = if ($Details) { $Details.default_value } else { $LegacyField.default_value }
+        $AllMatchingFields += @{
+            Name   = $LegacyName
+            Id     = $LegacyField.id
+            Value  = $Value
+            IsNew  = $false
+        }
+    }
+}
+
 $CurrentScratchFolder = ""
 $InferredCompanyName = ""
 $UsingLegacyField = $false
+$LegacyFieldsToDelete = @()
 
-if ($ScratchFieldInfo) {
-    Write-LevelInfo "Checking existing scratch folder configuration..."
-    $ScratchDetails = Get-CustomFieldById -FieldId $ScratchFieldInfo.id
-    $CurrentScratchFolder = if ($ScratchDetails) { $ScratchDetails.default_value } else { $ScratchFieldInfo.default_value }
-}
-elseif ($LegacyScratchFieldInfo) {
-    Write-LevelInfo "Found legacy field 'msp_scratch_folder' - will migrate to new name..."
-    $UsingLegacyField = $true
-    $ScratchDetails = Get-CustomFieldById -FieldId $LegacyScratchFieldInfo.id
-    $CurrentScratchFolder = if ($ScratchDetails) { $ScratchDetails.default_value } else { $LegacyScratchFieldInfo.default_value }
+if ($AllMatchingFields.Count -gt 0) {
+    Write-LevelInfo "Found $($AllMatchingFields.Count) matching field(s):"
+    foreach ($Field in $AllMatchingFields) {
+        $FieldType = if ($Field.IsNew) { "(current)" } else { "(legacy)" }
+        $DisplayValue = if ([string]::IsNullOrWhiteSpace($Field.Value)) { "(empty)" } else { $Field.Value }
+        Write-Host "    $($Field.Name) $FieldType = $DisplayValue" -ForegroundColor $(if ($Field.IsNew) { "Green" } else { "Yellow" })
+    }
+
+    # Get all fields with values - ensure it's always an array
+    $FieldsWithValues = @($AllMatchingFields | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Value) })
+
+    # Always let user choose which value to use
+    Write-Host ""
+    Write-Host "Choose which value to use for scratch folder:" -ForegroundColor Cyan
+
+    $Index = 1
+    $DefaultChoice = "N"
+    foreach ($Field in $FieldsWithValues) {
+        $Marker = if ($Field.IsNew) { " (current)" } else { "" }
+        Write-Host "  [$Index] $($Field.Value) (from $($Field.Name))$Marker" -ForegroundColor White
+        if ($Index -eq 1) { $DefaultChoice = "1" }
+        $Index++
+    }
+    Write-Host "  [N] Enter a new value" -ForegroundColor Yellow
+    Write-Host ""
+
+    $Choice = Read-UserInput -Prompt "Select option" -Default $DefaultChoice
+
+    if ($Choice.ToUpper() -eq "N") {
+        $CurrentScratchFolder = ""
+        $UsingLegacyField = $false
+    }
+    elseif ($Choice -match '^\d+$') {
+        $ChoiceInt = [int]$Choice
+        if ($ChoiceInt -ge 1 -and $ChoiceInt -le $FieldsWithValues.Count) {
+            $SelectedField = $FieldsWithValues[$ChoiceInt - 1]
+            # Validate that we actually got a value before using it
+            if ($SelectedField -and -not [string]::IsNullOrWhiteSpace($SelectedField.Value)) {
+                $CurrentScratchFolder = $SelectedField.Value
+                $UsingLegacyField = -not $SelectedField.IsNew
+            }
+            else {
+                Write-LevelWarning "Selected field has no value. Please enter a new value."
+                $CurrentScratchFolder = ""
+                $UsingLegacyField = $false
+            }
+        }
+        else {
+            Write-LevelWarning "Invalid selection. Please enter a new value."
+            $CurrentScratchFolder = ""
+            $UsingLegacyField = $false
+        }
+    }
+    else {
+        $CurrentScratchFolder = ""
+        $UsingLegacyField = $false
+    }
+
+    # Track legacy fields for potential deletion
+    $LegacyFieldsToDelete = $AllMatchingFields | Where-Object { -not $_.IsNew }
 }
 
 if (-not [string]::IsNullOrWhiteSpace($CurrentScratchFolder)) {
@@ -400,24 +523,29 @@ Write-LevelSuccess "Scratch folder: $FinalScratchFolder"
 # ============================================================
 Write-Header "Required Custom Fields"
 
+$ScratchFieldName = $ScratchFieldDef.Name
+
 Write-Host ""
-Write-Host "Field: CoolForge_msp_scratch_folder" -ForegroundColor Cyan
+Write-Host "Field: $ScratchFieldName" -ForegroundColor Cyan
 Write-Host "  Description: Persistent storage folder for MSP scripts and libraries"
 Write-Host "  Required: Yes"
 Write-Host ""
 
-if ($ScratchFieldInfo) {
+# Check if the new field already exists
+$NewFieldExists = $AllMatchingFields | Where-Object { $_.IsNew } | Select-Object -First 1
+
+if ($NewFieldExists) {
     # New field exists - update if value changed
-    if ([string]::IsNullOrWhiteSpace($CurrentScratchFolder)) {
+    if ([string]::IsNullOrWhiteSpace($NewFieldExists.Value)) {
         Write-LevelInfo "Field exists but has no default value set."
         Write-LevelInfo "Setting default value to: $FinalScratchFolder"
-        if (Update-CustomFieldValue -FieldId $ScratchFieldInfo.id -Value $FinalScratchFolder) {
+        if (Update-CustomFieldValue -FieldId $NewFieldExists.Id -Value $FinalScratchFolder) {
             Write-LevelSuccess "Set default value to: $FinalScratchFolder"
         }
     }
-    elseif ($CurrentScratchFolder -ne $FinalScratchFolder) {
-        Write-LevelInfo "Updating default value from '$CurrentScratchFolder' to '$FinalScratchFolder'"
-        if (Update-CustomFieldValue -FieldId $ScratchFieldInfo.id -Value $FinalScratchFolder) {
+    elseif ($NewFieldExists.Value -ne $FinalScratchFolder) {
+        Write-LevelInfo "Updating default value from '$($NewFieldExists.Value)' to '$FinalScratchFolder'"
+        if (Update-CustomFieldValue -FieldId $NewFieldExists.Id -Value $FinalScratchFolder) {
             Write-LevelSuccess "Updated default value to: $FinalScratchFolder"
         }
     }
@@ -426,9 +554,9 @@ if ($ScratchFieldInfo) {
     }
 }
 elseif ($UsingLegacyField) {
-    # Legacy field exists - create new field with same value, inform user to update scripts
-    Write-LevelInfo "Creating new field 'CoolForge_msp_scratch_folder' with value from legacy field..."
-    $Created = New-CustomField -Name "CoolForge_msp_scratch_folder" -DefaultValue $FinalScratchFolder -AdminOnly $false
+    # Legacy field exists - create new field with same value
+    Write-LevelInfo "Creating new field '$ScratchFieldName' with value from legacy field..."
+    $Created = New-CustomField -Name $ScratchFieldName -DefaultValue $FinalScratchFolder -AdminOnly $false
 
     if ($Created -and -not [string]::IsNullOrWhiteSpace($FinalScratchFolder)) {
         if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
@@ -440,13 +568,12 @@ elseif ($UsingLegacyField) {
     }
     if ($Created) {
         $ExistingFields += $Created
-        Write-LevelWarning "Legacy field 'msp_scratch_folder' still exists - update your scripts to use new field names"
     }
 }
 else {
     # Field doesn't exist - create it
     Write-LevelWarning "Field does not exist - creating it."
-    $Created = New-CustomField -Name "CoolForge_msp_scratch_folder" -DefaultValue $FinalScratchFolder -AdminOnly $false
+    $Created = New-CustomField -Name $ScratchFieldName -DefaultValue $FinalScratchFolder -AdminOnly $false
 
     # If API doesn't set default on creation, update it separately
     if ($Created -and -not [string]::IsNullOrWhiteSpace($FinalScratchFolder)) {
@@ -468,46 +595,175 @@ Write-Header "Optional Custom Fields"
 Write-Host "These fields are optional but enable additional features."
 Write-Host ""
 
-# Ask about feature groups first
-Write-Host "Do you use any of these remote access tools?" -ForegroundColor Cyan
-Write-Host ""
-$Script:EnabledGroups["ScreenConnect"] = Read-YesNo -Prompt "  ScreenConnect (ConnectWise Control)" -Default $false
-Write-Host ""
+# Track all legacy fields found for potential deletion later
+$Script:AllLegacyFieldsFound = @()
 
+# Process optional core fields
 foreach ($Field in $Script:OptionalFields) {
-    # Skip fields in disabled groups
-    if ($Field.Group -and -not $Script:EnabledGroups[$Field.Group]) {
-        continue
+
+    # Find all matching fields (new + legacy)
+    $MatchingFields = @()
+
+    $NewField = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
+    if ($NewField) {
+        $Details = Get-CustomFieldById -FieldId $NewField.id
+        $Value = if ($Details) { $Details.default_value } else { $NewField.default_value }
+        $MatchingFields += @{
+            Name   = $Field.Name
+            Id     = $NewField.id
+            Value  = $Value
+            IsNew  = $true
+        }
     }
 
-    $Existing = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
-    $LegacyExisting = if ($Field.LegacyName) { Find-CustomField -Name $Field.LegacyName -ExistingFields $ExistingFields } else { $null }
-
-    if ($Existing) {
-        # New field exists - just show status
-        Write-LevelSuccess "$($Field.Name) - exists"
+    # Check all legacy names
+    foreach ($LegacyName in $Field.LegacyNames) {
+        $LegacyField = Find-CustomField -Name $LegacyName -ExistingFields $ExistingFields
+        if ($LegacyField) {
+            $Details = Get-CustomFieldById -FieldId $LegacyField.id
+            $Value = if ($Details) { $Details.default_value } else { $LegacyField.default_value }
+            $MatchingFields += @{
+                Name   = $LegacyName
+                Id     = $LegacyField.id
+                Value  = $Value
+                IsNew  = $false
+            }
+            # Track for later deletion
+            $Script:AllLegacyFieldsFound += @{
+                Name   = $LegacyName
+                Id     = $LegacyField.id
+                Value  = $Value
+                NewFieldName = $Field.Name
+            }
+        }
     }
-    elseif ($LegacyExisting) {
-        # Legacy field exists - get its value and create new field
+
+    $NewFieldExists = $MatchingFields | Where-Object { $_.IsNew } | Select-Object -First 1
+    $LegacyFieldsExist = $MatchingFields | Where-Object { -not $_.IsNew }
+
+    if ($NewFieldExists -or $LegacyFieldsExist.Count -gt 0) {
+        # Fields exist - show all matching fields and let user choose
         Write-Host ""
         Write-Host "Field: $($Field.Name)" -ForegroundColor Cyan
         Write-Host "  Description: $($Field.Description)"
-        Write-LevelInfo "Legacy field '$($Field.LegacyName)' found - migrating..."
 
-        # Get value from legacy field
-        $LegacyDetails = Get-CustomFieldById -FieldId $LegacyExisting.id
-        $LegacyValue = if ($LegacyDetails) { $LegacyDetails.default_value } else { "" }
+        # Show all fields found (new + legacy)
+        Write-Host ""
+        Write-Host "  Existing fields found:" -ForegroundColor White
+        foreach ($Match in $MatchingFields) {
+            $FieldType = if ($Match.IsNew) { "(current)" } else { "(legacy)" }
+            $DisplayValue = if ([string]::IsNullOrWhiteSpace($Match.Value)) { "(empty)" } else { $Match.Value }
+            $Color = if ($Match.IsNew) { "Green" } else { "Yellow" }
+            Write-Host "    $($Match.Name) $FieldType = $DisplayValue" -ForegroundColor $Color
+        }
 
-        $Created = New-CustomField -Name $Field.Name -DefaultValue $LegacyValue -AdminOnly $Field.AdminOnly
-        if ($Created -and -not [string]::IsNullOrWhiteSpace($LegacyValue)) {
-            if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
-                if (Update-CustomFieldValue -FieldId $Created.id -Value $LegacyValue) {
-                    Write-LevelSuccess "Migrated value: $LegacyValue"
+        # Get fields with values
+        $FieldsWithValues = @($MatchingFields | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Value) })
+
+        Write-Host ""
+        Write-Host "  Choose which value to use:" -ForegroundColor Cyan
+        $Index = 1
+        $DefaultChoice = "N"
+        foreach ($Match in $FieldsWithValues) {
+            $Marker = if ($Match.IsNew) { " (current)" } else { "" }
+            Write-Host "    [$Index] $($Match.Value) (from $($Match.Name))$Marker" -ForegroundColor White
+            if ($Index -eq 1) { $DefaultChoice = "1" }
+            $Index++
+        }
+        Write-Host "    [N] Enter a new value" -ForegroundColor Yellow
+        if ($NewFieldExists -and -not [string]::IsNullOrWhiteSpace($NewFieldExists.Value)) {
+            Write-Host "    [K] Keep current value ($($NewFieldExists.Value))" -ForegroundColor Yellow
+            Write-Host "    [D] Delete/clear the global value" -ForegroundColor Red
+        }
+        Write-Host ""
+
+        $Choice = Read-UserInput -Prompt "  Select option" -Default $DefaultChoice
+
+        if ($Choice.ToUpper() -eq "N") {
+            $NewValue = Read-UserInput -Prompt "  Enter value" -Default $Field.Default
+
+            if ($NewFieldExists) {
+                # Update existing new field
+                if (-not [string]::IsNullOrWhiteSpace($NewValue) -and $NewValue -ne $NewFieldExists.Value) {
+                    if (Update-CustomFieldValue -FieldId $NewFieldExists.Id -Value $NewValue) {
+                        Write-LevelSuccess "Updated value to: $NewValue"
+                    }
+                }
+            }
+            else {
+                # Create new field with new value
+                Write-LevelInfo "Creating new field '$($Field.Name)'..."
+                $Created = New-CustomField -Name $Field.Name -DefaultValue $NewValue -AdminOnly $Field.AdminOnly
+                if ($Created -and -not [string]::IsNullOrWhiteSpace($NewValue)) {
+                    if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
+                        if (Update-CustomFieldValue -FieldId $Created.id -Value $NewValue) {
+                            Write-LevelSuccess "Set value: $NewValue"
+                        }
+                    }
+                }
+                if ($Created) {
+                    $ExistingFields += $Created
                 }
             }
         }
-        if ($Created) {
-            $ExistingFields += $Created
+        elseif ($Choice.ToUpper() -eq "K" -and $NewFieldExists) {
+            Write-LevelInfo "Keeping current value: $($NewFieldExists.Value)"
+        }
+        elseif ($Choice.ToUpper() -eq "D" -and $NewFieldExists) {
+            Write-LevelInfo "Clearing value for field $($NewFieldExists.Name)..."
+            $RecreatedField = Remove-CustomFieldValue -FieldId $NewFieldExists.Id -FieldName $Field.Name -AdminOnly $Field.AdminOnly
+            if ($RecreatedField) {
+                Write-LevelSuccess "Field value cleared"
+                # Update ExistingFields with the new field ID
+                $ExistingFields = @($ExistingFields | Where-Object { $_.id -ne $NewFieldExists.Id })
+                $ExistingFields += $RecreatedField
+            }
+            else {
+                Write-LevelWarning "Could not clear field value"
+            }
+        }
+        elseif ($Choice -match '^\d+$') {
+            $ChoiceInt = [int]$Choice
+            if ($ChoiceInt -ge 1 -and $ChoiceInt -le $FieldsWithValues.Count) {
+                $SelectedField = $FieldsWithValues[$ChoiceInt - 1]
+                # Validate that we actually got a value before using it
+                if ($SelectedField -and -not [string]::IsNullOrWhiteSpace($SelectedField.Value)) {
+                    $SelectedValue = $SelectedField.Value
+
+                    if ($NewFieldExists) {
+                        # Update existing new field
+                        if ($SelectedValue -ne $NewFieldExists.Value) {
+                            if (Update-CustomFieldValue -FieldId $NewFieldExists.Id -Value $SelectedValue) {
+                                Write-LevelSuccess "Updated value to: $SelectedValue"
+                            }
+                        }
+                        else {
+                            Write-LevelInfo "Value unchanged: $SelectedValue"
+                        }
+                    }
+                    else {
+                        # Create new field with selected value
+                        Write-LevelInfo "Creating new field '$($Field.Name)'..."
+                        $Created = New-CustomField -Name $Field.Name -DefaultValue $SelectedValue -AdminOnly $Field.AdminOnly
+                        if ($Created -and -not [string]::IsNullOrWhiteSpace($SelectedValue)) {
+                            if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
+                                if (Update-CustomFieldValue -FieldId $Created.id -Value $SelectedValue) {
+                                    Write-LevelSuccess "Migrated value: $SelectedValue"
+                                }
+                            }
+                        }
+                        if ($Created) {
+                            $ExistingFields += $Created
+                        }
+                    }
+                }
+                else {
+                    Write-LevelWarning "Selected field has no value."
+                }
+            }
+            else {
+                Write-LevelWarning "Invalid selection."
+            }
         }
     }
     else {
@@ -524,7 +780,7 @@ foreach ($Field in $Script:OptionalFields) {
             $DefaultValue = ""
 
             # Special handling for version pinning
-            if ($Field.Name -eq "CoolForge_pin_psmodule_to_version") {
+            if ($Field.Name -eq "coolforge_pin_psmodule_to_version") {
                 Write-Host ""
                 Write-Host "  TIP: Pinning to a version ensures stability across your fleet." -ForegroundColor Cyan
                 $DefaultValue = Select-Version -CurrentVersion ""
@@ -555,6 +811,331 @@ foreach ($Field in $Script:OptionalFields) {
     }
 }
 
+# ============================================================
+# SCREENCONNECT FIELDS
+# ============================================================
+
+Write-Host ""
+Write-Host "========================================" -ForegroundColor DarkGray
+Write-Host " ScreenConnect Integration" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "These fields are used for ScreenConnect (ConnectWise Control) management."
+Write-Host ""
+
+$EnableScreenConnect = Read-YesNo -Prompt "Do you use ScreenConnect" -Default $false
+
+if ($EnableScreenConnect) {
+    foreach ($Field in $Script:ScreenConnectFields) {
+        # Find all matching fields (new + legacy)
+        $MatchingFields = @()
+
+        $NewField = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
+        if ($NewField) {
+            $Details = Get-CustomFieldById -FieldId $NewField.id
+            $Value = if ($Details) { $Details.default_value } else { $NewField.default_value }
+            $MatchingFields += @{
+                Name   = $Field.Name
+                Id     = $NewField.id
+                Value  = $Value
+                IsNew  = $true
+            }
+        }
+
+        # Check all legacy names
+        foreach ($LegacyName in $Field.LegacyNames) {
+            $LegacyField = Find-CustomField -Name $LegacyName -ExistingFields $ExistingFields
+            if ($LegacyField) {
+                $Details = Get-CustomFieldById -FieldId $LegacyField.id
+                $Value = if ($Details) { $Details.default_value } else { $LegacyField.default_value }
+                $MatchingFields += @{
+                    Name   = $LegacyName
+                    Id     = $LegacyField.id
+                    Value  = $Value
+                    IsNew  = $false
+                }
+                # Track for later deletion
+                $Script:AllLegacyFieldsFound += @{
+                    Name   = $LegacyName
+                    Id     = $LegacyField.id
+                    Value  = $Value
+                    NewFieldName = $Field.Name
+                }
+            }
+        }
+
+        $NewFieldExists = $MatchingFields | Where-Object { $_.IsNew } | Select-Object -First 1
+        $LegacyFieldsExist = $MatchingFields | Where-Object { -not $_.IsNew }
+
+        if ($NewFieldExists -or $LegacyFieldsExist.Count -gt 0) {
+            # AutoCreate fields are handled silently - just ensure field exists
+            if ($Field.AutoCreate) {
+                if ($NewFieldExists) {
+                    Write-LevelInfo "Field '$($Field.Name)' already exists"
+                }
+                else {
+                    # Create the new field silently
+                    Write-LevelInfo "Creating field '$($Field.Name)' (auto-created)..."
+                    $Created = New-CustomField -Name $Field.Name -DefaultValue "" -AdminOnly $Field.AdminOnly
+                    if ($Created) {
+                        Write-LevelSuccess "Created: $($Field.Name)"
+                        $ExistingFields += $Created
+                    }
+                }
+                continue
+            }
+
+            # Fields exist - show all matching fields and let user choose
+            Write-Host ""
+            Write-Host "Field: $($Field.Name)" -ForegroundColor Cyan
+            Write-Host "  Description: $($Field.Description)"
+
+            # Show all fields found (new + legacy)
+            Write-Host ""
+            Write-Host "  Existing fields found:" -ForegroundColor White
+            foreach ($Match in $MatchingFields) {
+                $FieldType = if ($Match.IsNew) { "(current)" } else { "(legacy)" }
+                $DisplayValue = if ([string]::IsNullOrWhiteSpace($Match.Value)) { "(empty)" } else { $Match.Value }
+                $Color = if ($Match.IsNew) { "Green" } else { "Yellow" }
+                Write-Host "    $($Match.Name) $FieldType = $DisplayValue" -ForegroundColor $Color
+            }
+
+            # Get fields with values
+            $FieldsWithValues = @($MatchingFields | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Value) })
+
+            Write-Host ""
+            Write-Host "  Choose which value to use:" -ForegroundColor Cyan
+            $Index = 1
+            $DefaultChoice = "N"
+            foreach ($Match in $FieldsWithValues) {
+                $Marker = if ($Match.IsNew) { " (current)" } else { "" }
+                Write-Host "    [$Index] $($Match.Value) (from $($Match.Name))$Marker" -ForegroundColor White
+                if ($Index -eq 1) { $DefaultChoice = "1" }
+                $Index++
+            }
+            Write-Host "    [N] Enter a new value" -ForegroundColor Yellow
+            if ($NewFieldExists -and -not [string]::IsNullOrWhiteSpace($NewFieldExists.Value)) {
+                Write-Host "    [K] Keep current value ($($NewFieldExists.Value))" -ForegroundColor Yellow
+                Write-Host "    [D] Delete/clear the global value" -ForegroundColor Red
+            }
+            Write-Host ""
+
+            $Choice = Read-UserInput -Prompt "  Select option" -Default $DefaultChoice
+
+            if ($Choice.ToUpper() -eq "N") {
+                $NewValue = Read-UserInput -Prompt "  Enter value" -Default $Field.Default
+
+                if ($NewFieldExists) {
+                    if (-not [string]::IsNullOrWhiteSpace($NewValue) -and $NewValue -ne $NewFieldExists.Value) {
+                        if (Update-CustomFieldValue -FieldId $NewFieldExists.Id -Value $NewValue) {
+                            Write-LevelSuccess "Updated value to: $NewValue"
+                        }
+                    }
+                }
+                else {
+                    Write-LevelInfo "Creating new field '$($Field.Name)'..."
+                    $Created = New-CustomField -Name $Field.Name -DefaultValue $NewValue -AdminOnly $Field.AdminOnly
+                    if ($Created -and -not [string]::IsNullOrWhiteSpace($NewValue)) {
+                        if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
+                            if (Update-CustomFieldValue -FieldId $Created.id -Value $NewValue) {
+                                Write-LevelSuccess "Set value: $NewValue"
+                            }
+                        }
+                    }
+                    if ($Created) {
+                        $ExistingFields += $Created
+                    }
+                }
+            }
+            elseif ($Choice.ToUpper() -eq "K" -and $NewFieldExists) {
+                Write-LevelInfo "Keeping current value: $($NewFieldExists.Value)"
+            }
+            elseif ($Choice.ToUpper() -eq "D" -and $NewFieldExists) {
+                Write-LevelInfo "Clearing value for field $($NewFieldExists.Name)..."
+                $RecreatedField = Remove-CustomFieldValue -FieldId $NewFieldExists.Id -FieldName $Field.Name -AdminOnly $Field.AdminOnly
+                if ($RecreatedField) {
+                    Write-LevelSuccess "Field value cleared"
+                    # Update ExistingFields with the new field ID
+                    $ExistingFields = @($ExistingFields | Where-Object { $_.id -ne $NewFieldExists.Id })
+                    $ExistingFields += $RecreatedField
+                }
+                else {
+                    Write-LevelWarning "Could not clear field value"
+                }
+            }
+            elseif ($Choice -match '^\d+$') {
+                $ChoiceInt = [int]$Choice
+                if ($ChoiceInt -ge 1 -and $ChoiceInt -le $FieldsWithValues.Count) {
+                    $SelectedField = $FieldsWithValues[$ChoiceInt - 1]
+                    if ($SelectedField -and -not [string]::IsNullOrWhiteSpace($SelectedField.Value)) {
+                        $SelectedValue = $SelectedField.Value
+
+                        if ($NewFieldExists) {
+                            if ($SelectedValue -ne $NewFieldExists.Value) {
+                                if (Update-CustomFieldValue -FieldId $NewFieldExists.Id -Value $SelectedValue) {
+                                    Write-LevelSuccess "Updated value to: $SelectedValue"
+                                }
+                            }
+                            else {
+                                Write-LevelInfo "Value unchanged: $SelectedValue"
+                            }
+                        }
+                        else {
+                            Write-LevelInfo "Creating new field '$($Field.Name)'..."
+                            $Created = New-CustomField -Name $Field.Name -DefaultValue $SelectedValue -AdminOnly $Field.AdminOnly
+                            if ($Created -and -not [string]::IsNullOrWhiteSpace($SelectedValue)) {
+                                if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
+                                    if (Update-CustomFieldValue -FieldId $Created.id -Value $SelectedValue) {
+                                        Write-LevelSuccess "Migrated value: $SelectedValue"
+                                    }
+                                }
+                            }
+                            if ($Created) {
+                                $ExistingFields += $Created
+                            }
+                        }
+                    }
+                    else {
+                        Write-LevelWarning "Selected field has no value."
+                    }
+                }
+                else {
+                    Write-LevelWarning "Invalid selection."
+                }
+            }
+        }
+        else {
+            # Field doesn't exist
+            if ($Field.AutoCreate) {
+                # Auto-create silently without prompting
+                Write-LevelInfo "Creating field '$($Field.Name)' (auto-created)..."
+                $Created = New-CustomField -Name $Field.Name -DefaultValue "" -AdminOnly $Field.AdminOnly
+                if ($Created) {
+                    Write-LevelSuccess "Created: $($Field.Name)"
+                    $ExistingFields += $Created
+                }
+            }
+            else {
+                # Ask if user wants to create it
+                Write-Host ""
+                Write-Host "Field: $($Field.Name)" -ForegroundColor Cyan
+                Write-Host "  Description: $($Field.Description)"
+                if ($Field.AdminOnly) {
+                    Write-Host "  Admin Only: Yes (values hidden from non-admins)" -ForegroundColor Yellow
+                }
+                Write-Host ""
+
+                if (Read-YesNo -Prompt "  Create this field" -Default $true) {
+                    $DefaultValue = Read-UserInput -Prompt "  Default value" -Default $Field.Default
+
+                    $Created = New-CustomField -Name $Field.Name -DefaultValue $DefaultValue -AdminOnly $Field.AdminOnly
+
+                    if ($Created -and -not [string]::IsNullOrWhiteSpace($DefaultValue)) {
+                        $CreatedId = $Created.id
+                        if ($CreatedId -and [string]::IsNullOrWhiteSpace($Created.default_value)) {
+                            Write-LevelInfo "Setting default value..."
+                            if (Update-CustomFieldValue -FieldId $CreatedId -Value $DefaultValue) {
+                                Write-LevelSuccess "Set default value to: $DefaultValue"
+                            }
+                        }
+                    }
+                    if ($Created) {
+                        $ExistingFields += $Created
+                    }
+                }
+                else {
+                    Write-LevelInfo "Skipped: $($Field.Name)"
+                }
+            }
+        }
+    }
+}
+else {
+    Write-LevelInfo "Skipped ScreenConnect fields"
+}
+
+# ============================================================
+# LEGACY FIELD CLEANUP
+# ============================================================
+
+# Combine all legacy fields found (from scratch folder + optional fields)
+$AllLegacyFields = @()
+
+# Add scratch folder legacy fields
+if ($LegacyFieldsToDelete -and $LegacyFieldsToDelete.Count -gt 0) {
+    foreach ($LegacyField in $LegacyFieldsToDelete) {
+        $AllLegacyFields += @{
+            Name         = $LegacyField.Name
+            Id           = $LegacyField.Id
+            Value        = $LegacyField.Value
+            NewFieldName = $ScratchFieldDef.Name
+        }
+    }
+}
+
+# Add optional fields legacy fields
+if ($Script:AllLegacyFieldsFound -and $Script:AllLegacyFieldsFound.Count -gt 0) {
+    $AllLegacyFields += $Script:AllLegacyFieldsFound
+}
+
+if ($AllLegacyFields.Count -gt 0) {
+    Write-Header "Legacy Field Cleanup"
+
+    Write-Host "The following legacy custom fields were found:" -ForegroundColor Yellow
+    Write-Host ""
+
+    foreach ($LegacyField in $AllLegacyFields) {
+        $DisplayValue = if ([string]::IsNullOrWhiteSpace($LegacyField.Value)) { "(empty)" } else { $LegacyField.Value }
+        Write-Host "  - $($LegacyField.Name)" -ForegroundColor Yellow
+        Write-Host "    Value: $DisplayValue" -ForegroundColor DarkGray
+        Write-Host "    Migrated to: $($LegacyField.NewFieldName)" -ForegroundColor DarkGray
+    }
+
+    Write-Host ""
+    Write-Host "These legacy fields are no longer needed if you've updated your scripts" -ForegroundColor White
+    Write-Host "to use the new field names (coolforge_*)." -ForegroundColor White
+    Write-Host ""
+    Write-LevelWarning "Deleting these fields will permanently remove them and their values."
+    Write-Host ""
+
+    if (Read-YesNo -Prompt "Delete legacy fields" -Default $false) {
+        Write-Host ""
+        Write-Host "Select fields to delete:" -ForegroundColor Cyan
+        Write-Host "  [A] Delete ALL legacy fields" -ForegroundColor Yellow
+        Write-Host "  [S] Select individually" -ForegroundColor Yellow
+        Write-Host "  [N] Cancel - don't delete any" -ForegroundColor Yellow
+        Write-Host ""
+
+        $DeleteChoice = Read-UserInput -Prompt "Choice" -Default "N"
+
+        if ($DeleteChoice.ToUpper() -eq "A") {
+            # Delete all
+            Write-Host ""
+            foreach ($LegacyField in $AllLegacyFields) {
+                Remove-CustomField -FieldId $LegacyField.Id -FieldName $LegacyField.Name
+            }
+        }
+        elseif ($DeleteChoice.ToUpper() -eq "S") {
+            # Select individually
+            Write-Host ""
+            foreach ($LegacyField in $AllLegacyFields) {
+                if (Read-YesNo -Prompt "  Delete '$($LegacyField.Name)'" -Default $false) {
+                    Remove-CustomField -FieldId $LegacyField.Id -FieldName $LegacyField.Name
+                }
+                else {
+                    Write-LevelInfo "Keeping: $($LegacyField.Name)"
+                }
+            }
+        }
+        else {
+            Write-LevelInfo "No legacy fields deleted."
+        }
+    }
+    else {
+        Write-LevelInfo "Legacy fields preserved. You can delete them manually later."
+    }
+}
+
 # Summary
 Write-Header "Setup Complete"
 
@@ -570,16 +1151,24 @@ Write-Host ""
 
 # Show final field status
 Write-Host "Custom Fields Status:" -ForegroundColor Cyan
-$AllFields = $Script:RequiredFields + $Script:OptionalFields
-foreach ($Field in $AllFields) {
-    # Skip fields in disabled groups
-    if ($Field.Group -and -not $Script:EnabledGroups[$Field.Group]) {
-        continue
-    }
+
+Write-Host "  Core Fields:" -ForegroundColor White
+$AllCoreFields = $Script:RequiredFields + $Script:OptionalFields
+foreach ($Field in $AllCoreFields) {
     $Existing = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
     $Status = if ($Existing) { "[OK]" } else { "[--]" }
     $Color = if ($Existing) { "Green" } else { "DarkGray" }
-    Write-Host "  $Status $($Field.Name)" -ForegroundColor $Color
+    Write-Host "    $Status $($Field.Name)" -ForegroundColor $Color
+}
+
+if ($EnableScreenConnect) {
+    Write-Host "  ScreenConnect Fields:" -ForegroundColor White
+    foreach ($Field in $Script:ScreenConnectFields) {
+        $Existing = Find-CustomField -Name $Field.Name -ExistingFields $ExistingFields
+        $Status = if ($Existing) { "[OK]" } else { "[--]" }
+        $Color = if ($Existing) { "Green" } else { "DarkGray" }
+        Write-Host "    $Status $($Field.Name)" -ForegroundColor $Color
+    }
 }
 
 Write-Host ""

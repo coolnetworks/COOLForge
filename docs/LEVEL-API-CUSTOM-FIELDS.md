@@ -194,6 +194,58 @@ https://api.level.io/v2
 | `GET /custom_field_values` | Get org-level values only |
 | `GET /custom_field_values?assigned_to_id={id}` | Get values for specific device/group |
 
+## Setting Custom Field Values
+
+### 6. Setting Global/Account-Level Values
+
+Use `PATCH /custom_field_values` with `assigned_to_id` set to `null` to set the global value:
+
+```powershell
+PATCH /v2/custom_field_values
+Body: {
+    "custom_field_id": "Z2lkOi8vbGV2ZWwvQ3VzdG9tRmllbGQvMjMwNA",
+    "assigned_to_id": null,
+    "value": "C:\ProgramData\MyCompany"
+}
+```
+
+**Note**: `PATCH /custom_fields/{id}` with `default_value` does NOT work - the API accepts it but silently ignores the value.
+
+### 7. Setting Values on Groups (Alternative)
+
+```powershell
+PATCH /v2/groups/{group_id}
+Body: {
+    "custom_fields": {
+        "my_field_name": "my_value"
+    }
+}
+```
+
+Use the field's `name` (e.g., "coolforge_msp_scratch_folder"), NOT the `reference` (e.g., "cf_coolforge_msp_scratch_folder").
+
+### 8. Use /groups NOT /organizations
+
+**Problem**: The Level.io API v2 does NOT have an `/organizations` endpoint. Attempting to call it returns 404.
+
+```powershell
+# WRONG - returns 404:
+GET /v2/organizations
+
+# CORRECT - use groups:
+GET /v2/groups
+```
+
+**Groups Hierarchy**: Groups in Level.io represent what other RMMs call "organizations" or "clients". Groups can be nested (parent/child relationship via `parent_id`).
+
+### 9. Values Inherit Down the Hierarchy
+
+Custom field values set at the group level cascade down to:
+- Child groups (unless overridden)
+- Devices in that group (unless overridden)
+
+To set a "default" for all devices, set the value on the root/top-level groups.
+
 ## Example: Complete Script
 
 See `tools/Get-ScreenConnectUrls.ps1` for a working example that:
