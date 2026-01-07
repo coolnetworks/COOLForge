@@ -29,7 +29,7 @@ Initializes the script environment, checks blocking tags, and creates a lockfile
 
 ```powershell
 $Init = Initialize-LevelScript -ScriptName "MyScript" `
-                               -MspScratchFolder "{{cf_CoolForge_msp_scratch_folder}}" `
+                               -MspScratchFolder "{{cf_coolforge_msp_scratch_folder}}" `
                                -DeviceHostname "{{level_device_hostname}}" `
                                -DeviceTags "{{level_tag_names}}"
 ```

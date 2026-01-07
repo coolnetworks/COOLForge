@@ -72,7 +72,7 @@ Store the PAT in a separate admin-only custom field for better security:
    ```
 
 3. **The launcher automatically:**
-   - Reads `{{cf_CoolForge_pat}}` custom field
+   - Reads `{{cf_coolforge_pat}}` custom field
    - If present and URL doesn't already contain a token, injects it into GitHub URLs
    - Token never appears in logs or visible output
    - Pattern: `https://TOKEN@raw.githubusercontent.com/...`

@@ -19,12 +19,12 @@ These custom fields are used by COOLForge_Lib scripts:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `{{cf_CoolForge_msp_scratch_folder}}` | Base path for MSP files (e.g., `C:\ProgramData\MSP`) | **Yes** |
-| `{{cf_CoolForge_ps_module_library_source}}` | URL to download library (leave empty for official repo) | No |
-| `{{cf_CoolForge_pin_psmodule_to_version}}` | Pin to specific version tag (e.g., `v2025.12.29`) | No |
-| `{{cf_CoolForge_screenconnect_instance_id}}` | Your MSP's ScreenConnect instance ID | No |
-| `{{cf_CoolForge_is_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
-| `{{cf_CoolForge_nosleep_duration_min}}` | Duration in minutes to prevent device from sleeping (default: 60) | No |
+| `{{cf_coolforge_msp_scratch_folder}}` | Base path for MSP files (e.g., `C:\ProgramData\MSP`) | **Yes** |
+| `{{cf_coolforge_ps_module_library_source}}` | URL to download library (leave empty for official repo) | No |
+| `{{cf_coolforge_pin_psmodule_to_version}}` | Pin to specific version tag (e.g., `v2025.12.29`) | No |
+| `{{cf_coolforge_screenconnect_instance_id}}` | Your MSP's ScreenConnect instance ID | No |
+| `{{cf_coolforge_is_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
+| `{{cf_coolforge_nosleep_duration_min}}` | Duration in minutes to prevent device from sleeping (default: 60) | No |
 
 ---
 

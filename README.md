@@ -17,7 +17,7 @@ A standardized PowerShell module for Level.io RMM automation scripts.
 | **Script** | A `.ps1` file in `scripts/` that performs a specific task (e.g., remove AnyDesk, fix services). |
 | **Launcher** | A `.ps1` file in `launchers/` that downloads and runs a script from GitHub. Deploy these to Level.io. |
 | **Template** | Starter files in `templates/` for creating new scripts or launchers. |
-| **Custom Field** | Level.io variables (e.g., `cf_CoolForge_msp_scratch_folder`) that configure script behavior. |
+| **Custom Field** | Level.io variables (e.g., `cf_coolforge_msp_scratch_folder`) that configure script behavior. |
 
 ---
 
@@ -245,7 +245,7 @@ https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-
 ## Architecture
 
 ```
-{{cf_CoolForge_msp_scratch_folder}}\
+{{cf_coolforge_msp_scratch_folder}}\
 ├── Libraries\
 │   └── COOLForge-Common.psm1      # Shared module (auto-downloaded)
 ├── Scripts\
