@@ -151,8 +151,8 @@ The launcher automatically passes these variables to downloaded scripts:
 
 | Variable | Source | Description |
 |----------|--------|-------------|
-| `$MspScratchFolder` | `{{cf_CoolForge_msp_scratch_folder}}` | Persistent storage folder |
-| `$LibraryUrl` | `{{cf_CoolForge_ps_module_library_source}}` | Library download URL |
+| `$MspScratchFolder` | `{{cf_coolforge_msp_scratch_folder}}` | Persistent storage folder |
+| `$LibraryUrl` | `{{cf_coolforge_ps_module_library_source}}` | Library download URL |
 | `$DeviceHostname` | `{{level_device_hostname}}` | Device hostname |
 | `$DeviceTags` | `{{level_tag_names}}` | Comma-separated device tags |
 

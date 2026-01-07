@@ -25,8 +25,8 @@
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used:
-    - {{cf_CoolForge_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
-    - {{cf_CoolForge_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
+    - {{cf_coolforge_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
+    - {{cf_coolforge_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
     - {{level_device_hostname}}      : Device hostname from Level.io
     - {{level_tag_names}}            : Comma-separated list of device tags
 
@@ -75,17 +75,17 @@ $ErrorActionPreference = "SilentlyContinue"
 # Supports both new (CoolForge_*) and legacy field names for backward compatibility
 # $MspScratchFolder: Persistent storage folder on the endpoint
 # $LibraryUrl: URL to download the COOLForge-Common library (allows private repos/forks)
-$MspScratchFolder = "{{cf_CoolForge_msp_scratch_folder}}"
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_CoolForge_msp_scratch_folder}}") {
+$MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
+if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_coolforge_msp_scratch_folder}}") {
     $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
 }
-$LibraryUrl = "{{cf_CoolForge_ps_module_library_source}}"
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}") {
+$LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
     $LibraryUrl = "{{cf_ps_module_library_source}}"  # Fallback to legacy field name
 }
 
 # Default to official repo if custom field not set
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_ps_module_library_source}}") {
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/modules/COOLForge-Common.psm1"
 }
 

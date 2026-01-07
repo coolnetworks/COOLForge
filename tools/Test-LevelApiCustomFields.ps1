@@ -385,12 +385,12 @@ if ($Orgs -and $Orgs.Count -gt 0) {
             Write-Host "[+] Organization custom_fields:" -ForegroundColor Green
             Write-Host ($Result.Data.custom_fields | ConvertTo-Json -Depth 5) -ForegroundColor White
 
-            # Look for CoolForge_msp_scratch_folder
-            if ($Result.Data.custom_fields.CoolForge_msp_scratch_folder -or $Result.Data.custom_fields.cf_CoolForge_msp_scratch_folder) {
-                $Value = $Result.Data.custom_fields.CoolForge_msp_scratch_folder
-                if (-not $Value) { $Value = $Result.Data.custom_fields.cf_CoolForge_msp_scratch_folder }
+            # Look for coolforge_msp_scratch_folder
+            if ($Result.Data.custom_fields.coolforge_msp_scratch_folder -or $Result.Data.custom_fields.cf_coolforge_msp_scratch_folder) {
+                $Value = $Result.Data.custom_fields.coolforge_msp_scratch_folder
+                if (-not $Value) { $Value = $Result.Data.custom_fields.cf_coolforge_msp_scratch_folder }
                 Write-Host ""
-                Write-Host "[+] FOUND CoolForge_msp_scratch_folder value: $Value" -ForegroundColor Green
+                Write-Host "[+] FOUND coolforge_msp_scratch_folder value: $Value" -ForegroundColor Green
             }
         }
     }

@@ -60,9 +60,9 @@ Visual representation of how the COOLForge Script Launcher works.
 START: Level.io triggers launcher
 │
 ├─► Read custom fields
-│   ├─ cf_CoolForge_msp_scratch_folder → $MspScratchFolder
-│   ├─ cf_CoolForge_ps_module_library_source → $LibraryUrl (optional)
-│   ├─ cf_CoolForge_pin_psmodule_to_version → $PinnedVersion (optional)
+│   ├─ cf_coolforge_msp_scratch_folder → $MspScratchFolder
+│   ├─ cf_coolforge_ps_module_library_source → $LibraryUrl (optional)
+│   ├─ cf_coolforge_pin_psmodule_to_version → $PinnedVersion (optional)
 │   ├─ level_device_hostname → $DeviceHostname
 │   └─ level_tag_names → $DeviceTags
 │
@@ -139,7 +139,7 @@ START: Level.io triggers launcher
 
 ## Version Pinning Flow
 
-When `cf_CoolForge_pin_psmodule_to_version = v2025.12.29` is set:
+When `cf_coolforge_pin_psmodule_to_version = v2025.12.29` is set:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -241,7 +241,7 @@ Script Execution Failure:
 ## File System Layout
 
 ```
-{{cf_CoolForge_msp_scratch_folder}}/    (typically C:\ProgramData\MSP)
+{{cf_coolforge_msp_scratch_folder}}/    (typically C:\ProgramData\MSP)
 │
 ├── Libraries/
 │   ├── COOLForge-Common.psm1           ← Main library module
