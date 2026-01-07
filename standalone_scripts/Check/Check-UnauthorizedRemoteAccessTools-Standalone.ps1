@@ -22,6 +22,13 @@
     Version:          2025.01.07.01 (Standalone)
     Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected)
 
+    License:          MIT License with Attribution
+    Copyright (c) 2025 COOLNETWORKS
+    https://github.com/coolnetworks/COOLForge
+
+.LINK
+    https://github.com/coolnetworks/COOLForge
+
 .EXAMPLE
     .\Check-UnauthorizedRemoteAccessTools-Standalone.ps1
 #>

@@ -27,7 +27,8 @@
     Based on Windows 8 default service configuration.
     Original source: Fix Windows Services.cmd
 
-    Copyright (c) COOLNETWORKS
+    License:          MIT License with Attribution
+    Copyright (c) 2025 COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
 
 .LINK

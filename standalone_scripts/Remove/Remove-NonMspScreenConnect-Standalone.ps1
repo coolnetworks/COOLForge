@@ -24,6 +24,13 @@
     Exit Codes:       0 = Success | 1 = Alert (Failure)
     Requires:         Administrator privileges
 
+    License:          MIT License with Attribution
+    Copyright (c) 2025 COOLNETWORKS
+    https://github.com/coolnetworks/COOLForge
+
+.LINK
+    https://github.com/coolnetworks/COOLForge
+
 .EXAMPLE
     .\Remove-NonMspScreenConnect-Standalone.ps1
 #>
