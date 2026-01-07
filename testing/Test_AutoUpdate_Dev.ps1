@@ -386,7 +386,7 @@ if ($TestsFailed -gt 0) {
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Cyan
     Write-Host "  1. Push dev branch: git push origin dev" -ForegroundColor White
-    Write-Host "  2. Test in Level.io with version pin: cf_CoolForge_pin_psmodule_to_version = dev" -ForegroundColor White
+    Write-Host "  2. Test in Level.io with version pin: cf_coolforge_pin_psmodule_to_version = dev" -ForegroundColor White
     Write-Host "  3. If Level.io test passes, merge to main" -ForegroundColor White
     exit 0
 }

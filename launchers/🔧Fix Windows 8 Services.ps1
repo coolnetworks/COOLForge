@@ -35,12 +35,12 @@ $ScriptToRun = "??Fix Windows 8 Services.ps1"
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used:
-    - {{cf_CoolForge_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
-    - {{cf_CoolForge_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
+    - {{cf_coolforge_msp_scratch_folder}}      : MSP-defined scratch folder for persistent storage
+    - {{cf_coolforge_ps_module_library_source}}: URL to download COOLForge-Common.psm1 library
                                                   (scripts URL is derived from this automatically)
-    - {{cf_CoolForge_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
+    - {{cf_coolforge_pin_psmodule_to_version}} : (Optional) Pin to specific version tag (e.g., "v2025.12.29")
                                                   If not set, uses latest from main branch
-    - {{cf_CoolForge_pat}}                     : (Optional) GitHub Personal Access Token for private repos
+    - {{cf_coolforge_pat}}                     : (Optional) GitHub Personal Access Token for private repos
                                                   Admin-only custom field - token is never logged or visible
     - {{level_device_hostname}}                : Device hostname from Level.io
     - {{level_tag_names}}                      : Comma-separated list of device tags
@@ -76,38 +76,38 @@ $ErrorActionPreference = "SilentlyContinue"
 # ============================================================
 # These variables will be passed to the downloaded script
 # Supports both new (CoolForge_*) and legacy field names for backward compatibility
-$MspScratchFolder = "{{cf_CoolForge_msp_scratch_folder}}"
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_CoolForge_msp_scratch_folder}}") {
+$MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
+if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_coolforge_msp_scratch_folder}}") {
     $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
 }
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
 # GitHub Personal Access Token for private repositories (admin-only custom field)
-$GitHubPAT = "{{cf_CoolForge_pat}}"
-if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_CoolForge_pat}}") {
+$GitHubPAT = "{{cf_coolforge_pat}}"
+if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_coolforge_pat}}") {
     $GitHubPAT = $null
 }
 
 # Version pinning - if set, use specific version tag instead of main branch
 # Check new field name first, then legacy
-$PinnedVersion = "{{cf_CoolForge_pin_psmodule_to_version}}"
-if ([string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -eq "{{cf_CoolForge_pin_psmodule_to_version}}") {
+$PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
+if ([string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -eq "{{cf_coolforge_pin_psmodule_to_version}}") {
     $PinnedVersion = "{{cf_pin_psmodule_to_version}}"  # Fallback to legacy
 }
 $UsePinnedVersion = $false
-if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{{cf_CoolForge_pin_psmodule_to_version}}" -and $PinnedVersion -ne "{{cf_pin_psmodule_to_version}}") {
+if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{{cf_coolforge_pin_psmodule_to_version}}" -and $PinnedVersion -ne "{{cf_pin_psmodule_to_version}}") {
     $UsePinnedVersion = $true
     Write-Host "[*] Version pinned to: $PinnedVersion"
 }
 
 # Library URL - uses custom field if set, otherwise defaults to official repo
 # Check new field name first, then legacy
-$LibraryUrl = "{{cf_CoolForge_ps_module_library_source}}"
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}") {
+$LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
     $LibraryUrl = "{{cf_ps_module_library_source}}"  # Fallback to legacy
 }
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_CoolForge_ps_module_library_source}}") {
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"

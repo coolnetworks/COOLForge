@@ -1,110 +1,76 @@
 <#
 .SYNOPSIS
-    Detects unauthorized remote access tools on the system.
+    Standalone script to detect unauthorized remote access tools on the system.
 
 .DESCRIPTION
     This script scans for remote access tools (RATs) that may be installed without
     authorization. It checks:
-
     - Running processes
     - Installed services
     - Registry entries
     - Common installation directories
 
-    The script supports whitelisting for authorized tools like ScreenConnect when
-    the instance ID matches the organization's approved installation.
+    STANDALONE VERSION - No COOLForge library required.
 
-    When run via Script Launcher, this script inherits all Level.io variables
-    and the library is already loaded.
+.PARAMETER ScreenConnectInstanceId
+    Your MSP's whitelisted ScreenConnect instance ID (optional).
+
+.PARAMETER IsScreenConnectServer
+    Set to "true" if this device is a ScreenConnect server (optional).
 
 .NOTES
-    Version:          2025.12.27.02
-    Target Platform:  Level.io RMM (via Script Launcher)
+    Version:          2025.01.07.01 (Standalone)
     Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected)
 
-    Level.io Variables Used (passed from Script Launcher):
-    - $MspScratchFolder  : MSP-defined scratch folder for persistent storage
-    - $LibraryUrl        : URL to download COOLForge-Common.psm1 library
-    - $DeviceHostname    : Device hostname from Level.io
-    - $DeviceTags        : Comma-separated list of device tags
-
-    Additional Custom Fields (define in launcher):
-    - $ScreenConnectInstanceId : Whitelisted ScreenConnect instance ID
-    - $IsScreenConnectServer   : Set to "true" if device is a ScreenConnect server
-
-    Copyright (c) COOLNETWORKS
-    https://github.com/coolnetworks/COOLForge
-
-.LINK
-    https://github.com/coolnetworks/COOLForge
+.EXAMPLE
+    .\Check-UnauthorizedRemoteAccessTools-Standalone.ps1
 #>
 
-# 👀Check for Unauthorized Remote Access Tools
-# Version: 2025.12.27.02
-# Target: Level.io (via Script Launcher)
-# Exit 0 = Success (No unauthorized RATs) | Exit 1 = Alert (RATs detected)
-#
-# Copyright (c) COOLNETWORKS
-# https://github.com/coolnetworks/COOLForge
-
-# ============================================================
-# INITIALIZE
-# ============================================================
-# Script Launcher has already loaded the library and passed variables
-# We just need to initialize with the passed-through variables
-
-$Init = Initialize-LevelScript -ScriptName "RATDetection" `
-                               -MspScratchFolder $MspScratchFolder `
-                               -DeviceHostname $DeviceHostname `
-                               -DeviceTags $DeviceTags `
-                               -BlockingTags @("❌")
-
-if (-not $Init.Success) {
-    exit 0
-}
-
+#region Configuration
 # ============================================================
 # CONFIGURATION
 # ============================================================
-# These can be set via custom fields in the launcher
-# Add to Script_Launcher.ps1:
-#   $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
-#   $IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
+# These values are populated via Level.io custom field variable substitution.
+# Set these custom fields in Level.io:
+#   - cf_coolforge_screenconnect_instance_id : Your MSP's ScreenConnect instance ID
+#   - cf_coolforge_is_screenconnect_server   : Set to "true" if device hosts ScreenConnect server
+$ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
+$IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
 
-# Check if variables exist (passed from launcher), otherwise use empty defaults
-if (-not (Get-Variable -Name 'ScreenConnectInstanceId' -ErrorAction SilentlyContinue)) {
-    $ScreenConnectInstanceId = ""
-}
-if (-not (Get-Variable -Name 'IsScreenConnectServer' -ErrorAction SilentlyContinue)) {
-    $IsScreenConnectServer = ""
-}
+# Normalize empty/unsubstituted values
+if ($ScreenConnectInstanceId -like "{{*}}") { $ScreenConnectInstanceId = "" }
+if ($IsScreenConnectServer -like "{{*}}") { $IsScreenConnectServer = "" }
 
-# ============================================================
-# AUTHORIZED RMM TOOLS (Auto-whitelisted)
-# ============================================================
-# These RMM tools are automatically excluded from detection because
-# this script runs via Level.io, which is an authorized RMM platform.
-# Add your organization's authorized RMM tools here.
+# Authorized RMM tools (automatically excluded from detection)
 $AuthorizedRMMTools = @(
-    "Level.io"      # The RMM platform running this script
-    # Add other authorized RMM tools below:
+    "Level.io"      # Add your authorized RMM tools here
     # "Datto RMM"
     # "NinjaRMM"
-    # "Atera"
 )
+#endregion Configuration
 
-# ============================================================
-# RAT DETECTION FUNCTIONS
-# ============================================================
+#region Embedded Functions
+function Write-Log {
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Message,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("INFO", "WARN", "ERROR", "SUCCESS", "SKIP", "DEBUG")]
+        [string]$Level = "INFO"
+    )
+    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $Prefix = switch ($Level) {
+        "INFO"    { "[*]" }
+        "WARN"    { "[!]" }
+        "ERROR"   { "[X]" }
+        "SUCCESS" { "[+]" }
+        "SKIP"    { "[-]" }
+        "DEBUG"   { "[D]" }
+    }
+    Write-Host "$Timestamp $Prefix $Message"
+}
 
 function Get-ScreenConnectInstanceID {
-    <#
-    .SYNOPSIS
-        Extracts the ScreenConnect instance ID from installed services or registry.
-    .RETURNS
-        The instance ID string, or $null if not found.
-    #>
-
     # Check services for instance ID (format: ScreenConnect Client (GUID))
     $SCServices = Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "ScreenConnect*" }
     foreach ($Svc in $SCServices) {
@@ -152,15 +118,7 @@ function Get-ScreenConnectInstanceID {
 }
 
 function Get-RemoteAccessToolDefinitions {
-    <#
-    .SYNOPSIS
-        Returns the comprehensive list of remote access tools to detect.
-    .RETURNS
-        Array of hashtables with tool definitions.
-    #>
-
     return @(
-        # Tool Name              | Process Names                           | Service Names                              | Registry/Path Indicators
         @{ Name = "AnyDesk";           Processes = @("AnyDesk", "AnyDesk*");           Services = @("AnyDesk", "AnyDesk*");           Paths = @("*\AnyDesk*") }
         @{ Name = "TeamViewer";        Processes = @("TeamViewer", "TeamViewer*");     Services = @("TeamViewer", "TeamViewer*");     Paths = @("*\TeamViewer*") }
         @{ Name = "RustDesk";          Processes = @("rustdesk", "rustdesk*");         Services = @("rustdesk", "RustDesk*");         Paths = @("*\RustDesk*") }
@@ -229,20 +187,6 @@ function Get-RemoteAccessToolDefinitions {
 }
 
 function Test-ToolPresence {
-    <#
-    .SYNOPSIS
-        Checks if a specific remote access tool is present on the system.
-    .PARAMETER Tool
-        Hashtable containing tool definition (Name, Processes, Services, Paths).
-    .PARAMETER RunningProcesses
-        Array of running process names.
-    .PARAMETER AllServices
-        Array of service names.
-    .PARAMETER InstalledSoftware
-        Array of installed software objects.
-    .RETURNS
-        Hashtable with detection results, or $null if not found.
-    #>
     param(
         [hashtable]$Tool,
         [array]$RunningProcesses,
@@ -291,13 +235,12 @@ function Test-ToolPresence {
         foreach ($PathPattern in $Tool.Paths) {
             $SearchPattern = $PathPattern -replace '^\*\\', ''
             $FullPath = Join-Path $BasePath $SearchPattern
-            # Handle wildcards in the path
             $ParentPath = Split-Path $FullPath -ErrorAction SilentlyContinue
             $LeafPattern = Split-Path $FullPath -Leaf -ErrorAction SilentlyContinue
             if ($ParentPath -and (Test-Path $ParentPath)) {
-                $Matches = Get-ChildItem -Path $ParentPath -Filter $LeafPattern -ErrorAction SilentlyContinue
-                if ($Matches) {
-                    $DetectionMethods += "Directory: $($Matches.FullName -join ', ')"
+                $FoundMatches = Get-ChildItem -Path $ParentPath -Filter $LeafPattern -ErrorAction SilentlyContinue
+                if ($FoundMatches) {
+                    $DetectionMethods += "Directory: $($FoundMatches.FullName -join ', ')"
                 }
             }
         }
@@ -312,115 +255,114 @@ function Test-ToolPresence {
 
     return $null
 }
+#endregion Embedded Functions
 
-# ============================================================
-# MAIN SCRIPT LOGIC
-# ============================================================
-Invoke-LevelScript -ScriptBlock {
+#region Main Execution
+Write-Host ""
+Write-Host "============================================================"
+Write-Host "  Remote Access Tool Detection (Standalone)"
+Write-Host "============================================================"
+Write-Host ""
 
-    Write-LevelLog "Starting Remote Access Tool detection scan"
+$ErrorActionPreference = "SilentlyContinue"
 
-    # Log device info
-    $DeviceInfo = Get-LevelDeviceInfo
-    Write-LevelLog "Device: $($DeviceInfo.Hostname) | OS: $($DeviceInfo.OS) | Admin: $($DeviceInfo.IsAdmin)"
+Write-Log "Starting Remote Access Tool detection scan"
+Write-Log "Device: $env:COMPUTERNAME"
 
-    # Get tool definitions
-    $RemoteAccessTools = Get-RemoteAccessToolDefinitions
-    Write-LevelLog "Scanning for $($RemoteAccessTools.Count) known remote access tools"
+# Get tool definitions
+$RemoteAccessTools = Get-RemoteAccessToolDefinitions
+Write-Log "Scanning for $($RemoteAccessTools.Count) known remote access tools"
 
-    # Registry paths to check for installed software
-    $RegistryPaths = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
-        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
-    )
+# Registry paths to check for installed software
+$RegistryPaths = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+)
 
-    # Gather system information
-    Write-LevelLog "Gathering installed software list..."
-    $InstalledSoftware = foreach ($Path in $RegistryPaths) {
-        Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue |
-            Where-Object { $_.DisplayName } |
-            Select-Object DisplayName, InstallLocation, Publisher
+# Gather system information
+Write-Log "Gathering installed software list..."
+$InstalledSoftware = foreach ($Path in $RegistryPaths) {
+    Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue |
+        Where-Object { $_.DisplayName } |
+        Select-Object DisplayName, InstallLocation, Publisher
+}
+
+Write-Log "Gathering running processes..."
+$RunningProcesses = Get-Process -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name -Unique
+
+Write-Log "Gathering services..."
+$AllServices = Get-Service -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+
+# Track detections
+$DetectedTools = @()
+
+# Check if this is a ScreenConnect Server
+if ($IsScreenConnectServer -eq "true") {
+    Write-Log "This device is marked as a ScreenConnect Server - ScreenConnect excluded" -Level "INFO"
+}
+
+# Scan for each tool
+foreach ($Tool in $RemoteAccessTools) {
+
+    # Skip authorized RMM tools
+    if ($Tool.Name -in $AuthorizedRMMTools) {
+        continue
     }
 
-    Write-LevelLog "Gathering running processes..."
-    $RunningProcesses = Get-Process -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name -Unique
-
-    Write-LevelLog "Gathering services..."
-    $AllServices = Get-Service -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
-
-    # Track detections
-    $DetectedTools = @()
-
-    # Check if this is a ScreenConnect Server
-    if ($IsScreenConnectServer -eq "true") {
-        Write-LevelLog "This device is marked as a ScreenConnect Server - ScreenConnect excluded" -Level "INFO"
-    }
-
-    # Scan for each tool
-    foreach ($Tool in $RemoteAccessTools) {
-
-        # Skip authorized RMM tools
-        if ($Tool.Name -in $AuthorizedRMMTools) {
-            Write-LevelLog "$($Tool.Name) is in authorized list - skipping" -Level "DEBUG"
+    # Handle ScreenConnect whitelisting
+    if ($Tool.Name -eq "ScreenConnect") {
+        if ($IsScreenConnectServer -eq "true") {
             continue
         }
 
-        # Handle ScreenConnect whitelisting
-        if ($Tool.Name -eq "ScreenConnect") {
-            # Skip entirely if this is a ScreenConnect Server
-            if ($IsScreenConnectServer -eq "true") {
+        if ($ScreenConnectInstanceId -and $ScreenConnectInstanceId -ne "") {
+            $DetectedInstanceID = Get-ScreenConnectInstanceID
+            if ($DetectedInstanceID -and $DetectedInstanceID -eq $ScreenConnectInstanceId) {
+                Write-Log "ScreenConnect instance '$DetectedInstanceID' matches whitelist - skipping" -Level "INFO"
                 continue
             }
-
-            # Check if installed ScreenConnect matches whitelisted instance ID
-            if ($ScreenConnectInstanceId -and $ScreenConnectInstanceId -ne "" -and $ScreenConnectInstanceId -notlike "{{*}}") {
-                $DetectedInstanceID = Get-ScreenConnectInstanceID
-                if ($DetectedInstanceID -and $DetectedInstanceID -eq $ScreenConnectInstanceId) {
-                    Write-LevelLog "ScreenConnect instance '$DetectedInstanceID' matches whitelist - skipping" -Level "INFO"
-                    continue
-                }
-                elseif ($DetectedInstanceID) {
-                    Write-LevelLog "ScreenConnect instance '$DetectedInstanceID' does NOT match whitelist '$ScreenConnectInstanceId'" -Level "WARN"
-                }
+            elseif ($DetectedInstanceID) {
+                Write-Log "ScreenConnect instance '$DetectedInstanceID' does NOT match whitelist '$ScreenConnectInstanceId'" -Level "WARN"
             }
-        }
-
-        # Check for tool presence
-        $Detection = Test-ToolPresence -Tool $Tool `
-                                       -RunningProcesses $RunningProcesses `
-                                       -AllServices $AllServices `
-                                       -InstalledSoftware $InstalledSoftware
-
-        if ($Detection) {
-            $DetectedTools += $Detection
         }
     }
 
-    # Output results
-    Write-Host ""
-    Write-LevelLog "========================================" -Level "INFO"
-    Write-LevelLog "Remote Access Tool Detection Results" -Level "INFO"
-    Write-LevelLog "========================================" -Level "INFO"
-    Write-Host ""
+    # Check for tool presence
+    $Detection = Test-ToolPresence -Tool $Tool `
+                                   -RunningProcesses $RunningProcesses `
+                                   -AllServices $AllServices `
+                                   -InstalledSoftware $InstalledSoftware
 
-    if ($DetectedTools.Count -eq 0) {
-        Write-LevelLog "No unauthorized remote access tools detected" -Level "SUCCESS"
-        # Exit via Invoke-LevelScript completion (exit 0)
-    }
-    else {
-        Write-LevelLog "DETECTED REMOTE ACCESS TOOLS: $($DetectedTools.Count)" -Level "ERROR"
-        Write-Host ""
-
-        foreach ($Detection in $DetectedTools) {
-            Write-LevelLog "ALERT: $($Detection.Name)" -Level "ERROR"
-            foreach ($Method in $Detection.Methods) {
-                Write-Host "  -> $Method"
-            }
-            Write-Host ""
-        }
-
-        Write-LevelLog "ACTION REQUIRED: Review and remediate detected tools" -Level "WARN"
-        Complete-LevelScript -ExitCode 1 -Message "Detected $($DetectedTools.Count) unauthorized remote access tool(s)"
+    if ($Detection) {
+        $DetectedTools += $Detection
     }
 }
+
+# Output results
+Write-Host ""
+Write-Log "========================================"
+Write-Log "Remote Access Tool Detection Results"
+Write-Log "========================================"
+Write-Host ""
+
+if ($DetectedTools.Count -eq 0) {
+    Write-Log "No unauthorized remote access tools detected" -Level "SUCCESS"
+    exit 0
+}
+else {
+    Write-Log "DETECTED REMOTE ACCESS TOOLS: $($DetectedTools.Count)" -Level "ERROR"
+    Write-Host ""
+
+    foreach ($Detection in $DetectedTools) {
+        Write-Log "ALERT: $($Detection.Name)" -Level "ERROR"
+        foreach ($Method in $Detection.Methods) {
+            Write-Host "  -> $Method"
+        }
+        Write-Host ""
+    }
+
+    Write-Log "ACTION REQUIRED: Review and remediate detected tools" -Level "WARN"
+    exit 1
+}
+#endregion Main Execution
