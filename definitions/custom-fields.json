@@ -1,0 +1,83 @@
+{
+  "$schema": "./custom-fields.schema.json",
+  "version": "2026.01.07",
+  "description": "COOLForge custom field definitions for Level.io",
+  "fields": {
+    "core": [
+      {
+        "name": "coolforge_msp_scratch_folder",
+        "description": "Persistent storage folder for MSP scripts and libraries (default: C:\\ProgramData\\COOLForge)",
+        "legacyNames": ["msp_scratch_folder"],
+        "adminOnly": false,
+        "required": true
+      },
+      {
+        "name": "coolforge_ps_module_library_source",
+        "description": "URL to download COOLForge-Common.psm1 library (leave empty for official repo)",
+        "legacyNames": ["ps_module_library_source"],
+        "adminOnly": false,
+        "required": false
+      },
+      {
+        "name": "coolforge_pin_psmodule_to_version",
+        "description": "Pin scripts to a specific version tag (e.g., v2025.12.29)",
+        "legacyNames": ["pin_psmodule_to_version"],
+        "adminOnly": false,
+        "required": false
+      },
+      {
+        "name": "coolforge_nosleep_duration_min",
+        "description": "Duration in minutes to prevent device from sleeping (default: 60)",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "60"
+      }
+    ],
+    "screenconnect": [
+      {
+        "name": "coolforge_screenconnect_instance_id",
+        "description": "Your MSP's ScreenConnect instance ID for whitelisting",
+        "legacyNames": ["screenconnect_instance_id", "screenconnect_instance"],
+        "adminOnly": true,
+        "required": false
+      },
+      {
+        "name": "coolforge_screenconnect_baseurl",
+        "description": "Your ScreenConnect server URL (e.g., https://support.example.com)",
+        "legacyNames": ["screenconnect_baseurl"],
+        "adminOnly": false,
+        "required": false
+      },
+      {
+        "name": "coolforge_screenconnect_api_user",
+        "description": "ScreenConnect API username for automation",
+        "legacyNames": ["screenconnect_api_user"],
+        "adminOnly": true,
+        "required": false
+      },
+      {
+        "name": "coolforge_screenconnect_api_password",
+        "description": "ScreenConnect API password for automation",
+        "legacyNames": ["screenconnect_api_password"],
+        "adminOnly": true,
+        "required": false
+      },
+      {
+        "name": "coolforge_is_screenconnect_server",
+        "description": "Set to 'true' on devices hosting ScreenConnect server",
+        "legacyNames": ["is_screenconnect_server"],
+        "adminOnly": false,
+        "required": false
+      },
+      {
+        "name": "coolforge_screenconnect_device_url",
+        "description": "Per-device ScreenConnect URL (populated automatically)",
+        "legacyNames": ["screenconnect_url"],
+        "adminOnly": false,
+        "required": false,
+        "autoCreate": true
+      }
+    ]
+  }
+}

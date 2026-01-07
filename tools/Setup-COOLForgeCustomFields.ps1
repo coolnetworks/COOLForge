@@ -32,7 +32,7 @@
     So 'coolforge_msp_scratch_folder' becomes '{{cf_coolforge_msp_scratch_folder}}'.
 
 .NOTES
-    Version:          2026.01.07.02
+    Version:          2026.01.07.03
     Target Platform:  Windows PowerShell 5.1+
 
     API Documentation: https://levelapi.readme.io/
@@ -78,106 +78,93 @@ Import-Module $ModulePath -Force
 
 $Script:ConfigFileName = ".COOLForge_Lib-setup.json"
 $Script:ConfigPath = Join-Path $PSScriptRoot $Script:ConfigFileName
+$Script:FieldsConfigPath = Join-Path (Split-Path $PSScriptRoot -Parent) "definitions\custom-fields.json"
 
 # MSP name (set after prompting user)
 $Script:MspName = ""
 $Script:SavedConfig = $null
 $Script:ResolvedApiKey = $null
 
-# Define the custom fields we need (Default for msp_scratch_folder is set dynamically after MSP name prompt)
-# LegacyName is used for backward compatibility migration from old field names
-# Core required fields
-$Script:RequiredFields = @(
-    @{
-        Name        = "coolforge_msp_scratch_folder"
-        LegacyNames = @("msp_scratch_folder")
-        Description = "Persistent storage folder for MSP scripts and libraries (default: C:\ProgramData\COOLForge)"
-        Required    = $true
-        Default     = ""  # Set dynamically based on MSP/company name (defaults to COOLForge)
-        AdminOnly   = $false
-    }
-)
+# ============================================================
+# LOAD FIELD DEFINITIONS FROM CONFIG
+# ============================================================
 
-# Optional core fields (no feature group)
-$Script:OptionalFields = @(
-    @{
-        Name        = "coolforge_ps_module_library_source"
-        LegacyNames = @("ps_module_library_source")
-        Description = "URL to download COOLForge-Common.psm1 library (leave empty for official repo)"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $false
-    },
-    @{
-        Name        = "coolforge_pin_psmodule_to_version"
-        LegacyNames = @("pin_psmodule_to_version")
-        Description = "Pin scripts to a specific version tag (e.g., v2025.12.29)"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $false
-    },
-    @{
-        Name        = "coolforge_nosleep_duration_min"
+function Convert-JsonFieldToHashtable {
+    param($JsonField)
+
+    $Hashtable = @{
+        Name        = $JsonField.name
+        Description = $JsonField.description
         LegacyNames = @()
-        Description = "Duration in minutes to prevent device from sleeping (default: 60)"
         Required    = $false
-        Default     = "60"
+        Default     = ""
         AdminOnly   = $false
+        AutoCreate  = $false
     }
-)
 
-# ScreenConnect feature fields
-$Script:ScreenConnectFields = @(
-    @{
-        Name        = "coolforge_screenconnect_instance_id"
-        LegacyNames = @("screenconnect_instance_id", "screenconnect_instance")
-        Description = "Your MSP's ScreenConnect instance ID for whitelisting"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $true
-    },
-    @{
-        Name        = "coolforge_screenconnect_baseurl"
-        LegacyNames = @("screenconnect_baseurl")
-        Description = "Your ScreenConnect server URL (e.g., https://support.example.com)"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $false
-    },
-    @{
-        Name        = "coolforge_screenconnect_api_user"
-        LegacyNames = @("screenconnect_api_user")
-        Description = "ScreenConnect API username for automation"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $true
-    },
-    @{
-        Name        = "coolforge_screenconnect_api_password"
-        LegacyNames = @("screenconnect_api_password")
-        Description = "ScreenConnect API password for automation"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $true
-    },
-    @{
-        Name        = "coolforge_is_screenconnect_server"
-        LegacyNames = @("is_screenconnect_server")
-        Description = "Set to 'true' on devices hosting ScreenConnect server"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $false
-    },
-    @{
-        Name        = "coolforge_screenconnect_device_url"
-        LegacyNames = @("screenconnect_url")
-        Description = "Per-device ScreenConnect URL (populated automatically)"
-        Required    = $false
-        Default     = ""
-        AdminOnly   = $false
-        AutoCreate  = $true  # Create silently without prompting
+    if ($JsonField.legacyNames) {
+        $Hashtable.LegacyNames = @($JsonField.legacyNames)
     }
-)
+    if ($null -ne $JsonField.required) {
+        $Hashtable.Required = $JsonField.required
+    }
+    if ($JsonField.default) {
+        $Hashtable.Default = $JsonField.default
+    }
+    if ($null -ne $JsonField.adminOnly) {
+        $Hashtable.AdminOnly = $JsonField.adminOnly
+    }
+    if ($null -ne $JsonField.autoCreate) {
+        $Hashtable.AutoCreate = $JsonField.autoCreate
+    }
+
+    return $Hashtable
+}
+
+# Load fields from JSON config
+if (Test-Path $Script:FieldsConfigPath) {
+    $FieldsConfig = Get-Content $Script:FieldsConfigPath -Raw | ConvertFrom-Json
+
+    # Core fields - split into required and optional
+    $Script:RequiredFields = @()
+    $Script:OptionalFields = @()
+
+    foreach ($Field in $FieldsConfig.fields.core) {
+        $Converted = Convert-JsonFieldToHashtable -JsonField $Field
+        if ($Field.required -eq $true) {
+            $Script:RequiredFields += $Converted
+        }
+        else {
+            $Script:OptionalFields += $Converted
+        }
+    }
+
+    # ScreenConnect fields
+    $Script:ScreenConnectFields = @()
+    foreach ($Field in $FieldsConfig.fields.screenconnect) {
+        $Script:ScreenConnectFields += (Convert-JsonFieldToHashtable -JsonField $Field)
+    }
+
+    Write-Host "[+] Loaded field definitions from config (v$($FieldsConfig.version))" -ForegroundColor DarkGray
+}
+else {
+    Write-Host "[!] Config not found: $Script:FieldsConfigPath" -ForegroundColor Yellow
+    Write-Host "    Using built-in defaults..." -ForegroundColor Yellow
+
+    # Fallback to hardcoded defaults if config not found
+    $Script:RequiredFields = @(
+        @{
+            Name        = "coolforge_msp_scratch_folder"
+            LegacyNames = @("msp_scratch_folder")
+            Description = "Persistent storage folder for MSP scripts and libraries"
+            Required    = $true
+            Default     = ""
+            AdminOnly   = $false
+        }
+    )
+    $Script:OptionalFields = @()
+    $Script:ScreenConnectFields = @()
+}
 
 # Track which feature groups are enabled
 $Script:EnabledGroups = @{}
