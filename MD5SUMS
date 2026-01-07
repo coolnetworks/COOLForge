@@ -1,6 +1,6 @@
-﻿# MD5SUMS - Checksums for COOLForge_Lib files
+﻿# MD5SUMS - Checksums for COOLForge files
 # Format: MD5_HASH  FILENAME
-# Generated: 2025-12-31
+# Generated: 2026-01-07
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
@@ -9,17 +9,18 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-f9bb2e368a5a2f4d3f7a122399c86608  modules/COOLForge-Common.psm1
-4d690957abd1965dd13bf7d47eb6c454  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-cde307a9e4adcd7faf56205670e51d37  scripts/Check/👀Test Show Versions.ps1
-42f5c6b98c2819328f683c7291df1af3  scripts/Check/👀Test Variable Output.ps1
-162886a998a3dcdaa74d28bddae3f12d  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-eb91d74a4dd672d7b1006eba2c966006  scripts/Fix/🔧Fix Windows 10 Services.ps1
-e0fdac93a2668ac1ead2356344452588  scripts/Fix/🔧Fix Windows 11 Services.ps1
-9dab5e5ba33355497bf52baa3f7d5013  scripts/Fix/🔧Fix Windows 7 Services.ps1
-f094fef9561fe55684ec14d407c8945f  scripts/Fix/🔧Fix Windows 8 Services.ps1
-2d1e9d262d37eb6b7696a5b3cc01dea7  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-abf72097145ecb3cc80bce88c3719f52  scripts/Fix/🔧Prevent Sleep.ps1
-106840e53b8531fc71bed0ca4bc6489e  scripts/Remove/⛔Force Remove Anydesk.ps1
-bf13288152b9119c1f76eb3832b7ad79  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-486438567ec4036770a56b5e0de6db1a  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1
+06d04c5ea33d5e1ab1ed5658b1c161eb  modules/COOLForge-Common.psm1
+f5ac8c1dc4fe0f6bd9b67b4cd37c9102  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
+a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
+138d04621657c841183f0d8f64b24399  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
+0b21652beac13ca2d365c53011846b3c  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+6bae62fc42ea30a1ace3c2472dc4f901  scripts/Fix/🔧Fix Windows 10 Services.ps1
+a59778aa18ee3f6c38d66d3da27dca3e  scripts/Fix/🔧Fix Windows 11 Services.ps1
+581cbd2203a70ad612cdc0e872a35453  scripts/Fix/🔧Fix Windows 7 Services.ps1
+4207a5b92853180ca0d49823c298362d  scripts/Fix/🔧Fix Windows 8 Services.ps1
+d31ecec221d65522ca3cc89827474884  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+ab6fe7cd01b027de8c5f80e4df813ff2  scripts/Fix/🔧Prevent Sleep.ps1
+0ce7b50eb958e7a4cbcb1b8848810f7a  scripts/Remove/⛔Force Remove Anydesk.ps1
+820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+92cd52534025a471791185d586e090c9  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1
