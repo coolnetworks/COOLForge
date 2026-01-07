@@ -22,7 +22,7 @@ param(
     [string]$ApiKey,
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputFile = "DeviceCustomFields.csv"
+    [string]$OutputFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -276,12 +276,23 @@ Write-Host "`r    [+] Processed $TotalDevices devices                           
 # Sort by device name
 $Sorted = $AllResults | Sort-Object DeviceName
 
-# Export to CSV
-$OutputPath = if ([System.IO.Path]::IsPathRooted($OutputFile)) {
-    $OutputFile
+# Export to CSV (default to exports folder)
+$ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $ScriptRoot
+
+if (-not $OutputFile) {
+    $ExportsFolder = Join-Path $ProjectRoot "exports"
+    if (-not (Test-Path $ExportsFolder)) {
+        New-Item -ItemType Directory -Path $ExportsFolder -Force | Out-Null
+    }
+    $Timestamp = (Get-Date).ToString("yyyy-MM-dd_HHmmss")
+    $OutputPath = Join-Path $ExportsFolder "DeviceCustomFields_$Timestamp.csv"
+}
+elseif ([System.IO.Path]::IsPathRooted($OutputFile)) {
+    $OutputPath = $OutputFile
 }
 else {
-    Join-Path $PSScriptRoot $OutputFile
+    $OutputPath = Join-Path $ScriptRoot $OutputFile
 }
 
 $Sorted | Export-Csv -Path $OutputPath -NoTypeInformation -Encoding UTF8

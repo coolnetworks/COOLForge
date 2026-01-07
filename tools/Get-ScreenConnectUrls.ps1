@@ -201,12 +201,22 @@ foreach ($Device in $Sorted) {
     Write-Host $Url -ForegroundColor $Color
 }
 
-# Export to CSV if requested
-if ($OutputFile) {
-    $Sorted | Select-Object DeviceName, ScreenConnectUrl | Export-Csv -Path $OutputFile -NoTypeInformation
-    Write-Host ""
-    Write-Host "[+] Exported to: $OutputFile" -ForegroundColor Green
+# Export to CSV (default to exports folder)
+$ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = Split-Path -Parent $ScriptRoot
+
+if (-not $OutputFile) {
+    $ExportsFolder = Join-Path $ProjectRoot "exports"
+    if (-not (Test-Path $ExportsFolder)) {
+        New-Item -ItemType Directory -Path $ExportsFolder -Force | Out-Null
+    }
+    $Timestamp = (Get-Date).ToString("yyyy-MM-dd_HHmmss")
+    $OutputFile = Join-Path $ExportsFolder "ScreenConnectUrls_$Timestamp.csv"
 }
+
+$Sorted | Select-Object DeviceName, ScreenConnectUrl | Export-Csv -Path $OutputFile -NoTypeInformation
+Write-Host ""
+Write-Host "[+] Exported to: $OutputFile" -ForegroundColor Green
 
 # Summary
 Write-Host ""
@@ -214,3 +224,4 @@ Write-Host "=" * 80 -ForegroundColor Cyan
 $WithUrl = ($Sorted | Where-Object { $_.ScreenConnectUrl }).Count
 $WithoutUrl = ($Sorted | Where-Object { -not $_.ScreenConnectUrl }).Count
 Write-Host "Summary: $WithUrl with URL, $WithoutUrl without URL" -ForegroundColor White
+
