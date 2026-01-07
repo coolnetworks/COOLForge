@@ -44,7 +44,7 @@ $WolDelayMs = 500      # Delay between WOL packet attempts (milliseconds)
 
 #region Module Import
 # Import the COOLForge-Common module (assumes it's already available)
-$ModulePath = "{{cf_CoolForge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1"
+$ModulePath = "{{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1"
 if (Test-Path $ModulePath) {
     Import-Module $ModulePath -Force
 } else {
