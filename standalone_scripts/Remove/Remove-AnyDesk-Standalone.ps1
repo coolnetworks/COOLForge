@@ -17,6 +17,13 @@
     Exit Codes:       0 = Success | 1 = Alert (Failure)
     Requires:         Administrator privileges
 
+    License:          MIT License with Attribution
+    Copyright (c) 2025 COOLNETWORKS
+    https://github.com/coolnetworks/COOLForge
+
+.LINK
+    https://github.com/coolnetworks/COOLForge
+
 .EXAMPLE
     .\Remove-AnyDesk-Standalone.ps1
 #>
@@ -133,24 +140,24 @@ function Invoke-AnyDeskUninstall {
 
                 if ($uninstallString -match '^"(.+)"(.*)$') {
                     $exe = $Matches[1]
-                    $args = $Matches[2].Trim()
+                    $uninstallArgs = $Matches[2].Trim()
                 }
                 elseif ($uninstallString -match '^(.+\.exe)(.*)$') {
                     $exe = $Matches[1]
-                    $args = $Matches[2].Trim()
+                    $uninstallArgs = $Matches[2].Trim()
                 }
                 else {
                     $exe = $uninstallString
-                    $args = ""
+                    $uninstallArgs = ""
                 }
 
-                if ($args -notmatch '/S|--silent|--remove') {
-                    $args = "$args --remove --silent"
+                if ($uninstallArgs -notmatch '/S|--silent|--remove') {
+                    $uninstallArgs = "$uninstallArgs --remove --silent"
                 }
 
                 try {
-                    Write-Log "Executing: $exe $args"
-                    $process = Start-Process -FilePath $exe -ArgumentList $args -Wait -PassThru -ErrorAction Stop
+                    Write-Log "Executing: $exe $uninstallArgs"
+                    $process = Start-Process -FilePath $exe -ArgumentList $uninstallArgs -Wait -PassThru -ErrorAction Stop
                     Write-Log "Uninstaller exited with code: $($process.ExitCode)"
                     $uninstalled = $true
                     Start-Sleep -Seconds 3
@@ -224,12 +231,12 @@ function Remove-AnyDeskFiles {
 
     # Also check all user profiles
     $userProfiles = Get-ChildItem -Path "C:\Users" -Directory -ErrorAction SilentlyContinue
-    foreach ($profile in $userProfiles) {
+    foreach ($userProfile in $userProfiles) {
         $userPaths = @(
-            "$($profile.FullName)\AppData\Local\AnyDesk",
-            "$($profile.FullName)\AppData\Roaming\AnyDesk",
-            "$($profile.FullName)\Desktop\AnyDesk*.lnk",
-            "$($profile.FullName)\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\AnyDesk*.lnk"
+            "$($userProfile.FullName)\AppData\Local\AnyDesk",
+            "$($userProfile.FullName)\AppData\Roaming\AnyDesk",
+            "$($userProfile.FullName)\Desktop\AnyDesk*.lnk",
+            "$($userProfile.FullName)\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\AnyDesk*.lnk"
         )
         foreach ($path in $userPaths) {
             $items = Get-Item -Path $path -ErrorAction SilentlyContinue

@@ -21,6 +21,13 @@
     Prerequisite: Level.io API key with device read permissions
     API Version:  Level.io API v2
 
+    License:          MIT License with Attribution
+    Copyright (c) 2025 COOLNETWORKS
+    https://github.com/coolnetworks/COOLForge
+
+.LINK
+    https://github.com/coolnetworks/COOLForge
+
 .EXAMPLE
     .\Wake-AllDevicesInFolder-Standalone.ps1
 #>
