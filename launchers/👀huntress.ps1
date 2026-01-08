@@ -101,11 +101,19 @@ if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_coolforge_
 # Version pinning - if set, use specific version tag instead of main branch
 # Check new field name first, then legacy
 $PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
-Write-Host "[DEBUG] cf_coolforge_pin_psmodule_to_version = '$PinnedVersion'"
-if ([string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -eq "{{cf_coolforge_pin_psmodule_to_version}}" -or $PinnedVersion -like "{{*}}") {
+$PinnedVersion = $PinnedVersion.Trim()  # Remove any whitespace
+Write-Host "[DEBUG] cf_coolforge_pin_psmodule_to_version = '$PinnedVersion' (length: $($PinnedVersion.Length))"
+
+# Check if it's empty, still a template, or starts with template marker
+$isTemplate = [string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -like "{{*}}"
+Write-Host "[DEBUG] Is template/empty: $isTemplate"
+
+if ($isTemplate) {
     $PinnedVersion = "{{cf_pin_psmodule_to_version}}"  # Fallback to legacy
-    Write-Host "[DEBUG] cf_pin_psmodule_to_version = '$PinnedVersion'"
+    $PinnedVersion = $PinnedVersion.Trim()
+    Write-Host "[DEBUG] Trying legacy cf_pin_psmodule_to_version = '$PinnedVersion'"
 }
+
 $UsePinnedVersion = $false
 # Check if we have a valid pin (not empty and not a template string)
 if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}") {
