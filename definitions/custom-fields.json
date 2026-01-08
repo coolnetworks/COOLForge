@@ -1,6 +1,6 @@
 {
   "$schema": "./custom-fields.schema.json",
-  "version": "2026.01.07",
+  "version": "2026.01.08",
   "description": "COOLForge custom field definitions for Level.io",
   "fields": {
     "core": [
@@ -77,6 +77,15 @@
         "adminOnly": false,
         "required": false,
         "autoCreate": true
+      }
+    ],
+    "technician_alerts": [
+      {
+        "name": "coolforge_technician_alerts",
+        "description": "JSON array of pending alerts for technicians (managed by scripts). Technician workstations are identified by the U+1F9D1 U+200D U+1F4BB technician tag.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false
       }
     ]
   }

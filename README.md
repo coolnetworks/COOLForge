@@ -36,15 +36,16 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 - **Auto-Update** — Scripts automatically download the latest library from GitHub
 - **Emoji Encoding Repair** — Fixes UTF-8 emoji corruption from deployment systems
 - **Script Launcher** — Manage scripts in Git, deploy once to Level.io, updates happen automatically
+- **Technician Alerts** — Send toast notifications to tech workstations when scripts need attention
 
-### Module Functions (14 total)
+### Module Functions (19 total)
 
 The `COOLForge-Common.psm1` module exports these functions:
 
 | Category | Function | Description |
 |----------|----------|-------------|
 | **Initialization** | `Initialize-LevelScript` | Initialize script, check tags, create lockfile |
-| | `Invoke-LevelScript` | Execute script block with error handling |
+| | `Invoke-LevelScript` | Execute script block with error handling + auto-send alerts |
 | | `Complete-LevelScript` | End script with custom exit code/message |
 | | `Remove-LevelLockFile` | Manually remove lockfile |
 | **Logging** | `Write-LevelLog` | Timestamped log output with severity levels |
@@ -55,6 +56,11 @@ The `COOLForge-Common.psm1` module exports these functions:
 | | `Get-LevelDevices` | Retrieve devices (optionally by group) |
 | | `Find-LevelDevice` | Search for device by hostname |
 | **Network** | `Send-LevelWakeOnLan` | Send WOL magic packet to MAC address |
+| **Alerts** | `Send-TechnicianAlert` | Send alert immediately to tech workstations |
+| | `Add-TechnicianAlert` | Queue alert for auto-send on script completion |
+| | `Send-TechnicianAlertQueue` | Manually send queued alerts |
+| | `Test-TechnicianWorkstation` | Check if device has technician tag |
+| | `Get-TechnicianName` | Extract technician name from tags |
 | **Text** | `Repair-LevelEmoji` | Fix corrupted UTF-8 emojis |
 | | `Get-LevelUrlEncoded` | URL-encode strings with UTF-8 support |
 
@@ -68,6 +74,7 @@ See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 |----------|-------------|
 | [Why COOLForge?](docs/WHY.md) | **Start here** — Problems COOLForge solves and design philosophy |
 | [Function Reference](docs/FUNCTIONS.md) | Complete documentation for all library functions |
+| [Technician Alerts](docs/TECHNICIAN-ALERTS.md) | Real-time toast notifications to tech workstations |
 | [Script Launcher Guide](docs/LAUNCHER.md) | How to use the launcher to run scripts from GitHub |
 | [Private Fork Guide](docs/PRIVATE-FORK.md) | Using COOLForge with a private GitHub repository |
 | [Version Pinning](docs/VERSION-PINNING.md) | Pin devices to specific library versions for testing and rollback |
@@ -223,6 +230,7 @@ Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-
 | Fix | `🔧Enable System Restore and Create Restore Point.ps1` | Enables System Restore |
 | Fix | `🔧Prevent Sleep.ps1` | Temporarily prevents device from sleeping with auto-restore |
 | Utility | `🙏Wake all devices in parent to level.io folder.ps1` | Wakes devices in folder hierarchy |
+| Utility | `🔔Technician Alert Monitor.ps1` | Polls for alerts and shows toast notifications on tech workstations |
 
 ---
 

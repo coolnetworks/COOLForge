@@ -20,6 +20,11 @@ This document provides detailed documentation for all functions exported by the 
 - [Get-LevelDevices](#get-leveldevices)
 - [Find-LevelDevice](#find-leveldevice)
 - [Send-LevelWakeOnLan](#send-levelwakeonlan)
+- [Send-TechnicianAlert](#send-technicianalert)
+- [Add-TechnicianAlert](#add-technicianalert)
+- [Send-TechnicianAlertQueue](#send-technicianalertqueue)
+- [Test-TechnicianWorkstation](#test-technicianworkstation)
+- [Get-TechnicianName](#get-technicianname)
 
 ---
 
@@ -45,6 +50,7 @@ $Init = Initialize-LevelScript -ScriptName "MyScript" `
 | `-BlockingTags` | String[] | No | `@("❌")` | Tags that block script execution |
 | `-SkipTagCheck` | Switch | No | `$false` | Bypass tag gate check |
 | `-SkipLockFile` | Switch | No | `$false` | Don't create a lockfile |
+| `-ApiKey` | String | No | `""` | Level.io API key for auto-sending technician alerts |
 
 ### Return Values
 
@@ -120,8 +126,10 @@ Invoke-LevelScript -ScriptBlock {
 ### Behavior
 
 - Executes the script block
-- On success: logs completion, removes lockfile, exits with code `0`
-- On error: logs the exception, removes lockfile, exits with code `1`
+- On completion (success or failure):
+  - Sends any queued technician alerts (if ApiKey was provided to `Initialize-LevelScript`)
+  - Removes lockfile (unless `-NoCleanup`)
+  - Exits with code `0` (success) or `1` (error)
 
 ---
 
@@ -427,8 +435,264 @@ $Success = Send-LevelWakeOnLan -MacAddress "AA-BB-CC-DD-EE-FF" -Attempts 15 -Del
 
 ---
 
+## Send-TechnicianAlert
+
+Sends an alert to technician workstations via Level.io custom field. Alerts are displayed as Windows toast notifications on tech workstations running the alert monitor.
+
+```powershell
+# Basic alert
+$Result = Send-TechnicianAlert -ApiKey "{{cf_apikey}}" `
+                               -Title "Install Failed" `
+                               -Message "Huntress install failed on this device" `
+                               -ClientName "ACME Corp" `
+                               -DeviceHostname $env:COMPUTERNAME
+
+# High-priority alert to specific technician
+Send-TechnicianAlert -ApiKey "{{cf_apikey}}" `
+                     -Title "Security Alert" `
+                     -Message "Unauthorized remote access tool detected" `
+                     -ClientName "BigClient" `
+                     -DeviceHostname "BC-SERVER01" `
+                     -Priority "Critical" `
+                     -TechnicianName "John"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | Yes | — | Level.io API key |
+| `-Title` | String | Yes | — | Short alert title (notification header) |
+| `-Message` | String | Yes | — | Detailed message explaining needed action |
+| `-ClientName` | String | No | `""` | Client/organization name for routing |
+| `-DeviceHostname` | String | No | `$env:COMPUTERNAME` | Hostname of device triggering alert |
+| `-Priority` | String | No | `"Normal"` | `Low`, `Normal`, `High`, or `Critical` |
+| `-TechnicianName` | String | No | `""` | Route to specific technician (empty = all) |
+| `-ExpiresInMinutes` | Int | No | `1440` | Alert expiration time (default: 24 hours) |
+| `-BaseUrl` | String | No | `https://api.level.io/v2` | API base URL |
+
+### Returns
+
+```powershell
+# Success
+@{ Success = $true; AlertId = "a1b2c3d4"; Error = $null }
+
+# Failure
+@{ Success = $false; AlertId = $null; Error = "Custom field not found" }
+```
+
+### Alert Flow
+
+1. Script calls `Send-TechnicianAlert` with message details
+2. Alert is written to `cf_coolforge_technician_alerts` (JSON array on group)
+3. Technician workstation polling script detects new alert
+4. Toast notification displayed on tech workstation
+
+### Priority Levels
+
+| Priority | Use Case |
+|----------|----------|
+| `Low` | Informational, can wait |
+| `Normal` | Standard priority |
+| `High` | Needs attention soon |
+| `Critical` | Immediate action required |
+
+### Example: Alert on Script Failure
+
+```powershell
+try {
+    # Attempt some operation
+    Install-Software -Name "Huntress"
+}
+catch {
+    # Send alert to technicians on failure
+    Send-TechnicianAlert -ApiKey $LevelApiKey `
+        -Title "Manual Install Required" `
+        -Message "Huntress install failed: $($_.Exception.Message)" `
+        -ClientName $ClientName `
+        -DeviceHostname $DeviceHostname `
+        -Priority "High"
+}
+```
+
+### Required Custom Fields
+
+- `cf_coolforge_technician_alerts` — Stores pending alerts (JSON array)
+
+---
+
+## Add-TechnicianAlert
+
+Queues a technician alert to be sent when the script completes. This is the **recommended** way to send alerts - it batches multiple alerts into a single API call and ensures alerts are sent even if the script encounters errors.
+
+```powershell
+# Queue an alert (sent automatically when script completes)
+Add-TechnicianAlert -Title "Action Required" -Message "Please check the logs"
+
+# Queue a critical alert for a specific technician
+Add-TechnicianAlert -Title "Critical Issue" `
+                    -Message "Database connection failed" `
+                    -Priority "Critical" `
+                    -TechnicianName "Allen"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-Title` | String | Yes | — | Short alert title (notification header) |
+| `-Message` | String | Yes | — | Detailed message explaining needed action |
+| `-ClientName` | String | No | `""` | Client/organization name for context |
+| `-Priority` | String | No | `"Normal"` | `Low`, `Normal`, `High`, or `Critical` |
+| `-TechnicianName` | String | No | `""` | Route to specific technician (empty = all) |
+| `-ExpiresInMinutes` | Int | No | `1440` | Alert expiration time (default: 24 hours) |
+
+### Returns
+
+```powershell
+@{ Success = $true; QueueLength = 2; AlertId = "a1b2c3d4" }
+```
+
+### Requirements
+
+- Must call `Initialize-LevelScript` with `-ApiKey` before using
+- Alerts are automatically sent by `Invoke-LevelScript` on completion
+
+### Example: Queue Alerts During Script Execution
+
+```powershell
+$Init = Initialize-LevelScript -ScriptName "InstallSoftware" `
+                               -MspScratchFolder $MspFolder `
+                               -ApiKey "{{cf_apikey}}"
+
+Invoke-LevelScript -ScriptBlock {
+    try {
+        Install-Software -Name "Huntress"
+    }
+    catch {
+        # Queue an alert - will be sent when script completes
+        Add-TechnicianAlert -Title "Install Failed" `
+                            -Message "Huntress: $($_.Exception.Message)" `
+                            -Priority "High"
+    }
+
+    try {
+        Install-Software -Name "Datto AV"
+    }
+    catch {
+        # Queue another alert - both sent in single API call
+        Add-TechnicianAlert -Title "Install Failed" `
+                            -Message "Datto AV: $($_.Exception.Message)" `
+                            -Priority "High"
+    }
+}
+# Alerts automatically sent here
+```
+
+---
+
+## Send-TechnicianAlertQueue
+
+Sends all queued technician alerts to Level.io. Called automatically by `Invoke-LevelScript` on completion - you typically don't need to call this directly.
+
+```powershell
+# Manual flush (usually not needed)
+$Result = Send-TechnicianAlertQueue
+
+# Override API key
+$Result = Send-TechnicianAlertQueue -ApiKey "your-api-key" -Force
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | No | — | Override API key (uses stored key if not provided) |
+| `-Force` | Switch | No | `$false` | Send even if ApiKey wasn't in Initialize-LevelScript |
+| `-BaseUrl` | String | No | `https://api.level.io/v2` | API base URL |
+
+### Returns
+
+```powershell
+# Success
+@{ Success = $true; AlertsSent = 3; Error = $null }
+
+# No ApiKey configured
+@{ Success = $false; AlertsSent = 0; Error = "No ApiKey configured" }
+```
+
+### Behavior
+
+- Batches all queued alerts into a single API call
+- Removes expired alerts from the custom field
+- Clears the queue after successful send
+
+---
+
+## Test-TechnicianWorkstation
+
+Checks if the current device is a technician workstation based on device tags.
+
+```powershell
+if (Test-TechnicianWorkstation -DeviceTags "{{level_tag_names}}") {
+    # This is a tech workstation - start alert monitor
+    Start-AlertMonitor
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-DeviceTags` | String | No | `""` | Comma-separated list of device tags from `{{level_tag_names}}` |
+
+### Returns
+
+`$true` if this device has the technician tag, `$false` otherwise.
+
+### Required Tag
+
+Tag your workstation with: `🧑‍💻technician` or `🧑‍💻YourName`
+
+The emoji is U+1F9D1 U+200D U+1F4BB (technician/person at computer).
+
+---
+
+## Get-TechnicianName
+
+Extracts the technician name from device tags.
+
+```powershell
+$TechName = Get-TechnicianName -DeviceTags "{{level_tag_names}}"
+if ($TechName) {
+    Write-LevelLog "Technician: $TechName"
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-DeviceTags` | String | No | `""` | Comma-separated list of device tags from `{{level_tag_names}}` |
+
+### Returns
+
+Technician name string extracted from the tag (e.g., "John" from `🧑‍💻John`), or empty string if not found.
+
+### Examples
+
+| Tag | Returns |
+|-----|---------|
+| `🧑‍💻technician` | `"technician"` |
+| `🧑‍💻John` | `"John"` |
+| `🧑‍💻Allen B` | `"Allen B"` |
+| (no tag) | `""` |
+
+---
+
 ## See Also
 
 - [Main README](../README.md)
+- [Technician Alerts Guide](TECHNICIAN-ALERTS.md) - Full documentation for the alert system
 - [Script Launcher Guide](LAUNCHER.md)
 - [Emoji Handling](EMOJI-HANDLING.md)
