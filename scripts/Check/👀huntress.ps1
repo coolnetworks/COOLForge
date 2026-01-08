@@ -20,7 +20,7 @@
     the next policy run will complete the uninstall.
 
 .NOTES
-    Version:          2026.01.08.01
+    Version:          2026.01.08.03
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -28,6 +28,8 @@
     - cf_huntress_account_key      : Huntress account key (32 chars)
     - cf_huntress_organization_key : Organization name
     - cf_huntress_tags             : Optional tags for Huntress
+    - cf_apikey                     : (Optional) Level.io API key for auto-removing
+                                      policy tags after successful actions
 
     Copyright (c) COOLNETWORKS
 #>
@@ -50,6 +52,37 @@ $HuntressRegKey             = "HKLM:\SOFTWARE\Huntress Labs"
 $HuntressKeyPath            = "HKLM:\SOFTWARE\Huntress Labs\Huntress"
 $InstallerName              = "HuntressInstaller.exe"
 $InstallerPath              = Join-Path $Env:TMP $InstallerName
+
+# ============================================================
+# STATE TRACKING (for unhealthy iteration counting)
+# ============================================================
+
+$StateFile = Join-Path $MspScratchFolder "State\huntress-unhealthy-count.txt"
+
+function Get-UnhealthyCount {
+    if (Test-Path $StateFile) {
+        $count = Get-Content $StateFile -Raw -ErrorAction SilentlyContinue
+        if ($count -match '^\d+$') {
+            return [int]$count
+        }
+    }
+    return 0
+}
+
+function Set-UnhealthyCount {
+    param([int]$Count)
+    $stateDir = Split-Path $StateFile -Parent
+    if (-not (Test-Path $stateDir)) {
+        New-Item -Path $stateDir -ItemType Directory -Force | Out-Null
+    }
+    Set-Content -Path $StateFile -Value $Count -Force
+}
+
+function Reset-UnhealthyCount {
+    if (Test-Path $StateFile) {
+        Remove-Item $StateFile -Force -ErrorAction SilentlyContinue
+    }
+}
 
 # ============================================================
 # HUNTRESS-SPECIFIC FUNCTIONS
@@ -427,11 +460,17 @@ if (-not $Init.Success) {
 # MAIN SCRIPT LOGIC
 # ============================================================
 
-$ScriptVersion = "2026.01.08.01"
+$ScriptVersion = "2026.01.08.03"
 $InvokeParams = @{ ScriptBlock = {
 
     Write-LevelLog "Huntress Policy Check (v$ScriptVersion)"
     Write-Host ""
+
+    # Check if Level API key is available for tag management
+    $CanManageTags = ($null -ne $LevelApiKey)
+    if ($CanManageTags) {
+        Write-LevelLog "Level.io API key available - tag auto-cleanup enabled" -Level "DEBUG"
+    }
 
     # Get policy from tags
     $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName -DeviceTags $DeviceTags
@@ -453,11 +492,46 @@ $InvokeParams = @{ ScriptBlock = {
                 if (Test-HuntressHealthy) {
                     Write-LevelLog "Huntress is healthy" -Level "SUCCESS"
                     Write-Output "STATUS: INSTALLED_HEALTHY"
+                    Reset-UnhealthyCount  # Clear any previous unhealthy iterations
+                    # Already installed - remove install tag, add has tag
+                    if ($CanManageTags) {
+                        Write-LevelLog "Updating tags (confirmed installed)..."
+                        Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Install" -DeviceHostname $DeviceHostname
+                        Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
                 }
                 else {
-                    Write-LevelLog "Attempting service repair..."
+                    # Track unhealthy iterations
+                    $unhealthyCount = Get-UnhealthyCount
+                    $unhealthyCount++
+                    Set-UnhealthyCount -Count $unhealthyCount
+
+                    Write-LevelLog "Attempting service repair (attempt $unhealthyCount of 3)..."
                     Repair-HuntressServices
-                    Write-Output "STATUS: REPAIRED"
+
+                    if ($unhealthyCount -ge 3) {
+                        # Escalate after 3 failed iterations
+                        Write-LevelLog ""
+                        Write-LevelLog "============================================" -Level "ERROR"
+                        Write-LevelLog "HUNTRESS UNHEALTHY FOR 3+ POLICY CYCLES" -Level "ERROR"
+                        Write-LevelLog "============================================" -Level "ERROR"
+                        Write-LevelLog ""
+                        Write-LevelLog "ACTION REQUIRED:" -Level "ERROR"
+                        Write-LevelLog "Device needs a RESTART to restore Huntress services." -Level "ERROR"
+                        Write-LevelLog "Please schedule a reboot at the earliest opportunity." -Level "ERROR"
+                        Write-LevelLog ""
+                        Write-Output "STATUS: NEEDS_RESTART"
+                        exit 1  # Alert on this - needs attention
+                    }
+                    else {
+                        Write-Output "STATUS: REPAIRED"
+                        # Unhealthy - add verify tag so it gets checked again next cycle
+                        if ($CanManageTags) {
+                            Write-LevelLog "Adding verify tag (unhealthy after repair)..."
+                            Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Install" -DeviceHostname $DeviceHostname
+                            Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Verify" -DeviceHostname $DeviceHostname
+                        }
+                    }
                 }
             }
             else {
@@ -465,6 +539,13 @@ $InvokeParams = @{ ScriptBlock = {
                 $success = Install-Huntress
                 if ($success) {
                     Write-Output "STATUS: INSTALLED"
+                    Reset-UnhealthyCount  # Fresh install - clear any old state
+                    # Install succeeded - remove install tag, add has tag
+                    if ($CanManageTags) {
+                        Write-LevelLog "Updating tags (install succeeded)..."
+                        Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Install" -DeviceHostname $DeviceHostname
+                        Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
                 }
                 else {
                     Write-Output "STATUS: INSTALL_FAILED"
@@ -477,6 +558,12 @@ $InvokeParams = @{ ScriptBlock = {
             if (-not $isInstalled) {
                 Write-LevelLog "Huntress not installed - nothing to remove"
                 Write-Output "STATUS: NOT_INSTALLED"
+                # Not installed - remove both Remove and Has tags (cleanup)
+                if ($CanManageTags) {
+                    Write-LevelLog "Cleaning up tags (not installed)..."
+                    Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Remove" -DeviceHostname $DeviceHostname
+                    Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                }
             }
             else {
                 # Check if TP might be active (Rio running)
@@ -498,6 +585,13 @@ $InvokeParams = @{ ScriptBlock = {
                     # Success - Huntress is gone
                     Write-LevelLog "Huntress removed successfully" -Level "SUCCESS"
                     Write-Output "STATUS: REMOVED"
+                    Reset-UnhealthyCount  # Clear state since software is removed
+                    # Remove succeeded - remove both Remove and Has tags
+                    if ($CanManageTags) {
+                        Write-LevelLog "Cleaning up tags after removal..."
+                        Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Remove" -DeviceHostname $DeviceHostname
+                        Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareName -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
                 }
                 elseif ($tpStatus.MayBeEnabled) {
                     # Failed and Rio was running - TP likely blocked it
@@ -517,6 +611,7 @@ $InvokeParams = @{ ScriptBlock = {
                     Write-LevelLog "5. Policy will retry automatically on next run" -Level "WARN"
                     Write-LevelLog ""
                     Write-Output "STATUS: TP_ENABLED"
+                    # Do NOT remove tags - need to retry on next policy run
                     # Exit 0 - not a failure, just waiting for TP disable
                     exit 0
                 }

@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.01.14
+    Version:    2026.01.08.01
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -978,7 +978,7 @@ function Invoke-SoftwarePolicyCheck {
 
 .DESCRIPTION
     Wrapper for Invoke-RestMethod with:
-    - Bearer token authentication
+    - API key authentication (Level.io style - no "Bearer" prefix)
     - JSON content type headers
     - Automatic body serialization
     - Standardized success/failure response format
@@ -987,7 +987,8 @@ function Invoke-SoftwarePolicyCheck {
     Full API endpoint URL.
 
 .PARAMETER ApiKey
-    Bearer token for authentication. Sent as "Authorization: Bearer $ApiKey".
+    API key for authentication. Sent as "Authorization: $ApiKey".
+    Note: Level.io v2 API does NOT use "Bearer" prefix.
 
 .PARAMETER Method
     HTTP method. Default: "GET"
@@ -1049,9 +1050,10 @@ function Invoke-LevelApiCall {
         [int]$TimeoutSec = 30
     )
 
-    # Set up headers with bearer token authentication
+    # Set up headers with API key authentication
+    # Note: Level.io v2 API does NOT use "Bearer" prefix - just the API key directly
     $Headers = @{
-        "Authorization" = "Bearer $ApiKey"
+        "Authorization" = $ApiKey
         "Content-Type"  = "application/json"
         "Accept"        = "application/json"
     }
@@ -1477,6 +1479,422 @@ function Find-LevelDevice {
 }
 
 # ============================================================
+# LEVEL.IO TAG MANAGEMENT
+# ============================================================
+
+<#
+.SYNOPSIS
+    Retrieves all tags from Level.io with automatic pagination.
+
+.DESCRIPTION
+    Fetches all tags from the Level.io API, automatically handling pagination.
+    Tags are used to categorize devices and trigger policy actions.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of tag objects from the Level.io API, or $null on failure.
+    Each tag object contains: id, name, and other properties.
+
+.EXAMPLE
+    $Tags = Get-LevelTags -ApiKey "{{cf_apikey}}"
+    Write-LevelLog "Found $($Tags.Count) tags"
+#>
+function Get-LevelTags {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AllTags = @()
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/tags?limit=100"
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to fetch tags: $($Result.Error)" -Level "ERROR"
+            return $null
+        }
+
+        $AllTags += $Result.Data.data
+
+        # Handle pagination
+        $StartingAfter = if ($Result.Data.has_more -and $Result.Data.data.Count -gt 0) {
+            $Result.Data.data[-1].id
+        } else {
+            $null
+        }
+    } while ($StartingAfter)
+
+    return $AllTags
+}
+
+<#
+.SYNOPSIS
+    Finds a tag in Level.io by name.
+
+.DESCRIPTION
+    Searches for a tag by its name. Handles emoji tags by searching through
+    all tags and matching the name exactly (case-sensitive).
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagName
+    The tag name to search for (e.g., "huntress" or full emoji tag).
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Tag object if found, $null if not found or on error.
+
+.EXAMPLE
+    $Tag = Find-LevelTag -ApiKey $ApiKey -TagName "huntress"
+    if ($Tag) {
+        Write-LevelLog "Found tag ID: $($Tag.id)"
+    }
+#>
+function Find-LevelTag {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Tags = Get-LevelTags -ApiKey $ApiKey -BaseUrl $BaseUrl
+    if (-not $Tags) {
+        return $null
+    }
+
+    # Case-insensitive match
+    $MatchedTag = $Tags | Where-Object { $_.name -ieq $TagName } | Select-Object -First 1
+    return $MatchedTag
+}
+
+<#
+.SYNOPSIS
+    Adds a tag to a device in Level.io.
+
+.DESCRIPTION
+    Adds the specified tag to a device using the Level.io API.
+    Uses POST /v2/tags/{tag_id}/devices endpoint.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagId
+    The ID of the tag to add.
+
+.PARAMETER DeviceId
+    The ID of the device to add the tag to.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    $Success = Add-LevelTagToDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id
+#>
+function Add-LevelTagToDevice {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Uri = "$BaseUrl/tags/$TagId/devices"
+    $Body = @{ device_id = $DeviceId }
+
+    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
+
+    if (-not $Result.Success) {
+        Write-LevelLog "Failed to add tag to device: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+
+    return $true
+}
+
+<#
+.SYNOPSIS
+    Removes a tag from a device in Level.io.
+
+.DESCRIPTION
+    Removes the specified tag from a device using the Level.io API.
+    Uses DELETE /v2/tags/{tag_id}/devices endpoint with device_id in body.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagId
+    The ID of the tag to remove.
+
+.PARAMETER DeviceId
+    The ID of the device to remove the tag from.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    $Success = Remove-LevelTagFromDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id
+#>
+function Remove-LevelTagFromDevice {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Uri = "$BaseUrl/tags/$TagId/devices"
+    $Body = @{ device_id = $DeviceId }
+
+    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "DELETE" -Body $Body
+
+    if (-not $Result.Success) {
+        Write-LevelLog "Failed to remove tag from device: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+
+    return $true
+}
+
+<#
+.SYNOPSIS
+    Adds a policy tag to the current device after a successful action.
+
+.DESCRIPTION
+    High-level function that finds a tag by name (with emoji prefix) and adds
+    it to the current device. Used to set status tags after policy actions
+    complete successfully (e.g., adding Has tag after install).
+
+    This function:
+    1. Finds the current device by hostname
+    2. Finds the tag by name
+    3. Adds the tag to the device
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagName
+    The software name (e.g., "huntress" - emoji will be prefixed).
+
+.PARAMETER EmojiPrefix
+    The emoji prefix for the tag (e.g., "Install", "Remove", "Has").
+    Will be converted to the appropriate emoji character.
+
+.PARAMETER DeviceHostname
+    The hostname of the current device. Typically "{{level_device_hostname}}".
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    # Add the has tag after successful install
+    Add-LevelPolicyTag -ApiKey $ApiKey -TagName "huntress" -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+#>
+function Add-LevelPolicyTag {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Install", "Remove", "Has", "Pin", "Block", "Skip", "Verify")]
+        [string]$EmojiPrefix,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceHostname,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    # Map action names to emoji characters
+    $EmojiChar = switch ($EmojiPrefix) {
+        "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
+        "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
+        "Has"     { [char]0x2705 }                       # U+2705 Check mark
+        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
+        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
+        "Skip"    { [char]0x274C }                       # U+274C Cross mark
+        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+    }
+
+    $FullTagName = "$EmojiChar$TagName"
+    Write-LevelLog "Adding tag '$FullTagName' to device..." -Level "DEBUG"
+
+    # Find the device
+    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    if (-not $Device) {
+        Write-LevelLog "Could not find device '$DeviceHostname' in Level.io" -Level "WARN"
+        return $false
+    }
+
+    # Find the tag
+    $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+    if (-not $Tag) {
+        Write-LevelLog "Tag '$FullTagName' not found in Level.io - cannot add" -Level "WARN"
+        return $false
+    }
+
+    # Add the tag
+    $Success = Add-LevelTagToDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id -BaseUrl $BaseUrl
+    if ($Success) {
+        Write-LevelLog "Added tag '$FullTagName' to device" -Level "SUCCESS"
+    }
+
+    return $Success
+}
+
+<#
+.SYNOPSIS
+    Removes a policy tag from the current device after a successful action.
+
+.DESCRIPTION
+    High-level function that finds a tag by name (with emoji prefix) and removes
+    it from the current device. Used to auto-cleanup trigger tags after policy
+    actions complete successfully.
+
+    This function:
+    1. Finds the current device by hostname
+    2. Finds the tag by name
+    3. Removes the tag from the device
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagName
+    The full tag name to remove (e.g., "huntress" - emoji will be prefixed).
+
+.PARAMETER EmojiPrefix
+    The emoji prefix for the tag (e.g., "Install", "Remove", "Has").
+    Will be converted to the appropriate emoji character.
+
+.PARAMETER DeviceHostname
+    The hostname of the current device. Typically "{{level_device_hostname}}".
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    # Remove the install tag after successful install
+    Remove-LevelPolicyTag -ApiKey $ApiKey -TagName "huntress" -EmojiPrefix "Install" -DeviceHostname $DeviceHostname
+
+.EXAMPLE
+    # Remove the has tag when software is removed
+    Remove-LevelPolicyTag -ApiKey $ApiKey -TagName "huntress" -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+#>
+function Remove-LevelPolicyTag {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Install", "Remove", "Has", "Pin", "Block", "Skip", "Verify")]
+        [string]$EmojiPrefix,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceHostname,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    # Map action names to emoji characters
+    $EmojiChar = switch ($EmojiPrefix) {
+        "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
+        "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
+        "Has"     { [char]0x2705 }                       # U+2705 Check mark
+        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
+        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
+        "Skip"    { [char]0x274C }                       # U+274C Cross mark
+        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+    }
+
+    $FullTagName = "$EmojiChar$TagName"
+    Write-LevelLog "Removing tag '$FullTagName' from device..." -Level "DEBUG"
+
+    # Find the device
+    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    if (-not $Device) {
+        Write-LevelLog "Could not find device '$DeviceHostname' in Level.io" -Level "WARN"
+        return $false
+    }
+
+    # Find the tag
+    $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+    if (-not $Tag) {
+        Write-LevelLog "Tag '$FullTagName' not found in Level.io (may not exist)" -Level "DEBUG"
+        return $true  # Not an error - tag may not exist
+    }
+
+    # Remove the tag
+    $Success = Remove-LevelTagFromDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id -BaseUrl $BaseUrl
+    if ($Success) {
+        Write-LevelLog "Removed tag '$FullTagName' from device" -Level "SUCCESS"
+    }
+
+    return $Success
+}
+
+# ============================================================
 # WAKE-ON-LAN
 # ============================================================
 
@@ -1589,7 +2007,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.01.14"
+$script:ModuleVersion = "2026.01.08.01"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -1619,6 +2037,14 @@ Export-ModuleMember -Function @(
     'Get-LevelGroups',
     'Get-LevelDevices',
     'Find-LevelDevice',
+
+    # Tag Management
+    'Get-LevelTags',
+    'Find-LevelTag',
+    'Add-LevelTagToDevice',
+    'Remove-LevelTagFromDevice',
+    'Add-LevelPolicyTag',
+    'Remove-LevelPolicyTag',
 
     # Wake-on-LAN
     'Send-LevelWakeOnLan',

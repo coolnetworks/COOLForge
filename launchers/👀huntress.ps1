@@ -145,6 +145,12 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
 # $ApiKey = "{{cf_apikey}}"
 # $CustomField1 = "{{cf_custom_field_1}}"
 
+# Level.io API key for tag management (used to auto-remove policy tags after actions)
+$LevelApiKey = "{{cf_apikey}}"
+if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -eq "{{cf_apikey}}") {
+    $LevelApiKey = $null
+}
+
 # ============================================================
 # GITHUB PAT INJECTION HELPER
 # ============================================================
@@ -637,12 +643,15 @@ $ScriptContent = Get-Content -Path $ScriptPath -Raw
 # Create a scriptblock that:
 # 1. Defines all Level.io variables in the script's scope
 # 2. Executes the downloaded script content
+$LevelApiKeyEscaped = if ($LevelApiKey) { $LevelApiKey -replace "'", "''" } else { "" }
 $ExecutionBlock = @"
 # Level.io variables passed from launcher
 `$MspScratchFolder = '$($MspScratchFolder -replace "'", "''")'
 `$LibraryUrl = '$($LibraryUrl -replace "'", "''")'
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
+`$LevelApiKey = '$LevelApiKeyEscaped'
+if ([string]::IsNullOrWhiteSpace(`$LevelApiKey)) { `$LevelApiKey = `$null }
 
 # Library is already loaded by launcher - skip library import in script
 `$UseLibrary = `$true
