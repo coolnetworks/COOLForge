@@ -1,7 +1,48 @@
 {
   "$schema": "./custom-fields.schema.json",
-  "version": "2026.01.08",
+  "version": "2026.01.10",
   "description": "COOLForge custom field definitions for Level.io",
+  "setup": {
+    "prerequisites": [
+      "Level.io API key with 'Custom Fields' permission (get from https://app.level.io/api-keys)",
+      "Your company/MSP name for the scratch folder path",
+      "(If using private repo) GitHub Personal Access Token with 'Contents' read permission - create at github.com/settings/tokens"
+    ],
+    "description": "This wizard creates and configures custom fields in your Level.io account. Have the information above ready before starting."
+  },
+  "fieldGroups": {
+    "level_api": {
+      "displayName": "Level.io API",
+      "description": "These fields enable Level.io API automation (wake devices, run scripts across folders, etc.)",
+      "prerequisites": [
+        "A second Level.io API key for scripts to use (can be the same as setup, but recommended to create a dedicated one)"
+      ]
+    },
+    "screenconnect": {
+      "displayName": "ScreenConnect",
+      "description": "These fields enable ScreenConnect (ConnectWise Control) integration for remote access management.",
+      "prerequisites": [
+        "Your ScreenConnect server URL (e.g., support.yourcompany.com)",
+        "ScreenConnect instance ID (found in ScreenConnect admin settings) - for whitelisting scripts",
+        "(Optional) ScreenConnect API credentials if using automation features"
+      ]
+    },
+    "huntress": {
+      "displayName": "Huntress",
+      "description": "These fields enable automated Huntress agent deployment and management.",
+      "prerequisites": [
+        "Huntress account key (from Huntress dashboard > Agents > Deploy)",
+        "Huntress organization key (from Huntress dashboard > Agents > Deploy)"
+      ]
+    },
+    "technician_alerts": {
+      "displayName": "Technician Alerts",
+      "description": "These fields enable the technician alert notification system. Alerts appear on technician workstations tagged with the technician emoji.",
+      "prerequisites": [
+        "Tag technician workstations with the technician emoji tag in Level.io"
+      ]
+    }
+  },
   "fields": {
     "core": [
       {
@@ -9,21 +50,33 @@
         "description": "Persistent storage folder for MSP scripts and libraries (default: C:\\ProgramData\\COOLForge)",
         "legacyNames": ["msp_scratch_folder"],
         "adminOnly": false,
-        "required": true
+        "required": true,
+        "prompt": "Where should COOLForge store scripts and libraries on endpoints?"
       },
       {
         "name": "coolforge_ps_module_library_source",
         "description": "URL to download COOLForge-Common.psm1 library (leave empty for official repo)",
         "legacyNames": ["ps_module_library_source"],
         "adminOnly": false,
-        "required": false
+        "required": false,
+        "prompt": "Custom library URL (leave empty to use official COOLForge repo)"
       },
       {
         "name": "coolforge_pin_psmodule_to_version",
         "description": "Pin scripts to a specific version tag (e.g., v2025.12.29)",
         "legacyNames": ["pin_psmodule_to_version"],
         "adminOnly": false,
-        "required": false
+        "required": false,
+        "prompt": "Pin to a specific version? (leave empty for latest)"
+      },
+      {
+        "name": "coolforge_pat",
+        "description": "GitHub Personal Access Token for private repositories. Required if hosting COOLForge scripts in a private GitHub repo. Create at github.com/settings/tokens with 'repo' scope (read access). Token is stored as admin-only field so it's hidden from non-admin users.",
+        "legacyNames": [],
+        "adminOnly": true,
+        "required": false,
+        "prompt": "GitHub PAT for private repo access (leave empty if using public repo)",
+        "help": "Create a fine-grained PAT at github.com/settings/tokens with read-only 'Contents' permission for your repo"
       },
       {
         "name": "coolforge_nosleep_duration_min",
@@ -31,61 +84,103 @@
         "legacyNames": [],
         "adminOnly": false,
         "required": false,
-        "default": "60"
+        "default": "60",
+        "prompt": "How long should NoSleep scripts keep devices awake? (minutes)"
+      }
+    ],
+    "level_api": [
+      {
+        "name": "apikey",
+        "description": "Level.io API key for automation scripts (admin-only)",
+        "legacyNames": [],
+        "adminOnly": true,
+        "required": false,
+        "prompt": "Level.io API key for script automation"
       }
     ],
     "screenconnect": [
       {
-        "name": "coolforge_screenconnect_instance_id",
+        "name": "screenconnect_instance_id",
         "description": "Your MSP's ScreenConnect instance ID for whitelisting",
-        "legacyNames": ["screenconnect_instance_id", "screenconnect_instance"],
+        "legacyNames": ["screenconnect_instance"],
         "adminOnly": true,
-        "required": false
+        "required": false,
+        "prompt": "ScreenConnect instance ID (for RAT whitelisting)"
       },
       {
-        "name": "coolforge_screenconnect_baseurl",
+        "name": "screenconnect_baseurl",
         "description": "Your ScreenConnect server URL (e.g., https://support.example.com)",
-        "legacyNames": ["screenconnect_baseurl"],
+        "legacyNames": [],
         "adminOnly": false,
-        "required": false
+        "required": false,
+        "prompt": "ScreenConnect server URL (e.g., support.yourcompany.com)"
       },
       {
-        "name": "coolforge_screenconnect_api_user",
+        "name": "screenconnect_api_user",
         "description": "ScreenConnect API username for automation",
-        "legacyNames": ["screenconnect_api_user"],
+        "legacyNames": [],
         "adminOnly": true,
-        "required": false
+        "required": false,
+        "prompt": "ScreenConnect API username (optional)"
       },
       {
-        "name": "coolforge_screenconnect_api_password",
+        "name": "screenconnect_api_password",
         "description": "ScreenConnect API password for automation",
-        "legacyNames": ["screenconnect_api_password"],
+        "legacyNames": [],
         "adminOnly": true,
-        "required": false
+        "required": false,
+        "prompt": "ScreenConnect API password (optional)"
       },
       {
-        "name": "coolforge_is_screenconnect_server",
+        "name": "is_screenconnect_server",
         "description": "Set to 'true' on devices hosting ScreenConnect server",
-        "legacyNames": ["is_screenconnect_server"],
+        "legacyNames": [],
         "adminOnly": false,
         "required": false
       },
       {
-        "name": "coolforge_screenconnect_device_url",
-        "description": "Per-device ScreenConnect URL (populated automatically)",
+        "name": "screenconnect_device_url",
+        "description": "Per-device ScreenConnect URL (populated automatically by scripts)",
         "legacyNames": ["screenconnect_url"],
         "adminOnly": false,
         "required": false,
         "autoCreate": true
       }
     ],
+    "huntress": [
+      {
+        "name": "huntress_account_key",
+        "description": "Huntress account key for agent deployment",
+        "legacyNames": [],
+        "adminOnly": true,
+        "required": false,
+        "prompt": "Huntress account key (from Dashboard > Agents > Deploy)"
+      },
+      {
+        "name": "huntress_organization_key",
+        "description": "Huntress organization key for agent deployment",
+        "legacyNames": [],
+        "adminOnly": true,
+        "required": false,
+        "prompt": "Huntress organization key (from Dashboard > Agents > Deploy)"
+      },
+      {
+        "name": "huntress_tags",
+        "description": "Comma-separated tags to apply to Huntress agent",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "Default Huntress tags (comma-separated, optional)"
+      }
+    ],
     "technician_alerts": [
       {
         "name": "coolforge_technician_alerts",
-        "description": "JSON array of pending alerts for technicians (managed by scripts). Technician workstations are identified by the U+1F9D1 U+200D U+1F4BB technician tag.",
+        "description": "JSON array of pending alerts for technicians (managed by scripts). Technician workstations are identified by the technician emoji tag.",
         "legacyNames": [],
         "adminOnly": false,
-        "required": false
+        "required": false,
+        "autoCreate": true
       }
     ]
   }

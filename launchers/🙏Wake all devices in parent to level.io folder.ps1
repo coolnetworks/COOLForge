@@ -30,7 +30,7 @@ $ScriptToRun = "??Wake all devices in parent to level.io folder.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.31.01
+    Launcher Version: 2026.01.10.01
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -63,7 +63,7 @@ $ScriptToRun = "??Wake all devices in parent to level.io folder.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.31.01
+# Launcher Version: 2026.01.10.01
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -115,6 +115,23 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
     # Custom URL provided but version pinning requested - replace branch in URL
     # Pattern: .../coolnetworks/COOLForge/main/... -> .../coolnetworks/COOLForge/$PinnedVersion/...
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
+}
+
+# ScreenConnect whitelisting - for RAT detection script
+$ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
+if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -eq "{{cf_coolforge_screenconnect_instance_id}}") {
+    $ScreenConnectInstanceId = "{{cf_screenconnect_instance_id}}"  # Fallback to legacy
+}
+if ($ScreenConnectInstanceId -like "{{*}}") {
+    $ScreenConnectInstanceId = ""
+}
+
+$IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
+if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -eq "{{cf_coolforge_is_screenconnect_server}}") {
+    $IsScreenConnectServer = "{{cf_is_screenconnect_server}}"  # Fallback to legacy
+}
+if ($IsScreenConnectServer -like "{{*}}") {
+    $IsScreenConnectServer = ""
 }
 
 # Additional custom fields can be added here and they will be available
@@ -414,7 +431,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.31.01"
+Write-Host "[*] Script Launcher v2026.01.10.01"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

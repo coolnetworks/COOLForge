@@ -185,7 +185,7 @@ The wizard will:
 3. Create any missing required fields
 4. Optionally configure version pinning
 
-> **Note:** Get your API key from [Level.io Security Settings](https://app.level.io/security)
+> **Note:** Get your API key from [Level.io API Keys](https://app.level.io/api-keys)
 
 ### Creating a New Script
 
