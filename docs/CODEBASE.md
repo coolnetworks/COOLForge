@@ -244,11 +244,12 @@ Inspection and monitoring scripts prefixed with `👀`:
 
 | Script | Description |
 |--------|-------------|
-| `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 50+ remote access tools with whitelisting |
-| `👀huntress.ps1` | Check Huntress agent status |
+| `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ remote access tools with whitelisting |
+| `👀huntress.ps1` | Check Huntress agent installation status |
 | `👀unchecky.ps1` | Check Unchecky installation status |
 | `👀Test Show Versions.ps1` | Display version information |
 | `👀Test Variable Output.ps1` | Test Level.io variable passing |
+| `👀debug.ps1` | Debug script for testing and troubleshooting |
 
 ### Fix Scripts (`scripts/Fix/`)
 
@@ -258,9 +259,11 @@ Repair and configuration scripts prefixed with `🔧`:
 |--------|-------------|
 | `🔧Prevent Sleep.ps1` | Temporarily disable sleep/hibernate with auto-restore |
 | `🔧Enable System Restore and Create Restore Point.ps1` | Enable System Restore and create checkpoint |
-| `🔧Fix Windows 10 Services.ps1` | Fix common Windows 10 service issues |
 | `🔧Fix Windows 11 Services.ps1` | Fix common Windows 11 service issues |
-| `🔧Fix Windows 7/8/8.1 Services.ps1` | Legacy Windows service fixes |
+| `🔧Fix Windows 10 Services.ps1` | Fix common Windows 10 service issues |
+| `🔧Fix Windows 8.1 Services.ps1` | Fix common Windows 8.1 service issues |
+| `🔧Fix Windows 8 Services.ps1` | Fix common Windows 8 service issues |
+| `🔧Fix Windows 7 Services.ps1` | Fix common Windows 7 service issues |
 
 ### Remove Scripts (`scripts/Remove/`)
 
@@ -547,8 +550,8 @@ COOLForge/
 ## Version Information
 
 - **Module Version**: 2026.01.08.01
-- **Launcher Version**: 2025.12.31.01
-- **Custom Fields Version**: 2026.01.08
+- **Launcher Version**: 2026.01.10.01
+- **Custom Fields Version**: 2026.01.10
 
 ---
 

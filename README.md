@@ -1,6 +1,6 @@
 # COOLForge_Lib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.30.01
+**Version:** 2026.01.10.01
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -74,6 +74,7 @@ See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 |----------|-------------|
 | [Why COOLForge?](docs/WHY.md) | **Start here** — Problems COOLForge solves and design philosophy |
 | [Function Reference](docs/FUNCTIONS.md) | Complete documentation for all library functions |
+| [Script Documentation](docs/scripts/README.md) | **Per-script documentation** — Detailed docs for each script |
 | [Technician Alerts](docs/TECHNICIAN-ALERTS.md) | Real-time toast notifications to tech workstations |
 | [Script Launcher Guide](docs/LAUNCHER.md) | How to use the launcher to run scripts from GitHub |
 | [Private Fork Guide](docs/PRIVATE-FORK.md) | Using COOLForge with a private GitHub repository |
@@ -213,24 +214,24 @@ Invoke-LevelScript -ScriptBlock {
 
 ## Available Scripts
 
-Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-STRUCTURE.md) for details.
+Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-STRUCTURE.md) for details and [Script Documentation](docs/scripts/README.md) for detailed per-script documentation.
 
 | Folder | Script | Description |
 |--------|--------|-------------|
-| Check | `👀Test Show Versions.ps1` | Displays version info for all COOLForge_Lib components |
-| Check | `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
-| Check | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs |
-| Remove | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
-| Remove | `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes non-whitelisted ScreenConnect |
-| Fix | `🔧Fix Windows 11 Services.ps1` | Restores Windows 11 services to defaults |
-| Fix | `🔧Fix Windows 10 Services.ps1` | Restores Windows 10 services to defaults |
-| Fix | `🔧Fix Windows 8.1 Services.ps1` | Restores Windows 8.1 services to defaults |
-| Fix | `🔧Fix Windows 8 Services.ps1` | Restores Windows 8 services to defaults |
-| Fix | `🔧Fix Windows 7 Services.ps1` | Restores Windows 7 services to defaults |
-| Fix | `🔧Enable System Restore and Create Restore Point.ps1` | Enables System Restore |
-| Fix | `🔧Prevent Sleep.ps1` | Temporarily prevents device from sleeping with auto-restore |
-| Utility | `🙏Wake all devices in parent to level.io folder.ps1` | Wakes devices in folder hierarchy |
-| Utility | `🔔Technician Alert Monitor.ps1` | Polls for alerts and shows toast notifications on tech workstations |
+| Check | [👀Check for Unauthorized Remote Access Tools](docs/scripts/RAT-Detection.md) | Detects 60+ RATs with whitelisting support |
+| Check | [👀huntress](docs/scripts/Huntress-Policy.md) | Huntress agent policy enforcement |
+| Check | [👀unchecky](docs/scripts/Unchecky-Policy.md) | Unchecky software policy check |
+| Check | [👀Test Show Versions](docs/scripts/Test-Show-Versions.md) | Library test suite and version info |
+| Check | [👀Test Variable Output](docs/scripts/Test-Variable-Output.md) | Level.io automation variable testing |
+| Check | [👀debug](docs/scripts/Debug-Policy.md) | Debug script for policy testing |
+| Configure | [⚙️Extract and Set ScreenConnect Device URL](docs/scripts/ScreenConnect-Device-URL.md) | Extracts ScreenConnect GUID and sets custom field |
+| Fix | [🔧Fix Windows Services](docs/scripts/Fix-Windows-Services.md) | Restores Windows services to defaults (7/8/8.1/10/11) |
+| Fix | [🔧Enable System Restore](docs/scripts/System-Restore.md) | Enables System Restore and creates checkpoint |
+| Fix | [🔧Prevent Sleep](docs/scripts/Prevent-Sleep.md) | Temporarily prevents sleep with auto-restore |
+| Remove | [⛔Force Remove Anydesk](docs/scripts/Force-Remove-AnyDesk.md) | Removes AnyDesk with escalating force (5 phases) |
+| Remove | [⛔Force Remove Non MSP ScreenConnect](docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md) | Removes non-whitelisted ScreenConnect instances |
+| Utility | [🙏Wake all devices](docs/scripts/Wake-Devices.md) | Wakes devices in folder hierarchy via WOL |
+| Utility | [🔔Technician Alert Monitor](docs/scripts/Technician-Alert-Monitor.md) | Toast notifications for tech alerts |
 
 ---
 

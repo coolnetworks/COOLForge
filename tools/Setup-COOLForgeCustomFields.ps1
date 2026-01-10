@@ -149,12 +149,16 @@ if (Test-Path $Script:FieldsConfigPath) {
     # Load setup prerequisites from JSON
     $Script:SetupPrerequisites = @()
     $Script:SetupDescription = ""
+    $Script:SetupNotes = @()
     if ($FieldsConfig.setup) {
         if ($FieldsConfig.setup.prerequisites) {
             $Script:SetupPrerequisites = @($FieldsConfig.setup.prerequisites)
         }
         if ($FieldsConfig.setup.description) {
             $Script:SetupDescription = $FieldsConfig.setup.description
+        }
+        if ($FieldsConfig.setup.notes) {
+            $Script:SetupNotes = @($FieldsConfig.setup.notes)
         }
     }
 
@@ -209,6 +213,7 @@ else {
         "Level.io API key with 'Custom Fields' permission"
     )
     $Script:SetupDescription = ""
+    $Script:SetupNotes = @()
     $Script:RequiredFields = @(
         @{
             Name        = "coolforge_msp_scratch_folder"
@@ -277,6 +282,14 @@ if ($Script:SetupPrerequisites.Count -gt 0) {
 Write-Host "Get your API key at: https://app.level.io/api-keys" -ForegroundColor Cyan
 Write-Host ""
 
+# Display notes from JSON config (e.g., new account warnings)
+if ($Script:SetupNotes.Count -gt 0) {
+    foreach ($Note in $Script:SetupNotes) {
+        Write-Host "NOTE: $Note" -ForegroundColor DarkYellow
+    }
+    Write-Host ""
+}
+
 # Load saved configuration
 $Script:SavedConfig = Get-SavedConfig -Path $Script:ConfigPath
 if ($Script:SavedConfig) {
@@ -334,6 +347,10 @@ if ($null -eq $ExistingFields) {
     Write-Host "  1. Verify your API key at https://app.level.io/api-keys" -ForegroundColor DarkGray
     Write-Host "  2. Ensure the key has 'Custom Fields' permission enabled" -ForegroundColor DarkGray
     Write-Host "  3. Check your network connection can reach $Script:LevelApiBaseUrl" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "  NEW ACCOUNTS: If this is a new Level.io account, API access may not be" -ForegroundColor Yellow
+    Write-Host "  enabled yet. Contact Level.io support to request API access be enabled" -ForegroundColor Yellow
+    Write-Host "  for your account before using this setup script." -ForegroundColor Yellow
     exit 1
 }
 

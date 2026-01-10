@@ -8,7 +8,10 @@
       "Your company/MSP name for the scratch folder path",
       "(If using private repo) GitHub Personal Access Token with 'Contents' read permission - create at github.com/settings/tokens"
     ],
-    "description": "This wizard creates and configures custom fields in your Level.io account. Have the information above ready before starting."
+    "description": "This wizard creates and configures custom fields in your Level.io account. Have the information above ready before starting.",
+    "notes": [
+      "NEW ACCOUNTS: If you have a new Level.io account, API access may need to be enabled by Level.io support before you can use the API. Contact support if you receive connection errors."
+    ]
   },
   "fieldGroups": {
     "level_api": {
