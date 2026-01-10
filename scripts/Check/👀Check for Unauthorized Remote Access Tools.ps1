@@ -18,7 +18,7 @@
     and the library is already loaded.
 
 .NOTES
-    Version:          2025.12.27.02
+    Version:          2026.01.10.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected)
 
@@ -40,7 +40,7 @@
 #>
 
 # 👀Check for Unauthorized Remote Access Tools
-# Version: 2025.12.27.02
+# Version: 2026.01.10.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success (No unauthorized RATs) | Exit 1 = Alert (RATs detected)
 #
@@ -66,12 +66,15 @@ if (-not $Init.Success) {
 # ============================================================
 # CONFIGURATION
 # ============================================================
-# These can be set via custom fields in the launcher
-# Add to Script_Launcher.ps1:
-#   $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
-#   $IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
+# ScreenConnect whitelisting variables are passed from the launcher:
+#   $ScreenConnectInstanceId - Your MSP's ScreenConnect instance ID
+#   $IsScreenConnectServer   - Set to "true" on ScreenConnect server devices
+#
+# These are read from Level.io custom fields:
+#   cf_coolforge_screenconnect_instance_id (or cf_screenconnect_instance_id)
+#   cf_coolforge_is_screenconnect_server (or cf_is_screenconnect_server)
 
-# Check if variables exist (passed from launcher), otherwise use empty defaults
+# Ensure variables exist with defaults if not passed from launcher
 if (-not (Get-Variable -Name 'ScreenConnectInstanceId' -ErrorAction SilentlyContinue)) {
     $ScreenConnectInstanceId = ""
 }

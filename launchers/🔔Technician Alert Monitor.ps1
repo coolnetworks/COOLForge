@@ -1,7 +1,7 @@
-﻿# ============================================================
+# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "??Fix Windows 11 Services.ps1"
+$ScriptToRun = "🔔Technician Alert Monitor.ps1"
 # ============================================================
 
 <#
@@ -53,7 +53,7 @@ $ScriptToRun = "??Fix Windows 11 Services.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "ðŸ‘€Test Show Versions.ps1"
+    $ScriptToRun = "👀Test Show Versions.ps1"
     # ... rest of launcher code ...
 
 .EXAMPLE

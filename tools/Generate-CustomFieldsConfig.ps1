@@ -226,7 +226,7 @@ $FieldDefinitions = @{
         AdminOnly = $true
         Priority = 2
         Group = $null
-        Note = 'Required for API-based scripts like Wake-on-LAN. Get API key from https://app.level.io/security'
+        Note = 'Required for API-based scripts like Wake-on-LAN. Get API key from https://app.level.io/api-keys'
     }
 
     # ========================================

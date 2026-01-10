@@ -264,21 +264,29 @@ function Invoke-LevelApi {
     }
 
     try {
+        Write-Host "    DEBUG: Calling $Method $Uri" -ForegroundColor DarkGray
         $Response = Invoke-RestMethod @Params
+        Write-Host "    DEBUG: Success" -ForegroundColor DarkGray
         return @{ Success = $true; Data = $Response }
     }
     catch {
         $ErrorMessage = $_.Exception.Message
+        Write-Host "    DEBUG: Exception - $ErrorMessage" -ForegroundColor Red
         if ($_.Exception.Response) {
             try {
+                $StatusCode = [int]$_.Exception.Response.StatusCode
+                Write-Host "    DEBUG: HTTP Status Code - $StatusCode" -ForegroundColor Red
                 $Reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
                 $ErrorBody = $Reader.ReadToEnd()
                 $Reader.Close()
                 if ($ErrorBody) {
+                    Write-Host "    DEBUG: Response Body - $ErrorBody" -ForegroundColor Red
                     $ErrorMessage = $ErrorBody
                 }
             }
-            catch { }
+            catch {
+                Write-Host "    DEBUG: Could not read response body" -ForegroundColor Red
+            }
         }
         return @{ Success = $false; Error = $ErrorMessage }
     }
@@ -304,6 +312,7 @@ function Get-ExistingCustomFields {
 
         if (-not $Result.Success) {
             Write-LevelError "Failed to fetch custom fields: $($Result.Error)"
+            Write-Host "    API Error Details: $($Result.Error)" -ForegroundColor Red
             return $null
         }
 

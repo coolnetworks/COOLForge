@@ -1,6 +1,6 @@
 # COOLForge_Lib - Level.io PowerShell Automation Library
 
-**Version:** 2025.12.30.01
+**Version:** 2026.01.10.01
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -36,15 +36,16 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 - **Auto-Update** — Scripts automatically download the latest library from GitHub
 - **Emoji Encoding Repair** — Fixes UTF-8 emoji corruption from deployment systems
 - **Script Launcher** — Manage scripts in Git, deploy once to Level.io, updates happen automatically
+- **Technician Alerts** — Send toast notifications to tech workstations when scripts need attention
 
-### Module Functions (14 total)
+### Module Functions (19 total)
 
 The `COOLForge-Common.psm1` module exports these functions:
 
 | Category | Function | Description |
 |----------|----------|-------------|
 | **Initialization** | `Initialize-LevelScript` | Initialize script, check tags, create lockfile |
-| | `Invoke-LevelScript` | Execute script block with error handling |
+| | `Invoke-LevelScript` | Execute script block with error handling + auto-send alerts |
 | | `Complete-LevelScript` | End script with custom exit code/message |
 | | `Remove-LevelLockFile` | Manually remove lockfile |
 | **Logging** | `Write-LevelLog` | Timestamped log output with severity levels |
@@ -55,6 +56,11 @@ The `COOLForge-Common.psm1` module exports these functions:
 | | `Get-LevelDevices` | Retrieve devices (optionally by group) |
 | | `Find-LevelDevice` | Search for device by hostname |
 | **Network** | `Send-LevelWakeOnLan` | Send WOL magic packet to MAC address |
+| **Alerts** | `Send-TechnicianAlert` | Send alert immediately to tech workstations |
+| | `Add-TechnicianAlert` | Queue alert for auto-send on script completion |
+| | `Send-TechnicianAlertQueue` | Manually send queued alerts |
+| | `Test-TechnicianWorkstation` | Check if device has technician tag |
+| | `Get-TechnicianName` | Extract technician name from tags |
 | **Text** | `Repair-LevelEmoji` | Fix corrupted UTF-8 emojis |
 | | `Get-LevelUrlEncoded` | URL-encode strings with UTF-8 support |
 
@@ -68,6 +74,8 @@ See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 |----------|-------------|
 | [Why COOLForge?](docs/WHY.md) | **Start here** — Problems COOLForge solves and design philosophy |
 | [Function Reference](docs/FUNCTIONS.md) | Complete documentation for all library functions |
+| [Script Documentation](docs/scripts/README.md) | **Per-script documentation** — Detailed docs for each script |
+| [Technician Alerts](docs/TECHNICIAN-ALERTS.md) | Real-time toast notifications to tech workstations |
 | [Script Launcher Guide](docs/LAUNCHER.md) | How to use the launcher to run scripts from GitHub |
 | [Private Fork Guide](docs/PRIVATE-FORK.md) | Using COOLForge with a private GitHub repository |
 | [Version Pinning](docs/VERSION-PINNING.md) | Pin devices to specific library versions for testing and rollback |
@@ -148,6 +156,28 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 
 ## Quick Start
 
+> **IMPORTANT: Custom Field Required Before First Use**
+>
+> COOLForge requires **one custom field** to be configured before any scripts will work.
+> This field tells scripts where to store the library, cached scripts, lockfiles, and logs on each endpoint.
+>
+> **The Required Field:**
+> - `coolforge_msp_scratch_folder` — A persistent folder path on endpoints (e.g., `C:\ProgramData\YourMSP`)
+>
+> Without this field, scripts have nowhere to store files and will fail immediately.
+>
+> **Option A: Run the Setup Wizard (Recommended)**
+> 1. Clone or download this repository to your local workstation
+> 2. Run `tools/Setup-COOLForgeCustomFields.ps1`
+> 3. Follow the prompts — creates required field and optional integrations
+>
+> **Option B: Manual Setup (Minimum)**
+> 1. In Level.io: Settings → Custom Fields → Add Custom Field
+> 2. Name: `coolforge_msp_scratch_folder` | Type: Text
+> 3. Set default value to your preferred path (e.g., `C:\ProgramData\ACME_IT`)
+>
+> All other custom fields are optional and only needed for specific features (Huntress, ScreenConnect, etc.)
+
 ### Prerequisites
 
 - Level.io agent installed on target devices
@@ -156,11 +186,11 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 
 | Custom Field | Example Value | Required | Description |
 |--------------|---------------|----------|-------------|
-| `CoolForge_msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
-| `CoolForge_ps_module_library_source` | *(leave empty)* | No | URL to download the library (defaults to official repo) |
-| `CoolForge_pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag |
-| `CoolForge_pat` | `ghp_abc123xyz...` | No | GitHub PAT for private repos (admin-only, see [Private Fork Guide](docs/PRIVATE-FORK.md)) |
-| `CoolForge_nosleep_duration_min` | `60` | No | Duration in minutes to prevent sleep (default: 60) |
+| `coolforge_msp_scratch_folder` | `C:\ProgramData\YourMSP` | **Yes** | Where COOLForge stores scripts, library, lockfiles, and logs on each endpoint. Choose a persistent folder that won't be cleaned up. |
+| `coolforge_ps_module_library_source` | *(leave empty)* | No | URL to download the library (defaults to official repo) |
+| `coolforge_pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag |
+| `coolforge_pat` | `ghp_abc123xyz...` | No | GitHub PAT for private repos (admin-only, see [Private Fork Guide](docs/PRIVATE-FORK.md)) |
+| `coolforge_nosleep_duration_min` | `60` | No | Duration in minutes to prevent sleep (default: 60) |
 
 ### Automated Setup
 
@@ -178,7 +208,7 @@ The wizard will:
 3. Create any missing required fields
 4. Optionally configure version pinning
 
-> **Note:** Get your API key from [Level.io Security Settings](https://app.level.io/security)
+> **Note:** Get your API key from [Level.io API Keys](https://app.level.io/api-keys)
 
 ### Creating a New Script
 
@@ -206,23 +236,24 @@ Invoke-LevelScript -ScriptBlock {
 
 ## Available Scripts
 
-Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-STRUCTURE.md) for details.
+Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-STRUCTURE.md) for details and [Script Documentation](docs/scripts/README.md) for detailed per-script documentation.
 
 | Folder | Script | Description |
 |--------|--------|-------------|
-| Check | `👀Test Show Versions.ps1` | Displays version info for all COOLForge_Lib components |
-| Check | `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
-| Check | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs |
-| Remove | `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
-| Remove | `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes non-whitelisted ScreenConnect |
-| Fix | `🔧Fix Windows 11 Services.ps1` | Restores Windows 11 services to defaults |
-| Fix | `🔧Fix Windows 10 Services.ps1` | Restores Windows 10 services to defaults |
-| Fix | `🔧Fix Windows 8.1 Services.ps1` | Restores Windows 8.1 services to defaults |
-| Fix | `🔧Fix Windows 8 Services.ps1` | Restores Windows 8 services to defaults |
-| Fix | `🔧Fix Windows 7 Services.ps1` | Restores Windows 7 services to defaults |
-| Fix | `🔧Enable System Restore and Create Restore Point.ps1` | Enables System Restore |
-| Fix | `🔧Prevent Sleep.ps1` | Temporarily prevents device from sleeping with auto-restore |
-| Utility | `🙏Wake all devices in parent to level.io folder.ps1` | Wakes devices in folder hierarchy |
+| Check | [👀Check for Unauthorized Remote Access Tools](docs/scripts/RAT-Detection.md) | Detects 60+ RATs with whitelisting support |
+| Check | [👀huntress](docs/scripts/Huntress-Policy.md) | Huntress agent policy enforcement |
+| Check | [👀unchecky](docs/scripts/Unchecky-Policy.md) | Unchecky software policy check |
+| Check | [👀Test Show Versions](docs/scripts/Test-Show-Versions.md) | Library test suite and version info |
+| Check | [👀Test Variable Output](docs/scripts/Test-Variable-Output.md) | Level.io automation variable testing |
+| Check | [👀debug](docs/scripts/Debug-Policy.md) | Debug script for policy testing |
+| Configure | [⚙️Extract and Set ScreenConnect Device URL](docs/scripts/ScreenConnect-Device-URL.md) | Extracts ScreenConnect GUID and sets custom field |
+| Fix | [🔧Fix Windows Services](docs/scripts/Fix-Windows-Services.md) | Restores Windows services to defaults (7/8/8.1/10/11) |
+| Fix | [🔧Enable System Restore](docs/scripts/System-Restore.md) | Enables System Restore and creates checkpoint |
+| Fix | [🔧Prevent Sleep](docs/scripts/Prevent-Sleep.md) | Temporarily prevents sleep with auto-restore |
+| Remove | [⛔Force Remove Anydesk](docs/scripts/Force-Remove-AnyDesk.md) | Removes AnyDesk with escalating force (5 phases) |
+| Remove | [⛔Force Remove Non MSP ScreenConnect](docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md) | Removes non-whitelisted ScreenConnect instances |
+| Utility | [🙏Wake all devices](docs/scripts/Wake-Devices.md) | Wakes devices in folder hierarchy via WOL |
+| Utility | [🔔Technician Alert Monitor](docs/scripts/Technician-Alert-Monitor.md) | Toast notifications for tech alerts |
 
 ---
 
