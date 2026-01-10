@@ -156,20 +156,27 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 
 ## Quick Start
 
-> **IMPORTANT: Custom Fields Required**
+> **IMPORTANT: Custom Field Required Before First Use**
 >
-> COOLForge scripts will **fail** if the required custom fields are not configured in your Level.io account.
-> Before deploying any scripts, you must either:
+> COOLForge requires **one custom field** to be configured before any scripts will work.
+> This field tells scripts where to store the library, cached scripts, lockfiles, and logs on each endpoint.
+>
+> **The Required Field:**
+> - `coolforge_msp_scratch_folder` — A persistent folder path on endpoints (e.g., `C:\ProgramData\YourMSP`)
+>
+> Without this field, scripts have nowhere to store files and will fail immediately.
 >
 > **Option A: Run the Setup Wizard (Recommended)**
 > 1. Clone or download this repository to your local workstation
 > 2. Run `tools/Setup-COOLForgeCustomFields.ps1`
-> 3. Follow the prompts to create all required custom fields automatically
+> 3. Follow the prompts — creates required field and optional integrations
 >
-> **Option B: Manual Setup**
-> 1. Create these custom fields in Level.io (Settings → Custom Fields):
->    - `coolforge_msp_scratch_folder` (Text) — Set value to `C:\ProgramData\YourMSPName`
-> 2. See the full [Custom Fields](#prerequisites) table below for optional fields
+> **Option B: Manual Setup (Minimum)**
+> 1. In Level.io: Settings → Custom Fields → Add Custom Field
+> 2. Name: `coolforge_msp_scratch_folder` | Type: Text
+> 3. Set default value to your preferred path (e.g., `C:\ProgramData\ACME_IT`)
+>
+> All other custom fields are optional and only needed for specific features (Huntress, ScreenConnect, etc.)
 
 ### Prerequisites
 
@@ -179,11 +186,11 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 
 | Custom Field | Example Value | Required | Description |
 |--------------|---------------|----------|-------------|
-| `CoolForge_msp_scratch_folder` | `C:\ProgramData\MSP` | **Yes** | Persistent storage folder on endpoints |
-| `CoolForge_ps_module_library_source` | *(leave empty)* | No | URL to download the library (defaults to official repo) |
-| `CoolForge_pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag |
-| `CoolForge_pat` | `ghp_abc123xyz...` | No | GitHub PAT for private repos (admin-only, see [Private Fork Guide](docs/PRIVATE-FORK.md)) |
-| `CoolForge_nosleep_duration_min` | `60` | No | Duration in minutes to prevent sleep (default: 60) |
+| `coolforge_msp_scratch_folder` | `C:\ProgramData\YourMSP` | **Yes** | Where COOLForge stores scripts, library, lockfiles, and logs on each endpoint. Choose a persistent folder that won't be cleaned up. |
+| `coolforge_ps_module_library_source` | *(leave empty)* | No | URL to download the library (defaults to official repo) |
+| `coolforge_pin_psmodule_to_version` | `v2025.12.29` | No | Pin scripts to a specific version tag |
+| `coolforge_pat` | `ghp_abc123xyz...` | No | GitHub PAT for private repos (admin-only, see [Private Fork Guide](docs/PRIVATE-FORK.md)) |
+| `coolforge_nosleep_duration_min` | `60` | No | Duration in minutes to prevent sleep (default: 60) |
 
 ### Automated Setup
 
