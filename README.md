@@ -156,6 +156,21 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 
 ## Quick Start
 
+> **IMPORTANT: Custom Fields Required**
+>
+> COOLForge scripts will **fail** if the required custom fields are not configured in your Level.io account.
+> Before deploying any scripts, you must either:
+>
+> **Option A: Run the Setup Wizard (Recommended)**
+> 1. Clone or download this repository to your local workstation
+> 2. Run `tools/Setup-COOLForgeCustomFields.ps1`
+> 3. Follow the prompts to create all required custom fields automatically
+>
+> **Option B: Manual Setup**
+> 1. Create these custom fields in Level.io (Settings → Custom Fields):
+>    - `coolforge_msp_scratch_folder` (Text) — Set value to `C:\ProgramData\YourMSPName`
+> 2. See the full [Custom Fields](#prerequisites) table below for optional fields
+
 ### Prerequisites
 
 - Level.io agent installed on target devices
