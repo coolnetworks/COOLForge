@@ -15,7 +15,7 @@
 ce7971087e023dd883650a2ed40fc3d1  scripts/Check/👀huntress.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
-e82a2b59cde71a3313f862ae49ba9ace  scripts/Check/👀unchecky.ps1
+519fb6e6afc8ada2e16b36f85722b9d2  scripts/Check/👀unchecky.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
 0b21652beac13ca2d365c53011846b3c  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 6bae62fc42ea30a1ace3c2472dc4f901  scripts/Fix/🔧Fix Windows 10 Services.ps1

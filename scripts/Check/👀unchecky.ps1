@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.11
+    Version:          2026.01.12.12
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.11
+# Version: 2026.01.12.12
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -225,7 +225,7 @@ function Write-DebugPolicy {
 }
 
 function Write-DebugTagManagement {
-    param([bool]$HasApiKey, [string]$DeviceHostname)
+    param([bool]$HasApiKey, [string]$DeviceHostname, [string]$ApiKeyValue)
     if (-not $DebugScripts) { return }
 
     Write-Host ""
@@ -236,11 +236,53 @@ function Write-DebugTagManagement {
     $HostnameReady = -not [string]::IsNullOrWhiteSpace($DeviceHostname) -and $DeviceHostname -notlike "{{*}}"
 
     Write-Host "  API Key Present:     $(if ($HasApiKey) { '[YES]' } else { '[NO] - Tag updates will be SKIPPED!' })" -ForegroundColor $(if ($HasApiKey) { 'Green' } else { 'Red' })
+
+    # Show API key diagnostics (without exposing the key)
+    if ($ApiKeyValue) {
+        $KeyLen = $ApiKeyValue.Length
+        $FirstChar = $ApiKeyValue[0]
+        $LastChars = if ($KeyLen -gt 3) { $ApiKeyValue.Substring($KeyLen - 3) } else { "???" }
+        $HasWhitespace = $ApiKeyValue -match '^\s|\s$'
+        $HasNewline = $ApiKeyValue -match '[\r\n]'
+        Write-Host "  API Key Length:      $KeyLen chars" -ForegroundColor $(if ($KeyLen -gt 20) { 'Green' } else { 'Yellow' })
+        Write-Host "  API Key First Char:  '$FirstChar' (code: $([int][char]$FirstChar))" -ForegroundColor Gray
+        Write-Host "  API Key Last 3:      '...$LastChars'" -ForegroundColor Gray
+        if ($HasWhitespace) {
+            Write-Host "  [WARNING] API key has leading/trailing whitespace!" -ForegroundColor Red
+        }
+        if ($HasNewline) {
+            Write-Host "  [WARNING] API key contains newline characters!" -ForegroundColor Red
+        }
+    }
+
     Write-Host "  Device Hostname:     $(if ($HostnameReady) { "[YES] $DeviceHostname" } else { '[NO]' })" -ForegroundColor $(if ($HostnameReady) { 'Green' } else { 'Red' })
 
     if ($HasApiKey -and $HostnameReady) {
         Write-Host ""
         Write-Host "  [OK] Tag management is READY" -ForegroundColor Green
+
+        # Quick API test
+        Write-Host ""
+        Write-Host "  --- API Connection Test ---"
+        try {
+            $TestUri = "https://api.level.io/v2/devices?limit=1"
+            $TestHeaders = @{
+                "Authorization" = $ApiKeyValue
+                "Content-Type"  = "application/json"
+                "Accept"        = "application/json"
+            }
+            $TestResult = Invoke-RestMethod -Uri $TestUri -Headers $TestHeaders -Method GET -TimeoutSec 10 -UseBasicParsing
+            Write-Host "  [OK] API connection successful (found $($TestResult.data.Count) device(s))" -ForegroundColor Green
+        }
+        catch {
+            $ErrMsg = $_.Exception.Message
+            Write-Host "  [FAILED] API test: $ErrMsg" -ForegroundColor Red
+            if ($ErrMsg -match "401") {
+                Write-Host "  -> API key is rejected by Level.io" -ForegroundColor Yellow
+                Write-Host "  -> Check: Is this the correct API key?" -ForegroundColor Yellow
+                Write-Host "  -> Check: Does it have 'Devices' and 'Tags' permissions?" -ForegroundColor Yellow
+            }
+        }
     } else {
         Write-Host ""
         Write-Host "  [WARNING] Tag management will be SKIPPED" -ForegroundColor Red
@@ -492,7 +534,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.10"
+$ScriptVersion = "2026.01.12.12"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -585,7 +627,7 @@ $InvokeParams = @{ ScriptBlock = {
     Write-DebugPolicy -Policy $Policy
 
     # Debug: Show tag management readiness
-    Write-DebugTagManagement -HasApiKey ([bool]$LevelApiKey) -DeviceHostname $DeviceHostname
+    Write-DebugTagManagement -HasApiKey ([bool]$LevelApiKey) -DeviceHostname $DeviceHostname -ApiKeyValue $LevelApiKey
 
     Write-Host ""
 
