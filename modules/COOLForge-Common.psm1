@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.16
+    Version:    2026.01.12.17
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -1321,11 +1321,27 @@ function Invoke-LevelApiCall {
     }
     catch {
         $StatusCode = $null
+        $ResponseBody = $null
         if ($_.Exception.Response) {
             $StatusCode = [int]$_.Exception.Response.StatusCode
+            # Try to read the response body for error details
+            try {
+                $Stream = $_.Exception.Response.GetResponseStream()
+                $Reader = New-Object System.IO.StreamReader($Stream)
+                $ResponseBody = $Reader.ReadToEnd()
+                $Reader.Close()
+                $Stream.Close()
+            }
+            catch {
+                # Ignore stream read errors
+            }
         }
-        Write-LevelLog "API call failed: $($_.Exception.Message)" -Level "ERROR"
-        return @{ Success = $false; Error = $_.Exception.Message; StatusCode = $StatusCode }
+        $ErrorMsg = $_.Exception.Message
+        if ($ResponseBody) {
+            $ErrorMsg = "$ErrorMsg - Response: $ResponseBody"
+        }
+        Write-LevelLog "API call failed: $ErrorMsg" -Level "ERROR"
+        return @{ Success = $false; Error = $ErrorMsg; StatusCode = $StatusCode; ResponseBody = $ResponseBody }
     }
 }
 
