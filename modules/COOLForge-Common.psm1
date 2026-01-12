@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.13.02
+    Version:    2026.01.13.03
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -1785,10 +1785,6 @@ function Get-LevelDeviceById {
         return $null
     }
 
-    # Debug: Log raw response structure to understand API format
-    $ResponseJson = $Result.Data | ConvertTo-Json -Depth 3 -Compress
-    Write-LevelLog "Device API response: $ResponseJson" -Level "DEBUG"
-
     # Check if response has data wrapper (like list endpoints) or is direct device object
     if ($Result.Data.data -and $Result.Data.data.id) {
         # Response is wrapped: { data: { ...device... } }
@@ -1839,43 +1835,21 @@ function Get-LevelDeviceTagNames {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    # Get the device to get tag_ids
+    # Get the device - API returns tags array directly with tag names
     $Device = Get-LevelDeviceById -ApiKey $ApiKey -DeviceId $DeviceId -BaseUrl $BaseUrl
     if (-not $Device) {
         Write-LevelLog "Get-LevelDeviceTagNames: No device returned" -Level "DEBUG"
         return @()
     }
 
-    # Debug: Show what tag_ids field contains
-    $TagIdsJson = $Device.tag_ids | ConvertTo-Json -Compress -ErrorAction SilentlyContinue
-    Write-LevelLog "Device tag_ids field: $TagIdsJson (type: $($Device.tag_ids.GetType().Name))" -Level "DEBUG"
-
-    if (-not $Device.tag_ids -or $Device.tag_ids.Count -eq 0) {
-        Write-LevelLog "Device has no tag_ids" -Level "DEBUG"
+    # API returns "tags" array with tag names directly (not tag_ids)
+    if (-not $Device.tags -or $Device.tags.Count -eq 0) {
+        Write-LevelLog "Device has no tags" -Level "DEBUG"
         return @()
     }
 
-    # Get all tags to resolve IDs to names
-    $AllTags = Get-LevelTags -ApiKey $ApiKey -BaseUrl $BaseUrl
-    if (-not $AllTags) {
-        Write-LevelLog "Failed to get all tags for resolution" -Level "DEBUG"
-        return @()
-    }
-
-    Write-LevelLog "Resolving $($Device.tag_ids.Count) tag IDs from $($AllTags.Count) total tags" -Level "DEBUG"
-
-    # Map tag_ids to names
-    $TagNames = @()
-    foreach ($TagId in $Device.tag_ids) {
-        $Tag = $AllTags | Where-Object { $_.id -eq $TagId } | Select-Object -First 1
-        if ($Tag) {
-            $TagNames += $Tag.name
-        } else {
-            Write-LevelLog "Tag ID '$TagId' not found in tag list" -Level "DEBUG"
-        }
-    }
-
-    return $TagNames
+    Write-LevelLog "Device has $($Device.tags.Count) tags: $($Device.tags -join ', ')" -Level "DEBUG"
+    return @($Device.tags)
 }
 
 # ============================================================

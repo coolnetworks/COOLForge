@@ -124,37 +124,7 @@ if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
     $LevelApiKey = $null
 }
 
-# DEBUG: Show exactly what Level.io provided for apikey
-if ($DebugScripts) {
-    Write-Host ""
-    Write-Host "============================================================" -ForegroundColor Yellow
-    Write-Host " LAUNCHER DEBUG: API Key Source Tracing" -ForegroundColor Yellow
-    Write-Host "============================================================" -ForegroundColor Yellow
-    Write-Host "  Custom field name:   apikey" -ForegroundColor Gray
-    Write-Host "  Template syntax:     " -NoNewline -ForegroundColor Gray
-    Write-Host "{{" -NoNewline -ForegroundColor Gray
-    Write-Host "cf_apikey" -NoNewline -ForegroundColor Gray
-    Write-Host "}}" -ForegroundColor Gray
-    if ($LevelApiKey_Raw -and $LevelApiKey_Raw -notlike "{{*}}") {
-        $RawLen = $LevelApiKey_Raw.Length
-        # Mask the key: show first 4 + ... + last 4 chars
-        $MaskedKey = if ($RawLen -gt 12) {
-            $LevelApiKey_Raw.Substring(0, 4) + "..." + $LevelApiKey_Raw.Substring($RawLen - 4)
-        } elseif ($RawLen -gt 4) {
-            $LevelApiKey_Raw.Substring(0, 2) + "..." + $LevelApiKey_Raw.Substring($RawLen - 2)
-        } else {
-            "****"
-        }
-        Write-Host "  Raw value (masked):  $MaskedKey" -ForegroundColor Yellow
-        Write-Host "  Raw length:          $RawLen chars" -ForegroundColor Gray
-    } elseif ($LevelApiKey_Raw -like "{{*}}") {
-        Write-Host "  [ERROR] Template not resolved - custom field 'apikey' not found!" -ForegroundColor Red
-    } else {
-        Write-Host "  [ERROR] Raw value is empty!" -ForegroundColor Red
-    }
-    Write-Host "  Final value:         $(if ($LevelApiKey) { 'Set (will be passed to script)' } else { 'NULL (API calls disabled)' })" -ForegroundColor $(if ($LevelApiKey) { 'Green' } else { 'Red' })
-    Write-Host ""
-}
+# API key debug output is handled by the script itself - no need to duplicate here
 
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
