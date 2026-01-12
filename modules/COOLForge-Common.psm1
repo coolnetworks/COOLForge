@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.13.01
+    Version:    2026.01.13.02
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -2085,7 +2085,8 @@ function Add-LevelTagToDevice {
     )
 
     $Uri = "$BaseUrl/tags/$TagId/devices"
-    $Body = @{ device_id = $DeviceId }
+    # API expects device_ids as an array (plural)
+    $Body = @{ device_ids = @($DeviceId) }
 
     Write-LevelLog "POST $Uri (TagId: $TagId, DeviceId: $DeviceId)" -Level "DEBUG"
 
@@ -2152,7 +2153,8 @@ function Remove-LevelTagFromDevice {
     )
 
     $Uri = "$BaseUrl/tags/$TagId/devices"
-    $Body = @{ device_id = $DeviceId }
+    # API expects device_ids as an array (plural)
+    $Body = @{ device_ids = @($DeviceId) }
 
     Write-LevelLog "DELETE $Uri (TagId: $TagId, DeviceId: $DeviceId)" -Level "DEBUG"
 
