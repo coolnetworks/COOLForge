@@ -54,13 +54,8 @@ $ScriptToRun = "??Fix Windows 11 Services.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "👀Test Show Versions.ps1"
-    # ... rest of launcher code ...
-
-.EXAMPLE
-    # Or use a custom field to control which script runs:
-    $ScriptToRun = "{{cf_script_to_run}}"
-    # ... rest of launcher code ...
+    $ScriptToRun = "unchecky.ps1"
+    # The launcher will find the full path (scripts/Check/👀unchecky.ps1) from MD5SUMS
 #>
 
 # Script Launcher
