@@ -559,7 +559,7 @@ fe69c650e983626d551235a547cf4a80  E:/COOLForge/launchers/🔧Fix Windows 11 Serv
 475ed3a33ab2ca44a0d4313494317cd3  E:/COOLForge/launchers/🔧Fix Windows 8.1 Services.ps1
 cb0196235a6cdebd9f994d3f0dcb4ab5  E:/COOLForge/launchers/🔧Prevent Sleep.ps1
 41cfb9d1c0a9dc79439cbf2b9a598c78  E:/COOLForge/launchers/🙏Wake all devices in parent to level.io folder.ps1
-44ee8eb5143b177140d5929834130a4b  E:/COOLForge/modules/COOLForge-Common.psm1
+a8ed122f3bf261b7f63d0c2f3ea43b3a  E:/COOLForge/modules/COOLForge-Common.psm1
 3c230ff8cd8b89385d4fb66e136aa10a  E:/COOLForge/pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  E:/COOLForge/pre-release/Test-Syntax.ps1
 69eff28478ce971c39163276c6dfa164  E:/COOLForge/pre-release/Update-Launchers.ps1
@@ -607,6 +607,7 @@ bcc7c195e0d0261e5673ccf0c58e88a8  E:/COOLForge/testing/Test-HuntressOrgProvision
 5ad7dc4a1cf5e36de75a5b96053fc9f6  E:/COOLForge/testing/Test-ScreenConnectAPI.ps1
 93839f89d9067ea0f2b3cff373c2980e  E:/COOLForge/TODO.md
 2d520fc27f3c5b96d4b1fe701f835644  E:/COOLForge/tools/Add-COOLForgeCustomField.ps1
+a4e8d3753dc94a8ed78c1d216c423893  E:/COOLForge/tools/Analyze-LevelBackup.ps1
 8bcecce7fefa2dfaec07d82e0146c4e6  E:/COOLForge/tools/Backup-COOLForgeCustomFields.ps1
 e451c2491e38119d34efa4a237609824  E:/COOLForge/tools/Backup-LevelAutomationsAndScripts.ps1
 2b9cb2c111e86ace7e3c720e355090c3  E:/COOLForge/tools/Backup-LevelAutomationsAndScripts.README.md
@@ -618,7 +619,7 @@ ff9c1079750f4f60d06582f32ea86404  E:/COOLForge/tools/check-launchers.ps1
 70ede1aa50b0883a3983a61ecc0090b2  E:/COOLForge/tools/Export-DeviceCustomFields.ps1
 06b183d2726aef60adebe4d678f9a141  E:/COOLForge/tools/fix-encoding.ps1
 b24e5fc2053bf0c258d9cf4d8d4d5766  E:/COOLForge/tools/Generate-CustomFieldsConfig.ps1
-1705198b6a35decebca31aebad692d80  E:/COOLForge/tools/generate-md5sums.ps1
+1705198b6a35decebca31aebad692d80  E:/COOLForge/tools/Generate-MD5SUMS.ps1
 42b466e7421a5f8d55d4168dd6b3da48  E:/COOLForge/tools/Generate-WorkflowCharts.ps1
 1f72fe85c8ead41cc20fe221bc5fcda6  E:/COOLForge/tools/Get-DeviceScreenConnectUrl.ps1
 65c3d96d60f989f816761fc1b8fe8864  E:/COOLForge/tools/Get-FullDeviceLevelCustomFields.ps1
@@ -641,7 +642,7 @@ c149a0e30b9d9f4dd59088b6365e95d9  E:/COOLForge/tools/how-i-got-here/get-automati
 08c8659f6ac12557e896c95c53c1ffee  E:/COOLForge/tools/regenerate-launchers.ps1
 fa1c378f96fde03552b003373e5feb1e  E:/COOLForge/tools/Remove-COOLForgeSetup.ps1
 22d47f07c2cc0b55c352099b9282f651  E:/COOLForge/tools/Remove-LegacyCustomFields.ps1
-cf1d4faea9b1dcf7490e155459430688  E:/COOLForge/tools/Setup-COOLForge.ps1
+0ed92e14771be129460a7fb0fb974df1  E:/COOLForge/tools/Setup-COOLForge.ps1
 3765015bf26dc7b42f1f5337cb9913d7  E:/COOLForge/tools/Sync-COOLForgeCustomFields.ps1
 633631c9954ed495c3fc9cb32dd9c5dd  E:/COOLForge/tools/Test-LevelApiCustomFields.ps1
 61fe6b30af1a0eaaeaa455563b279c36  E:/COOLForge/tools/Update-Launchers.ps1

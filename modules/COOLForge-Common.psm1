@@ -550,6 +550,61 @@ function Get-LevelDeviceInfo {
         }
     }
 #>
+# ============================================================
+# EMOJI BYTE PATTERNS (Private Helper - Single Source of Truth)
+# ============================================================
+# This private function centralizes all corrupted byte pattern definitions
+# to avoid duplication between Get-EmojiMap and Get-EmojiLiterals.
+
+function Get-EmojiBytePatterns {
+    # Level.io corrupts UTF-8 emojis when passing them through its variable system.
+    # Observed corruption patterns (UTF-8 bytes -> corrupted bytes):
+    # U+2705  Checkmark -> CE 93 C2 A3 C3 A0
+    # U+274C  Cross     -> CE 93 C2 A5 C3 AE
+    # U+26D4  NoEntry   -> CE 93 C2 A2 C3 B6
+    # U+1F64F Pray      -> E2 89 A1 C6 92 C3 96 C3 85
+    # U+1F6AB Prohibit  -> E2 89 A1 C6 92 C2 A2 C3 A6
+    # U+1F4CC Pin       -> E2 89 A1 C6 92 C3 B4 C3 AE
+    # U+1F504 Arrows    -> TBD (will be logged to EmojiTags.log)
+    # U+1FA9F Window    -> E2 89 A1 C6 92 C2 AC C6 92
+    # U+1F6A8 Alert     -> E2 89 A1 C6 92 C3 9C C2 BF
+    # U+1F427 Penguin   -> E2 89 A1 C6 92 C3 89 C2 BA
+    # U+1F300 Cyclone   -> E2 89 A1 C6 92 C3 AE C3 87
+    # U+1F6F0 Satellite -> E2 89 A1 C6 92 C2 A2 E2 96 91 E2 88 A9 E2 95 95 C3 85
+
+    return @{
+        # Corrupted patterns (from Level.io byte sequences)
+        CorruptedCheck     = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))
+        CorruptedCross     = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA5, 0xC3, 0xAE))
+        CorruptedNoEntry   = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))
+        CorruptedPray      = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))
+        CorruptedProhibit  = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))
+        CorruptedPin       = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))
+        CorruptedWindow    = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))
+        CorruptedAlert     = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))
+        CorruptedPenguin   = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))
+        CorruptedCyclone   = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))
+        CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))
+
+        # Clean emoji characters (built programmatically to avoid encoding issues)
+        Check     = [char]0x2705
+        Cross     = [char]0x274C
+        NoEntry   = [char]::ConvertFromUtf32(0x26D4)
+        Pray      = [char]::ConvertFromUtf32(0x1F64F)
+        Prohibit  = [char]::ConvertFromUtf32(0x1F6AB)
+        Pin       = [char]::ConvertFromUtf32(0x1F4CC)
+        Arrows    = [char]::ConvertFromUtf32(0x1F504)
+        Window    = [char]::ConvertFromUtf32(0x1FA9F)
+        Alert     = [char]::ConvertFromUtf32(0x1F6A8)
+        Penguin   = [char]::ConvertFromUtf32(0x1F427)
+        Cyclone   = [char]::ConvertFromUtf32(0x1F300)
+        Satellite = [char]::ConvertFromUtf32(0x1F6F0)
+        Wrench    = [char]::ConvertFromUtf32(0x1F527)
+        Eyes      = [char]::ConvertFromUtf32(0x1F440)
+        Technician = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)
+    }
+}
+
 function Get-EmojiMap {
     # 5-TAG POLICY MODEL (per POLICY-TAGS.md)
     # =========================================
@@ -565,88 +620,52 @@ function Get-EmojiMap {
     #   U+274C Cross = Excluded (device excluded from management)
     #   Both = GlobalPin (device pinned globally, no changes allowed)
 
-    # Observed corruption patterns from Level.io:
-    # U+2705 -> CE 93 C2 A3 C3 A0 (displays as: checkmark corrupted)
-    # U+1F4CC -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: pushpin corrupted)
-    # U+1F64F -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: pray corrupted)
-    # U+1F6AB -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: prohibit corrupted)
-    # U+1F504 -> E2 89 A1 C6 92 C3 94 C3 84 (displays as: arrows corrupted) - TBD
-
-    # Build corrupted string patterns from observed byte sequences
-    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # U+2705
-    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # U+1F4CC
-    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # U+1F64F
-    $CorruptedProhibit = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # U+1F6AB
-    # U+1F504 corruption pattern TBD - will be logged to EmojiTags.log when encountered
-    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # U+1FA9F
-    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # U+1F6A8
-    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # U+1F427
-    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # U+1F300
-    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # U+1F6F0
-    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA5, 0xC3, 0xAE))  # U+274C - observed
-    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # U+26D4 Stop/NoEntry - observed
-
-    # Build clean emoji strings programmatically to avoid encoding issues
-    # when module is loaded via scriptblock::Create()
-    $EmojiPray = [char]::ConvertFromUtf32(0x1F64F)       # U+1F64F Pray - Install
-    $EmojiProhibit = [char]::ConvertFromUtf32(0x1F6AB)   # U+1F6AB Prohibited - Remove
-    $EmojiArrows = [char]::ConvertFromUtf32(0x1F504)     # U+1F504 Arrows - Reinstall
-    $EmojiPin = [char]::ConvertFromUtf32(0x1F4CC)        # U+1F4CC Pushpin - Pin
-    $EmojiCheck = [char]0x2705                            # U+2705 Checkmark - Installed
-    $EmojiCross = [char]0x274C                            # U+274C Cross - Excluded
-    $EmojiWindow = [char]::ConvertFromUtf32(0x1FA9F)     # U+1FA9F Window - Windows
-    $EmojiAlert = [char]::ConvertFromUtf32(0x1F6A8)      # U+1F6A8 Police light - Alert
-    $EmojiPenguin = [char]::ConvertFromUtf32(0x1F427)    # U+1F427 Penguin - Linux
-    $EmojiCyclone = [char]::ConvertFromUtf32(0x1F300)    # U+1F300 Cyclone - AdelaideMRI
-    $EmojiSatellite = [char]::ConvertFromUtf32(0x1F6F0)  # U+1F6F0 Satellite
-    $EmojiWrench = [char]::ConvertFromUtf32(0x1F527)     # U+1F527 Wrench - Fix
-    $EmojiEyes = [char]::ConvertFromUtf32(0x1F440)       # U+1F440 Eyes - Check
-    $EmojiNoEntry = [char]::ConvertFromUtf32(0x26D4)     # U+26D4 No Entry - Remove/Block
+    $E = Get-EmojiBytePatterns
 
     return @{
         # ============================================================
         # SOFTWARE POLICY TAGS (5-tag model per POLICY-TAGS.md)
         # ============================================================
         # Override tags (transient - removed after action)
-        $EmojiPray = "Install"
-        $EmojiProhibit = "Remove"
-        $EmojiNoEntry = "Remove"
-        $EmojiArrows = "Reinstall"
+        $E.Pray = "Install"
+        $E.Prohibit = "Remove"
+        $E.NoEntry = "Remove"
+        $E.Arrows = "Reinstall"
         # Override tag (persistent - admin intent)
-        $EmojiPin = "Pin"
+        $E.Pin = "Pin"
         # Status tag (set by script)
-        $EmojiCheck = "Installed"
+        $E.Check = "Installed"
 
         # ============================================================
         # GLOBAL CONTROL TAGS (standalone, no software suffix)
         # ============================================================
-        $EmojiCross = "Excluded"
+        $E.Cross = "Excluded"
 
         # ============================================================
         # PLATFORM/CATEGORY TAGS (informational)
         # ============================================================
-        $EmojiWindow = "Windows"
-        $EmojiAlert = "Alert"
-        $EmojiPenguin = "Linux"
-        $EmojiCyclone = "AdelaideMRI"
-        $EmojiSatellite = "Satellite"
-        $EmojiWrench = "Fix"
-        $EmojiEyes = "Check"
+        $E.Window = "Windows"
+        $E.Alert = "Alert"
+        $E.Penguin = "Linux"
+        $E.Cyclone = "AdelaideMRI"
+        $E.Satellite = "Satellite"
+        $E.Wrench = "Fix"
+        $E.Eyes = "Check"
 
         # ============================================================
         # LEVEL.IO CORRUPTED PATTERNS
         # ============================================================
-        $CorruptedCheckmark = "Installed"
-        $CorruptedPin = "Pin"
-        $CorruptedPray = "Install"
-        $CorruptedProhibit = "Remove"
-        $CorruptedNoEntry = "Remove"
-        $CorruptedCross = "Excluded"
-        $CorruptedWindow = "Windows"
-        $CorruptedAlert = "Alert"
-        $CorruptedPenguin = "Linux"
-        $CorruptedCyclone = "AdelaideMRI"
-        $CorruptedSatellite = "Satellite"
+        $E.CorruptedCheck = "Installed"
+        $E.CorruptedPin = "Pin"
+        $E.CorruptedPray = "Install"
+        $E.CorruptedProhibit = "Remove"
+        $E.CorruptedNoEntry = "Remove"
+        $E.CorruptedCross = "Excluded"
+        $E.CorruptedWindow = "Windows"
+        $E.CorruptedAlert = "Alert"
+        $E.CorruptedPenguin = "Linux"
+        $E.CorruptedCyclone = "AdelaideMRI"
+        $E.CorruptedSatellite = "Satellite"
     }
 }
 
@@ -657,7 +676,7 @@ function Get-EmojiMap {
 .DESCRIPTION
     Provides clean emoji characters and their Level.io corrupted equivalents.
     Use this to get the actual emoji strings rather than their semantic meanings.
-    This is the SINGLE SOURCE OF TRUTH for all emoji character definitions.
+    Uses Get-EmojiBytePatterns internally as the single source of truth.
 
 .OUTPUTS
     Hashtable with emoji characters keyed by their semantic name:
@@ -671,35 +690,8 @@ function Get-EmojiMap {
     }
 #>
 function Get-EmojiLiterals {
-    # Build corrupted patterns from observed byte sequences
-    $CorruptedCheck = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # U+2705
-    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # U+1F4CC
-    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # U+1F64F
-    $CorruptedProhibit = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # U+1F6AB
-    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA5, 0xC3, 0xAE))  # U+274C
-    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # U+26D4
-
-    return @{
-        # Clean emoji characters - Policy tags
-        Check    = [char]0x2705                            # U+2705 Checkmark
-        Cross    = [char]0x274C                            # U+274C Cross
-        Pray     = [char]::ConvertFromUtf32(0x1F64F)       # U+1F64F Pray - Install
-        Prohibit = [char]::ConvertFromUtf32(0x1F6AB)       # U+1F6AB Prohibited - Remove
-        NoEntry  = [char]::ConvertFromUtf32(0x26D4)        # U+26D4 No Entry - Remove
-        Pin      = [char]::ConvertFromUtf32(0x1F4CC)       # U+1F4CC Pushpin - Pin
-        Arrows   = [char]::ConvertFromUtf32(0x1F504)       # U+1F504 Arrows - Reinstall
-
-        # Clean emoji characters - Special tags
-        Technician = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)  # U+1F9D1 U+200D U+1F4BB (person + ZWJ + laptop)
-
-        # Level.io corrupted patterns
-        CorruptedCheck    = $CorruptedCheck
-        CorruptedCross    = $CorruptedCross
-        CorruptedPray     = $CorruptedPray
-        CorruptedProhibit = $CorruptedProhibit
-        CorruptedNoEntry  = $CorruptedNoEntry
-        CorruptedPin      = $CorruptedPin
-    }
+    # Use shared byte patterns (single source of truth)
+    return Get-EmojiBytePatterns
 }
 
 # ============================================================
@@ -2807,11 +2799,14 @@ function Get-LevelCustomFieldById {
 
 <#
 .SYNOPSIS
-    Updates a custom field's global/account-level default value.
+    Sets a custom field's global/account-level default value.
 
 .DESCRIPTION
     Uses PATCH /custom_field_values with assigned_to_id=null to set the
     global organization-level default value for a custom field.
+
+    NOTE: This sets the ACCOUNT-LEVEL default, not entity-specific values.
+    For entity-specific values (org/folder/device), use Set-LevelCustomFieldValue.
 
 .PARAMETER ApiKey
     Level.io API key for authentication.
@@ -2829,9 +2824,9 @@ function Get-LevelCustomFieldById {
     $true on success, $false on failure.
 
 .EXAMPLE
-    Update-LevelCustomFieldValue -ApiKey $ApiKey -FieldId "cf_123" -Value "C:\ProgramData\MSP"
+    Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId "cf_123" -Value "C:\ProgramData\MSP"
 #>
-function Update-LevelCustomFieldValue {
+function Set-LevelCustomFieldDefaultValue {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -4382,7 +4377,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.13.05"
+$script:ModuleVersion = "2026.01.13.06"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -4429,9 +4424,9 @@ Export-ModuleMember -Function @(
     'Find-LevelCustomField',
     'New-LevelCustomField',
     'Set-LevelCustomFieldValue',
+    'Set-LevelCustomFieldDefaultValue',
     'Initialize-LevelSoftwarePolicy',
     'Get-LevelCustomFieldById',
-    'Update-LevelCustomFieldValue',
     'Remove-LevelCustomField',
 
     # Hierarchy Navigation
