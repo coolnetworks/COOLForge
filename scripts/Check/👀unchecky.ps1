@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.10
+    Version:          2026.01.12.11
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.9
+# Version: 2026.01.12.11
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -569,6 +569,14 @@ $InvokeParams = @{ ScriptBlock = {
     Write-Host ""
 
     # Run the policy check with the 5-tag model
+    # For deep debugging, call Get-SoftwarePolicy directly with -ShowDebug
+    if ($DebugScripts) {
+        Write-Host ""
+        Write-Host "============================================================" -ForegroundColor Cyan
+        Write-Host " DEBUG: Get-SoftwarePolicy Internal Trace" -ForegroundColor Cyan
+        Write-Host "============================================================" -ForegroundColor Cyan
+        $null = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags -CustomFieldPolicy $CustomFieldPolicy -ShowDebug
+    }
     $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName `
                                          -DeviceTags $DeviceTags `
                                          -CustomFieldPolicy $CustomFieldPolicy

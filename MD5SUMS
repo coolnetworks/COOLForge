@@ -1,4 +1,4 @@
-﻿# MD5SUMS - Checksums for COOLForge files
+﻿# MD5SUMS - Checksums for COOLForge_Lib files
 # Format: MD5_HASH  FILENAME
 # Generated: 2026-01-12
 #
@@ -9,12 +9,13 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-41807c7ba554926cd511d6dfd280eaf8  modules/COOLForge-Common.psm1
+3eb0d1ce57089b8a6de182baf7a24cd9  modules/COOLForge-Common.psm1
 7a8fb4ff7973b51ac709c93569b31d36  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+3940425d5ebc2db1f052a9d85affd944  scripts/Check/👀debug.ps1
 ce7971087e023dd883650a2ed40fc3d1  scripts/Check/👀huntress.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
-fe52cb7b945324b6265bb382a85f852a  scripts/Check/👀unchecky.ps1
+e82a2b59cde71a3313f862ae49ba9ace  scripts/Check/👀unchecky.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
 0b21652beac13ca2d365c53011846b3c  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 6bae62fc42ea30a1ace3c2472dc4f901  scripts/Fix/🔧Fix Windows 10 Services.ps1
@@ -27,3 +28,4 @@ d31ecec221d65522ca3cc89827474884  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 a37c8212b8e445fd377e41fc706c39f4  scripts/Utility/🔔Technician Alert Monitor.ps1
 92cd52534025a471791185d586e090c9  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1
+d3ae7214f5b017989d26c5311ef464ae  templates/What is this folder.md

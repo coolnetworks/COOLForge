@@ -800,6 +800,15 @@ function Get-SoftwarePolicy {
     $HasGlobalCross = $false
 
     foreach ($Tag in $TagArray) {
+        if ($ShowDebug) {
+            $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
+            $TagHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+            $CheckBytes = [System.Text.Encoding]::UTF8.GetBytes($CorruptedCheckmark)
+            $CheckHex = ($CheckBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+            Write-Host "[DEBUG] Comparing tag '$Tag' ($TagHex) vs corrupted checkmark ($CheckHex)"
+            Write-Host "[DEBUG]   Length: $($Tag.Length) vs $($CorruptedCheckmark.Length)"
+            Write-Host "[DEBUG]   Equals: $($Tag -eq $CorruptedCheckmark)"
+        }
         # Standalone checkmark (exactly the emoji, no suffix)
         if ($Tag -eq "$CheckmarkEmoji" -or $Tag -eq $CorruptedCheckmark) {
             $HasGlobalCheckmark = $true
