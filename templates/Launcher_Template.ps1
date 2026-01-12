@@ -70,11 +70,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
 # ============================================================
 # These variables will be passed to the downloaded script
-# Supports both new (CoolForge_*) and legacy field names for backward compatibility
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_coolforge_msp_scratch_folder}}") {
-    $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
-}
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 

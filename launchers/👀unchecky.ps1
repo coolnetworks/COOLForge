@@ -2,7 +2,7 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
-$ScriptToRun = "unchecky.ps1"
+$ScriptToRun = "👀unchecky.ps1"
 $ScriptCategory = "Check"  # Check, Fix, Remove, or Maintain
 $policy_unchecky = "{{cf_policy_unchecky}}"
 <#
@@ -71,11 +71,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
 # ============================================================
 # These variables will be passed to the downloaded script
-# Supports both new (CoolForge_*) and legacy field names for backward compatibility
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_coolforge_msp_scratch_folder}}") {
-    $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
-}
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 

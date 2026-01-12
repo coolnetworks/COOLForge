@@ -2,6 +2,29 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
+# If a specific file is passed, check just that file
+if ($args.Count -gt 0) {
+    $filePath = $args[0]
+    if (Test-Path $filePath) {
+        $parseErrors = $null
+        $tokens = $null
+        $null = [System.Management.Automation.Language.Parser]::ParseFile($filePath, [ref]$tokens, [ref]$parseErrors)
+        if ($parseErrors -and $parseErrors.Count -gt 0) {
+            Write-Host "Syntax errors in: $filePath" -ForegroundColor Red
+            foreach ($e in $parseErrors) {
+                Write-Host "  Line $($e.Extent.StartLineNumber): $($e.Message)"
+            }
+            exit 1
+        } else {
+            Write-Host "No syntax errors in: $(Split-Path $filePath -Leaf)" -ForegroundColor Green
+            exit 0
+        }
+    } else {
+        Write-Host "File not found: $filePath" -ForegroundColor Red
+        exit 1
+    }
+}
+
 $errors = @()
 # Only check the main project folders, exclude testsetup and testing folders
 # Testing folder has emoji literals that may not parse correctly on all systems
