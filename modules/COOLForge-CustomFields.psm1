@@ -317,7 +317,9 @@ function Get-ExistingCustomFields {
         }
 
         $Data = $Result.Data
-        $Fields = if ($Data.data) { $Data.data } else { $Data }
+
+        # Check for .data property explicitly (don't rely on truthy/falsy since empty array is falsy)
+        $Fields = if ($null -ne $Data.data) { $Data.data } else { $Data }
 
         if ($Fields -and $Fields.Count -gt 0) {
             foreach ($Field in $Fields) {
@@ -336,7 +338,8 @@ function Get-ExistingCustomFields {
         }
     } while ($true)
 
-    return @($AllFields)
+    # Use Write-Output with -NoEnumerate to prevent PowerShell from unrolling empty arrays to $null
+    Write-Output -NoEnumerate @($AllFields)
 }
 
 function Find-CustomField {
@@ -583,15 +586,175 @@ function Get-CustomFieldById {
 }
 
 # ============================================================
+# TAG MANAGEMENT FUNCTIONS
+# ============================================================
+
+function Get-LevelTags {
+    <#
+    .SYNOPSIS
+        Gets all tags from Level.io.
+    .DESCRIPTION
+        Retrieves all tags defined in the Level.io account.
+        Handles pagination automatically.
+    .PARAMETER ApiKey
+        Level.io API key for authentication.
+    .OUTPUTS
+        Array of tag objects, or empty array on error.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey
+    )
+
+    $AllTags = @()
+    $StartingAfter = $null
+
+    do {
+        $Endpoint = "/tags?limit=100"
+        if ($StartingAfter) {
+            $Endpoint += "&starting_after=$StartingAfter"
+        }
+
+        # Use direct API call since we need the ApiKey parameter
+        # Note: Level.io API does NOT use "Bearer " prefix - just the API key directly
+        $Uri = "$Script:LevelApiBase$Endpoint"
+        $Headers = @{
+            "Authorization" = $ApiKey
+            "Content-Type"  = "application/json"
+        }
+
+        Write-Host "    DEBUG: LevelApiBase = '$Script:LevelApiBase'" -ForegroundColor DarkGray
+        Write-Host "    DEBUG: Calling GET $Uri" -ForegroundColor DarkGray
+        Write-Host "    DEBUG: ApiKey length = $($ApiKey.Length)" -ForegroundColor DarkGray
+
+        try {
+            $Response = Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Get -ErrorAction Stop
+            $AllTags += $Response.data
+
+            # Handle pagination
+            $StartingAfter = if ($Response.has_more -and $Response.data.Count -gt 0) {
+                $Response.data[-1].id
+            } else {
+                $null
+            }
+        }
+        catch {
+            Write-LevelError "Failed to fetch tags: $($_.Exception.Message)"
+            return @()
+        }
+    } while ($StartingAfter)
+
+    return $AllTags
+}
+
+function New-LevelTag {
+    <#
+    .SYNOPSIS
+        Creates a new tag in Level.io.
+    .DESCRIPTION
+        Creates a tag with the specified name in Level.io.
+    .PARAMETER ApiKey
+        Level.io API key for authentication.
+    .PARAMETER TagName
+        The name of the tag to create (can include emoji).
+    .OUTPUTS
+        Tag object on success, $null on failure.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName
+    )
+
+    # Note: Level.io API does NOT use "Bearer " prefix - just the API key directly
+    $Uri = "$Script:LevelApiBase/tags"
+    $Headers = @{
+        "Authorization" = $ApiKey
+        "Content-Type"  = "application/json; charset=utf-8"
+    }
+    # Ensure proper UTF-8 encoding for emoji characters
+    $JsonBody = @{ name = $TagName } | ConvertTo-Json
+    $Body = [System.Text.Encoding]::UTF8.GetBytes($JsonBody)
+
+    Write-Host "    DEBUG: Calling POST $Uri" -ForegroundColor DarkGray
+    Write-Host "    DEBUG: Tag name = '$TagName'" -ForegroundColor DarkGray
+
+    try {
+        $Response = Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Post -Body $Body -ErrorAction Stop
+        return $Response
+    }
+    catch {
+        # 422 typically means tag already exists - treat as success
+        if ($_.Exception.Response.StatusCode.value__ -eq 422) {
+            Write-Host "    Tag '$TagName' already exists" -ForegroundColor DarkGray
+            return @{ name = $TagName; already_exists = $true }
+        }
+        Write-LevelError "Failed to create tag '$TagName': $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Remove-LevelTag {
+    <#
+    .SYNOPSIS
+        Deletes a tag from Level.io.
+    .DESCRIPTION
+        Permanently removes a tag from Level.io by its ID.
+    .PARAMETER ApiKey
+        Level.io API key for authentication.
+    .PARAMETER TagId
+        The ID of the tag to delete.
+    .PARAMETER TagName
+        Optional name of the tag (for display purposes only).
+    .OUTPUTS
+        $true on success, $false on failure.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$TagName = ""
+    )
+
+    # Note: Level.io API does NOT use "Bearer " prefix - just the API key directly
+    $Uri = "$Script:LevelApiBase/tags/$TagId"
+    $Headers = @{
+        "Authorization" = $ApiKey
+        "Content-Type"  = "application/json"
+    }
+
+    $DisplayName = if ($TagName) { "'$TagName'" } else { $TagId }
+
+    try {
+        Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Delete -ErrorAction Stop | Out-Null
+        return $true
+    }
+    catch {
+        if ($_.Exception.Response.StatusCode.value__ -eq 404) {
+            Write-Host "    Tag $DisplayName not found (already deleted?)" -ForegroundColor DarkGray
+            return $true
+        }
+        Write-LevelError "Failed to delete tag $DisplayName`: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+# ============================================================
 # HIERARCHY NAVIGATION FUNCTIONS
 # ============================================================
 
-function Get-AllOrganizations {
+function Get-AllGroups {
     <#
     .SYNOPSIS
-        Gets all organizations accessible via the API.
+        Gets all groups accessible via the API.
     #>
-    $Result = Invoke-LevelApi -Endpoint "/organizations"
+    $Result = Invoke-LevelApi -Endpoint "/groups"
     if ($Result.Success) {
         $Data = $Result.Data
         if ($Data.data) { $Data = $Data.data }
@@ -600,20 +763,38 @@ function Get-AllOrganizations {
     return @()
 }
 
-function Get-OrganizationFolders {
+# Alias for backwards compatibility
+function Get-AllOrganizations {
+    Write-LevelWarning "Get-AllOrganizations is deprecated, use Get-AllGroups"
+    return Get-AllGroups
+}
+
+function Get-GroupFolders {
     <#
     .SYNOPSIS
-        Gets all folders for an organization.
+        Gets all folders for a group.
     #>
-    param([string]$OrgId)
+    param([string]$GroupId)
 
-    $Result = Invoke-LevelApi -Endpoint "/organizations/$OrgId/folders"
+    # Validate GroupId - return empty array if missing
+    if ([string]::IsNullOrWhiteSpace($GroupId)) {
+        return @()
+    }
+
+    $Result = Invoke-LevelApi -Endpoint "/groups/$GroupId/folders"
     if ($Result.Success) {
         $Data = $Result.Data
         if ($Data.data) { $Data = $Data.data }
         return $Data
     }
     return @()
+}
+
+# Alias for backwards compatibility
+function Get-OrganizationFolders {
+    param([string]$OrgId)
+    Write-LevelWarning "Get-OrganizationFolders is deprecated, use Get-GroupFolders"
+    return Get-GroupFolders -GroupId $OrgId
 }
 
 function Get-FolderDevices {
@@ -622,11 +803,16 @@ function Get-FolderDevices {
         Gets all devices in a folder.
     #>
     param(
-        [string]$OrgId,
+        [string]$GroupId,
         [string]$FolderId
     )
 
-    $Result = Invoke-LevelApi -Endpoint "/organizations/$OrgId/folders/$FolderId/devices"
+    # Validate IDs - return empty array if missing
+    if ([string]::IsNullOrWhiteSpace($GroupId) -or [string]::IsNullOrWhiteSpace($FolderId)) {
+        return @()
+    }
+
+    $Result = Invoke-LevelApi -Endpoint "/groups/$GroupId/folders/$FolderId/devices"
     if ($Result.Success) {
         $Data = $Result.Data
         if ($Data.data) { $Data = $Data.data }
@@ -638,15 +824,21 @@ function Get-FolderDevices {
 function Get-EntityCustomFields {
     <#
     .SYNOPSIS
-        Gets custom field values for an entity (org, folder, or device).
+        Gets custom field values for an entity (group, folder, or device).
     #>
     param(
-        [string]$EntityType,  # "organization", "folder", "device"
+        [string]$EntityType,  # "group", "organization" (legacy), "folder", "device"
         [string]$EntityId
     )
 
+    # Validate EntityId - return empty hashtable if missing
+    if ([string]::IsNullOrWhiteSpace($EntityId)) {
+        return @{}
+    }
+
     $Endpoint = switch ($EntityType) {
-        "organization" { "/organizations/$EntityId" }
+        "group" { "/groups/$EntityId" }
+        "organization" { "/groups/$EntityId" }  # Legacy alias
         "folder" { "/folders/$EntityId" }
         "device" { "/devices/$EntityId" }
     }
@@ -664,14 +856,15 @@ function Set-EntityCustomField {
         Sets a custom field value on an entity.
     #>
     param(
-        [string]$EntityType,
+        [string]$EntityType,  # "group", "organization" (legacy), "folder", "device"
         [string]$EntityId,
         [string]$FieldKey,
         [string]$Value
     )
 
     $Endpoint = switch ($EntityType) {
-        "organization" { "/organizations/$EntityId" }
+        "group" { "/groups/$EntityId" }
+        "organization" { "/groups/$EntityId" }  # Legacy alias
         "folder" { "/folders/$EntityId" }
         "device" { "/devices/$EntityId" }
     }
@@ -707,7 +900,7 @@ function Backup-AllCustomFields {
         Timestamp     = (Get-Date).ToString("o")
         Version       = "1.0"
         CustomFields  = @()  # Field definitions
-        Organizations = @()
+        Groups        = @()
     }
 
     # Get custom field definitions
@@ -716,30 +909,36 @@ function Backup-AllCustomFields {
     if ($Fields.data) { $Fields = $Fields.data }
     $Backup.CustomFields = $Fields
 
-    # Get organizations
-    Write-LevelInfo "Fetching organizations..."
-    $Orgs = Get-AllOrganizations
+    # Get groups
+    Write-LevelInfo "Fetching groups..."
+    $Groups = Get-AllGroups
 
-    if (-not $Orgs -or $Orgs.Count -eq 0) {
-        Write-LevelWarning "No organizations found or API doesn't support organization listing."
+    if (-not $Groups -or $Groups.Count -eq 0) {
+        Write-LevelWarning "No groups found or API doesn't support group listing."
         return $Backup
     }
 
-    $OrgCount = if ($Orgs -is [array]) { $Orgs.Count } else { 1 }
-    Write-LevelInfo "Found $OrgCount organization(s)."
+    $GroupCount = if ($Groups -is [array]) { $Groups.Count } else { 1 }
+    Write-LevelInfo "Found $GroupCount group(s)."
 
-    foreach ($Org in $Orgs) {
-        Write-Host "  Processing: $($Org.name)" -ForegroundColor DarkGray
+    foreach ($Group in $Groups) {
+        # Skip groups with missing/empty IDs
+        if ([string]::IsNullOrWhiteSpace($Group.id)) {
+            Write-Host "  Skipping group with empty ID: $($Group.name)" -ForegroundColor Yellow
+            continue
+        }
 
-        $OrgBackup = @{
-            Id           = $Org.id
-            Name         = $Org.name
-            CustomFields = Get-EntityCustomFields -EntityType "organization" -EntityId $Org.id
+        Write-Host "  Processing: $($Group.name)" -ForegroundColor DarkGray
+
+        $GroupBackup = @{
+            Id           = $Group.id
+            Name         = $Group.name
+            CustomFields = Get-EntityCustomFields -EntityType "group" -EntityId $Group.id
             Folders      = @()
         }
 
-        # Get folders for this org
-        $Folders = Get-OrganizationFolders -OrgId $Org.id
+        # Get folders for this group
+        $Folders = Get-GroupFolders -GroupId $Group.id
         $FolderCount = if ($Folders -is [array]) { $Folders.Count } else { if ($Folders) { 1 } else { 0 } }
 
         if ($FolderCount -gt 0) {
@@ -757,7 +956,7 @@ function Backup-AllCustomFields {
 
             # Optionally get devices
             if ($IncludeDevices) {
-                $Devices = Get-FolderDevices -OrgId $Org.id -FolderId $Folder.id
+                $Devices = Get-FolderDevices -GroupId $Group.id -FolderId $Folder.id
                 foreach ($Device in $Devices) {
                     $DeviceBackup = @{
                         Id           = $Device.id
@@ -768,10 +967,10 @@ function Backup-AllCustomFields {
                 }
             }
 
-            $OrgBackup.Folders += $FolderBackup
+            $GroupBackup.Folders += $FolderBackup
         }
 
-        $Backup.Organizations += $OrgBackup
+        $Backup.Groups += $GroupBackup
     }
 
     return $Backup
@@ -879,17 +1078,20 @@ function Restore-CustomFields {
 
     $Changes = 0
 
-    foreach ($Org in $Backup.Organizations) {
-        Write-Host "  Restoring: $($Org.Name)" -ForegroundColor DarkGray
+    # Support both old format (Organizations) and new format (Groups)
+    $GroupList = if ($Backup.Groups) { $Backup.Groups } elseif ($Backup.Organizations) { $Backup.Organizations } else { @() }
 
-        # Restore org-level custom fields
-        foreach ($Field in $Org.CustomFields.PSObject.Properties) {
+    foreach ($Group in $GroupList) {
+        Write-Host "  Restoring: $($Group.Name)" -ForegroundColor DarkGray
+
+        # Restore group-level custom fields
+        foreach ($Field in $Group.CustomFields.PSObject.Properties) {
             if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
                 if ($DryRun) {
-                    Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on org" -ForegroundColor Yellow
+                    Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on group" -ForegroundColor Yellow
                 }
                 else {
-                    if (Set-EntityCustomField -EntityType "organization" -EntityId $Org.Id -FieldKey $Field.Name -Value $Field.Value) {
+                    if (Set-EntityCustomField -EntityType "group" -EntityId $Group.Id -FieldKey $Field.Name -Value $Field.Value) {
                         $Changes++
                     }
                 }
@@ -897,7 +1099,7 @@ function Restore-CustomFields {
         }
 
         # Restore folder-level custom fields
-        foreach ($Folder in $Org.Folders) {
+        foreach ($Folder in $Group.Folders) {
             foreach ($Field in $Folder.CustomFields.PSObject.Properties) {
                 if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
                     if ($DryRun) {
@@ -1019,20 +1221,23 @@ function Compare-BackupWithCurrent {
 
     Write-LevelInfo "Comparing backup with current state..."
 
-    foreach ($OrgBackup in $Backup.Organizations) {
-        # Get current org custom fields
-        $CurrentOrgFields = Get-EntityCustomFields -EntityType "organization" -EntityId $OrgBackup.Id
+    # Support both old format (Organizations) and new format (Groups)
+    $GroupList = if ($Backup.Groups) { $Backup.Groups } elseif ($Backup.Organizations) { $Backup.Organizations } else { @() }
 
-        # Compare org-level fields
-        foreach ($Field in $OrgBackup.CustomFields.PSObject.Properties) {
+    foreach ($GroupBackup in $GroupList) {
+        # Get current group custom fields
+        $CurrentGroupFields = Get-EntityCustomFields -EntityType "group" -EntityId $GroupBackup.Id
+
+        # Compare group-level fields
+        foreach ($Field in $GroupBackup.CustomFields.PSObject.Properties) {
             $BackupValue = $Field.Value
-            $CurrentValue = $CurrentOrgFields.$($Field.Name)
+            $CurrentValue = $CurrentGroupFields.$($Field.Name)
 
             if ($BackupValue -ne $CurrentValue) {
                 $Differences += @{
-                    EntityType  = "Organization"
-                    EntityName  = $OrgBackup.Name
-                    EntityId    = $OrgBackup.Id
+                    EntityType  = "Group"
+                    EntityName  = $GroupBackup.Name
+                    EntityId    = $GroupBackup.Id
                     FieldName   = $Field.Name
                     BackupValue = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
                     CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
@@ -1041,7 +1246,7 @@ function Compare-BackupWithCurrent {
         }
 
         # Compare folder-level fields
-        foreach ($FolderBackup in $OrgBackup.Folders) {
+        foreach ($FolderBackup in $GroupBackup.Folders) {
             $CurrentFolderFields = Get-EntityCustomFields -EntityType "folder" -EntityId $FolderBackup.Id
 
             foreach ($Field in $FolderBackup.CustomFields.PSObject.Properties) {
@@ -1387,6 +1592,11 @@ Export-ModuleMember -Function @(
     'Remove-CustomFieldValue',
     'Remove-CustomField',
     'Get-CustomFieldById',
+
+    # Tag Management
+    'Get-LevelTags',
+    'New-LevelTag',
+    'Remove-LevelTag',
 
     # Hierarchy Navigation
     'Get-AllOrganizations',

@@ -1542,6 +1542,58 @@ function Get-LevelTags {
 
     return $AllTags
 }
+<#
+.SYNOPSIS
+    Creates a new tag in Level.io.
+
+.DESCRIPTION
+    Creates a tag in Level.io with the specified name.
+    Uses POST /v2/tags endpoint.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagName
+    The tag name to create (e.g., "huntress" or full emoji tag like "U+1F64F huntress").
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Tag object on success, $null on failure.
+
+.EXAMPLE
+    $Tag = New-LevelTag -ApiKey $ApiKey -TagName "huntress"
+    if ($Tag) {
+        Write-LevelLog "Created tag ID: $($Tag.id)"
+    }
+#>
+function New-LevelTag {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Uri = "$BaseUrl/tags"
+    $Body = @{ name = $TagName }
+
+    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
+
+    if (-not $Result.Success) {
+        Write-LevelLog "Failed to create tag '$TagName': $($Result.Error)" -Level "ERROR"
+        return $null
+    }
+
+    Write-LevelLog "Created tag: $TagName" -Level "SUCCESS"
+    return $Result.Data
+}
 
 <#
 .SYNOPSIS
@@ -1780,11 +1832,15 @@ function Add-LevelPolicyTag {
         return $false
     }
 
-    # Find the tag
+    # Find the tag, create if it doesn't exist
     $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
     if (-not $Tag) {
-        Write-LevelLog "Tag '$FullTagName' not found in Level.io - cannot add" -Level "WARN"
-        return $false
+        Write-LevelLog "Tag '$FullTagName' not found - creating..." -Level "DEBUG"
+        $Tag = New-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+        if (-not $Tag) {
+            Write-LevelLog "Failed to create tag '$FullTagName'" -Level "WARN"
+            return $false
+        }
     }
 
     # Add the tag
@@ -2041,6 +2097,7 @@ Export-ModuleMember -Function @(
     # Tag Management
     'Get-LevelTags',
     'Find-LevelTag',
+    'New-LevelTag',
     'Add-LevelTagToDevice',
     'Remove-LevelTagFromDevice',
     'Add-LevelPolicyTag',
