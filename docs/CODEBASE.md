@@ -179,7 +179,7 @@ Invoke-LevelScript -ScriptBlock {
 | `Set-LevelCustomFieldValue` | Set custom field value for device |
 | `Initialize-LevelSoftwarePolicy` | Initialize software policy custom field |
 | `Get-LevelCustomFieldById` | Get custom field by ID |
-| `Update-LevelCustomFieldValue` | Update custom field value |
+| `Set-LevelCustomFieldDefaultValue` | Set account-level default value for custom field |
 | `Remove-LevelCustomField` | Delete a custom field |
 
 #### Hierarchy Navigation
