@@ -31,7 +31,7 @@ $ScriptToRun = "??Enable System Restore and Create Restore Point.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.12.04
+    Launcher Version: 2026.01.12.05
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -59,7 +59,7 @@ $ScriptToRun = "??Enable System Restore and Create Restore Point.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.12.04
+# Launcher Version: 2026.01.12.05
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -193,11 +193,16 @@ function Get-ContentMD5 {
 # Function to get expected MD5 from MD5SUMS file
 function Get-ExpectedMD5 {
     param([string]$FileName, [string]$MD5Content)
+    # Extract just the filename for wildcard matching (handles emoji corruption)
+    $SearchName = Split-Path $FileName -Leaf
     foreach ($line in $MD5Content -split "`n") {
         $line = $line.Trim()
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
-            if ($Matches[2].Trim() -eq $FileName) {
+            $FilePath = $Matches[2].Trim()
+            $FileLeaf = Split-Path $FilePath -Leaf
+            # Match by exact path, or by filename ending (for emoji-prefixed scripts)
+            if ($FilePath -eq $FileName -or $FileLeaf -eq $SearchName -or $FileLeaf -like "*$SearchName") {
                 return $Matches[1].ToLower()
             }
         }
@@ -416,7 +421,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.04"
+Write-Host "[*] Script Launcher v2026.01.12.05"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
