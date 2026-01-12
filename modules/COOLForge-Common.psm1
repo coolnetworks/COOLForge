@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.05
+    Version:    2026.01.12.06
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -1930,7 +1930,7 @@ function Add-LevelPolicyTag {
         [string]$TagName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("Install", "Remove", "Has", "Pin", "Block", "Skip", "Verify")]
+        [ValidateSet("Install", "Remove", "Reinstall", "Pin", "Has")]
         [string]$EmojiPrefix,
 
         [Parameter(Mandatory = $true)]
@@ -1940,15 +1940,13 @@ function Add-LevelPolicyTag {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    # Map action names to emoji characters
+    # Map action names to emoji characters (5-tag model per POLICY-TAGS.md)
     $EmojiChar = switch ($EmojiPrefix) {
-        "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
-        "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
-        "Has"     { [char]0x2705 }                       # U+2705 Check mark
-        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
-        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
-        "Skip"    { [char]0x274C }                       # U+274C Cross mark
-        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Install"   { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray - Install override
+        "Remove"    { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB Prohibit - Remove override
+        "Reinstall" { [char]::ConvertFromUtf32(0x1F504) }  # U+1F504 Arrows - Reinstall override
+        "Pin"       { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin - Pin override
+        "Has"       { [char]0x2705 }                       # U+2705 Checkmark - Installed status
     }
 
     $FullTagName = "$EmojiChar$TagName"
@@ -2028,7 +2026,7 @@ function Remove-LevelPolicyTag {
         [string]$TagName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("Install", "Remove", "Has", "Pin", "Block", "Skip", "Verify")]
+        [ValidateSet("Install", "Remove", "Reinstall", "Pin", "Has")]
         [string]$EmojiPrefix,
 
         [Parameter(Mandatory = $true)]
@@ -2038,15 +2036,13 @@ function Remove-LevelPolicyTag {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    # Map action names to emoji characters
+    # Map action names to emoji characters (5-tag model per POLICY-TAGS.md)
     $EmojiChar = switch ($EmojiPrefix) {
-        "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
-        "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
-        "Has"     { [char]0x2705 }                       # U+2705 Check mark
-        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
-        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
-        "Skip"    { [char]0x274C }                       # U+274C Cross mark
-        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Install"   { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray - Install override
+        "Remove"    { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB Prohibit - Remove override
+        "Reinstall" { [char]::ConvertFromUtf32(0x1F504) }  # U+1F504 Arrows - Reinstall override
+        "Pin"       { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin - Pin override
+        "Has"       { [char]0x2705 }                       # U+2705 Checkmark - Installed status
     }
 
     $FullTagName = "$EmojiChar$TagName"

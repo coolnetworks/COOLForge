@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.6
+    Version:          2026.01.12.7
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.6
+# Version: 2026.01.12.7
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -292,7 +292,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.6"
+$ScriptVersion = "2026.01.12.7"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -320,16 +320,18 @@ $InvokeParams = @{ ScriptBlock = {
     Write-Host ""
 
     # Take action based on resolved policy
+    $ActionSuccess = $false
     if ($Policy.ShouldProcess) {
         switch ($Policy.ResolvedAction) {
             "Install" {
                 if ($IsInstalled) {
                     Write-LevelLog "Already installed - no action needed" -Level "SUCCESS"
+                    $ActionSuccess = $true
                 }
                 else {
                     Write-LevelLog "ACTION: Installing $SoftwareName" -Level "INFO"
-                    $Success = Install-Unchecky -ScratchFolder $MspScratchFolder
-                    if (-not $Success) {
+                    $ActionSuccess = Install-Unchecky -ScratchFolder $MspScratchFolder
+                    if (-not $ActionSuccess) {
                         Write-LevelLog "FAILED: Installation unsuccessful" -Level "ERROR"
                         $script:ExitCode = 1
                     }
@@ -338,11 +340,12 @@ $InvokeParams = @{ ScriptBlock = {
             "Remove" {
                 if (-not $IsInstalled) {
                     Write-LevelLog "Not installed - no action needed" -Level "SUCCESS"
+                    $ActionSuccess = $true
                 }
                 else {
                     Write-LevelLog "ACTION: Removing $SoftwareName" -Level "INFO"
-                    $Success = Remove-Unchecky
-                    if (-not $Success) {
+                    $ActionSuccess = Remove-Unchecky
+                    if (-not $ActionSuccess) {
                         Write-LevelLog "FAILED: Removal unsuccessful" -Level "ERROR"
                         $script:ExitCode = 1
                     }
@@ -358,14 +361,15 @@ $InvokeParams = @{ ScriptBlock = {
                         break
                     }
                 }
-                $InstallSuccess = Install-Unchecky -ScratchFolder $MspScratchFolder
-                if (-not $InstallSuccess) {
+                $ActionSuccess = Install-Unchecky -ScratchFolder $MspScratchFolder
+                if (-not $ActionSuccess) {
                     Write-LevelLog "FAILED: Reinstallation unsuccessful" -Level "ERROR"
                     $script:ExitCode = 1
                 }
             }
             "Pin" {
                 Write-LevelLog "Pinned - no changes allowed" -Level "INFO"
+                $ActionSuccess = $true
             }
             "None" {
                 # Verify current state matches expected
@@ -378,8 +382,75 @@ $InvokeParams = @{ ScriptBlock = {
                 else {
                     Write-LevelLog "No action required" -Level "INFO"
                 }
+                $ActionSuccess = $true
             }
         }
+    }
+
+    # ============================================================
+    # TAG MANAGEMENT (per POLICY-TAGS.md Tag Cleanup Rules)
+    # ============================================================
+    # Only update tags if we have an API key
+    if ($LevelApiKey) {
+        Write-Host ""
+        Write-LevelLog "Updating tags..." -Level "INFO"
+
+        # Check final install state
+        $FinalInstallState = Test-UncheckyInstalled
+
+        # Tag cleanup based on action and success
+        if ($ActionSuccess -and $Policy.ShouldProcess) {
+            $SoftwareNameUpper = $SoftwareName.ToUpper()
+
+            switch ($Policy.ResolvedAction) {
+                "Install" {
+                    # Remove Install tag, set Has tag
+                    Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Install" -DeviceHostname $DeviceHostname
+                    if ($FinalInstallState) {
+                        Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
+                }
+                "Remove" {
+                    # Remove Remove tag, remove Has tag
+                    Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Remove" -DeviceHostname $DeviceHostname
+                    Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                }
+                "Reinstall" {
+                    # Remove Reinstall tag, set Has tag
+                    Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Reinstall" -DeviceHostname $DeviceHostname
+                    if ($FinalInstallState) {
+                        Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
+                }
+                "Pin" {
+                    # Pin tag stays, just ensure Has tag reflects actual state
+                    if ($FinalInstallState -and -not $Policy.HasInstalled) {
+                        Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
+                    elseif (-not $FinalInstallState -and $Policy.HasInstalled) {
+                        Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
+                }
+                "None" {
+                    # Reconcile Has tag with actual install state
+                    if ($FinalInstallState -and -not $Policy.HasInstalled) {
+                        Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
+                    elseif (-not $FinalInstallState -and $Policy.HasInstalled) {
+                        Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
+                    }
+                }
+            }
+        }
+        elseif (-not $Policy.ShouldProcess) {
+            Write-LevelLog "Skipped - no tag updates needed" -Level "INFO"
+        }
+        else {
+            Write-LevelLog "Action failed - tags not updated" -Level "WARNING"
+        }
+    }
+    else {
+        Write-LevelLog "No API key - tag updates skipped" -Level "DEBUG"
     }
 
     Write-Host ""
