@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.2
+    Version:          2026.01.12.3
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.2
+# Version: 2026.01.12.3
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -121,7 +121,12 @@ function Get-UncheckyUninstallString {
 function Install-Unchecky {
     param([string]$ScratchFolder)
 
-    $InstallerPath = Join-Path $ScratchFolder $InstallerName
+    # Store installers in dedicated subfolder under scratch folder
+    $InstallersFolder = Join-Path $ScratchFolder "Installers"
+    if (-not (Test-Path $InstallersFolder)) {
+        New-Item -ItemType Directory -Path $InstallersFolder -Force | Out-Null
+    }
+    $InstallerPath = Join-Path $InstallersFolder $InstallerName
 
     # Download installer
     Write-LevelLog "Downloading Unchecky installer..."
@@ -225,7 +230,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.2"
+$ScriptVersion = "2026.01.12.3"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
