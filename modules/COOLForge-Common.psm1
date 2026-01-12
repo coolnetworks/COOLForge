@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.08.01
+    Version:    2026.01.12.02
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -572,38 +572,50 @@ function Get-EmojiMap {
     $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # U+1F6F0
     $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0x8C))  # U+274C (TBD - placeholder)
 
+    # Build clean emoji strings programmatically to avoid encoding issues
+    # when module is loaded via scriptblock::Create()
+    $EmojiPray = [char]::ConvertFromUtf32(0x1F64F)       # U+1F64F Pray - Install
+    $EmojiProhibit = [char]::ConvertFromUtf32(0x1F6AB)   # U+1F6AB Prohibited - Remove
+    $EmojiArrows = [char]::ConvertFromUtf32(0x1F504)     # U+1F504 Arrows - Reinstall
+    $EmojiPin = [char]::ConvertFromUtf32(0x1F4CC)        # U+1F4CC Pushpin - Pin
+    $EmojiCheck = [char]0x2705                            # U+2705 Checkmark - Installed
+    $EmojiCross = [char]0x274C                            # U+274C Cross - Excluded
+    $EmojiWindow = [char]::ConvertFromUtf32(0x1FA9F)     # U+1FA9F Window - Windows
+    $EmojiAlert = [char]::ConvertFromUtf32(0x1F6A8)      # U+1F6A8 Police light - Alert
+    $EmojiPenguin = [char]::ConvertFromUtf32(0x1F427)    # U+1F427 Penguin - Linux
+    $EmojiCyclone = [char]::ConvertFromUtf32(0x1F300)    # U+1F300 Cyclone - AdelaideMRI
+    $EmojiSatellite = [char]::ConvertFromUtf32(0x1F6F0)  # U+1F6F0 Satellite
+    $EmojiWrench = [char]::ConvertFromUtf32(0x1F527)     # U+1F527 Wrench - Fix
+    $EmojiEyes = [char]::ConvertFromUtf32(0x1F440)       # U+1F440 Eyes - Check
+
     return @{
         # ============================================================
         # SOFTWARE POLICY TAGS (5-tag model per POLICY-TAGS.md)
         # ============================================================
         # Override tags (transient - removed after action)
-        "🙏" = "Install"      # U+1F64F Pray - Install if missing
-        "🚫" = "Remove"       # U+1F6AB Prohibited - Remove if present
-        "🔄" = "Reinstall"    # U+1F504 Arrows - Remove + reinstall
+        $EmojiPray = "Install"
+        $EmojiProhibit = "Remove"
+        $EmojiArrows = "Reinstall"
         # Override tag (persistent - admin intent)
-        "📌" = "Pin"          # U+1F4CC Pushpin - No changes allowed
+        $EmojiPin = "Pin"
         # Status tag (set by script)
-        "✅" = "Installed"    # U+2705 Checkmark - Software is installed
+        $EmojiCheck = "Installed"
 
         # ============================================================
         # GLOBAL CONTROL TAGS (standalone, no software suffix)
         # ============================================================
-        # These are checked separately for device-level management
-        # "✅" alone = device is managed
-        # "❌" alone = device is excluded
-        # Both = device is globally pinned
-        "❌" = "Excluded"     # U+274C Cross - Device excluded from management
+        $EmojiCross = "Excluded"
 
         # ============================================================
         # PLATFORM/CATEGORY TAGS (informational)
         # ============================================================
-        "🪟" = "Windows"      # U+1FA9F Window - Windows platform tag
-        "🚨" = "Alert"        # U+1F6A8 Police light - Alert/Critical
-        "🐧" = "Linux"        # U+1F427 Penguin - Linux platform tag
-        "🌀" = "AdelaideMRI"  # U+1F300 Cyclone - AdelaideMRI client tag
-        "🛰️" = "Satellite"    # U+1F6F0 Satellite - Satellite/remote site
-        "🔧" = "Fix"          # U+1F527 Wrench - Fix/Repair script
-        "👀" = "Check"        # U+1F440 Eyes - Check script marker
+        $EmojiWindow = "Windows"
+        $EmojiAlert = "Alert"
+        $EmojiPenguin = "Linux"
+        $EmojiCyclone = "AdelaideMRI"
+        $EmojiSatellite = "Satellite"
+        $EmojiWrench = "Fix"
+        $EmojiEyes = "Check"
 
         # ============================================================
         # LEVEL.IO CORRUPTED PATTERNS
