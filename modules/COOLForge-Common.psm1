@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.03
+    Version:    2026.01.12.04
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -932,8 +932,9 @@ function Get-SoftwarePolicy {
     # ============================================================
     # STEP 3: RESOLVE ACTION (Priority order per POLICY-TAGS.md)
     # ============================================================
-    # Priority: Pin > Reinstall > Remove > Install
-    $IsPinned = "Pin" -in $UniqueActions
+    # Priority: Pin/Excluded > Reinstall > Remove > Install
+    # Note: "Excluded" with software suffix means "pin this software" (don't touch)
+    $IsPinned = "Pin" -in $UniqueActions -or "Excluded" -in $UniqueActions
     $HasReinstall = "Reinstall" -in $UniqueActions
     $HasRemove = "Remove" -in $UniqueActions
     $HasInstall = "Install" -in $UniqueActions
