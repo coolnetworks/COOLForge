@@ -31,7 +31,7 @@ $ScriptToRun = "??Fix Windows 8 Services.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.12.05
+    Launcher Version: 2026.01.12.06
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -59,7 +59,7 @@ $ScriptToRun = "??Fix Windows 8 Services.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.12.05
+# Launcher Version: 2026.01.12.06
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -102,6 +102,12 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
 
+# Level.io API key for tag management (optional - enables automatic tag updates)
+$LevelApiKey = "{{cf_coolforge_levelio_api_key}}"
+if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
+    $LevelApiKey = $null
+}
+
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
 if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
@@ -112,11 +118,6 @@ $IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
 if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
     $IsScreenConnectServer = ""
 }
-
-# Additional custom fields can be added here and they will be available
-# in the downloaded script's scope
-# $ApiKey = "{{cf_apikey}}"
-# $CustomField1 = "{{cf_custom_field_1}}"
 
 # ============================================================
 # GITHUB PAT INJECTION HELPER
@@ -579,6 +580,7 @@ $ExecutionBlock = @"
 `$LibraryUrl = '$($LibraryUrl -replace "'", "''")'
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
+`$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''")'" } else { '$null' })
 
 # Policy custom fields (defined in launcher header)
 $PolicyVarsBlock
