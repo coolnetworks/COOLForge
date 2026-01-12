@@ -71,19 +71,23 @@ $ErrorActionPreference = "Stop"
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptRoot
 $ConfigPath = Join-Path $ProjectRoot "definitions\custom-fields.json"
-$ModulePath = Join-Path $ProjectRoot "modules\COOLForge-CustomFields.psm1"
+$CommonModulePath = Join-Path $ProjectRoot "modules\COOLForge-Common.psm1"
+$CustomFieldsModulePath = Join-Path $ProjectRoot "modules\COOLForge-CustomFields.psm1"
 $SavedConfigPath = Join-Path $ScriptRoot ".COOLForge_Lib-setup.json"
 
 # ============================================================
-# LOAD MODULE
+# LOAD MODULES
 # ============================================================
 
-if (-not (Test-Path $ModulePath)) {
-    Write-Host "[X] Module not found: $ModulePath" -ForegroundColor Red
+if (-not (Test-Path $CommonModulePath)) {
+    Write-Host "[X] Module not found: $CommonModulePath" -ForegroundColor Red
     exit 1
 }
 
-Import-Module $ModulePath -Force -DisableNameChecking
+Import-Module $CommonModulePath -Force -DisableNameChecking
+if (Test-Path $CustomFieldsModulePath) {
+    Import-Module $CustomFieldsModulePath -Force -DisableNameChecking
+}
 
 # ============================================================
 # LOAD CONFIG

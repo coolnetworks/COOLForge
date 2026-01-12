@@ -175,7 +175,9 @@ Invoke-LevelScript -ScriptBlock {
 
 **Location**: `modules/COOLForge-CustomFields.psm1`
 
-Module for managing Level.io custom fields via the API. Used by setup and backup tools.
+Admin-only module for interactive setup tools. Imports `COOLForge-Common.psm1` for shared API functions.
+
+**Note**: Core API functions have been moved to `COOLForge-Common.psm1`. This module provides admin-specific functionality only.
 
 #### Key Functions
 
@@ -183,11 +185,11 @@ Module for managing Level.io custom fields via the API. Used by setup and backup
 |----------|-----------|
 | **Initialization** | `Initialize-COOLForgeCustomFields` |
 | **UI Helpers** | `Write-Header`, `Write-LevelSuccess`, `Write-LevelInfo`, `Write-LevelWarning`, `Write-LevelError`, `Read-UserInput`, `Read-YesNo` |
-| **API Core** | `Invoke-LevelApi`, `Get-ExistingCustomFields`, `Find-CustomField`, `New-CustomField`, `Update-CustomFieldValue`, `Remove-CustomField` |
-| **Hierarchy** | `Get-AllOrganizations`, `Get-OrganizationFolders`, `Get-FolderDevices`, `Get-EntityCustomFields`, `Set-EntityCustomField` |
 | **Backup/Restore** | `Backup-AllCustomFields`, `Save-Backup`, `Import-Backup`, `Restore-CustomFields`, `Compare-BackupWithCurrent` |
 | **Security** | `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey` |
 | **GitHub** | `Get-GitHubReleases`, `Show-ReleaseNotes`, `Select-Version` |
+
+**Moved to COOLForge-Common.psm1**: Custom Field Management (`Get-LevelCustomFields`, `New-LevelCustomField`, etc.), Hierarchy Navigation (`Get-LevelOrganizations`, etc.)
 
 ---
 
@@ -549,9 +551,9 @@ COOLForge/
 
 ## Version Information
 
-- **Module Version**: 2026.01.08.01
-- **Launcher Version**: 2026.01.10.01
-- **Custom Fields Version**: 2026.01.10
+- **Module Version**: 2026.01.12.08 (COOLForge-Common)
+- **Launcher Version**: 2026.01.12.05
+- **Custom Fields Version**: 2026.01.12.02
 
 ---
 

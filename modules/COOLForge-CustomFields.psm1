@@ -1,21 +1,28 @@
 <#
 .SYNOPSIS
-    COOLForge-CustomFields - Module for managing Level.io custom fields.
+    COOLForge-CustomFields - Admin module for Level.io custom fields (UI/backup functions).
 
 .DESCRIPTION
-    This module provides functions for managing Level.io custom fields via the API:
-    - Custom field CRUD operations (create, read, update, delete)
-    - Hierarchy navigation (organizations, folders, devices)
-    - Backup and restore of custom field values across all levels
+    DEPRECATION NOTICE: Core API functions have been moved to COOLForge-Common.psm1.
+    This module now provides ONLY admin-specific functions:
+    - UI helpers (Write-Header, Read-YesNo, etc.)
+    - Backup/restore functionality
     - Configuration management with encrypted API key storage
     - GitHub release integration for version management
 
-    This module is used by:
+    For API functions, use COOLForge-Common.psm1 which provides:
+    - Get-LevelCustomFields, Find-LevelCustomField, New-LevelCustomField
+    - Get-LevelOrganizations, Get-LevelOrganizationFolders, Get-LevelFolderDevices
+    - Set-LevelCustomFieldValue, Get-LevelEntityCustomFields
+
+    This module automatically imports COOLForge-Common.psm1 for shared functions.
+
+    Used by admin tools:
     - Setup-COOLForgeCustomFields.ps1 (interactive setup wizard)
     - Backup-COOLForgeCustomFields.ps1 (standalone backup/restore CLI)
 
 .NOTES
-    Version:    2026.01.07.01
+    Version:    2026.01.12.02
     Target:     Windows PowerShell 5.1+
 
     API Documentation: https://levelapi.readme.io/
@@ -43,13 +50,23 @@
 #>
 
 # ============================================================
+# IMPORT SHARED MODULE
+# ============================================================
+# COOLForge-Common provides shared API functions used by both runtime scripts
+# and admin tools. This module adds admin-specific functions.
+$CommonModulePath = Join-Path $PSScriptRoot "COOLForge-Common.psm1"
+if (Test-Path $CommonModulePath) {
+    Import-Module $CommonModulePath -Force -DisableNameChecking
+}
+
+# ============================================================
 # MODULE VARIABLES
 # ============================================================
 $Script:ApiKey = $null
 $Script:LevelApiBase = "https://api.level.io/v2"
 $Script:GitHubRepo = "coolnetworks/COOLForge"
 $Script:Initialized = $false
-$Script:ModuleVersion = "2025.12.29.01"
+$Script:ModuleVersion = "2026.01.12.02"
 
 # ============================================================
 # INITIALIZATION
@@ -1362,7 +1379,7 @@ function Select-Version {
 # MODULE EXPORTS
 # ============================================================
 
-Write-Host "[*] COOLForge-CustomFields v$Script:ModuleVersion loaded" -ForegroundColor DarkGray
+Write-Host "[*] COOLForge-CustomFields v$Script:ModuleVersion loaded (admin functions)" -ForegroundColor DarkGray
 
 Export-ModuleMember -Function @(
     # Initialization

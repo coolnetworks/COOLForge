@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.07
+    Version:    2026.01.12.08
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -2463,6 +2463,386 @@ function Initialize-LevelSoftwarePolicy {
     }
 }
 
+<#
+.SYNOPSIS
+    Gets a single custom field by ID with its default value.
+
+.DESCRIPTION
+    Fetches a custom field definition by ID and also retrieves its
+    account-level default value from the custom_field_values endpoint.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldId
+    The ID of the custom field to retrieve.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Custom field object with default_value property added, or $null on failure.
+
+.EXAMPLE
+    $Field = Get-LevelCustomFieldById -ApiKey $ApiKey -FieldId "cf_123"
+    Write-Host "Default value: $($Field.default_value)"
+#>
+function Get-LevelCustomFieldById {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $ApiKey -Method "GET"
+    if (-not $Result.Success) {
+        return $null
+    }
+
+    $Field = $Result.Data
+
+    # Get the account-level value from custom_field_values
+    $ValueResult = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values?limit=100" -ApiKey $ApiKey -Method "GET"
+    if ($ValueResult.Success) {
+        $Values = if ($ValueResult.Data.data) { $ValueResult.Data.data } else { @($ValueResult.Data) }
+        $GlobalValue = $Values | Where-Object { $_.custom_field_id -eq $FieldId -and [string]::IsNullOrEmpty($_.assigned_to_id) } | Select-Object -First 1
+        if ($GlobalValue) {
+            $Field | Add-Member -NotePropertyName "default_value" -NotePropertyValue $GlobalValue.value -Force
+        }
+    }
+
+    return $Field
+}
+
+<#
+.SYNOPSIS
+    Updates a custom field's global/account-level default value.
+
+.DESCRIPTION
+    Uses PATCH /custom_field_values with assigned_to_id=null to set the
+    global organization-level default value for a custom field.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldId
+    The ID of the custom field to update.
+
+.PARAMETER Value
+    The value to set as the global default.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    Update-LevelCustomFieldValue -ApiKey $ApiKey -FieldId "cf_123" -Value "C:\ProgramData\MSP"
+#>
+function Update-LevelCustomFieldValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Body = @{
+        custom_field_id = $FieldId
+        assigned_to_id  = $null
+        value           = $Value
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values" -ApiKey $ApiKey -Method "PATCH" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelLog "Updated custom field $FieldId default value" -Level "DEBUG"
+        return $true
+    }
+    else {
+        Write-LevelLog "Failed to update custom field value: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+}
+
+<#
+.SYNOPSIS
+    Deletes a custom field by ID.
+
+.DESCRIPTION
+    Permanently removes a custom field definition from Level.io.
+    WARNING: This will also remove all values associated with this field.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldId
+    The ID of the custom field to delete.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    Remove-LevelCustomField -ApiKey $ApiKey -FieldId "cf_123"
+#>
+function Remove-LevelCustomField {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $ApiKey -Method "DELETE"
+
+    if ($Result.Success) {
+        Write-LevelLog "Deleted custom field $FieldId" -Level "DEBUG"
+        return $true
+    }
+    else {
+        Write-LevelLog "Failed to delete custom field: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets all organizations accessible via the API.
+
+.DESCRIPTION
+    Fetches all organizations from Level.io with pagination support.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of organization objects, or empty array on failure.
+
+.EXAMPLE
+    $Orgs = Get-LevelOrganizations -ApiKey $ApiKey
+    foreach ($Org in $Orgs) { Write-Host $Org.name }
+#>
+function Get-LevelOrganizations {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AllOrgs = @()
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/organizations?limit=100"
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to fetch organizations: $($Result.Error)" -Level "ERROR"
+            return @()
+        }
+
+        $Data = $Result.Data
+        $Orgs = if ($Data.data) { $Data.data } else { @($Data) }
+
+        if ($Orgs -and $Orgs.Count -gt 0) {
+            $AllOrgs += $Orgs
+            $HasMore = $Data.has_more -eq $true
+            if ($HasMore) {
+                $StartingAfter = $Orgs[-1].id
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    } while ($true)
+
+    return $AllOrgs
+}
+
+<#
+.SYNOPSIS
+    Gets all folders for an organization.
+
+.DESCRIPTION
+    Fetches all folders within a specific organization.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER OrgId
+    The organization ID.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of folder objects, or empty array on failure.
+
+.EXAMPLE
+    $Folders = Get-LevelOrganizationFolders -ApiKey $ApiKey -OrgId $Org.id
+#>
+function Get-LevelOrganizationFolders {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$OrgId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/organizations/$OrgId/folders" -ApiKey $ApiKey -Method "GET"
+    if ($Result.Success) {
+        $Data = $Result.Data
+        if ($Data.data) { return $Data.data }
+        return @($Data)
+    }
+    return @()
+}
+
+<#
+.SYNOPSIS
+    Gets all devices in a folder.
+
+.DESCRIPTION
+    Fetches all devices within a specific folder of an organization.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER OrgId
+    The organization ID.
+
+.PARAMETER FolderId
+    The folder ID.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of device objects, or empty array on failure.
+
+.EXAMPLE
+    $Devices = Get-LevelFolderDevices -ApiKey $ApiKey -OrgId $Org.id -FolderId $Folder.id
+#>
+function Get-LevelFolderDevices {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$OrgId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FolderId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/organizations/$OrgId/folders/$FolderId/devices" -ApiKey $ApiKey -Method "GET"
+    if ($Result.Success) {
+        $Data = $Result.Data
+        if ($Data.data) { return $Data.data }
+        return @($Data)
+    }
+    return @()
+}
+
+<#
+.SYNOPSIS
+    Gets custom field values for an entity (organization, folder, or device).
+
+.DESCRIPTION
+    Fetches the custom field values assigned to a specific entity.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER EntityType
+    Type of entity: "organization", "folder", or "device".
+
+.PARAMETER EntityId
+    The ID of the entity.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Hashtable of custom field key-value pairs, or empty hashtable on failure.
+
+.EXAMPLE
+    $Fields = Get-LevelEntityCustomFields -ApiKey $ApiKey -EntityType "device" -EntityId $Device.id
+    Write-Host "Policy: $($Fields.cf_policy_unchecky)"
+#>
+function Get-LevelEntityCustomFields {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("organization", "folder", "device")]
+        [string]$EntityType,
+
+        [Parameter(Mandatory = $true)]
+        [string]$EntityId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Endpoint = switch ($EntityType) {
+        "organization" { "/organizations/$EntityId" }
+        "folder"       { "/folders/$EntityId" }
+        "device"       { "/devices/$EntityId" }
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl$Endpoint" -ApiKey $ApiKey -Method "GET"
+    if ($Result.Success -and $Result.Data.custom_fields) {
+        return $Result.Data.custom_fields
+    }
+    return @{}
+}
+
 # ============================================================
 # WAKE-ON-LAN
 # ============================================================
@@ -2576,7 +2956,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.12.07"
+$script:ModuleVersion = "2026.01.12.08"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -2621,6 +3001,15 @@ Export-ModuleMember -Function @(
     'New-LevelCustomField',
     'Set-LevelCustomFieldValue',
     'Initialize-LevelSoftwarePolicy',
+    'Get-LevelCustomFieldById',
+    'Update-LevelCustomFieldValue',
+    'Remove-LevelCustomField',
+
+    # Hierarchy Navigation
+    'Get-LevelOrganizations',
+    'Get-LevelOrganizationFolders',
+    'Get-LevelFolderDevices',
+    'Get-LevelEntityCustomFields',
 
     # Wake-on-LAN
     'Send-LevelWakeOnLan',

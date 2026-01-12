@@ -97,16 +97,22 @@ param(
 )
 
 # ============================================================
-# IMPORT SHARED MODULE
+# IMPORT SHARED MODULES
 # ============================================================
 
-$ModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-CustomFields.psm1"
-if (-not (Test-Path $ModulePath)) {
-    Write-Host "[X] Module not found: $ModulePath" -ForegroundColor Red
-    Write-Host "    Please ensure COOLForge-CustomFields.psm1 is in the modules/ folder." -ForegroundColor Yellow
+$CommonModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1"
+$CustomFieldsModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-CustomFields.psm1"
+
+if (-not (Test-Path $CommonModulePath)) {
+    Write-Host "[X] Module not found: $CommonModulePath" -ForegroundColor Red
+    Write-Host "    Please ensure COOLForge-Common.psm1 is in the modules/ folder." -ForegroundColor Yellow
     exit 1
 }
-Import-Module $ModulePath -Force
+
+Import-Module $CommonModulePath -Force -DisableNameChecking
+if (Test-Path $CustomFieldsModulePath) {
+    Import-Module $CustomFieldsModulePath -Force -DisableNameChecking
+}
 
 # ============================================================
 # CONFIGURATION
