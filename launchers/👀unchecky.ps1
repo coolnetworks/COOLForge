@@ -108,6 +108,14 @@ if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
     $LevelApiKey = $null
 }
 
+# Debug mode - enables verbose output for troubleshooting
+$DebugScripts = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
+    $DebugScripts = $false
+} else {
+    $DebugScripts = $DebugScripts -eq "true"
+}
+
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
 if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
@@ -581,6 +589,7 @@ $ExecutionBlock = @"
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
 `$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''")'" } else { '$null' })
+`$DebugScripts = `$$DebugScripts
 
 # Policy custom fields (defined in launcher header)
 $PolicyVarsBlock

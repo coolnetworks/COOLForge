@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.8
+    Version:          2026.01.12.9
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,12 +46,210 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.8
+# Version: 2026.01.12.9
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
 # Copyright (c) COOLNETWORKS
 # https://github.com/coolnetworks/COOLForge
+
+# ============================================================
+# DEBUG OUTPUT HELPER
+# ============================================================
+# When $DebugScripts is true (from cf_debug_scripts custom field),
+# outputs verbose diagnostic information for troubleshooting.
+
+function Write-DebugSection {
+    param(
+        [string]$Title,
+        [hashtable]$Data,
+        [switch]$MaskApiKey
+    )
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: $Title" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    foreach ($Key in $Data.Keys) {
+        $Value = $Data[$Key]
+        $DisplayValue = if ([string]::IsNullOrWhiteSpace($Value)) {
+            "(empty)"
+        }
+        elseif ($Value -like "{{*}}") {
+            "(unresolved: $Value)"
+        }
+        elseif ($MaskApiKey -and $Key -like "*ApiKey*" -and $Value.Length -gt 3) {
+            ("*" * ($Value.Length - 3)) + $Value.Substring($Value.Length - 3)
+        }
+        else {
+            $Value
+        }
+
+        $Status = if ([string]::IsNullOrWhiteSpace($Value) -or $Value -like "{{*}}") {
+            "[MISSING]"
+        } else {
+            "[OK]"
+        }
+        $Color = if ($Status -eq "[OK]") { "Green" } else { "Red" }
+
+        Write-Host "  ${Key}: " -NoNewline
+        Write-Host "$Status " -ForegroundColor $Color -NoNewline
+        Write-Host "$DisplayValue"
+    }
+}
+
+function Write-DebugTags {
+    param([string]$TagString, [string]$SoftwareName)
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: Device Tags Analysis" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    if ([string]::IsNullOrWhiteSpace($TagString) -or $TagString -like "{{*}}") {
+        Write-Host "  [WARNING] No device tags available" -ForegroundColor Red
+        return
+    }
+
+    $TagArray = $TagString -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+    Write-Host "  Total tags: $($TagArray.Count)"
+    Write-Host ""
+
+    # Get emoji map for reference
+    $EmojiMap = Get-EmojiMap
+
+    # Check for global and software-specific tags
+    $HasGlobalCheckmark = $false
+    $HasGlobalCross = $false
+    $SoftwareSpecificTags = @()
+    $SoftwareNameUpper = $SoftwareName.ToUpper()
+
+    foreach ($Tag in $TagArray) {
+        $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
+        $HexBytes = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+
+        # Check global tags
+        if ($EmojiMap[$Tag] -eq "GlobalManaged") { $HasGlobalCheckmark = $true }
+        if ($EmojiMap[$Tag] -eq "GlobalExcluded") { $HasGlobalCross = $true }
+
+        # Check software-specific
+        if ($Tag.ToUpper() -match $SoftwareNameUpper) {
+            $SoftwareSpecificTags += $Tag
+        }
+
+        Write-Host "  Tag: '$Tag'"
+        Write-Host "       Bytes: $HexBytes" -ForegroundColor DarkGray
+    }
+
+    Write-Host ""
+    Write-Host "  --- Global Control Tags ---"
+    Write-Host "  Global Checkmark: $(if ($HasGlobalCheckmark) { '[FOUND]' } else { '[NOT FOUND]' })" -ForegroundColor $(if ($HasGlobalCheckmark) { 'Green' } else { 'Yellow' })
+    Write-Host "  Global Cross: $(if ($HasGlobalCross) { '[FOUND]' } else { '[NOT FOUND]' })" -ForegroundColor $(if ($HasGlobalCross) { 'Green' } else { 'DarkGray' })
+
+    Write-Host ""
+    Write-Host "  --- Software-Specific Tags ($SoftwareName) ---"
+    if ($SoftwareSpecificTags.Count -eq 0) {
+        Write-Host "  (none found)" -ForegroundColor DarkGray
+    } else {
+        foreach ($Tag in $SoftwareSpecificTags) {
+            Write-Host "  - $Tag"
+        }
+    }
+}
+
+function Write-DebugInstallCheck {
+    param([bool]$IsInstalled)
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: Installation Check" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    $FilePaths = @(
+        "$env:ProgramFiles\Unchecky\unchecky.exe",
+        "${env:ProgramFiles(x86)}\Unchecky\unchecky.exe"
+    )
+    $RegPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky"
+    )
+
+    Write-Host "  --- File Paths ---"
+    $FileFound = $false
+    foreach ($Path in $FilePaths) {
+        $Exists = Test-Path $Path
+        if ($Exists) { $FileFound = $true }
+        Write-Host "  $(if ($Exists) { '[FOUND]' } else { '[    ]' }) $Path" -ForegroundColor $(if ($Exists) { 'Green' } else { 'DarkGray' })
+    }
+
+    Write-Host ""
+    Write-Host "  --- Registry Keys ---"
+    $RegFound = $false
+    foreach ($Path in $RegPaths) {
+        $Exists = Test-Path $Path
+        if ($Exists) { $RegFound = $true }
+        Write-Host "  $(if ($Exists) { '[FOUND]' } else { '[    ]' }) $Path" -ForegroundColor $(if ($Exists) { 'Green' } else { 'DarkGray' })
+    }
+
+    Write-Host ""
+    Write-Host "  SOFTWARE INSTALLED: $(if ($IsInstalled) { 'YES' } else { 'NO' })" -ForegroundColor $(if ($IsInstalled) { 'Green' } else { 'Yellow' })
+}
+
+function Write-DebugPolicy {
+    param($Policy)
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: Policy Resolution" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    Write-Host "  GlobalStatus:    $($Policy.GlobalStatus)" -ForegroundColor $(if ($Policy.GlobalStatus -eq 'Managed') { 'Green' } else { 'Yellow' })
+    Write-Host "  ShouldProcess:   $($Policy.ShouldProcess)" -ForegroundColor $(if ($Policy.ShouldProcess) { 'Green' } else { 'Yellow' })
+    Write-Host "  ResolvedAction:  $($Policy.ResolvedAction)"
+    Write-Host "  ActionSource:    $($Policy.ActionSource)"
+    Write-Host "  HasInstalled:    $($Policy.HasInstalled) (refers to tag, not actual install)"
+    Write-Host "  IsPinned:        $($Policy.IsPinned)"
+
+    if ($Policy.SkipReason) {
+        Write-Host "  SkipReason:      $($Policy.SkipReason)" -ForegroundColor Yellow
+    }
+
+    if ($Policy.MatchedTags.Count -gt 0) {
+        Write-Host "  MatchedTags:     $($Policy.MatchedTags -join ', ')"
+    }
+}
+
+function Write-DebugTagManagement {
+    param([bool]$HasApiKey, [string]$DeviceHostname)
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: Tag Management Readiness" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    $HostnameReady = -not [string]::IsNullOrWhiteSpace($DeviceHostname) -and $DeviceHostname -notlike "{{*}}"
+
+    Write-Host "  API Key Present:     $(if ($HasApiKey) { '[YES]' } else { '[NO] - Tag updates will be SKIPPED!' })" -ForegroundColor $(if ($HasApiKey) { 'Green' } else { 'Red' })
+    Write-Host "  Device Hostname:     $(if ($HostnameReady) { "[YES] $DeviceHostname" } else { '[NO]' })" -ForegroundColor $(if ($HostnameReady) { 'Green' } else { 'Red' })
+
+    if ($HasApiKey -and $HostnameReady) {
+        Write-Host ""
+        Write-Host "  [OK] Tag management is READY" -ForegroundColor Green
+    } else {
+        Write-Host ""
+        Write-Host "  [WARNING] Tag management will be SKIPPED" -ForegroundColor Red
+        if (-not $HasApiKey) {
+            Write-Host "  -> Create 'apikey' custom field in Level.io (admin-only)" -ForegroundColor Yellow
+            Write-Host "  -> Set value to your Level.io API key" -ForegroundColor Yellow
+        }
+    }
+}
 
 # ============================================================
 # CONFIGURATION
@@ -292,12 +490,31 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.8"
+$ScriptVersion = "2026.01.12.9"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
 
     Write-LevelLog "Policy Enforcement: $SoftwareName (v$ScriptVersion)"
+
+    # Debug header
+    if ($DebugScripts) {
+        Write-Host ""
+        Write-Host "============================================================" -ForegroundColor Magenta
+        Write-Host " DEBUG MODE ENABLED (cf_debug_scripts = true)" -ForegroundColor Magenta
+        Write-Host " Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Magenta
+        Write-Host " Computer:  $env:COMPUTERNAME" -ForegroundColor Magenta
+        Write-Host "============================================================" -ForegroundColor Magenta
+    }
+
+    # Debug: Show all launcher variables
+    Write-DebugSection -Title "Launcher Variables" -Data @{
+        'MspScratchFolder' = $MspScratchFolder
+        'DeviceHostname' = $DeviceHostname
+        'DeviceTags' = $DeviceTags
+        'LevelApiKey' = $LevelApiKey
+    } -MaskApiKey
+
     Write-Host ""
 
     # Get custom field policy if available (passed from launcher)
@@ -306,6 +523,14 @@ $InvokeParams = @{ ScriptBlock = {
     if ($CustomFieldPolicy) {
         Write-LevelLog "Custom field policy: $CustomFieldPolicy"
     }
+
+    # Debug: Show custom field policy
+    Write-DebugSection -Title "Custom Field Policy" -Data @{
+        "policy_$SoftwareName" = $CustomFieldPolicy
+    }
+
+    # Debug: Analyze device tags
+    Write-DebugTags -TagString $DeviceTags -SoftwareName $SoftwareName
 
     # ============================================================
     # AUTO-BOOTSTRAP: Create policy infrastructure if needed
@@ -335,12 +560,22 @@ $InvokeParams = @{ ScriptBlock = {
     # Check current installation state
     $IsInstalled = Test-UncheckyInstalled
     Write-LevelLog "Current state: $(if ($IsInstalled) { 'Installed' } else { 'Not installed' })"
+
+    # Debug: Show installation check details
+    Write-DebugInstallCheck -IsInstalled $IsInstalled
+
     Write-Host ""
 
     # Run the policy check with the 5-tag model
     $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName `
                                          -DeviceTags $DeviceTags `
                                          -CustomFieldPolicy $CustomFieldPolicy
+
+    # Debug: Show policy resolution details
+    Write-DebugPolicy -Policy $Policy
+
+    # Debug: Show tag management readiness
+    Write-DebugTagManagement -HasApiKey ([bool]$LevelApiKey) -DeviceHostname $DeviceHostname
 
     Write-Host ""
 
@@ -490,6 +725,14 @@ $InvokeParams = @{ ScriptBlock = {
         Write-Host "  Action: $($Policy.ResolvedAction)"
         Write-Host "  See details above for specific error"
         Write-LevelLog "Policy enforcement completed with errors" -Level "ERROR"
+    }
+
+    # Debug footer
+    if ($DebugScripts) {
+        Write-Host ""
+        Write-Host "============================================================" -ForegroundColor Magenta
+        Write-Host " END OF DEBUG OUTPUT" -ForegroundColor Magenta
+        Write-Host "============================================================" -ForegroundColor Magenta
     }
 
     # Return exit code to Invoke-LevelScript
