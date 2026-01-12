@@ -1,6 +1,6 @@
 ﻿# MD5SUMS - Checksums for COOLForge files
 # Format: MD5_HASH  FILENAME
-# Generated: 2026-01-10
+# Generated: 2026-01-12
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
@@ -9,11 +9,12 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-4fd7fe8a54c39d99f6ffeffdef40b94d  modules/COOLForge-Common.psm1
+25cac2d6a3f57c33d4b72cf48be3ad8d  modules/COOLForge-Common.psm1
 7a8fb4ff7973b51ac709c93569b31d36  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 ce7971087e023dd883650a2ed40fc3d1  scripts/Check/👀huntress.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
+ece8f609be8e25dd107f6b7dd4aeaa88  scripts/Check/👀unchecky.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
 0b21652beac13ca2d365c53011846b3c  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 6bae62fc42ea30a1ace3c2472dc4f901  scripts/Fix/🔧Fix Windows 10 Services.ps1
