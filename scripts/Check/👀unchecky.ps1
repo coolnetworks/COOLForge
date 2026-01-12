@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.5
+    Version:          2026.01.12.6
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.5
+# Version: 2026.01.12.6
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -121,6 +121,14 @@ function Get-UncheckyUninstallString {
 function Install-Unchecky {
     param([string]$ScratchFolder)
 
+    # Validate scratch folder path
+    if ([string]::IsNullOrWhiteSpace($ScratchFolder) -or $ScratchFolder -like "*{{*") {
+        Write-Host "Alert: Invalid scratch folder path"
+        Write-Host "  ScratchFolder: $ScratchFolder"
+        Write-LevelLog "Invalid scratch folder - template variable not resolved" -Level "ERROR"
+        return $false
+    }
+
     # Store installers in dedicated subfolder under scratch folder
     $InstallersFolder = Join-Path $ScratchFolder "Installers"
     if (-not (Test-Path $InstallersFolder)) {
@@ -128,19 +136,53 @@ function Install-Unchecky {
     }
     $InstallerPath = Join-Path $InstallersFolder $InstallerName
 
-    # Download installer
-    Write-LevelLog "Downloading Unchecky installer..."
-    try {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing -ErrorAction Stop
-    }
-    catch {
-        Write-Host "Alert: Failed to download Unchecky installer"
-        Write-Host "  URL: $InstallerUrl"
-        Write-Host "  Target: $InstallerPath"
-        Write-Host "  Error: $($_.Exception.Message)"
-        Write-LevelLog "Failed to download installer: $($_.Exception.Message)" -Level "ERROR"
-        return $false
+    # Download installer with retry for small/corrupt files
+    $MinFileSize = 1MB
+    $MaxRetries = 2
+    $RetryCount = 0
+
+    while ($RetryCount -le $MaxRetries) {
+        Write-LevelLog "Downloading Unchecky installer$(if ($RetryCount -gt 0) { " (retry $RetryCount)" })..."
+        try {
+            # Remove existing file if present
+            if (Test-Path $InstallerPath) {
+                Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
+            }
+
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing -ErrorAction Stop
+
+            # Validate file exists and size
+            if (Test-Path $InstallerPath) {
+                $FileSize = (Get-Item $InstallerPath).Length
+                if ($FileSize -ge $MinFileSize) {
+                    Write-LevelLog "Downloaded installer: $([math]::Round($FileSize/1MB, 2)) MB"
+                    break  # Success
+                }
+                else {
+                    Write-LevelLog "Downloaded file too small ($FileSize bytes), expected >= $MinFileSize - retrying..." -Level "WARNING"
+                    $RetryCount++
+                }
+            }
+            else {
+                Write-LevelLog "File not found after download - retrying..." -Level "WARNING"
+                $RetryCount++
+            }
+        }
+        catch {
+            Write-LevelLog "Download failed: $($_.Exception.Message)" -Level "WARNING"
+            $RetryCount++
+        }
+
+        if ($RetryCount -gt $MaxRetries) {
+            Write-Host "Alert: Failed to download Unchecky installer after $MaxRetries retries"
+            Write-Host "  URL: $InstallerUrl"
+            Write-Host "  Target: $InstallerPath"
+            Write-LevelLog "Failed to download installer after retries" -Level "ERROR"
+            return $false
+        }
+
+        Start-Sleep -Seconds 2
     }
 
     if (-not (Test-Path $InstallerPath)) {
@@ -250,7 +292,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.5"
+$ScriptVersion = "2026.01.12.6"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
