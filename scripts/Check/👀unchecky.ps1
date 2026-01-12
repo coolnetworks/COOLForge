@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.3
+    Version:          2026.01.12.4
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.3
+# Version: 2026.01.12.4
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -135,11 +135,17 @@ function Install-Unchecky {
         Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing -ErrorAction Stop
     }
     catch {
+        Write-Host "Alert: Failed to download Unchecky installer"
+        Write-Host "  URL: $InstallerUrl"
+        Write-Host "  Target: $InstallerPath"
+        Write-Host "  Error: $($_.Exception.Message)"
         Write-LevelLog "Failed to download installer: $($_.Exception.Message)" -Level "ERROR"
         return $false
     }
 
     if (-not (Test-Path $InstallerPath)) {
+        Write-Host "Alert: Installer file not found after download"
+        Write-Host "  Expected path: $InstallerPath"
         Write-LevelLog "Installer not found after download" -Level "ERROR"
         return $false
     }
@@ -154,11 +160,18 @@ function Install-Unchecky {
             return $true
         }
         else {
+            Write-Host "Alert: Unchecky installer failed"
+            Write-Host "  Installer: $InstallerPath"
+            Write-Host "  Arguments: $InstallArgs"
+            Write-Host "  Exit code: $($Process.ExitCode)"
             Write-LevelLog "Installer exited with code: $($Process.ExitCode)" -Level "ERROR"
             return $false
         }
     }
     catch {
+        Write-Host "Alert: Unchecky installation exception"
+        Write-Host "  Installer: $InstallerPath"
+        Write-Host "  Error: $($_.Exception.Message)"
         Write-LevelLog "Installation failed: $($_.Exception.Message)" -Level "ERROR"
         return $false
     }
@@ -217,11 +230,18 @@ function Remove-Unchecky {
             return $true
         }
         else {
+            Write-Host "Alert: Unchecky uninstaller failed"
+            Write-Host "  Uninstaller: $TempUninstaller"
+            Write-Host "  Arguments: $UninstallArgs"
+            Write-Host "  Exit code: $($Process.ExitCode)"
             Write-LevelLog "Uninstaller exited with code: $($Process.ExitCode)" -Level "ERROR"
             return $false
         }
     }
     catch {
+        Write-Host "Alert: Unchecky uninstallation exception"
+        Write-Host "  Install path: $InstallPath"
+        Write-Host "  Error: $($_.Exception.Message)"
         Write-LevelLog "Uninstallation failed: $($_.Exception.Message)" -Level "ERROR"
         return $false
     }
@@ -230,7 +250,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.3"
+$ScriptVersion = "2026.01.12.4"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -326,6 +346,11 @@ $InvokeParams = @{ ScriptBlock = {
         Write-LevelLog "Policy enforcement completed successfully" -Level "SUCCESS"
     }
     else {
+        Write-Host ""
+        Write-Host "Alert: Policy enforcement failed for $SoftwareName"
+        Write-Host "  Device: $DeviceHostname"
+        Write-Host "  Action: $($Policy.ResolvedAction)"
+        Write-Host "  See details above for specific error"
         Write-LevelLog "Policy enforcement completed with errors" -Level "ERROR"
     }
 }}
