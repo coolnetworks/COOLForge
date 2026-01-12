@@ -102,7 +102,7 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 
 # Level.io API key for tag management (optional - enables automatic tag updates)
-$LevelApiKey = "{{cf_coolforge_levelio_api_key}}"
+$LevelApiKey = "{{cf_apikey}}"
 if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
     $LevelApiKey = $null
 }
