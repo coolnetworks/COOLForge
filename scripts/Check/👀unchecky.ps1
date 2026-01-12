@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.4
+    Version:          2026.01.12.5
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.4
+# Version: 2026.01.12.5
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -250,7 +250,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.4"
+$ScriptVersion = "2026.01.12.5"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -286,7 +286,7 @@ $InvokeParams = @{ ScriptBlock = {
                 }
                 else {
                     Write-LevelLog "ACTION: Installing $SoftwareName" -Level "INFO"
-                    $Success = Install-Unchecky -ScratchFolder $script:ScratchFolder
+                    $Success = Install-Unchecky -ScratchFolder $MspScratchFolder
                     if (-not $Success) {
                         Write-LevelLog "FAILED: Installation unsuccessful" -Level "ERROR"
                         $script:ExitCode = 1
@@ -316,7 +316,7 @@ $InvokeParams = @{ ScriptBlock = {
                         break
                     }
                 }
-                $InstallSuccess = Install-Unchecky -ScratchFolder $script:ScratchFolder
+                $InstallSuccess = Install-Unchecky -ScratchFolder $MspScratchFolder
                 if (-not $InstallSuccess) {
                     Write-LevelLog "FAILED: Reinstallation unsuccessful" -Level "ERROR"
                     $script:ExitCode = 1
