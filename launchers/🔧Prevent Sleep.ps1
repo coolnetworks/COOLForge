@@ -31,7 +31,7 @@ $ScriptToRun = "??Prevent Sleep.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.12.02
+    Launcher Version: 2026.01.12.03
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -64,7 +64,7 @@ $ScriptToRun = "??Prevent Sleep.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.12.02
+# Launcher Version: 2026.01.12.03
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -397,8 +397,9 @@ function Get-ScriptPathFromMD5 {
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
             $FilePath = $Matches[2].Trim()
             # Check if filename matches (case-insensitive)
+            # Use wildcard to match emoji-prefixed scripts (e.g., "unchecky.ps1" matches "scripts/Check/👀unchecky.ps1")
             $FileName = Split-Path $FilePath -Leaf
-            if ($FileName -eq $ScriptName) {
+            if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
                 return $FilePath
             }
         }
@@ -420,7 +421,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.02"
+Write-Host "[*] Script Launcher v2026.01.12.03"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
