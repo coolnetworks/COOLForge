@@ -1267,8 +1267,12 @@ function Invoke-LevelApiCall {
         return @{ Success = $true; Data = $Response }
     }
     catch {
+        $StatusCode = $null
+        if ($_.Exception.Response) {
+            $StatusCode = [int]$_.Exception.Response.StatusCode
+        }
         Write-LevelLog "API call failed: $($_.Exception.Message)" -Level "ERROR"
-        return @{ Success = $false; Error = $_.Exception.Message }
+        return @{ Success = $false; Error = $_.Exception.Message; StatusCode = $StatusCode }
     }
 }
 
@@ -1830,6 +1834,11 @@ function Add-LevelTagToDevice {
     $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
 
     if (-not $Result.Success) {
+        # 422 means device already has this tag - that's still success for our purpose
+        if ($Result.StatusCode -eq 422) {
+            Write-LevelLog "Tag already on device (422)" -Level "DEBUG"
+            return $true
+        }
         Write-LevelLog "Failed to add tag to device: $($Result.Error)" -Level "ERROR"
         return $false
     }
@@ -1885,6 +1894,11 @@ function Remove-LevelTagFromDevice {
     $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "DELETE" -Body $Body
 
     if (-not $Result.Success) {
+        # 422 means device doesn't have this tag - that's still success for our purpose
+        if ($Result.StatusCode -eq 422) {
+            Write-LevelLog "Tag not on device (422)" -Level "DEBUG"
+            return $true
+        }
         Write-LevelLog "Failed to remove tag from device: $($Result.Error)" -Level "ERROR"
         return $false
     }
@@ -4104,7 +4118,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.12.09"
+$script:ModuleVersion = "2026.01.12.10"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================

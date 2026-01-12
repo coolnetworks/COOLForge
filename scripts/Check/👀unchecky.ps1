@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.13
+    Version:          2026.01.12.14
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.13
+# Version: 2026.01.12.14
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -237,16 +237,15 @@ function Write-DebugTagManagement {
 
     Write-Host "  API Key Present:     $(if ($HasApiKey) { '[YES]' } else { '[NO] - Tag updates will be SKIPPED!' })" -ForegroundColor $(if ($HasApiKey) { 'Green' } else { 'Red' })
 
-    # Show API key diagnostics (without exposing the key)
+    # Show API key diagnostics - first 50% of key for verification
     if ($ApiKeyValue) {
         $KeyLen = $ApiKeyValue.Length
-        $FirstChar = $ApiKeyValue[0]
-        $LastChars = if ($KeyLen -gt 3) { $ApiKeyValue.Substring($KeyLen - 3) } else { "???" }
+        $HalfLen = [Math]::Ceiling($KeyLen / 2)
+        $FirstHalf = $ApiKeyValue.Substring(0, $HalfLen)
         $HasWhitespace = $ApiKeyValue -match '^\s|\s$'
         $HasNewline = $ApiKeyValue -match '[\r\n]'
         Write-Host "  API Key Length:      $KeyLen chars" -ForegroundColor $(if ($KeyLen -gt 20) { 'Green' } else { 'Yellow' })
-        Write-Host "  API Key First Char:  '$FirstChar' (code: $([int][char]$FirstChar))" -ForegroundColor Gray
-        Write-Host "  API Key Last 3:      '...$LastChars'" -ForegroundColor Gray
+        Write-Host "  API Key First 50%:   '$FirstHalf'" -ForegroundColor Yellow
         if ($HasWhitespace) {
             Write-Host "  [WARNING] API key has leading/trailing whitespace!" -ForegroundColor Red
         }
@@ -547,7 +546,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.13"
+$ScriptVersion = "2026.01.12.14"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {

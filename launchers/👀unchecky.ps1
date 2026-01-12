@@ -76,8 +76,12 @@ $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
 # GitHub Personal Access Token for private repositories (admin-only custom field)
-$GitHubPAT = "{{cf_coolforge_pat}}"
-if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_coolforge_pat}}") {
+# IMPORTANT: Use here-string to prevent PowerShell expanding $ characters in tokens
+$GitHubPAT = @'
+{{cf_coolforge_pat}}
+'@
+$GitHubPAT = $GitHubPAT.Trim()
+if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -like "{{*}}") {
     $GitHubPAT = $null
 }
 
@@ -102,18 +106,46 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
 
-# Level.io API key for tag management (optional - enables automatic tag updates)
-$LevelApiKey = "{{cf_apikey}}"
-if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
-    $LevelApiKey = $null
-}
-
-# Debug mode - enables verbose output for troubleshooting
+# Debug mode - enables verbose output for troubleshooting (define early so we can use it)
 $DebugScripts = "{{cf_debug_scripts}}"
 if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
     $DebugScripts = $false
 } else {
     $DebugScripts = $DebugScripts -eq "true"
+}
+
+# Level.io API key for tag management (optional - enables automatic tag updates)
+# IMPORTANT: Use here-string to prevent PowerShell expanding $ characters in the key
+$LevelApiKey_Raw = @'
+{{cf_apikey}}
+'@
+$LevelApiKey = $LevelApiKey_Raw.Trim()
+if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
+    $LevelApiKey = $null
+}
+
+# DEBUG: Show exactly what Level.io provided for apikey
+if ($DebugScripts) {
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Yellow
+    Write-Host " LAUNCHER DEBUG: API Key Source Tracing" -ForegroundColor Yellow
+    Write-Host "============================================================" -ForegroundColor Yellow
+    Write-Host "  Custom field name:   apikey" -ForegroundColor Gray
+    Write-Host "  Template syntax:     {{cf_apikey}}" -ForegroundColor Gray
+    Write-Host "  Raw value received:  '$LevelApiKey_Raw'" -ForegroundColor Yellow
+    if ($LevelApiKey_Raw -and $LevelApiKey_Raw -notlike "{{*}}") {
+        $RawLen = $LevelApiKey_Raw.Length
+        $RawHalf = [Math]::Ceiling($RawLen / 2)
+        $RawFirstHalf = $LevelApiKey_Raw.Substring(0, $RawHalf)
+        Write-Host "  Raw length:          $RawLen chars" -ForegroundColor Gray
+        Write-Host "  Raw first 50%:       '$RawFirstHalf'" -ForegroundColor Yellow
+    } elseif ($LevelApiKey_Raw -like "{{*}}") {
+        Write-Host "  [ERROR] Template not resolved - custom field 'apikey' not found!" -ForegroundColor Red
+    } else {
+        Write-Host "  [ERROR] Raw value is empty!" -ForegroundColor Red
+    }
+    Write-Host "  Final value:         $(if ($LevelApiKey) { 'Set (will be passed to script)' } else { 'NULL (API calls disabled)' })" -ForegroundColor $(if ($LevelApiKey) { 'Green' } else { 'Red' })
+    Write-Host ""
 }
 
 # ScreenConnect whitelisting - for RAT detection script
@@ -594,7 +626,7 @@ $ExecutionBlock = @"
 `$LibraryUrl = '$($LibraryUrl -replace "'", "''")'
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
-`$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''")'" } else { '$null' })
+`$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''" -replace '\$', '`$')'" } else { '$null' })
 `$DebugScripts = `$$DebugScripts
 
 # Policy custom fields (defined in launcher header)
