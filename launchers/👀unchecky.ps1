@@ -131,7 +131,10 @@ if ($DebugScripts) {
     Write-Host " LAUNCHER DEBUG: API Key Source Tracing" -ForegroundColor Yellow
     Write-Host "============================================================" -ForegroundColor Yellow
     Write-Host "  Custom field name:   apikey" -ForegroundColor Gray
-    Write-Host "  Template syntax:     {{cf_apikey}}" -ForegroundColor Gray
+    Write-Host "  Template syntax:     " -NoNewline -ForegroundColor Gray
+    Write-Host "{{" -NoNewline -ForegroundColor Gray
+    Write-Host "cf_apikey" -NoNewline -ForegroundColor Gray
+    Write-Host "}}" -ForegroundColor Gray
     if ($LevelApiKey_Raw -and $LevelApiKey_Raw -notlike "{{*}}") {
         $RawLen = $LevelApiKey_Raw.Length
         # Mask the key: show first 4 + ... + last 4 chars
