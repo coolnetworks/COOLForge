@@ -583,7 +583,8 @@ function Get-EmojiMap {
     $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # U+1F427
     $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # U+1F300
     $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # U+1F6F0
-    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0x8C))  # U+274C (TBD - placeholder)
+    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA5, 0xC3, 0xAE))  # U+274C - observed
+    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # U+26D4 Stop/NoEntry - observed
 
     # Build clean emoji strings programmatically to avoid encoding issues
     # when module is loaded via scriptblock::Create()
@@ -600,6 +601,7 @@ function Get-EmojiMap {
     $EmojiSatellite = [char]::ConvertFromUtf32(0x1F6F0)  # U+1F6F0 Satellite
     $EmojiWrench = [char]::ConvertFromUtf32(0x1F527)     # U+1F527 Wrench - Fix
     $EmojiEyes = [char]::ConvertFromUtf32(0x1F440)       # U+1F440 Eyes - Check
+    $EmojiNoEntry = [char]::ConvertFromUtf32(0x26D4)     # U+26D4 No Entry - Remove/Block
 
     return @{
         # ============================================================
@@ -608,6 +610,7 @@ function Get-EmojiMap {
         # Override tags (transient - removed after action)
         $EmojiPray = "Install"
         $EmojiProhibit = "Remove"
+        $EmojiNoEntry = "Remove"
         $EmojiArrows = "Reinstall"
         # Override tag (persistent - admin intent)
         $EmojiPin = "Pin"
@@ -637,6 +640,7 @@ function Get-EmojiMap {
         $CorruptedPin = "Pin"
         $CorruptedPray = "Install"
         $CorruptedProhibit = "Remove"
+        $CorruptedNoEntry = "Remove"
         $CorruptedCross = "Excluded"
         $CorruptedWindow = "Windows"
         $CorruptedAlert = "Alert"
