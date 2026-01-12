@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.12
+    Version:          2026.01.12.13
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.12
+# Version: 2026.01.12.13
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -261,9 +261,11 @@ function Write-DebugTagManagement {
         Write-Host ""
         Write-Host "  [OK] Tag management is READY" -ForegroundColor Green
 
-        # Quick API test
+        # Quick API test - try both with and without Bearer prefix
         Write-Host ""
         Write-Host "  --- API Connection Test ---"
+
+        # Test 1: Without Bearer (current format)
         try {
             $TestUri = "https://api.level.io/v2/devices?limit=1"
             $TestHeaders = @{
@@ -272,16 +274,27 @@ function Write-DebugTagManagement {
                 "Accept"        = "application/json"
             }
             $TestResult = Invoke-RestMethod -Uri $TestUri -Headers $TestHeaders -Method GET -TimeoutSec 10 -UseBasicParsing
-            Write-Host "  [OK] API connection successful (found $($TestResult.data.Count) device(s))" -ForegroundColor Green
+            Write-Host "  [OK] API test (no Bearer): Success - found $($TestResult.data.Count) device(s)" -ForegroundColor Green
         }
         catch {
             $ErrMsg = $_.Exception.Message
-            Write-Host "  [FAILED] API test: $ErrMsg" -ForegroundColor Red
-            if ($ErrMsg -match "401") {
-                Write-Host "  -> API key is rejected by Level.io" -ForegroundColor Yellow
-                Write-Host "  -> Check: Is this the correct API key?" -ForegroundColor Yellow
-                Write-Host "  -> Check: Does it have 'Devices' and 'Tags' permissions?" -ForegroundColor Yellow
+            Write-Host "  [FAILED] API test (no Bearer): $ErrMsg" -ForegroundColor Red
+        }
+
+        # Test 2: With Bearer prefix
+        try {
+            $TestUri = "https://api.level.io/v2/devices?limit=1"
+            $TestHeaders = @{
+                "Authorization" = "Bearer $ApiKeyValue"
+                "Content-Type"  = "application/json"
+                "Accept"        = "application/json"
             }
+            $TestResult = Invoke-RestMethod -Uri $TestUri -Headers $TestHeaders -Method GET -TimeoutSec 10 -UseBasicParsing
+            Write-Host "  [OK] API test (with Bearer): Success - found $($TestResult.data.Count) device(s)" -ForegroundColor Green
+        }
+        catch {
+            $ErrMsg = $_.Exception.Message
+            Write-Host "  [FAILED] API test (with Bearer): $ErrMsg" -ForegroundColor Red
         }
     } else {
         Write-Host ""
@@ -534,7 +547,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.12"
+$ScriptVersion = "2026.01.12.13"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
