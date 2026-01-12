@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.04
+    Version:    2026.01.12.05
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -929,12 +929,17 @@ function Get-SoftwarePolicy {
     # Get unique actions
     $UniqueActions = $PolicyActions | Select-Object -Unique
 
+    # Warn about invalid tag combinations (Cross should never have software suffix)
+    if ("Excluded" -in $UniqueActions) {
+        Write-Host "[!] Invalid tag: Cross (U+274C) with software suffix is not valid"
+        Write-Host "[!]   Use Pin (U+1F4CC) to exclude specific software from changes"
+    }
+
     # ============================================================
     # STEP 3: RESOLVE ACTION (Priority order per POLICY-TAGS.md)
     # ============================================================
-    # Priority: Pin/Excluded > Reinstall > Remove > Install
-    # Note: "Excluded" with software suffix means "pin this software" (don't touch)
-    $IsPinned = "Pin" -in $UniqueActions -or "Excluded" -in $UniqueActions
+    # Priority: Pin > Reinstall > Remove > Install
+    $IsPinned = "Pin" -in $UniqueActions
     $HasReinstall = "Reinstall" -in $UniqueActions
     $HasRemove = "Remove" -in $UniqueActions
     $HasInstall = "Install" -in $UniqueActions
