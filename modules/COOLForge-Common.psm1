@@ -1741,6 +1741,114 @@ function Find-LevelDevice {
     return $null
 }
 
+<#
+.SYNOPSIS
+    Gets a device by ID from Level.io.
+
+.DESCRIPTION
+    Retrieves a single device by its ID. Returns the full device object
+    including tag_ids array.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER DeviceId
+    The ID of the device to retrieve.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Device object if found, $null if not found or on error.
+
+.EXAMPLE
+    $Device = Get-LevelDeviceById -ApiKey $ApiKey -DeviceId "dev_123"
+#>
+function Get-LevelDeviceById {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Uri = "$BaseUrl/devices/$DeviceId"
+    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+    if (-not $Result.Success) {
+        Write-LevelLog "Failed to get device by ID: $($Result.Error)" -Level "ERROR"
+        return $null
+    }
+
+    return $Result.Data
+}
+
+<#
+.SYNOPSIS
+    Gets the tag names for a device from Level.io.
+
+.DESCRIPTION
+    Retrieves the tag names for a device by fetching the device object
+    and resolving tag_ids to tag names. Useful for debugging tag operations.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER DeviceId
+    The ID of the device to get tags for.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of tag names, or empty array on error.
+
+.EXAMPLE
+    $Tags = Get-LevelDeviceTagNames -ApiKey $ApiKey -DeviceId $Device.id
+    Write-Host "Device has tags: $($Tags -join ', ')"
+#>
+function Get-LevelDeviceTagNames {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    # Get the device to get tag_ids
+    $Device = Get-LevelDeviceById -ApiKey $ApiKey -DeviceId $DeviceId -BaseUrl $BaseUrl
+    if (-not $Device -or -not $Device.tag_ids -or $Device.tag_ids.Count -eq 0) {
+        return @()
+    }
+
+    # Get all tags to resolve IDs to names
+    $AllTags = Get-LevelTags -ApiKey $ApiKey -BaseUrl $BaseUrl
+    if (-not $AllTags) {
+        return @()
+    }
+
+    # Map tag_ids to names
+    $TagNames = @()
+    foreach ($TagId in $Device.tag_ids) {
+        $Tag = $AllTags | Where-Object { $_.id -eq $TagId } | Select-Object -First 1
+        if ($Tag) {
+            $TagNames += $Tag.name
+        }
+    }
+
+    return $TagNames
+}
+
 # ============================================================
 # LEVEL.IO TAG MANAGEMENT
 # ============================================================
@@ -1950,12 +2058,19 @@ function Add-LevelTagToDevice {
     $Uri = "$BaseUrl/tags/$TagId/devices"
     $Body = @{ device_id = $DeviceId }
 
+    Write-LevelLog "POST $Uri (TagId: $TagId, DeviceId: $DeviceId)" -Level "DEBUG"
+
     $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
 
     if (-not $Result.Success) {
-        # 422 means device already has this tag - that's still success for our purpose
+        # 422 can mean:
+        # - Device already has this tag (success for idempotent operation)
+        # - Invalid request (actual failure)
+        # Check the response body to distinguish
         if ($Result.StatusCode -eq 422) {
-            Write-LevelLog "Tag already on device (422)" -Level "DEBUG"
+            $ResponseInfo = if ($Result.ResponseBody) { " - $($Result.ResponseBody)" } else { "" }
+            Write-LevelLog "API returned 422$ResponseInfo" -Level "DEBUG"
+            # Treat 422 as success (idempotent - tag is on device either way)
             return $true
         }
         Write-LevelLog "Failed to add tag to device: $($Result.Error)" -Level "ERROR"
@@ -2010,12 +2125,18 @@ function Remove-LevelTagFromDevice {
     $Uri = "$BaseUrl/tags/$TagId/devices"
     $Body = @{ device_id = $DeviceId }
 
+    Write-LevelLog "DELETE $Uri (TagId: $TagId, DeviceId: $DeviceId)" -Level "DEBUG"
+
     $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "DELETE" -Body $Body
 
     if (-not $Result.Success) {
-        # 422 means device doesn't have this tag - that's still success for our purpose
+        # 422 can mean:
+        # - Device doesn't have this tag (success for idempotent operation)
+        # - Invalid request (actual failure)
         if ($Result.StatusCode -eq 422) {
-            Write-LevelLog "Tag not on device (422)" -Level "DEBUG"
+            $ResponseInfo = if ($Result.ResponseBody) { " - $($Result.ResponseBody)" } else { "" }
+            Write-LevelLog "API returned 422$ResponseInfo" -Level "DEBUG"
+            # Treat 422 as success (idempotent - tag is off device either way)
             return $true
         }
         Write-LevelLog "Failed to remove tag from device: $($Result.Error)" -Level "ERROR"
@@ -2093,7 +2214,10 @@ function Add-LevelPolicyTag {
     }
 
     $FullTagName = "$EmojiChar$TagName"
-    Write-LevelLog "Adding tag '$FullTagName' to device..." -Level "DEBUG"
+    # Show tag bytes for debugging emoji issues
+    $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($FullTagName)
+    $TagBytesHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+    Write-LevelLog "Adding tag '$FullTagName' (bytes: $TagBytesHex) to device..." -Level "DEBUG"
 
     # Find the device
     $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
@@ -2105,12 +2229,15 @@ function Add-LevelPolicyTag {
     # Find the tag, create if doesn't exist
     $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
     if (-not $Tag) {
-        Write-LevelLog "Tag '$FullTagName' not found - creating..." -Level "DEBUG"
+        Write-LevelLog "Tag '$FullTagName' not found in Level.io - creating..." -Level "DEBUG"
         $Tag = New-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
         if (-not $Tag) {
             Write-LevelLog "Failed to create tag '$FullTagName'" -Level "ERROR"
             return $false
         }
+        Write-LevelLog "Created tag with ID: $($Tag.id)" -Level "DEBUG"
+    } else {
+        Write-LevelLog "Found existing tag with ID: $($Tag.id)" -Level "DEBUG"
     }
 
     # Add the tag
@@ -2194,7 +2321,10 @@ function Remove-LevelPolicyTag {
     }
 
     $FullTagName = "$EmojiChar$TagName"
-    Write-LevelLog "Removing tag '$FullTagName' from device..." -Level "DEBUG"
+    # Show tag bytes for debugging emoji issues
+    $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($FullTagName)
+    $TagBytesHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+    Write-LevelLog "Removing tag '$FullTagName' (bytes: $TagBytesHex) from device..." -Level "DEBUG"
 
     # Find the device
     $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
@@ -2209,6 +2339,7 @@ function Remove-LevelPolicyTag {
         Write-LevelLog "Tag '$FullTagName' not found in Level.io (may not exist)" -Level "DEBUG"
         return $true  # Not an error - tag may not exist
     }
+    Write-LevelLog "Found tag with ID: $($Tag.id)" -Level "DEBUG"
 
     # Remove the tag
     $Success = Remove-LevelTagFromDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id -BaseUrl $BaseUrl
@@ -4245,7 +4376,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.12.11"
+$script:ModuleVersion = "2026.01.13.02"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -4276,6 +4407,8 @@ Export-ModuleMember -Function @(
     'Get-LevelGroups',
     'Get-LevelDevices',
     'Find-LevelDevice',
+    'Get-LevelDeviceById',
+    'Get-LevelDeviceTagNames',
 
     # Tag Management
     'Get-LevelTags',

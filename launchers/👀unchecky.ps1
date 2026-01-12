@@ -132,13 +132,18 @@ if ($DebugScripts) {
     Write-Host "============================================================" -ForegroundColor Yellow
     Write-Host "  Custom field name:   apikey" -ForegroundColor Gray
     Write-Host "  Template syntax:     {{cf_apikey}}" -ForegroundColor Gray
-    Write-Host "  Raw value received:  '$LevelApiKey_Raw'" -ForegroundColor Yellow
     if ($LevelApiKey_Raw -and $LevelApiKey_Raw -notlike "{{*}}") {
         $RawLen = $LevelApiKey_Raw.Length
-        $RawHalf = [Math]::Ceiling($RawLen / 2)
-        $RawFirstHalf = $LevelApiKey_Raw.Substring(0, $RawHalf)
+        # Mask the key: show first 4 + ... + last 4 chars
+        $MaskedKey = if ($RawLen -gt 12) {
+            $LevelApiKey_Raw.Substring(0, 4) + "..." + $LevelApiKey_Raw.Substring($RawLen - 4)
+        } elseif ($RawLen -gt 4) {
+            $LevelApiKey_Raw.Substring(0, 2) + "..." + $LevelApiKey_Raw.Substring($RawLen - 2)
+        } else {
+            "****"
+        }
+        Write-Host "  Raw value (masked):  $MaskedKey" -ForegroundColor Yellow
         Write-Host "  Raw length:          $RawLen chars" -ForegroundColor Gray
-        Write-Host "  Raw first 50%:       '$RawFirstHalf'" -ForegroundColor Yellow
     } elseif ($LevelApiKey_Raw -like "{{*}}") {
         Write-Host "  [ERROR] Template not resolved - custom field 'apikey' not found!" -ForegroundColor Red
     } else {

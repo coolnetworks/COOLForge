@@ -237,15 +237,21 @@ function Write-DebugTagManagement {
 
     Write-Host "  API Key Present:     $(if ($HasApiKey) { '[YES]' } else { '[NO] - Tag updates will be SKIPPED!' })" -ForegroundColor $(if ($HasApiKey) { 'Green' } else { 'Red' })
 
-    # Show API key diagnostics - first 50% of key for verification
+    # Show API key diagnostics - masked format for security
     if ($ApiKeyValue) {
         $KeyLen = $ApiKeyValue.Length
-        $HalfLen = [Math]::Ceiling($KeyLen / 2)
-        $FirstHalf = $ApiKeyValue.Substring(0, $HalfLen)
         $HasWhitespace = $ApiKeyValue -match '^\s|\s$'
         $HasNewline = $ApiKeyValue -match '[\r\n]'
+        # Show first 4 + ... + last 4 chars (or less if key is short)
+        $MaskedKey = if ($KeyLen -gt 12) {
+            $ApiKeyValue.Substring(0, 4) + "..." + $ApiKeyValue.Substring($KeyLen - 4)
+        } elseif ($KeyLen -gt 4) {
+            $ApiKeyValue.Substring(0, 2) + "..." + $ApiKeyValue.Substring($KeyLen - 2)
+        } else {
+            "****"
+        }
         Write-Host "  API Key Length:      $KeyLen chars" -ForegroundColor $(if ($KeyLen -gt 20) { 'Green' } else { 'Yellow' })
-        Write-Host "  API Key First 50%:   '$FirstHalf'" -ForegroundColor Yellow
+        Write-Host "  API Key (masked):    $MaskedKey" -ForegroundColor Yellow
         if ($HasWhitespace) {
             Write-Host "  [WARNING] API key has leading/trailing whitespace!" -ForegroundColor Red
         }
@@ -259,42 +265,6 @@ function Write-DebugTagManagement {
     if ($HasApiKey -and $HostnameReady) {
         Write-Host ""
         Write-Host "  [OK] Tag management is READY" -ForegroundColor Green
-
-        # Quick API test - try both with and without Bearer prefix
-        Write-Host ""
-        Write-Host "  --- API Connection Test ---"
-
-        # Test 1: Without Bearer (current format)
-        try {
-            $TestUri = "https://api.level.io/v2/devices?limit=1"
-            $TestHeaders = @{
-                "Authorization" = $ApiKeyValue
-                "Content-Type"  = "application/json"
-                "Accept"        = "application/json"
-            }
-            $TestResult = Invoke-RestMethod -Uri $TestUri -Headers $TestHeaders -Method GET -TimeoutSec 10 -UseBasicParsing
-            Write-Host "  [OK] API test (no Bearer): Success - found $($TestResult.data.Count) device(s)" -ForegroundColor Green
-        }
-        catch {
-            $ErrMsg = $_.Exception.Message
-            Write-Host "  [FAILED] API test (no Bearer): $ErrMsg" -ForegroundColor Red
-        }
-
-        # Test 2: With Bearer prefix
-        try {
-            $TestUri = "https://api.level.io/v2/devices?limit=1"
-            $TestHeaders = @{
-                "Authorization" = "Bearer $ApiKeyValue"
-                "Content-Type"  = "application/json"
-                "Accept"        = "application/json"
-            }
-            $TestResult = Invoke-RestMethod -Uri $TestUri -Headers $TestHeaders -Method GET -TimeoutSec 10 -UseBasicParsing
-            Write-Host "  [OK] API test (with Bearer): Success - found $($TestResult.data.Count) device(s)" -ForegroundColor Green
-        }
-        catch {
-            $ErrMsg = $_.Exception.Message
-            Write-Host "  [FAILED] API test (with Bearer): $ErrMsg" -ForegroundColor Red
-        }
     } else {
         Write-Host ""
         Write-Host "  [WARNING] Tag management will be SKIPPED" -ForegroundColor Red
@@ -719,6 +689,20 @@ $InvokeParams = @{ ScriptBlock = {
         Write-Host ""
         Write-LevelLog "Updating tags..." -Level "INFO"
 
+        # Debug: Get device ID and tags BEFORE changes
+        $DeviceForTags = $null
+        $TagsBefore = @()
+        if ($DebugScripts) {
+            $DeviceForTags = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
+            if ($DeviceForTags) {
+                Write-LevelLog "Device ID: $($DeviceForTags.id)" -Level "DEBUG"
+                $TagsBefore = Get-LevelDeviceTagNames -ApiKey $LevelApiKey -DeviceId $DeviceForTags.id
+                Write-LevelLog "Tags BEFORE: $($TagsBefore -join ', ')" -Level "DEBUG"
+            } else {
+                Write-LevelLog "Could not find device for tag verification" -Level "WARNING"
+            }
+        }
+
         # Check final install state
         $FinalInstallState = Test-UncheckyInstalled
 
@@ -771,6 +755,25 @@ $InvokeParams = @{ ScriptBlock = {
         }
         else {
             Write-LevelLog "Action failed - tags not updated" -Level "WARNING"
+        }
+
+        # Debug: Get tags AFTER changes
+        if ($DebugScripts -and $DeviceForTags) {
+            $TagsAfter = Get-LevelDeviceTagNames -ApiKey $LevelApiKey -DeviceId $DeviceForTags.id
+            Write-LevelLog "Tags AFTER: $($TagsAfter -join ', ')" -Level "DEBUG"
+
+            # Show what changed
+            $Added = $TagsAfter | Where-Object { $_ -notin $TagsBefore }
+            $Removed = $TagsBefore | Where-Object { $_ -notin $TagsAfter }
+            if ($Added.Count -gt 0) {
+                Write-LevelLog "Tags ADDED: $($Added -join ', ')" -Level "DEBUG"
+            }
+            if ($Removed.Count -gt 0) {
+                Write-LevelLog "Tags REMOVED: $($Removed -join ', ')" -Level "DEBUG"
+            }
+            if ($Added.Count -eq 0 -and $Removed.Count -eq 0) {
+                Write-LevelLog "No tag changes detected" -Level "DEBUG"
+            }
         }
     }
     else {
