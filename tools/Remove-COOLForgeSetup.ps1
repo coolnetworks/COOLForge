@@ -32,15 +32,16 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # LOAD MODULE
 # ============================================================
 
-$ModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-CustomFields.psm1"
+$ModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1"
+
 if (-not (Test-Path $ModulePath)) {
-    Write-Host "ERROR: Cannot find COOLForge-CustomFields.psm1 at: $ModulePath" -ForegroundColor Red
+    Write-Host "ERROR: Cannot find COOLForge-Common.psm1 at: $ModulePath" -ForegroundColor Red
     exit 1
 }
 
 # Force reimport to get latest changes
-Remove-Module COOLForge-CustomFields -ErrorAction SilentlyContinue
-Import-Module $ModulePath -Force
+Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
+Import-Module $ModulePath -Force -DisableNameChecking
 
 # ============================================================
 # CONFIGURATION
@@ -76,15 +77,13 @@ $KnownCOOLForgeFields = @(
     "huntress_tags"
 )
 
-# Policy tag emoji prefixes (Unicode code points)
+# Policy tag emoji prefixes (5-tag model per POLICY-TAGS.md)
 $PolicyEmojiPrefixes = @(
-    [char]::ConvertFromUtf32(0x1F64F)  # Pray (Install)
-    [char]0x26D4                        # No Entry (Remove)
-    [char]0x2705                        # Check Mark (Has)
-    [char]::ConvertFromUtf32(0x1F4CC)  # Pushpin (Pin)
-    [char]::ConvertFromUtf32(0x1F6AB)  # Prohibited (Block)
-    [char]::ConvertFromUtf32(0x1F440)  # Eyes (Verify)
-    [char]0x274C                        # Cross Mark (Skip)
+    [char]::ConvertFromUtf32(0x1F64F)  # U+1F64F Pray (Install override)
+    [char]::ConvertFromUtf32(0x1F6AB)  # U+1F6AB Prohibited (Remove override)
+    [char]::ConvertFromUtf32(0x1F4CC)  # U+1F4CC Pushpin (Pin override)
+    [char]::ConvertFromUtf32(0x1F504)  # U+1F504 Arrows (Reinstall override)
+    [char]0x2705                        # U+2705 Checkmark (Status: Installed)
 )
 
 # Special standalone tags

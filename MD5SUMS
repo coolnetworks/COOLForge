@@ -1,28 +1,650 @@
-﻿# MD5SUMS - Checksums for COOLForge files
-# Format: MD5_HASH  FILENAME
-# Generated: 2026-01-10
-#
-# Verify with PowerShell:
-#   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
-#   $hash = (Get-FileHash -Path $file -Algorithm MD5).Hash.ToLower()
-#
-# Note: The launcher uses this file to locate scripts in subfolders.
-# Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
-#
-4fd7fe8a54c39d99f6ffeffdef40b94d  modules/COOLForge-Common.psm1
-7a8fb4ff7973b51ac709c93569b31d36  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-ce7971087e023dd883650a2ed40fc3d1  scripts/Check/👀huntress.ps1
-883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
-a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
-c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-0b21652beac13ca2d365c53011846b3c  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-6bae62fc42ea30a1ace3c2472dc4f901  scripts/Fix/🔧Fix Windows 10 Services.ps1
-a59778aa18ee3f6c38d66d3da27dca3e  scripts/Fix/🔧Fix Windows 11 Services.ps1
-581cbd2203a70ad612cdc0e872a35453  scripts/Fix/🔧Fix Windows 7 Services.ps1
-4207a5b92853180ca0d49823c298362d  scripts/Fix/🔧Fix Windows 8 Services.ps1
-d31ecec221d65522ca3cc89827474884  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-ab6fe7cd01b027de8c5f80e4df813ff2  scripts/Fix/🔧Prevent Sleep.ps1
-0ce7b50eb958e7a4cbcb1b8848810f7a  scripts/Remove/⛔Force Remove Anydesk.ps1
-820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-a37c8212b8e445fd377e41fc706c39f4  scripts/Utility/🔔Technician Alert Monitor.ps1
-92cd52534025a471791185d586e090c9  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1
+﻿5de89ac230abd853a305c1061494e7c9  E:/COOLForge/.claude/CLAUDE.md
+5095bf93fc13e91c81d8a00d7f7300d5  E:/COOLForge/backups/Level/scripts/⛔CIPP CHECK.ps1
+719b4fca685e4b4226f8ea772b499954  E:/COOLForge/backups/Level/scripts/⛔DROPBOX.ps1
+d5cc8d717db9c87f07d5e75d18b56a1f  E:/COOLForge/backups/Level/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
+f85f46da3553bc1bfa7645e69cdf1a23  E:/COOLForge/backups/Level/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
+1f0196e84a451016be5b3acbe585b557  E:/COOLForge/backups/Level/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
+57a51ec86225eea84e63df2639323316  E:/COOLForge/backups/Level/scripts/AdelaideMRI/extract voyager config files.ps1
+9f3734a0423070477eee036a53b10279  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Extract Voyager to Programdata.ps1
+b301c8e4120ec879e650015c65b591d8  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Extract Webviewer.ps1
+fbeef821f4ccb9d110830bdea58eb964  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Fixes/Create Link to Voyager WebViewer on desktop.ps1
+9aa17a2af475b34f9a6dc5e4a153f13d  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Fixes/Debloat for AMRI.ps1
+fa41ee52a43b7935aca353c3758e5b6a  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Fixes/Deploy Voyager Launcher.ps1
+1177cd16ec9d5ca2b47da1fb42d30de8  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Fixes/Fix the VoyagerWorkstationConfig.txt files.ps1
+5f1de07bfd2c0a3ec2928963934a1561  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Fixes/Install Radreport Chrome Launcher.ps1
+125afc4810f01c8ae87669d04a7455da  E:/COOLForge/backups/Level/scripts/AdelaideMRI/get host details from voyager installs.ps1
+93fe11c112f0ff93eed109446b19a913  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Recreate Voyager for the Company.ps1
+06f2ad08c77a86249c29b5f0e314ee5d  E:/COOLForge/backups/Level/scripts/AdelaideMRI/Set Hosts file for AdelaideMRI.ps1
+b1d932b9dd2329aa4086352a24946cfe  E:/COOLForge/backups/Level/scripts/AdelaideMRI/SET_  background to phonebook.ps1
+8b09f61d2a1352ca4cafc58bc2ab24bf  E:/COOLForge/backups/Level/scripts/Baseline configurations/Create Restore Point.ps1
+c82ce2e849fd3074380b5b453443edc7  E:/COOLForge/backups/Level/scripts/Baseline configurations/Create users.ps1
+c2206d375255d063f0eb0760fa53023c  E:/COOLForge/backups/Level/scripts/BASELINE SOFTWARE/⛔Huntress.ps1
+8d92a519ff9fb13a9abe055a48f4bd42  E:/COOLForge/backups/Level/scripts/BASELINE SOFTWARE/🙏Huntress.ps1
+b349c86642ee3719b28b81eca27c48bd  E:/COOLForge/backups/Level/scripts/Can we run_.ps1
+19bb99096557986ea2fabf73aefecc79  E:/COOLForge/backups/Level/scripts/Debug Script.ps1
+4816087ba41de9b67de24cdedae922d0  E:/COOLForge/backups/Level/scripts/DEBUG.ps1
+f7dd2500c49cb0913e9ed7639df8f5ec  E:/COOLForge/backups/Level/scripts/Debugging/FindHiddenUsers.ps1
+5f5035334a9a4a81518ce38359231a94  E:/COOLForge/backups/Level/scripts/Debugging/SET_ Default System Restore.ps1
+3724025399c74570a237ba9df673c64d  E:/COOLForge/backups/Level/scripts/Debugging/SET_ Unlimited System Restore.ps1
+2a2f15e7cbfa10b4cda86bf892af2fcd  E:/COOLForge/backups/Level/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
+5ea20cbe419c672b2f0a598f0ffff731  E:/COOLForge/backups/Level/scripts/Debugging/👀Test Variable Output.ps1
+8babd90b0c4554f8dc6cf08eea57e17a  E:/COOLForge/backups/Level/scripts/Deploy COOLNETWORKS Support tool.ps1
+1b665f4b9b486d2b4eb1521472d8e908  E:/COOLForge/backups/Level/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
+970e573adcf4976226b3683de1c7368c  E:/COOLForge/backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
+a2b7ebd1125a1d1494f71c9e6edd5b8c  E:/COOLForge/backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
+3636b5d5d8322f917db9ed43e4d8580b  E:/COOLForge/backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
+e65dbcb1a08001ee47f58ac1fadaa77a  E:/COOLForge/backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
+80485803d623bcd83cd7fd79cca12262  E:/COOLForge/backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
+73c9a7696578655a781ff84b27e09a0c  E:/COOLForge/backups/Level/scripts/EXPORT_ Level folder path to registry.ps1
+0e163942999819856505a5ee3abd03bb  E:/COOLForge/backups/Level/scripts/Fix .net TLS versions.ps1
+80485803d623bcd83cd7fd79cca12262  E:/COOLForge/backups/Level/scripts/From Atera/# Change the computer name in Windows Rename-Computer -newname _{[new_name]}_  # Restart the computer for rename to take effect if ($ToRestartTypeYes -eq 'yes') {     Restart-Computer -Force }.ps1
+ad8bbd224de883957745b4df63570833  E:/COOLForge/backups/Level/scripts/From Atera/AMRI Delete Old Files in 'Studies' Folders.ps1
+8309e045910cf92c371e15a415a89fa6  E:/COOLForge/backups/Level/scripts/From Atera/AMRI Dowload Install Voyager Launcher.ps1
+71a527a7ab2ff63f742dbb996e86d9e0  E:/COOLForge/backups/Level/scripts/From Atera/as-basic-popup-message.ps1
+6f43a2cf68834ce741e5265deae12ad0  E:/COOLForge/backups/Level/scripts/From Atera/AteraAlertTime60seconds.ps1
+00be6c805a3b33edb9510d1662a06ac9  E:/COOLForge/backups/Level/scripts/From Atera/backup_screenconnect_serverdata.ps1
+1e6268d636d6b368a345678a988dfaf5  E:/COOLForge/backups/Level/scripts/From Atera/BISSYCARE DNS Agent reinstallation.ps1
+8201f940e48385571bd7cc6072eb5b2a  E:/COOLForge/backups/Level/scripts/From Atera/bitlocker_get_encryption_status (copy).ps1
+e38a48bb48c8eb7bcff7ba6e2e2dc89d  E:/COOLForge/backups/Level/scripts/From Atera/Branded Restart.ps1
+c1d4acc51767bba3fe37bdaa1683973a  E:/COOLForge/backups/Level/scripts/From Atera/Burnt_Toast_Installer_System_Template.ps1
+18fb6e87e008525ab7a8fc04f6861ca4  E:/COOLForge/backups/Level/scripts/From Atera/Burnt_Toast_Notification_Template.ps1
+52827a25df47339cdf070f67651c09c5  E:/COOLForge/backups/Level/scripts/From Atera/cape divine level.ps1
+d1e2bece3bcfe537580b6fea94ead1db  E:/COOLForge/backups/Level/scripts/From Atera/Change_AteraAgent_Service_to_Auto (copy).ps1
+2e3c9604138492602a4606c8725c88c0  E:/COOLForge/backups/Level/scripts/From Atera/Change_taskbar_icons_size_to_small_in_Windows_11.ps1
+077992bd6902ec67bc0fb7ba82682489  E:/COOLForge/backups/Level/scripts/From Atera/Check For and Remove Malwarebytes.ps1
+95942d881e29c8303fcbbaad5b9e7333  E:/COOLForge/backups/Level/scripts/From Atera/Cleanup Print Queue.ps1
+4ecc9cf7f91ed6ae85cdcbce345fd23a  E:/COOLForge/backups/Level/scripts/From Atera/Clear All Events.ps1
+c21590fb3767b29c88967788cc23d2e4  E:/COOLForge/backups/Level/scripts/From Atera/Configure Power Settings for WIFI Network Adapters.ps1
+0e1a3db342b1dfb45068d69f68edf1aa  E:/COOLForge/backups/Level/scripts/From Atera/Copy_Pristine_to_Sites_VoyagerWorkstationConfig.ps1
+db58a2a4e20fa444a32f0dc86edc05bf  E:/COOLForge/backups/Level/scripts/From Atera/Create group for Level.ps1
+afc0f224a1832e01ef2cc0e5ae7aa186  E:/COOLForge/backups/Level/scripts/From Atera/Current Timezone Reporter.ps1
+13565d2f67f01aee66af0acc3cf403c5  E:/COOLForge/backups/Level/scripts/From Atera/Delete Old Print Jobs (copy).ps1
+881f85d8da413160a195444536004973  E:/COOLForge/backups/Level/scripts/From Atera/Delete Temporary Files for All Users.ps1
+6153adf058580a5a66a6fb0c67b35a94  E:/COOLForge/backups/Level/scripts/From Atera/deny_windows11_upgrade_disable.ps1
+bc104f5dc9d4a78d41591e26e2ff2c44  E:/COOLForge/backups/Level/scripts/From Atera/deny_windows11_upgrade_enable (copy).ps1
+6cd1964d7d5a8928c306cb60082bfc96  E:/COOLForge/backups/Level/scripts/From Atera/DeployPhonebookScript.ps1
+7b84252893f3546de581ea74521b587f  E:/COOLForge/backups/Level/scripts/From Atera/Disable All User and Admin Accounts.ps1
+127ca6ba6af135b43925a100f00b01a7  E:/COOLForge/backups/Level/scripts/From Atera/Discover Wi-Fi Passwords (copy).ps1
+21458a8cfc1cf28cc602af9596b6c81b  E:/COOLForge/backups/Level/scripts/From Atera/do_ansible_user.ps1
+95f7f3b05d91b59086fca308387cfec7  E:/COOLForge/backups/Level/scripts/From Atera/Download and Install Google Chrome.ps1
+533662ee8531b8136eb52e711a2406c2  E:/COOLForge/backups/Level/scripts/From Atera/Download and Install ScreenConnect Client to Company.ps1
+216ead77a3284746f1489a8b8545915c  E:/COOLForge/backups/Level/scripts/From Atera/Download_Install_MSI_As_Administrator.ps1
+80ac640636adfcf4c71cd4eb222c4b28  E:/COOLForge/backups/Level/scripts/From Atera/Dr JA COOK LEVEL.ps1
+29528aba2ff3b077deba705eb9932858  E:/COOLForge/backups/Level/scripts/From Atera/Empty Recycle Bin.ps1
+c3a66c6b3ecb10d515656d44155fcbb9  E:/COOLForge/backups/Level/scripts/From Atera/Enable right click classic menu on Windows11 (copy).ps1
+9a4c24212c0f629ca50834fd4b1a29d2  E:/COOLForge/backups/Level/scripts/From Atera/Enable Wake On Lan for All Devices.ps1
+407b260efaec45ef5fdb30c5e8a2cf5e  E:/COOLForge/backups/Level/scripts/From Atera/Extend Outlook Storage Capabilities (copy).ps1
+922f1746df8fbcfe26fed39e3c05db52  E:/COOLForge/backups/Level/scripts/From Atera/Extract TeamViewer ID (copy).ps1
+cd4f455a08e23615822d25b8146d5333  E:/COOLForge/backups/Level/scripts/From Atera/Fix Display Name (copy).ps1
+67953f88c38343ffb128354001e541da  E:/COOLForge/backups/Level/scripts/From Atera/Flush Cache (copy).ps1
+9b5659e6e141dc94e61b72bec3231bba  E:/COOLForge/backups/Level/scripts/From Atera/freeup (copy).ps1
+1e47c43d0887f1b7c1775e4714fb348c  E:/COOLForge/backups/Level/scripts/From Atera/Fully Remove any Malwarebytes install.ps1
+8fb3a4c3379704134ce316840b08d92c  E:/COOLForge/backups/Level/scripts/From Atera/Get_system_info.ps1
+ffc2a7f60017f0e058ea7217c84dd52b  E:/COOLForge/backups/Level/scripts/From Atera/Get-BitlockerKeys (copy).ps1
+a3fd8b886e55903c18763b42e6f2d749  E:/COOLForge/backups/Level/scripts/From Atera/get-bitlocker-recovery.ps1
+e910eec0a60bf56c8840807d6007cb11  E:/COOLForge/backups/Level/scripts/From Atera/get-disk-powershell (copy).ps1
+888eaf9d41a0ecfd6dda0df10dd00061  E:/COOLForge/backups/Level/scripts/From Atera/Get-List-Of-Deduped-Logons.ps1
+022966aa630e9a8942ff42243ada3ab0  E:/COOLForge/backups/Level/scripts/From Atera/Get-recent-logins.ps1
+8995a63909f7c8f3727df0023d506d8a  E:/COOLForge/backups/Level/scripts/From Atera/Get-StorageSenseStatus.ps1
+fcaf831646929c14a50dad61cefe1a51  E:/COOLForge/backups/Level/scripts/From Atera/Hide Atera Folder (copy).ps1
+fdd716c7ed8923ff69fdce96d7fa8c4a  E:/COOLForge/backups/Level/scripts/From Atera/High Performance Power Plan (copy).ps1
+d67d0dd2df145223b001f16c002fd67e  E:/COOLForge/backups/Level/scripts/From Atera/Increase Exchange Mailbox Access for Outlook 365.ps1
+823050b8f7f75aca26d51f87286d6ba3  E:/COOLForge/backups/Level/scripts/From Atera/Install Chocolatey (copy).ps1
+b5e46a33005b302561bba4a306688953  E:/COOLForge/backups/Level/scripts/From Atera/install dns filter yattalunga.ps1
+2bb804a853aff4e53a3017fb261d7f26  E:/COOLForge/backups/Level/scripts/From Atera/Install FoxitReader from Chocolaty.ps1
+e69d90be26e30358c408a5425e747e98  E:/COOLForge/backups/Level/scripts/From Atera/install level fracken.ps1
+3c85d2a8764808abf98e13c14fad8c31  E:/COOLForge/backups/Level/scripts/From Atera/Install Level gogreen.ps1
+4325ae5fcaab0999840ef9c736e50f9b  E:/COOLForge/backups/Level/scripts/From Atera/InstallHuntressLabs.ps1
+7016ea29c180f157dacd8a99a1b7dee8  E:/COOLForge/backups/Level/scripts/From Atera/intex level install.ps1
+84221ff659617ddf261595241eed7f38  E:/COOLForge/backups/Level/scripts/From Atera/Kill RobloxPlayerBeta Process.ps1
+585d9b6b892f30e286fa326e7061582a  E:/COOLForge/backups/Level/scripts/From Atera/level bbb.ps1
+55c5c886b4d91fc0fcb10206457fa1a6  E:/COOLForge/backups/Level/scripts/From Atera/Level for BISSYCARE.ps1
+baaece57b833335e1137702bc9c71035  E:/COOLForge/backups/Level/scripts/From Atera/List all printers on local machine with port names.ps1
+1ee511699a777a5f5f7afd9dcf4ddb15  E:/COOLForge/backups/Level/scripts/From Atera/MAC - Install Huntress.ps1
+f403075ba02d53ca598eca8806b297c0  E:/COOLForge/backups/Level/scripts/From Atera/MHS level.ps1
+c14c23e7902aa7b8c5c138cf1a90ce7e  E:/COOLForge/backups/Level/scripts/From Atera/Network_Printer (copy).ps1
+0336ef5712d4a4e6483d14283a0d67c1  E:/COOLForge/backups/Level/scripts/From Atera/Populate Agent Custom Field with Customer Custom Field DNS1.ps1
+216bd1cde209a64dddc4b2555fbd0a55  E:/COOLForge/backups/Level/scripts/From Atera/Populate Agent DNS1 Custom Field with Customer DNS1 Custom Field.ps1
+94cc0b182c1fbe5f3ccc83929783aad8  E:/COOLForge/backups/Level/scripts/From Atera/PowerShell script to change every network adapter DNS to Google DNS.ps1
+c0c5f28df8e69c5201a2d808589c5220  E:/COOLForge/backups/Level/scripts/From Atera/PowerShell script to output a list of DNS servers being used by the machine.ps1
+663d727468560c64745f9b48981c27c6  E:/COOLForge/backups/Level/scripts/From Atera/PreventIndexingOutlook (copy).ps1
+0daad9895ae128956d03c64691f4d15b  E:/COOLForge/backups/Level/scripts/From Atera/Proper Whitelabel Atera Agent script.ps1
+1edd7a4bc09a7e236c0fb620f477726c  E:/COOLForge/backups/Level/scripts/From Atera/ps7wrapper.ps1
+22e24d9e67f2e4adacd5b1e2b64024a6  E:/COOLForge/backups/Level/scripts/From Atera/RA tools.ps1
+1176a3526affefd05b1c85ef67a4468b  E:/COOLForge/backups/Level/scripts/From Atera/RADPAY Shortcut Creator.ps1
+58856604405e69b7aabacb18fc1ba004  E:/COOLForge/backups/Level/scripts/From Atera/radrerp launche 25.ps1
+1086edcd8594fcf90af1ae6ef163adeb  E:/COOLForge/backups/Level/scripts/From Atera/Reboot Device And Notify The User (copy).ps1
+4e84a4fd61d021ed9ec83c3e6c051445  E:/COOLForge/backups/Level/scripts/From Atera/Reconnect Drives CMD File and Shortcut Creator SWR.ps1
+08351e47119643e44c4409498f249c2b  E:/COOLForge/backups/Level/scripts/From Atera/Recreate Voyager from Pristine.ps1
+87e388c3c00245b2be64bfc08a5497b8  E:/COOLForge/backups/Level/scripts/From Atera/Registry logging.ps1
+5c8a447ae85ec6d3ae8be2476359797e  E:/COOLForge/backups/Level/scripts/From Atera/Reinstall Microsoft 365 and System Health Check.ps1
+aa1965979e553a2b76a70d33d3e49539  E:/COOLForge/backups/Level/scripts/From Atera/Remove Firefox.ps1
+9893bb0a9c79594fbd0448bff2554ab7  E:/COOLForge/backups/Level/scripts/From Atera/Remove MalwareBytes.ps1
+a1aef727c9c5797e5302131ba1127399  E:/COOLForge/backups/Level/scripts/From Atera/Remove McAfee Agent.ps1
+094256104d560a9e541c9f4785bc6507  E:/COOLForge/backups/Level/scripts/From Atera/Remove_Voyager_TempFiles2days.ps1
+8351574be434017208ebb423bd5dd823  E:/COOLForge/backups/Level/scripts/From Atera/Rename Computer (copy).ps1
+36a2a6d3c3e0791bdd926354a57a3b74  E:/COOLForge/backups/Level/scripts/From Atera/Reset Choco When not working.ps1
+3a22d22ba561f64d730a410370b2ccef  E:/COOLForge/backups/Level/scripts/From Atera/Reset_Browsers_to_Default_Homepage.ps1
+09ea4c7c5c042068684528805ed389c3  E:/COOLForge/backups/Level/scripts/From Atera/reset_password_for_local_user (copy).ps1
+7237f05a3a8d195c71c2fc4cabe0c7d1  E:/COOLForge/backups/Level/scripts/From Atera/Resync Time (copy).ps1
+4cc2c7537a21689bc109039f630a6af2  E:/COOLForge/backups/Level/scripts/From Atera/Retrieve Wi-Fi Passwords using PowerShell.ps1
+928ff1f596126741f04844aa9e0f8099  E:/COOLForge/backups/Level/scripts/From Atera/Run Backblaze Uninstaller.ps1
+7d473a3b074b6a0bc8e837bc409f5d58  E:/COOLForge/backups/Level/scripts/From Atera/Run Windows Cleanup (copy).ps1
+b6102da79a4a444affdbbb0b73a49309  E:/COOLForge/backups/Level/scripts/From Atera/ScheduledTasksChecker.ps1
+c729edf985ef9d8708a8fd44273f37fa  E:/COOLForge/backups/Level/scripts/From Atera/Sending action to CNAJMSILT The action has timed out..ps1
+d47f65f5837b2afeab5e2caca631d04d  E:/COOLForge/backups/Level/scripts/From Atera/Set LAPS Password.ps1
+b747871a0089496946f3739c40219677  E:/COOLForge/backups/Level/scripts/From Atera/Set screenconnect restart level for service.ps1
+53b69348834aeef7c4eae62913cb4f1e  E:/COOLForge/backups/Level/scripts/From Atera/Set Time Zone to SA and Time Format.ps1
+c0f171f948e427965e2f5ffc075fe6a3  E:/COOLForge/backups/Level/scripts/From Atera/Set Timezone to Central Australia Standard Time.ps1
+576740694688aac84df1b3742629b09d  E:/COOLForge/backups/Level/scripts/From Atera/Set_Sleep_to_45min.ps1
+2e18867b34777d76ef668ecbf5b72b6f  E:/COOLForge/backups/Level/scripts/From Atera/SetAtera to Start in safemode.ps1
+eaa71806cad99d4b98c0b21696b20f51  E:/COOLForge/backups/Level/scripts/From Atera/SetAteraAgentName (copy).ps1
+dcaac107dbe262c993dc64d5d0bac449  E:/COOLForge/backups/Level/scripts/From Atera/SplashTop Restart (copy).ps1
+15aba2ed4269f1b792fda71bfdaba6d0  E:/COOLForge/backups/Level/scripts/From Atera/Start or Restart Screenconnect.ps1
+4858838aa6b7e331945fa2c6593e8967  E:/COOLForge/backups/Level/scripts/From Atera/stop_cryptoprevent.ps1
+1589a901e36949c9b9edccc531282232  E:/COOLForge/backups/Level/scripts/From Atera/SWR - SET HOMEPAGE TO SHAREPOINT.ps1
+b030c48c4c96cb256387393858a02a30  E:/COOLForge/backups/Level/scripts/From Atera/SWR Level.ps1
+bba3911105301a15fbbee40c70f9663d  E:/COOLForge/backups/Level/scripts/From Atera/SWR Printer Driver Downloads.ps1
+e0f6e114bb33630938ca21600c7b776c  E:/COOLForge/backups/Level/scripts/From Atera/SWR Reconnect Drives.ps1
+eaccb98e3e593b4c9f0331b0aa3b8cf5  E:/COOLForge/backups/Level/scripts/From Atera/SWR_Deploy_DNSFILTER.ps1
+3f892954cf117df2424bb3ec74eeda08  E:/COOLForge/backups/Level/scripts/From Atera/System Report (copy).ps1
+18524b6011535f9b054cf976eaf73058  E:/COOLForge/backups/Level/scripts/From Atera/Uninstall Malwarebytes (copy).ps1
+4555c88895fa599031b3324857121e70  E:/COOLForge/backups/Level/scripts/From Atera/Uninstall Malwarebytes AMRI.ps1
+3815211c2782f8aa69e5e9fd23b34623  E:/COOLForge/backups/Level/scripts/From Atera/uninstall_syncro.ps1
+945caca03cc3437b0c4fc31694f24764  E:/COOLForge/backups/Level/scripts/From Atera/Unpin 'Mail' App (copy).ps1
+0746f132a2afba3ea12282f751a5d145  E:/COOLForge/backups/Level/scripts/From Atera/USB CHECK.ps1
+b2c23d061548dac5e9b1063a584d6a76  E:/COOLForge/backups/Level/scripts/From Atera/Weekly Maintenance (copy).ps1
+69e0aeb506cef5e86977951e9a08a122  E:/COOLForge/backups/Level/scripts/From Atera/Whitelabel Atera Agent on Add or Remove Programs (appwiz.cpl) (copy).ps1
+45b93568db9771e55756e50a13a2acb5  E:/COOLForge/backups/Level/scripts/From Atera/Whitelist Atera in Windows Defender (copy).ps1
+82a3850b704302d72edbdf082c25faf9  E:/COOLForge/backups/Level/scripts/From Atera/windows 11 troubleshoot (copy).ps1
+76db549f7aa2913aa1c710b481fe068f  E:/COOLForge/backups/Level/scripts/From Atera/Windows 11 Upgrade TPM and CPU Validation Bypass (copy).ps1
+f75d0e9f190d7a65b89da260fea8f185  E:/COOLForge/backups/Level/scripts/From Atera/Windows Defender Whitelist Atera Agent (copy).ps1
+0149991af1118d257719307c4b5052ac  E:/COOLForge/backups/Level/scripts/From Atera/Windows11-Taskbar-Left.ps1
+0da935b7278813000e0848893a05986a  E:/COOLForge/backups/Level/scripts/From Atera/wmi-list-shares.ps1
+df452e1717a115d54efff29f32888378  E:/COOLForge/backups/Level/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
+9a5f662417fc25d9610bd083cdae585a  E:/COOLForge/backups/Level/scripts/General/CN_Tools Folder.ps1
+d7e0242cf025e7e16327447d91f8c1a9  E:/COOLForge/backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
+b15eba497e6b0ce7fde7d961f6a81e61  E:/COOLForge/backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
+c374e35b74da5a7112d356101bfffa4c  E:/COOLForge/backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _ScanHealth.ps1
+42bd1e6387363c18c4e2d544d4171798  E:/COOLForge/backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _StartComponentCleanup.ps1
+51c06e2afd2325dbd49f9b9518f664c6  E:/COOLForge/backups/Level/scripts/General/Fixes/Remove-McAfee.ps1
+d4ecd953a851f56ddab5cd65998df811  E:/COOLForge/backups/Level/scripts/General/Fixes/Repair Windows Defender.ps1
+910593fa8980f57b2e5488da4ca44a67  E:/COOLForge/backups/Level/scripts/General/Fixes/SFC _SCANNOW.ps1
+320a6ccba15681d5d35ca40aea841a54  E:/COOLForge/backups/Level/scripts/General/Fixes/System File Checker.ps1
+606129626bda6cf2b826c897df82d02d  E:/COOLForge/backups/Level/scripts/General/Fixes/Windows 10 1909 Iterative updates.ps1
+fd1f24b22a36ada4d5eb820311a0188f  E:/COOLForge/backups/Level/scripts/General/Fixes/🙏Wake all devices in parent to level.io folder.ps1
+4fdde0051c0a3d35dbb0cfca6aef2a80  E:/COOLForge/backups/Level/scripts/General/Info Gathering/Check System Temperatures.ps1
+20903e606c99ec2b2406a1d2722b07c3  E:/COOLForge/backups/Level/scripts/General/Info Gathering/Get Screenconnect URL.ps1
+a3d9c763d82a1247b5d2ae4c639c7601  E:/COOLForge/backups/Level/scripts/General/Info Gathering/Support Request check.ps1
+6f88875c3bf43df4f050ed0e8abadd97  E:/COOLForge/backups/Level/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
+f5504470ed93a8373ceaa056f6048ba1  E:/COOLForge/backups/Level/scripts/General/POLICY/⛔DNSFILTER.ps1
+9c98d517535fc53c8f01f106f51ac5a2  E:/COOLForge/backups/Level/scripts/General/POLICY/⛔SCREENCONNECT.ps1
+0b07ad0751e489af76dc2f73019bc7f4  E:/COOLForge/backups/Level/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
+996f6923a876b59802d6f28793a66ced  E:/COOLForge/backups/Level/scripts/General/POLICY/Deploy Popup Script.ps1
+5f206317e7a179e1e60c2edc54c1d9b3  E:/COOLForge/backups/Level/scripts/General/POLICY/Disable Outlook re-open old items.ps1
+4b7d20e8f318e2585704eca7930f01a9  E:/COOLForge/backups/Level/scripts/General/POLICY/Enable Logon_Logoff Audit logging.ps1
+25698797d09488c0b9f2ae60be7f822a  E:/COOLForge/backups/Level/scripts/General/POLICY/Enable WOL.ps1
+4281dc2433e27ee90b18010e41bcf1d3  E:/COOLForge/backups/Level/scripts/General/POLICY/ensure machine wakes up daily to run stuff.ps1
+e9609b1b5a5d6878a157ef33deaf2510  E:/COOLForge/backups/Level/scripts/General/POLICY/INSTALL_ C__CN_Tools_unchecky_setup.exe.ps1
+8ba95a14588e7c31f62fb3b81d123dbb  E:/COOLForge/backups/Level/scripts/General/POLICY/NEEDS_CHECKPLUGINFROMCIPP.ps1
+a2071006549b70779105d6191991a9c9  E:/COOLForge/backups/Level/scripts/General/POLICY/Remove_ unchecky.ps1
+d2df63fdda17940220b52469f929efd4  E:/COOLForge/backups/Level/scripts/General/POLICY/Set Date Format DD_MM_YYYY.ps1
+a604c27d8f9d367dc68ff16c907e2ddb  E:/COOLForge/backups/Level/scripts/General/POLICY/Set Outlook Exchange Connection Limit.ps1
+be6a33c0b8965dbc0a357c4ae7c6c735  E:/COOLForge/backups/Level/scripts/General/POLICY/SET_ Sleep revert.ps1
+a8e34579df0df9e752a62470a7623c67  E:/COOLForge/backups/Level/scripts/General/POLICY/SET_ Sleep to 6 hours.ps1
+94534f2341570d0546f601f031cf10ed  E:/COOLForge/backups/Level/scripts/General/POLICY/Windows - Set Time Zone.ps1
+abe4d5f26de313a90b85f56409c34a36  E:/COOLForge/backups/Level/scripts/General/POLICY/Windows Monitor - Restart Required.ps1
+b2dd0f2d89df5459e2947190a01bcf81  E:/COOLForge/backups/Level/scripts/General/POLICY/🙏DNSFILTER.ps1
+d7d3129d6d59885546465d9439bd9434  E:/COOLForge/backups/Level/scripts/General/POLICY/🙏SCREENCONNECT.ps1
+90087166821383e3476a837005906787  E:/COOLForge/backups/Level/scripts/General/Popups/Generate Popup.ps1
+c39b0feb4982d7db75c918357412f594  E:/COOLForge/backups/Level/scripts/General/Popups/POPUP.ps1
+48a105d3b20cbbdb5d767779d4652080  E:/COOLForge/backups/Level/scripts/General/Restart Explorer as current user.ps1
+2512c2953da562611cb72b73c8aedcce  E:/COOLForge/backups/Level/scripts/General/Set up CN_Tools Folder.ps1
+085307be65d2df125906f47c261dcb78  E:/COOLForge/backups/Level/scripts/General/TESTING/Revert to First Restore Point.ps1
+77d3f8f5faee046d28db331c97b9d224  E:/COOLForge/backups/Level/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
+846344f9508a0d7afe84e4998289eb94  E:/COOLForge/backups/Level/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
+9b9673ec9b7e1e3f3018ae7a6f95582d  E:/COOLForge/backups/Level/scripts/General/Windows Monitor - DNS Servers.ps1
+af44af9548566b0c2b665ee7c840ed3c  E:/COOLForge/backups/Level/scripts/Imported/AMRI Safe debloat.ps1
+4fd1269756f196683f580d30ecbc98f1  E:/COOLForge/backups/Level/scripts/Imported/Prompt User.ps1
+772459e40c9dbd24c9a3c53618a651b3  E:/COOLForge/backups/Level/scripts/Imported/REMOVE FOXIT.ps1
+439faf9e550d181be59c6e5a5d8c39f1  E:/COOLForge/backups/Level/scripts/Imported/Windows - Add Admin.ps1
+141e07c8b55aca085932aba9fe6df4a8  E:/COOLForge/backups/Level/scripts/Imported/Windows - Cleanup Disk Space.ps1
+7e620e881a923e3dbc1c5d22c92d0b51  E:/COOLForge/backups/Level/scripts/Imported/Windows - Disable Sleep on AC Power.ps1
+c5c23396f666caef22ab2f80c916d87d  E:/COOLForge/backups/Level/scripts/Imported/Windows - Failed Admin Login.ps1
+8ab92983ef5af19b31333eb719fb5cfb  E:/COOLForge/backups/Level/scripts/Imported/Windows - Gather Intel.ps1
+114f941ae7030ef635f5a23a16688db5  E:/COOLForge/backups/Level/scripts/Imported/Windows - Join Company Domain.ps1
+07f3f2c7ab0bff51b31e06480a7ce973  E:/COOLForge/backups/Level/scripts/Imported/Windows - Remove Bloatware.ps1
+6d85210013c5ef9d908babf620c17a65  E:/COOLForge/backups/Level/scripts/Imported/Windows - Set SSID.ps1
+b54308370a6ca5b788748e1fc68d8338  E:/COOLForge/backups/Level/scripts/Imported/Windows - Software Not Installed.ps1
+6cc53174286f3b1d672704ffddab157d  E:/COOLForge/backups/Level/scripts/Imported/Windows - Unauthorized Admins.ps1
+3def2e457a07616c8ab52b36c1daeebc  E:/COOLForge/backups/Level/scripts/Imported/Windows - Upgrade to Windows 11.ps1
+174bc791ef6123f51bcdbba7c2b9e67d  E:/COOLForge/backups/Level/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
+0f914f0fb7085d969478210c63cbb8b8  E:/COOLForge/backups/Level/scripts/Imported/Windows Monitor - Check Disk Errors.ps1
+de2bf0c6f75653ec64efbc527c3ed008  E:/COOLForge/backups/Level/scripts/Imported/Windows Monitor - Device Standards.ps1
+cf6928d1d5bc59519db8f47091df6cdd  E:/COOLForge/backups/Level/scripts/Imported/Windows Monitor - Event Log.ps1
+f0948378d5385e8661a2ce4133f41a7a  E:/COOLForge/backups/Level/scripts/Imported/Windows Monitor - Firewall.ps1
+3f6eba7dc5b0406892dbe0d691da5385  E:/COOLForge/backups/Level/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
+57d18ce09c6dfec3661253be801d9881  E:/COOLForge/backups/Level/scripts/Imported/Windows Monitor - System Time Check.ps1
+02c40d2df5d6a6d370f43f76d56116ed  E:/COOLForge/backups/Level/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
+278817b15918ded5bfac0659ab3e014c  E:/COOLForge/backups/Level/scripts/inside quiet hours_.ps1
+dbb0c5fff3c5cb76fe66bc2e38091aca  E:/COOLForge/backups/Level/scripts/Install Bitwarden Extensions to chrome and edge.ps1
+a9f8882f804f8809b66516e86a5e783f  E:/COOLForge/backups/Level/scripts/is interactive sign in_.ps1
+6c6ec2b0f565ca69578e3f41baafd1aa  E:/COOLForge/backups/Level/scripts/level to screenconnect test.ps1
+abbdb97d85850826db59de43aeb46d02  E:/COOLForge/backups/Level/scripts/Low Profile Defender.ps1
+f61ea3678bb665c145855eb3ac1e4c2d  E:/COOLForge/backups/Level/scripts/POLICY_ Is Foxit installed_.ps1
+79b20e4580683b32a0da79f9f34f3b34  E:/COOLForge/backups/Level/scripts/Refresh Icon Cache.ps1
+735750942d6cbac69f57f43186c4673f  E:/COOLForge/backups/Level/scripts/REMOVE FOXIT.ps1
+f4e368821aeb0740322a620185ce1376  E:/COOLForge/backups/Level/scripts/Remove ScreenConnect Client (236d14eb86050829).ps1
+8770e81c1ea0aed3d7bf1eb431ba2cae  E:/COOLForge/backups/Level/scripts/Remove Teamviewer.ps1
+5f42382b670f1ef094950c89273dda02  E:/COOLForge/backups/Level/scripts/Remove Voyager Folders.ps1
+8e8c21752843350149090e559252fef0  E:/COOLForge/backups/Level/scripts/REMOVE_ Chrome Remote Desktop.ps1
+770bcc1b6ac25a9a052703b422f9d6d7  E:/COOLForge/backups/Level/scripts/Set chrome as default.ps1
+ec3dca416760afeee10fae4a5bb3497b  E:/COOLForge/backups/Level/scripts/Set Defender Exclusions.ps1
+6f790dfa9eeaf4eaefecf5d184e37463  E:/COOLForge/backups/Level/scripts/Show Test Versions.ps1
+6de90e031d654ba87c74a9d707c89904  E:/COOLForge/backups/Level/scripts/Sleep after 1800 seconds..ps1
+45c95564881b864280d3037c5cb6b9b4  E:/COOLForge/backups/Level/scripts/System Uptime.ps1
+a276ceeb7664e582988159c762d4919a  E:/COOLForge/backups/Level/scripts/Test PS Module install.ps1
+d1a5df4a51ac566b30fb8b6062446977  E:/COOLForge/backups/Level/scripts/test sc session delete.ps1
+dbeb9ef6ccaf96e546d2ff3c645f47e7  E:/COOLForge/backups/Level/scripts/Test Show Versions.ps1
+ac93a09854d446fd3853183687d2237a  E:/COOLForge/backups/Level/scripts/test uninstall for SC.ps1
+f2f231262c9288868753d80258b3fb8c  E:/COOLForge/backups/Level/scripts/Uninstall Atera.ps1
+6059291621885604bb3fba9795902a5d  E:/COOLForge/backups/Level/scripts/uninstall level.ps1
+50a5dc84f5fefb9c72cef997be00f04f  E:/COOLForge/backups/Level/scripts/Verify SC Status.ps1
+fdd8184570f07d0a8d6f01abf200a092  E:/COOLForge/backups/Level/scripts/Wake On Lan and Power settings WOL.ps1
+523f1b1574da0cbb76ac3cf180f2dbc4  E:/COOLForge/backups/Level/scripts/👀DNSFILTER.ps1
+d5e978c90e1c8b691b8188df253355e0  E:/COOLForge/backups/Level/scripts/👀unchecky.ps1
+271de26506314db34e3d12bd26cf2a9a  E:/COOLForge/backups/Level/scripts/🙏CIPPCHECK.ps1
+5095bf93fc13e91c81d8a00d7f7300d5  E:/COOLForge/backups/Level2/scripts/⛔CIPP CHECK.ps1
+719b4fca685e4b4226f8ea772b499954  E:/COOLForge/backups/Level2/scripts/⛔DROPBOX.ps1
+d5cc8d717db9c87f07d5e75d18b56a1f  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
+f85f46da3553bc1bfa7645e69cdf1a23  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
+1f0196e84a451016be5b3acbe585b557  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
+57a51ec86225eea84e63df2639323316  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/extract voyager config files.ps1
+9f3734a0423070477eee036a53b10279  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Extract Voyager to Programdata.ps1
+b301c8e4120ec879e650015c65b591d8  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Extract Webviewer.ps1
+fbeef821f4ccb9d110830bdea58eb964  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Fixes/Create Link to Voyager WebViewer on desktop.ps1
+9aa17a2af475b34f9a6dc5e4a153f13d  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Fixes/Debloat for AMRI.ps1
+fa41ee52a43b7935aca353c3758e5b6a  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Fixes/Deploy Voyager Launcher.ps1
+1177cd16ec9d5ca2b47da1fb42d30de8  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Fixes/Fix the VoyagerWorkstationConfig.txt files.ps1
+5f1de07bfd2c0a3ec2928963934a1561  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Fixes/Install Radreport Chrome Launcher.ps1
+125afc4810f01c8ae87669d04a7455da  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/get host details from voyager installs.ps1
+93fe11c112f0ff93eed109446b19a913  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Recreate Voyager for the Company.ps1
+06f2ad08c77a86249c29b5f0e314ee5d  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/Set Hosts file for AdelaideMRI.ps1
+b1d932b9dd2329aa4086352a24946cfe  E:/COOLForge/backups/Level2/scripts/AdelaideMRI/SET_  background to phonebook.ps1
+8b09f61d2a1352ca4cafc58bc2ab24bf  E:/COOLForge/backups/Level2/scripts/Baseline configurations/Create Restore Point.ps1
+c82ce2e849fd3074380b5b453443edc7  E:/COOLForge/backups/Level2/scripts/Baseline configurations/Create users.ps1
+c2206d375255d063f0eb0760fa53023c  E:/COOLForge/backups/Level2/scripts/BASELINE SOFTWARE/⛔Huntress.ps1
+8d92a519ff9fb13a9abe055a48f4bd42  E:/COOLForge/backups/Level2/scripts/BASELINE SOFTWARE/🙏Huntress.ps1
+b349c86642ee3719b28b81eca27c48bd  E:/COOLForge/backups/Level2/scripts/Can we run_.ps1
+19bb99096557986ea2fabf73aefecc79  E:/COOLForge/backups/Level2/scripts/Debug Script.ps1
+4816087ba41de9b67de24cdedae922d0  E:/COOLForge/backups/Level2/scripts/DEBUG.ps1
+f7dd2500c49cb0913e9ed7639df8f5ec  E:/COOLForge/backups/Level2/scripts/Debugging/FindHiddenUsers.ps1
+5f5035334a9a4a81518ce38359231a94  E:/COOLForge/backups/Level2/scripts/Debugging/SET_ Default System Restore.ps1
+3724025399c74570a237ba9df673c64d  E:/COOLForge/backups/Level2/scripts/Debugging/SET_ Unlimited System Restore.ps1
+2a2f15e7cbfa10b4cda86bf892af2fcd  E:/COOLForge/backups/Level2/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
+5ea20cbe419c672b2f0a598f0ffff731  E:/COOLForge/backups/Level2/scripts/Debugging/👀Test Variable Output.ps1
+8babd90b0c4554f8dc6cf08eea57e17a  E:/COOLForge/backups/Level2/scripts/Deploy COOLNETWORKS Support tool.ps1
+1b665f4b9b486d2b4eb1521472d8e908  E:/COOLForge/backups/Level2/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
+970e573adcf4976226b3683de1c7368c  E:/COOLForge/backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
+a2b7ebd1125a1d1494f71c9e6edd5b8c  E:/COOLForge/backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
+3636b5d5d8322f917db9ed43e4d8580b  E:/COOLForge/backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
+e65dbcb1a08001ee47f58ac1fadaa77a  E:/COOLForge/backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
+80485803d623bcd83cd7fd79cca12262  E:/COOLForge/backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
+73c9a7696578655a781ff84b27e09a0c  E:/COOLForge/backups/Level2/scripts/EXPORT_ Level folder path to registry.ps1
+0e163942999819856505a5ee3abd03bb  E:/COOLForge/backups/Level2/scripts/Fix .net TLS versions.ps1
+80485803d623bcd83cd7fd79cca12262  E:/COOLForge/backups/Level2/scripts/From Atera/# Change the computer name in Windows Rename-Computer -newname _{[new_name]}_  # Restart the computer for rename to take effect if ($ToRestartTypeYes -eq 'yes') {     Restart-Computer -Force }.ps1
+ad8bbd224de883957745b4df63570833  E:/COOLForge/backups/Level2/scripts/From Atera/AMRI Delete Old Files in 'Studies' Folders.ps1
+8309e045910cf92c371e15a415a89fa6  E:/COOLForge/backups/Level2/scripts/From Atera/AMRI Dowload Install Voyager Launcher.ps1
+71a527a7ab2ff63f742dbb996e86d9e0  E:/COOLForge/backups/Level2/scripts/From Atera/as-basic-popup-message.ps1
+6f43a2cf68834ce741e5265deae12ad0  E:/COOLForge/backups/Level2/scripts/From Atera/AteraAlertTime60seconds.ps1
+00be6c805a3b33edb9510d1662a06ac9  E:/COOLForge/backups/Level2/scripts/From Atera/backup_screenconnect_serverdata.ps1
+1e6268d636d6b368a345678a988dfaf5  E:/COOLForge/backups/Level2/scripts/From Atera/BISSYCARE DNS Agent reinstallation.ps1
+8201f940e48385571bd7cc6072eb5b2a  E:/COOLForge/backups/Level2/scripts/From Atera/bitlocker_get_encryption_status (copy).ps1
+e38a48bb48c8eb7bcff7ba6e2e2dc89d  E:/COOLForge/backups/Level2/scripts/From Atera/Branded Restart.ps1
+c1d4acc51767bba3fe37bdaa1683973a  E:/COOLForge/backups/Level2/scripts/From Atera/Burnt_Toast_Installer_System_Template.ps1
+18fb6e87e008525ab7a8fc04f6861ca4  E:/COOLForge/backups/Level2/scripts/From Atera/Burnt_Toast_Notification_Template.ps1
+52827a25df47339cdf070f67651c09c5  E:/COOLForge/backups/Level2/scripts/From Atera/cape divine level.ps1
+d1e2bece3bcfe537580b6fea94ead1db  E:/COOLForge/backups/Level2/scripts/From Atera/Change_AteraAgent_Service_to_Auto (copy).ps1
+2e3c9604138492602a4606c8725c88c0  E:/COOLForge/backups/Level2/scripts/From Atera/Change_taskbar_icons_size_to_small_in_Windows_11.ps1
+077992bd6902ec67bc0fb7ba82682489  E:/COOLForge/backups/Level2/scripts/From Atera/Check For and Remove Malwarebytes.ps1
+95942d881e29c8303fcbbaad5b9e7333  E:/COOLForge/backups/Level2/scripts/From Atera/Cleanup Print Queue.ps1
+4ecc9cf7f91ed6ae85cdcbce345fd23a  E:/COOLForge/backups/Level2/scripts/From Atera/Clear All Events.ps1
+c21590fb3767b29c88967788cc23d2e4  E:/COOLForge/backups/Level2/scripts/From Atera/Configure Power Settings for WIFI Network Adapters.ps1
+0e1a3db342b1dfb45068d69f68edf1aa  E:/COOLForge/backups/Level2/scripts/From Atera/Copy_Pristine_to_Sites_VoyagerWorkstationConfig.ps1
+db58a2a4e20fa444a32f0dc86edc05bf  E:/COOLForge/backups/Level2/scripts/From Atera/Create group for Level.ps1
+afc0f224a1832e01ef2cc0e5ae7aa186  E:/COOLForge/backups/Level2/scripts/From Atera/Current Timezone Reporter.ps1
+13565d2f67f01aee66af0acc3cf403c5  E:/COOLForge/backups/Level2/scripts/From Atera/Delete Old Print Jobs (copy).ps1
+881f85d8da413160a195444536004973  E:/COOLForge/backups/Level2/scripts/From Atera/Delete Temporary Files for All Users.ps1
+6153adf058580a5a66a6fb0c67b35a94  E:/COOLForge/backups/Level2/scripts/From Atera/deny_windows11_upgrade_disable.ps1
+bc104f5dc9d4a78d41591e26e2ff2c44  E:/COOLForge/backups/Level2/scripts/From Atera/deny_windows11_upgrade_enable (copy).ps1
+6cd1964d7d5a8928c306cb60082bfc96  E:/COOLForge/backups/Level2/scripts/From Atera/DeployPhonebookScript.ps1
+7b84252893f3546de581ea74521b587f  E:/COOLForge/backups/Level2/scripts/From Atera/Disable All User and Admin Accounts.ps1
+127ca6ba6af135b43925a100f00b01a7  E:/COOLForge/backups/Level2/scripts/From Atera/Discover Wi-Fi Passwords (copy).ps1
+21458a8cfc1cf28cc602af9596b6c81b  E:/COOLForge/backups/Level2/scripts/From Atera/do_ansible_user.ps1
+95f7f3b05d91b59086fca308387cfec7  E:/COOLForge/backups/Level2/scripts/From Atera/Download and Install Google Chrome.ps1
+533662ee8531b8136eb52e711a2406c2  E:/COOLForge/backups/Level2/scripts/From Atera/Download and Install ScreenConnect Client to Company.ps1
+216ead77a3284746f1489a8b8545915c  E:/COOLForge/backups/Level2/scripts/From Atera/Download_Install_MSI_As_Administrator.ps1
+80ac640636adfcf4c71cd4eb222c4b28  E:/COOLForge/backups/Level2/scripts/From Atera/Dr JA COOK LEVEL.ps1
+29528aba2ff3b077deba705eb9932858  E:/COOLForge/backups/Level2/scripts/From Atera/Empty Recycle Bin.ps1
+c3a66c6b3ecb10d515656d44155fcbb9  E:/COOLForge/backups/Level2/scripts/From Atera/Enable right click classic menu on Windows11 (copy).ps1
+9a4c24212c0f629ca50834fd4b1a29d2  E:/COOLForge/backups/Level2/scripts/From Atera/Enable Wake On Lan for All Devices.ps1
+407b260efaec45ef5fdb30c5e8a2cf5e  E:/COOLForge/backups/Level2/scripts/From Atera/Extend Outlook Storage Capabilities (copy).ps1
+922f1746df8fbcfe26fed39e3c05db52  E:/COOLForge/backups/Level2/scripts/From Atera/Extract TeamViewer ID (copy).ps1
+cd4f455a08e23615822d25b8146d5333  E:/COOLForge/backups/Level2/scripts/From Atera/Fix Display Name (copy).ps1
+67953f88c38343ffb128354001e541da  E:/COOLForge/backups/Level2/scripts/From Atera/Flush Cache (copy).ps1
+9b5659e6e141dc94e61b72bec3231bba  E:/COOLForge/backups/Level2/scripts/From Atera/freeup (copy).ps1
+1e47c43d0887f1b7c1775e4714fb348c  E:/COOLForge/backups/Level2/scripts/From Atera/Fully Remove any Malwarebytes install.ps1
+8fb3a4c3379704134ce316840b08d92c  E:/COOLForge/backups/Level2/scripts/From Atera/Get_system_info.ps1
+ffc2a7f60017f0e058ea7217c84dd52b  E:/COOLForge/backups/Level2/scripts/From Atera/Get-BitlockerKeys (copy).ps1
+a3fd8b886e55903c18763b42e6f2d749  E:/COOLForge/backups/Level2/scripts/From Atera/get-bitlocker-recovery.ps1
+e910eec0a60bf56c8840807d6007cb11  E:/COOLForge/backups/Level2/scripts/From Atera/get-disk-powershell (copy).ps1
+888eaf9d41a0ecfd6dda0df10dd00061  E:/COOLForge/backups/Level2/scripts/From Atera/Get-List-Of-Deduped-Logons.ps1
+022966aa630e9a8942ff42243ada3ab0  E:/COOLForge/backups/Level2/scripts/From Atera/Get-recent-logins.ps1
+8995a63909f7c8f3727df0023d506d8a  E:/COOLForge/backups/Level2/scripts/From Atera/Get-StorageSenseStatus.ps1
+fcaf831646929c14a50dad61cefe1a51  E:/COOLForge/backups/Level2/scripts/From Atera/Hide Atera Folder (copy).ps1
+fdd716c7ed8923ff69fdce96d7fa8c4a  E:/COOLForge/backups/Level2/scripts/From Atera/High Performance Power Plan (copy).ps1
+d67d0dd2df145223b001f16c002fd67e  E:/COOLForge/backups/Level2/scripts/From Atera/Increase Exchange Mailbox Access for Outlook 365.ps1
+823050b8f7f75aca26d51f87286d6ba3  E:/COOLForge/backups/Level2/scripts/From Atera/Install Chocolatey (copy).ps1
+b5e46a33005b302561bba4a306688953  E:/COOLForge/backups/Level2/scripts/From Atera/install dns filter yattalunga.ps1
+2bb804a853aff4e53a3017fb261d7f26  E:/COOLForge/backups/Level2/scripts/From Atera/Install FoxitReader from Chocolaty.ps1
+e69d90be26e30358c408a5425e747e98  E:/COOLForge/backups/Level2/scripts/From Atera/install level fracken.ps1
+3c85d2a8764808abf98e13c14fad8c31  E:/COOLForge/backups/Level2/scripts/From Atera/Install Level gogreen.ps1
+4325ae5fcaab0999840ef9c736e50f9b  E:/COOLForge/backups/Level2/scripts/From Atera/InstallHuntressLabs.ps1
+7016ea29c180f157dacd8a99a1b7dee8  E:/COOLForge/backups/Level2/scripts/From Atera/intex level install.ps1
+84221ff659617ddf261595241eed7f38  E:/COOLForge/backups/Level2/scripts/From Atera/Kill RobloxPlayerBeta Process.ps1
+585d9b6b892f30e286fa326e7061582a  E:/COOLForge/backups/Level2/scripts/From Atera/level bbb.ps1
+55c5c886b4d91fc0fcb10206457fa1a6  E:/COOLForge/backups/Level2/scripts/From Atera/Level for BISSYCARE.ps1
+baaece57b833335e1137702bc9c71035  E:/COOLForge/backups/Level2/scripts/From Atera/List all printers on local machine with port names.ps1
+1ee511699a777a5f5f7afd9dcf4ddb15  E:/COOLForge/backups/Level2/scripts/From Atera/MAC - Install Huntress.ps1
+f403075ba02d53ca598eca8806b297c0  E:/COOLForge/backups/Level2/scripts/From Atera/MHS level.ps1
+c14c23e7902aa7b8c5c138cf1a90ce7e  E:/COOLForge/backups/Level2/scripts/From Atera/Network_Printer (copy).ps1
+0336ef5712d4a4e6483d14283a0d67c1  E:/COOLForge/backups/Level2/scripts/From Atera/Populate Agent Custom Field with Customer Custom Field DNS1.ps1
+216bd1cde209a64dddc4b2555fbd0a55  E:/COOLForge/backups/Level2/scripts/From Atera/Populate Agent DNS1 Custom Field with Customer DNS1 Custom Field.ps1
+94cc0b182c1fbe5f3ccc83929783aad8  E:/COOLForge/backups/Level2/scripts/From Atera/PowerShell script to change every network adapter DNS to Google DNS.ps1
+c0c5f28df8e69c5201a2d808589c5220  E:/COOLForge/backups/Level2/scripts/From Atera/PowerShell script to output a list of DNS servers being used by the machine.ps1
+663d727468560c64745f9b48981c27c6  E:/COOLForge/backups/Level2/scripts/From Atera/PreventIndexingOutlook (copy).ps1
+0daad9895ae128956d03c64691f4d15b  E:/COOLForge/backups/Level2/scripts/From Atera/Proper Whitelabel Atera Agent script.ps1
+1edd7a4bc09a7e236c0fb620f477726c  E:/COOLForge/backups/Level2/scripts/From Atera/ps7wrapper.ps1
+22e24d9e67f2e4adacd5b1e2b64024a6  E:/COOLForge/backups/Level2/scripts/From Atera/RA tools.ps1
+1176a3526affefd05b1c85ef67a4468b  E:/COOLForge/backups/Level2/scripts/From Atera/RADPAY Shortcut Creator.ps1
+58856604405e69b7aabacb18fc1ba004  E:/COOLForge/backups/Level2/scripts/From Atera/radrerp launche 25.ps1
+1086edcd8594fcf90af1ae6ef163adeb  E:/COOLForge/backups/Level2/scripts/From Atera/Reboot Device And Notify The User (copy).ps1
+4e84a4fd61d021ed9ec83c3e6c051445  E:/COOLForge/backups/Level2/scripts/From Atera/Reconnect Drives CMD File and Shortcut Creator SWR.ps1
+08351e47119643e44c4409498f249c2b  E:/COOLForge/backups/Level2/scripts/From Atera/Recreate Voyager from Pristine.ps1
+87e388c3c00245b2be64bfc08a5497b8  E:/COOLForge/backups/Level2/scripts/From Atera/Registry logging.ps1
+5c8a447ae85ec6d3ae8be2476359797e  E:/COOLForge/backups/Level2/scripts/From Atera/Reinstall Microsoft 365 and System Health Check.ps1
+aa1965979e553a2b76a70d33d3e49539  E:/COOLForge/backups/Level2/scripts/From Atera/Remove Firefox.ps1
+9893bb0a9c79594fbd0448bff2554ab7  E:/COOLForge/backups/Level2/scripts/From Atera/Remove MalwareBytes.ps1
+a1aef727c9c5797e5302131ba1127399  E:/COOLForge/backups/Level2/scripts/From Atera/Remove McAfee Agent.ps1
+094256104d560a9e541c9f4785bc6507  E:/COOLForge/backups/Level2/scripts/From Atera/Remove_Voyager_TempFiles2days.ps1
+8351574be434017208ebb423bd5dd823  E:/COOLForge/backups/Level2/scripts/From Atera/Rename Computer (copy).ps1
+36a2a6d3c3e0791bdd926354a57a3b74  E:/COOLForge/backups/Level2/scripts/From Atera/Reset Choco When not working.ps1
+3a22d22ba561f64d730a410370b2ccef  E:/COOLForge/backups/Level2/scripts/From Atera/Reset_Browsers_to_Default_Homepage.ps1
+09ea4c7c5c042068684528805ed389c3  E:/COOLForge/backups/Level2/scripts/From Atera/reset_password_for_local_user (copy).ps1
+7237f05a3a8d195c71c2fc4cabe0c7d1  E:/COOLForge/backups/Level2/scripts/From Atera/Resync Time (copy).ps1
+4cc2c7537a21689bc109039f630a6af2  E:/COOLForge/backups/Level2/scripts/From Atera/Retrieve Wi-Fi Passwords using PowerShell.ps1
+928ff1f596126741f04844aa9e0f8099  E:/COOLForge/backups/Level2/scripts/From Atera/Run Backblaze Uninstaller.ps1
+7d473a3b074b6a0bc8e837bc409f5d58  E:/COOLForge/backups/Level2/scripts/From Atera/Run Windows Cleanup (copy).ps1
+b6102da79a4a444affdbbb0b73a49309  E:/COOLForge/backups/Level2/scripts/From Atera/ScheduledTasksChecker.ps1
+c729edf985ef9d8708a8fd44273f37fa  E:/COOLForge/backups/Level2/scripts/From Atera/Sending action to CNAJMSILT The action has timed out..ps1
+d47f65f5837b2afeab5e2caca631d04d  E:/COOLForge/backups/Level2/scripts/From Atera/Set LAPS Password.ps1
+b747871a0089496946f3739c40219677  E:/COOLForge/backups/Level2/scripts/From Atera/Set screenconnect restart level for service.ps1
+53b69348834aeef7c4eae62913cb4f1e  E:/COOLForge/backups/Level2/scripts/From Atera/Set Time Zone to SA and Time Format.ps1
+c0f171f948e427965e2f5ffc075fe6a3  E:/COOLForge/backups/Level2/scripts/From Atera/Set Timezone to Central Australia Standard Time.ps1
+576740694688aac84df1b3742629b09d  E:/COOLForge/backups/Level2/scripts/From Atera/Set_Sleep_to_45min.ps1
+2e18867b34777d76ef668ecbf5b72b6f  E:/COOLForge/backups/Level2/scripts/From Atera/SetAtera to Start in safemode.ps1
+eaa71806cad99d4b98c0b21696b20f51  E:/COOLForge/backups/Level2/scripts/From Atera/SetAteraAgentName (copy).ps1
+dcaac107dbe262c993dc64d5d0bac449  E:/COOLForge/backups/Level2/scripts/From Atera/SplashTop Restart (copy).ps1
+15aba2ed4269f1b792fda71bfdaba6d0  E:/COOLForge/backups/Level2/scripts/From Atera/Start or Restart Screenconnect.ps1
+4858838aa6b7e331945fa2c6593e8967  E:/COOLForge/backups/Level2/scripts/From Atera/stop_cryptoprevent.ps1
+1589a901e36949c9b9edccc531282232  E:/COOLForge/backups/Level2/scripts/From Atera/SWR - SET HOMEPAGE TO SHAREPOINT.ps1
+b030c48c4c96cb256387393858a02a30  E:/COOLForge/backups/Level2/scripts/From Atera/SWR Level.ps1
+bba3911105301a15fbbee40c70f9663d  E:/COOLForge/backups/Level2/scripts/From Atera/SWR Printer Driver Downloads.ps1
+e0f6e114bb33630938ca21600c7b776c  E:/COOLForge/backups/Level2/scripts/From Atera/SWR Reconnect Drives.ps1
+eaccb98e3e593b4c9f0331b0aa3b8cf5  E:/COOLForge/backups/Level2/scripts/From Atera/SWR_Deploy_DNSFILTER.ps1
+3f892954cf117df2424bb3ec74eeda08  E:/COOLForge/backups/Level2/scripts/From Atera/System Report (copy).ps1
+18524b6011535f9b054cf976eaf73058  E:/COOLForge/backups/Level2/scripts/From Atera/Uninstall Malwarebytes (copy).ps1
+4555c88895fa599031b3324857121e70  E:/COOLForge/backups/Level2/scripts/From Atera/Uninstall Malwarebytes AMRI.ps1
+3815211c2782f8aa69e5e9fd23b34623  E:/COOLForge/backups/Level2/scripts/From Atera/uninstall_syncro.ps1
+945caca03cc3437b0c4fc31694f24764  E:/COOLForge/backups/Level2/scripts/From Atera/Unpin 'Mail' App (copy).ps1
+0746f132a2afba3ea12282f751a5d145  E:/COOLForge/backups/Level2/scripts/From Atera/USB CHECK.ps1
+b2c23d061548dac5e9b1063a584d6a76  E:/COOLForge/backups/Level2/scripts/From Atera/Weekly Maintenance (copy).ps1
+69e0aeb506cef5e86977951e9a08a122  E:/COOLForge/backups/Level2/scripts/From Atera/Whitelabel Atera Agent on Add or Remove Programs (appwiz.cpl) (copy).ps1
+45b93568db9771e55756e50a13a2acb5  E:/COOLForge/backups/Level2/scripts/From Atera/Whitelist Atera in Windows Defender (copy).ps1
+82a3850b704302d72edbdf082c25faf9  E:/COOLForge/backups/Level2/scripts/From Atera/windows 11 troubleshoot (copy).ps1
+76db549f7aa2913aa1c710b481fe068f  E:/COOLForge/backups/Level2/scripts/From Atera/Windows 11 Upgrade TPM and CPU Validation Bypass (copy).ps1
+f75d0e9f190d7a65b89da260fea8f185  E:/COOLForge/backups/Level2/scripts/From Atera/Windows Defender Whitelist Atera Agent (copy).ps1
+0149991af1118d257719307c4b5052ac  E:/COOLForge/backups/Level2/scripts/From Atera/Windows11-Taskbar-Left.ps1
+0da935b7278813000e0848893a05986a  E:/COOLForge/backups/Level2/scripts/From Atera/wmi-list-shares.ps1
+df452e1717a115d54efff29f32888378  E:/COOLForge/backups/Level2/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
+9a5f662417fc25d9610bd083cdae585a  E:/COOLForge/backups/Level2/scripts/General/CN_Tools Folder.ps1
+d7e0242cf025e7e16327447d91f8c1a9  E:/COOLForge/backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
+b15eba497e6b0ce7fde7d961f6a81e61  E:/COOLForge/backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
+c374e35b74da5a7112d356101bfffa4c  E:/COOLForge/backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _ScanHealth.ps1
+42bd1e6387363c18c4e2d544d4171798  E:/COOLForge/backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _StartComponentCleanup.ps1
+51c06e2afd2325dbd49f9b9518f664c6  E:/COOLForge/backups/Level2/scripts/General/Fixes/Remove-McAfee.ps1
+d4ecd953a851f56ddab5cd65998df811  E:/COOLForge/backups/Level2/scripts/General/Fixes/Repair Windows Defender.ps1
+910593fa8980f57b2e5488da4ca44a67  E:/COOLForge/backups/Level2/scripts/General/Fixes/SFC _SCANNOW.ps1
+320a6ccba15681d5d35ca40aea841a54  E:/COOLForge/backups/Level2/scripts/General/Fixes/System File Checker.ps1
+606129626bda6cf2b826c897df82d02d  E:/COOLForge/backups/Level2/scripts/General/Fixes/Windows 10 1909 Iterative updates.ps1
+fd1f24b22a36ada4d5eb820311a0188f  E:/COOLForge/backups/Level2/scripts/General/Fixes/🙏Wake all devices in parent to level.io folder.ps1
+4fdde0051c0a3d35dbb0cfca6aef2a80  E:/COOLForge/backups/Level2/scripts/General/Info Gathering/Check System Temperatures.ps1
+20903e606c99ec2b2406a1d2722b07c3  E:/COOLForge/backups/Level2/scripts/General/Info Gathering/Get Screenconnect URL.ps1
+a3d9c763d82a1247b5d2ae4c639c7601  E:/COOLForge/backups/Level2/scripts/General/Info Gathering/Support Request check.ps1
+6f88875c3bf43df4f050ed0e8abadd97  E:/COOLForge/backups/Level2/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
+f5504470ed93a8373ceaa056f6048ba1  E:/COOLForge/backups/Level2/scripts/General/POLICY/⛔DNSFILTER.ps1
+9c98d517535fc53c8f01f106f51ac5a2  E:/COOLForge/backups/Level2/scripts/General/POLICY/⛔SCREENCONNECT.ps1
+0b07ad0751e489af76dc2f73019bc7f4  E:/COOLForge/backups/Level2/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
+996f6923a876b59802d6f28793a66ced  E:/COOLForge/backups/Level2/scripts/General/POLICY/Deploy Popup Script.ps1
+5f206317e7a179e1e60c2edc54c1d9b3  E:/COOLForge/backups/Level2/scripts/General/POLICY/Disable Outlook re-open old items.ps1
+4b7d20e8f318e2585704eca7930f01a9  E:/COOLForge/backups/Level2/scripts/General/POLICY/Enable Logon_Logoff Audit logging.ps1
+25698797d09488c0b9f2ae60be7f822a  E:/COOLForge/backups/Level2/scripts/General/POLICY/Enable WOL.ps1
+4281dc2433e27ee90b18010e41bcf1d3  E:/COOLForge/backups/Level2/scripts/General/POLICY/ensure machine wakes up daily to run stuff.ps1
+e9609b1b5a5d6878a157ef33deaf2510  E:/COOLForge/backups/Level2/scripts/General/POLICY/INSTALL_ C__CN_Tools_unchecky_setup.exe.ps1
+8ba95a14588e7c31f62fb3b81d123dbb  E:/COOLForge/backups/Level2/scripts/General/POLICY/NEEDS_CHECKPLUGINFROMCIPP.ps1
+a2071006549b70779105d6191991a9c9  E:/COOLForge/backups/Level2/scripts/General/POLICY/Remove_ unchecky.ps1
+d2df63fdda17940220b52469f929efd4  E:/COOLForge/backups/Level2/scripts/General/POLICY/Set Date Format DD_MM_YYYY.ps1
+a604c27d8f9d367dc68ff16c907e2ddb  E:/COOLForge/backups/Level2/scripts/General/POLICY/Set Outlook Exchange Connection Limit.ps1
+be6a33c0b8965dbc0a357c4ae7c6c735  E:/COOLForge/backups/Level2/scripts/General/POLICY/SET_ Sleep revert.ps1
+a8e34579df0df9e752a62470a7623c67  E:/COOLForge/backups/Level2/scripts/General/POLICY/SET_ Sleep to 6 hours.ps1
+94534f2341570d0546f601f031cf10ed  E:/COOLForge/backups/Level2/scripts/General/POLICY/Windows - Set Time Zone.ps1
+abe4d5f26de313a90b85f56409c34a36  E:/COOLForge/backups/Level2/scripts/General/POLICY/Windows Monitor - Restart Required.ps1
+b2dd0f2d89df5459e2947190a01bcf81  E:/COOLForge/backups/Level2/scripts/General/POLICY/🙏DNSFILTER.ps1
+d7d3129d6d59885546465d9439bd9434  E:/COOLForge/backups/Level2/scripts/General/POLICY/🙏SCREENCONNECT.ps1
+90087166821383e3476a837005906787  E:/COOLForge/backups/Level2/scripts/General/Popups/Generate Popup.ps1
+c39b0feb4982d7db75c918357412f594  E:/COOLForge/backups/Level2/scripts/General/Popups/POPUP.ps1
+48a105d3b20cbbdb5d767779d4652080  E:/COOLForge/backups/Level2/scripts/General/Restart Explorer as current user.ps1
+2512c2953da562611cb72b73c8aedcce  E:/COOLForge/backups/Level2/scripts/General/Set up CN_Tools Folder.ps1
+085307be65d2df125906f47c261dcb78  E:/COOLForge/backups/Level2/scripts/General/TESTING/Revert to First Restore Point.ps1
+77d3f8f5faee046d28db331c97b9d224  E:/COOLForge/backups/Level2/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
+846344f9508a0d7afe84e4998289eb94  E:/COOLForge/backups/Level2/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
+9b9673ec9b7e1e3f3018ae7a6f95582d  E:/COOLForge/backups/Level2/scripts/General/Windows Monitor - DNS Servers.ps1
+af44af9548566b0c2b665ee7c840ed3c  E:/COOLForge/backups/Level2/scripts/Imported/AMRI Safe debloat.ps1
+4fd1269756f196683f580d30ecbc98f1  E:/COOLForge/backups/Level2/scripts/Imported/Prompt User.ps1
+772459e40c9dbd24c9a3c53618a651b3  E:/COOLForge/backups/Level2/scripts/Imported/REMOVE FOXIT.ps1
+439faf9e550d181be59c6e5a5d8c39f1  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Add Admin.ps1
+141e07c8b55aca085932aba9fe6df4a8  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Cleanup Disk Space.ps1
+7e620e881a923e3dbc1c5d22c92d0b51  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Disable Sleep on AC Power.ps1
+c5c23396f666caef22ab2f80c916d87d  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Failed Admin Login.ps1
+8ab92983ef5af19b31333eb719fb5cfb  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Gather Intel.ps1
+114f941ae7030ef635f5a23a16688db5  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Join Company Domain.ps1
+07f3f2c7ab0bff51b31e06480a7ce973  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Remove Bloatware.ps1
+6d85210013c5ef9d908babf620c17a65  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Set SSID.ps1
+b54308370a6ca5b788748e1fc68d8338  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Software Not Installed.ps1
+6cc53174286f3b1d672704ffddab157d  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Unauthorized Admins.ps1
+3def2e457a07616c8ab52b36c1daeebc  E:/COOLForge/backups/Level2/scripts/Imported/Windows - Upgrade to Windows 11.ps1
+174bc791ef6123f51bcdbba7c2b9e67d  E:/COOLForge/backups/Level2/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
+0f914f0fb7085d969478210c63cbb8b8  E:/COOLForge/backups/Level2/scripts/Imported/Windows Monitor - Check Disk Errors.ps1
+de2bf0c6f75653ec64efbc527c3ed008  E:/COOLForge/backups/Level2/scripts/Imported/Windows Monitor - Device Standards.ps1
+cf6928d1d5bc59519db8f47091df6cdd  E:/COOLForge/backups/Level2/scripts/Imported/Windows Monitor - Event Log.ps1
+f0948378d5385e8661a2ce4133f41a7a  E:/COOLForge/backups/Level2/scripts/Imported/Windows Monitor - Firewall.ps1
+3f6eba7dc5b0406892dbe0d691da5385  E:/COOLForge/backups/Level2/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
+57d18ce09c6dfec3661253be801d9881  E:/COOLForge/backups/Level2/scripts/Imported/Windows Monitor - System Time Check.ps1
+02c40d2df5d6a6d370f43f76d56116ed  E:/COOLForge/backups/Level2/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
+278817b15918ded5bfac0659ab3e014c  E:/COOLForge/backups/Level2/scripts/inside quiet hours_.ps1
+dbb0c5fff3c5cb76fe66bc2e38091aca  E:/COOLForge/backups/Level2/scripts/Install Bitwarden Extensions to chrome and edge.ps1
+a9f8882f804f8809b66516e86a5e783f  E:/COOLForge/backups/Level2/scripts/is interactive sign in_.ps1
+6c6ec2b0f565ca69578e3f41baafd1aa  E:/COOLForge/backups/Level2/scripts/level to screenconnect test.ps1
+abbdb97d85850826db59de43aeb46d02  E:/COOLForge/backups/Level2/scripts/Low Profile Defender.ps1
+f61ea3678bb665c145855eb3ac1e4c2d  E:/COOLForge/backups/Level2/scripts/POLICY_ Is Foxit installed_.ps1
+79b20e4580683b32a0da79f9f34f3b34  E:/COOLForge/backups/Level2/scripts/Refresh Icon Cache.ps1
+735750942d6cbac69f57f43186c4673f  E:/COOLForge/backups/Level2/scripts/REMOVE FOXIT.ps1
+f4e368821aeb0740322a620185ce1376  E:/COOLForge/backups/Level2/scripts/Remove ScreenConnect Client (236d14eb86050829).ps1
+8770e81c1ea0aed3d7bf1eb431ba2cae  E:/COOLForge/backups/Level2/scripts/Remove Teamviewer.ps1
+5f42382b670f1ef094950c89273dda02  E:/COOLForge/backups/Level2/scripts/Remove Voyager Folders.ps1
+8e8c21752843350149090e559252fef0  E:/COOLForge/backups/Level2/scripts/REMOVE_ Chrome Remote Desktop.ps1
+770bcc1b6ac25a9a052703b422f9d6d7  E:/COOLForge/backups/Level2/scripts/Set chrome as default.ps1
+ec3dca416760afeee10fae4a5bb3497b  E:/COOLForge/backups/Level2/scripts/Set Defender Exclusions.ps1
+6f790dfa9eeaf4eaefecf5d184e37463  E:/COOLForge/backups/Level2/scripts/Show Test Versions.ps1
+6de90e031d654ba87c74a9d707c89904  E:/COOLForge/backups/Level2/scripts/Sleep after 1800 seconds..ps1
+45c95564881b864280d3037c5cb6b9b4  E:/COOLForge/backups/Level2/scripts/System Uptime.ps1
+a276ceeb7664e582988159c762d4919a  E:/COOLForge/backups/Level2/scripts/Test PS Module install.ps1
+d1a5df4a51ac566b30fb8b6062446977  E:/COOLForge/backups/Level2/scripts/test sc session delete.ps1
+dbeb9ef6ccaf96e546d2ff3c645f47e7  E:/COOLForge/backups/Level2/scripts/Test Show Versions.ps1
+ac93a09854d446fd3853183687d2237a  E:/COOLForge/backups/Level2/scripts/test uninstall for SC.ps1
+f2f231262c9288868753d80258b3fb8c  E:/COOLForge/backups/Level2/scripts/Uninstall Atera.ps1
+6059291621885604bb3fba9795902a5d  E:/COOLForge/backups/Level2/scripts/uninstall level.ps1
+50a5dc84f5fefb9c72cef997be00f04f  E:/COOLForge/backups/Level2/scripts/Verify SC Status.ps1
+fdd8184570f07d0a8d6f01abf200a092  E:/COOLForge/backups/Level2/scripts/Wake On Lan and Power settings WOL.ps1
+523f1b1574da0cbb76ac3cf180f2dbc4  E:/COOLForge/backups/Level2/scripts/👀DNSFILTER.ps1
+d5e978c90e1c8b691b8188df253355e0  E:/COOLForge/backups/Level2/scripts/👀unchecky.ps1
+271de26506314db34e3d12bd26cf2a9a  E:/COOLForge/backups/Level2/scripts/🙏CIPPCHECK.ps1
+7c1f430bef1839e446b81f33cdd7d94f  E:/COOLForge/CHANGELOG.md
+7e7ec438aac083fd267ade6e50294baa  E:/COOLForge/COOLForge-Common.psm1
+17d2f0a73ac8f8df1de84dd985e44678  E:/COOLForge/docs/CODEBASE.md
+e83fee96bd71d4651d245e8cdff3a057  E:/COOLForge/docs/EMOJI-HANDLING.md
+6ab16d942abd77fd0104dec32c7aa124  E:/COOLForge/docs/FOLDER-STRUCTURE.md
+71437e0cabcca042872d963480ab6ca9  E:/COOLForge/docs/FUNCTIONS.md
+c2ac1eda18af21cbc3fb84154c711611  E:/COOLForge/docs/LAUNCHER.md
+f095117a0ee4995c5532a609ff5ec5ba  E:/COOLForge/docs/LAUNCHER-FLOWCHART.md
+b23eeee0ced51cb4c52ca0b04e08c3ac  E:/COOLForge/docs/LEVEL-API-CUSTOM-FIELDS.md
+fd7e4b7e078e41fd7182065919c84ea0  E:/COOLForge/docs/POLICY-TAGS.md
+cad1512fad6b0a8f136994dc75fc3172  E:/COOLForge/docs/PRIVATE-FORK.md
+55525401827f7c28ba5eb23d5c0e6c00  E:/COOLForge/docs/RELEASE-WORKFLOW.md
+f300664213dae4bb0356d21300fabcfe  E:/COOLForge/docs/scripts/Debug-Policy.md
+56a36c9e1a9ba6830b2443b24f98a25b  E:/COOLForge/docs/scripts/Fix-Windows-Services.md
+ae5db44e9f534549c31e0b41244de019  E:/COOLForge/docs/scripts/Force-Remove-AnyDesk.md
+8d40ba4510f6311be42b2d6eab0cd9e2  E:/COOLForge/docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md
+6b54648e7955f84c0b4c6892343a843f  E:/COOLForge/docs/scripts/Huntress-Policy.md
+2b3b28cf893dc433da788f37849d0e53  E:/COOLForge/docs/scripts/Prevent-Sleep.md
+74b6aa7638e6d859112e6a6c0e796918  E:/COOLForge/docs/scripts/RAT-Detection.md
+927df05b4864e8ab165355a7fe9619b9  E:/COOLForge/docs/scripts/README.md
+ff47f9469b032912629f2f26ee1f9cd2  E:/COOLForge/docs/scripts/ScreenConnect-Device-URL.md
+9d3593d1c9ced0672b5a4e62dd101a8e  E:/COOLForge/docs/scripts/System-Restore.md
+42c45eb09247730e59a87fe0a14e3954  E:/COOLForge/docs/scripts/Technician-Alert-Monitor.md
+71bd7d50dcba37c3eb70aa70036dcd97  E:/COOLForge/docs/scripts/Test-Show-Versions.md
+d5b4ded9659d35360db4dc7c4fd3b59f  E:/COOLForge/docs/scripts/Test-Variable-Output.md
+71fe84cf835b4c2791e0e737a884c29b  E:/COOLForge/docs/scripts/Unchecky-Policy.md
+7cf596fc9669f1b827baad414f632842  E:/COOLForge/docs/scripts/Wake-Devices.md
+4216f0a1ddb53de95393163b0ffe7b8f  E:/COOLForge/docs/SOFTWARE-MANAGEMENT.md
+228ca2efd2caf11e637c84541e555b7b  E:/COOLForge/docs/TECHNICIAN-ALERTS.md
+887af9bcbb8b912c66927d99f964b327  E:/COOLForge/docs/VARIABLES.md
+82df6de5e4414aa846ad0b02b63cc127  E:/COOLForge/docs/VERSION-PINNING.md
+a9fcd5376d90399e4db321c6edee0b76  E:/COOLForge/docs/WHY.md
+897a4b76c80b467aa400bde1832a2f94  E:/COOLForge/launchers/⚙️Extract and Set ScreenConnect Device URL.ps1
+bb10300811e3336e270da33e9f81927c  E:/COOLForge/launchers/⛔Force Remove Anydesk.ps1
+53dc824c1371416e4db79e5e5d36416f  E:/COOLForge/launchers/⛔Force Remove Non MSP ScreenConnect.ps1
+b2e01804e60464d82d89645f455e8f5b  E:/COOLForge/launchers/👀Check for Unauthorized Remote Access Tools.ps1
+c06ba3f5d27ae0940a8380e1621db2ac  E:/COOLForge/launchers/👀debug.ps1
+72575793491182c852cfacc7c06cb492  E:/COOLForge/launchers/👀huntress.ps1
+4a5c559b38922b06fdc2feb430283eab  E:/COOLForge/launchers/👀Test Show Versions.ps1
+05b042e69ffdbd230dffff57c2b148bf  E:/COOLForge/launchers/👀Test Variable Output.ps1
+c7c08d4effdf538c449c28570af08c2f  E:/COOLForge/launchers/👀unchecky.ps1
+dcd05d3502b9a09db9adb4ac42438101  E:/COOLForge/launchers/🔔Technician Alert Monitor.ps1
+dd4dd25fdf0b8f18eff68e2daad8944f  E:/COOLForge/launchers/🔧Enable System Restore and Create Restore Point.ps1
+df609b9e72d290757e9a675ca2bd68b8  E:/COOLForge/launchers/🔧Fix Windows 10 Services.ps1
+fe69c650e983626d551235a547cf4a80  E:/COOLForge/launchers/🔧Fix Windows 11 Services.ps1
+058381b8fb87de8884a38a22d3164f9f  E:/COOLForge/launchers/🔧Fix Windows 7 Services.ps1
+5abf5237bbecd73d9b33b9732db0c534  E:/COOLForge/launchers/🔧Fix Windows 8 Services.ps1
+475ed3a33ab2ca44a0d4313494317cd3  E:/COOLForge/launchers/🔧Fix Windows 8.1 Services.ps1
+cb0196235a6cdebd9f994d3f0dcb4ab5  E:/COOLForge/launchers/🔧Prevent Sleep.ps1
+41cfb9d1c0a9dc79439cbf2b9a598c78  E:/COOLForge/launchers/🙏Wake all devices in parent to level.io folder.ps1
+44ee8eb5143b177140d5929834130a4b  E:/COOLForge/modules/COOLForge-Common.psm1
+3c230ff8cd8b89385d4fb66e136aa10a  E:/COOLForge/pre-release/README.md
+e0c78d0af59d223b679a01b6b1c25dd6  E:/COOLForge/pre-release/Test-Syntax.ps1
+69eff28478ce971c39163276c6dfa164  E:/COOLForge/pre-release/Update-Launchers.ps1
+9f563c201e62efca1cbbce108dc7d38d  E:/COOLForge/pre-release/Update-MD5SUMS.ps1
+dec00fbcc15ae5f1bbd36b2d5e926109  E:/COOLForge/pre-release/Update-ScriptInventory.ps1
+474a2ee0a20ae5ed9d280f0fd2a1857f  E:/COOLForge/pre-release/Validate-Release.ps1
+0bd36a1e7177bdc393785a93a6352aa1  E:/COOLForge/README.md
+69f1b266b47ddb9b63414078e01fbed5  E:/COOLForge/RELEASING.md
+7a8fb4ff7973b51ac709c93569b31d36  E:/COOLForge/scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+3940425d5ebc2db1f052a9d85affd944  E:/COOLForge/scripts/Check/👀debug.ps1
+ce7971087e023dd883650a2ed40fc3d1  E:/COOLForge/scripts/Check/👀huntress.ps1
+883d01cf5c574d69a124dfe4d66eca02  E:/COOLForge/scripts/Check/👀Test Show Versions.ps1
+a52c7cf6b860c5f08af3dc9c9cbebce7  E:/COOLForge/scripts/Check/👀Test Variable Output.ps1
+c2272234e06e6984432bff2a6f975f4f  E:/COOLForge/scripts/Check/👀unchecky.ps1
+c21f8188c5d474ca8b5cd78d85d64e05  E:/COOLForge/scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
+0b21652beac13ca2d365c53011846b3c  E:/COOLForge/scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+6bae62fc42ea30a1ace3c2472dc4f901  E:/COOLForge/scripts/Fix/🔧Fix Windows 10 Services.ps1
+a59778aa18ee3f6c38d66d3da27dca3e  E:/COOLForge/scripts/Fix/🔧Fix Windows 11 Services.ps1
+581cbd2203a70ad612cdc0e872a35453  E:/COOLForge/scripts/Fix/🔧Fix Windows 7 Services.ps1
+4207a5b92853180ca0d49823c298362d  E:/COOLForge/scripts/Fix/🔧Fix Windows 8 Services.ps1
+d31ecec221d65522ca3cc89827474884  E:/COOLForge/scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+96e12ec31a8b373a86fde3273b1d33fd  E:/COOLForge/scripts/Fix/🔧Prevent Sleep.ps1
+0ce7b50eb958e7a4cbcb1b8848810f7a  E:/COOLForge/scripts/Remove/⛔Force Remove Anydesk.ps1
+820a376a20cc24a80df12cc85d312f8c  E:/COOLForge/scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+a37c8212b8e445fd377e41fc706c39f4  E:/COOLForge/scripts/Utility/🔔Technician Alert Monitor.ps1
+92cd52534025a471791185d586e090c9  E:/COOLForge/scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1
+ae62945ee8378ef243170cbd7d82a2c8  E:/COOLForge/standalone_scripts/Check/Check-UnauthorizedRemoteAccessTools-Standalone.ps1
+b698ef330508956e827d14e6558cd72c  E:/COOLForge/standalone_scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+bd4146f91950d15a9be303112ae945f4  E:/COOLForge/standalone_scripts/Fix/🔧Fix Windows 10 Services.ps1
+b7b55322216aa4ec9e96a59300c07e8c  E:/COOLForge/standalone_scripts/Fix/🔧Fix Windows 11 Services.ps1
+4da7f19f93ea7795851b88962a234b46  E:/COOLForge/standalone_scripts/Fix/🔧Fix Windows 7 Services.ps1
+e67a22f0e85a12141dac81f4f005b4b0  E:/COOLForge/standalone_scripts/Fix/🔧Fix Windows 8 Services.ps1
+c2e7723609a182e92027e8ee6807618a  E:/COOLForge/standalone_scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+aa6b1c9e29d3c5d2877ea39e90c5d8c0  E:/COOLForge/standalone_scripts/Fix/🔧Prevent Sleep.ps1
+6c3c101a710d542eb24acabd111960b0  E:/COOLForge/standalone_scripts/Remove/Remove-AnyDesk-Standalone.ps1
+7ee404ca87331e1b18fa45339eb93b08  E:/COOLForge/standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
+102e59a5a04bc2accf869b2dec0d2d89  E:/COOLForge/standalone_scripts/Utility/Wake-AllDevicesInFolder-Standalone.ps1
+e9fd7ccb6b61b07077323de95c44a40f  E:/COOLForge/templates/Launcher_Template.ps1
+4f8c9bebcc9652948ad9e7746ae27f23  E:/COOLForge/templates/Script_Template.ps1
+d3ae7214f5b017989d26c5311ef464ae  E:/COOLForge/templates/What is this folder.md
+acfd66a7cc4dcfc3572928260f678904  E:/COOLForge/testing/Test_AutoUpdate_Dev.ps1
+e6da48c860eccc5613a3b670ab9d1668  E:/COOLForge/testing/Test_From_Level.ps1
+190c69525ac3e2cb872c539d9adcbc9b  E:/COOLForge/testing/Test_Local.ps1
+bcc7c195e0d0261e5673ccf0c58e88a8  E:/COOLForge/testing/Test-HuntressOrgProvisioning.ps1
+5ad7dc4a1cf5e36de75a5b96053fc9f6  E:/COOLForge/testing/Test-ScreenConnectAPI.ps1
+93839f89d9067ea0f2b3cff373c2980e  E:/COOLForge/TODO.md
+2d520fc27f3c5b96d4b1fe701f835644  E:/COOLForge/tools/Add-COOLForgeCustomField.ps1
+8bcecce7fefa2dfaec07d82e0146c4e6  E:/COOLForge/tools/Backup-COOLForgeCustomFields.ps1
+e451c2491e38119d34efa4a237609824  E:/COOLForge/tools/Backup-LevelAutomationsAndScripts.ps1
+2b9cb2c111e86ace7e3c720e355090c3  E:/COOLForge/tools/Backup-LevelAutomationsAndScripts.README.md
+f79c4f336317533680e784c22d05c381  E:/COOLForge/tools/check-encoding.ps1
+ff9c1079750f4f60d06582f32ea86404  E:/COOLForge/tools/check-launchers.ps1
+4e2c11bf415ee6b083ce8cb38022209c  E:/COOLForge/tools/check-md5.ps1
+2fa66d91ec73d64268eb66a839d99d91  E:/COOLForge/tools/check-syntax.ps1
+3704f8ab23212c48d132dceb32d90888  E:/COOLForge/tools/Create-New-Script.ps1
+70ede1aa50b0883a3983a61ecc0090b2  E:/COOLForge/tools/Export-DeviceCustomFields.ps1
+06b183d2726aef60adebe4d678f9a141  E:/COOLForge/tools/fix-encoding.ps1
+b24e5fc2053bf0c258d9cf4d8d4d5766  E:/COOLForge/tools/Generate-CustomFieldsConfig.ps1
+1705198b6a35decebca31aebad692d80  E:/COOLForge/tools/generate-md5sums.ps1
+42b466e7421a5f8d55d4168dd6b3da48  E:/COOLForge/tools/Generate-WorkflowCharts.ps1
+1f72fe85c8ead41cc20fe221bc5fcda6  E:/COOLForge/tools/Get-DeviceScreenConnectUrl.ps1
+65c3d96d60f989f816761fc1b8fe8864  E:/COOLForge/tools/Get-FullDeviceLevelCustomFields.ps1
+499aae2cc1e1b54d9c9682f54f2f9741  E:/COOLForge/tools/Get-ScreenConnectUrls.ps1
+a01b5a23b1e1362a966cc4f51396d57b  E:/COOLForge/tools/how-i-got-here/decode-id.ps1
+234e84ca486f906641ecca71377896cb  E:/COOLForge/tools/how-i-got-here/Download-LevelScripts.ps1
+b2ccb3607790718c793198b1f15e4429  E:/COOLForge/tools/how-i-got-here/Extract-LevelAutomationsFromHAR.ps1
+cb42491788c02fc3e70e04c95a27bfb4  E:/COOLForge/tools/how-i-got-here/Extract-LevelScriptsFromHAR.ps1
+470fa0abc57e726cbe2e093fd97bc650  E:/COOLForge/tools/how-i-got-here/find-automation-queries.ps1
+05339876223e1c848f3b93434692c222  E:/COOLForge/tools/how-i-got-here/get-allowedimport.ps1
+a497277669a508a3e01a1feb9f15bc56  E:/COOLForge/tools/how-i-got-here/get-auth-headers.ps1
+a1e78a9531b4d6cbb3a86895f70a59a6  E:/COOLForge/tools/how-i-got-here/get-automation-page.ps1
+c149a0e30b9d9f4dd59088b6365e95d9  E:/COOLForge/tools/how-i-got-here/get-automation-search.ps1
+88d009e6e314e069f4a467a9d695dd1c  E:/COOLForge/tools/how-i-got-here/get-import-mutation.ps1
+02357ad165e308f3e0f5fdc43f1c589f  E:/COOLForge/tools/how-i-got-here/README.md
+7fb156df0978dcbe40bb8c4d3bcf56cd  E:/COOLForge/tools/how-i-got-here/test-automation-query.ps1
+97f8aa56bf828dd549960a70feaa34eb  E:/COOLForge/tools/how-i-got-here/test-level-api.ps1
+97765fdaa152b4cf86711b8d07ce9c3f  E:/COOLForge/tools/how-i-got-here/test-tags-query.ps1
+828dbfd533891a2eb532f5d1f5824cbb  E:/COOLForge/tools/New-ScriptFolderStructure.ps1
+08c8659f6ac12557e896c95c53c1ffee  E:/COOLForge/tools/regenerate-launchers.ps1
+fa1c378f96fde03552b003373e5feb1e  E:/COOLForge/tools/Remove-COOLForgeSetup.ps1
+22d47f07c2cc0b55c352099b9282f651  E:/COOLForge/tools/Remove-LegacyCustomFields.ps1
+cf1d4faea9b1dcf7490e155459430688  E:/COOLForge/tools/Setup-COOLForge.ps1
+3765015bf26dc7b42f1f5337cb9913d7  E:/COOLForge/tools/Sync-COOLForgeCustomFields.ps1
+633631c9954ed495c3fc9cb32dd9c5dd  E:/COOLForge/tools/Test-LevelApiCustomFields.ps1
+61fe6b30af1a0eaaeaa455563b279c36  E:/COOLForge/tools/Update-Launchers.ps1
+f40b1c1d2dedc70acda2824b17bc5b36  E:/COOLForge/tools/update-md5.ps1
+102e59a5a04bc2accf869b2dec0d2d89  E:/COOLForge/tools/Wake-AllDevicesInFolder-Standalone.ps1
+0b6cba9b410ebdddbf9d6eb5893b6b71  E:/COOLForge/wip/Install-ScreenConnect.ps1

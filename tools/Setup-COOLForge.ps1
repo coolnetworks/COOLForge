@@ -43,12 +43,12 @@
     https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
-    .\Setup-COOLForgeCustomFields.ps1
+    .\Setup-COOLForge.ps1
 
     Runs the interactive setup wizard.
 
 .EXAMPLE
-    .\Setup-COOLForgeCustomFields.ps1 -ApiKey "your-api-key"
+    .\Setup-COOLForge.ps1 -ApiKey "your-api-key"
 
     Runs setup with API key provided (skips the prompt).
 #>
@@ -63,13 +63,15 @@ param(
 # IMPORT SHARED MODULE
 # ============================================================
 
-$ModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-CustomFields.psm1"
+$ModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1"
+
 if (-not (Test-Path $ModulePath)) {
     Write-Host "[X] Module not found: $ModulePath" -ForegroundColor Red
-    Write-Host "    Please ensure COOLForge-CustomFields.psm1 is in the modules/ folder." -ForegroundColor Yellow
+    Write-Host "    Please ensure COOLForge-Common.psm1 is in the modules/ folder." -ForegroundColor Yellow
     exit 1
 }
-Import-Module $ModulePath -Force
+
+Import-Module $ModulePath -Force -DisableNameChecking
 
 # ============================================================
 # CONFIGURATION
@@ -1209,6 +1211,210 @@ $PolicyTagPrefixes = @(
     @{ Emoji = [char]::ConvertFromUtf32(0x1F6AB); Name = "Block";   Desc = "Block installation" }
     @{ Emoji = [char]::ConvertFromUtf32(0x1F440); Name = "Verify";  Desc = "Verify installation and health" }
     @{ Emoji = [char]0x274C;                      Name = "Skip";    Desc = "Skip/hands-off mode" }
+)
+
+# Scan scripts folder for policy scripts (look for $SoftwareName = "xxx" pattern)
+$ScriptsPath = Join-Path (Split-Path $PSScriptRoot -Parent) "scripts"
+$DetectedPolicyScripts = @()
+
+if (Test-Path $ScriptsPath) {
+    $ScriptFiles = Get-ChildItem -Path $ScriptsPath -Recurse -Filter "*.ps1"
+    foreach ($ScriptFile in $ScriptFiles) {
+        $Content = Get-Content $ScriptFile.FullName -Raw -ErrorAction SilentlyContinue
+        if ($Content -match '\$SoftwareName\s*=\s*[''"]([^''"]+)[''"]') {
+            $SoftwareName = $Matches[1]
+            # Skip DEBUG - that's just for testing
+            if ($SoftwareName -ne "DEBUG") {
+                $DetectedPolicyScripts += @{
+                    Name       = $SoftwareName
+                    ScriptFile = $ScriptFile.Name
+                    ScriptPath = $ScriptFile.FullName
+                }
+            }
+        }
+    }
+}
+
+# Special tags - some are required (created automatically), others are optional
+$OptionalSpecialTags = @(
+    @{ Name = "technician"; Desc = "Tag for technician workstations (for alert notifications)" }
+)
+
+# Required system tags - these are always created without prompting
+$RequiredSystemTags = @(
+    @{ Name = "$([char]0x274C)"; Desc = "Skip/exclude marker tag (required)" }
+    @{ Name = "$([char]0x2705)"; Desc = "Verified/approved marker tag (required)" }
+)
+
+if ($DetectedPolicyScripts.Count -eq 0 -and $OptionalSpecialTags.Count -eq 0 -and $RequiredSystemTags.Count -eq 0) {
+    Write-LevelInfo "No policy scripts detected - skipping tag setup"
+}
+else {
+    # Check if we want to set up tags
+    $SetupTags = Read-YesNo -Prompt "Do you want to set up policy tags now" -Default $true
+
+    if ($SetupTags) {
+        # Get existing tags
+        Write-Host ""
+        Write-Host "Fetching existing tags from Level.io..." -ForegroundColor DarkGray
+        $ExistingTags = Get-LevelTags -ApiKey $Script:ResolvedApiKey
+
+        # Check if we got a permission error (empty array returned on error)
+        $TagPermissionError = $false
+        if ($ExistingTags.Count -eq 0) {
+            # Try to create a test tag to verify permissions
+            Write-Host "  Verifying tag permissions..." -ForegroundColor DarkGray
+            $TestTag = New-LevelTag -ApiKey $Script:ResolvedApiKey -TagName "__coolforge_permission_test__"
+            if ($null -eq $TestTag) {
+                $TagPermissionError = $true
+                Write-Host ""
+                Write-LevelWarning "API key does not have 'Tags' permission enabled."
+                Write-Host ""
+                Write-Host "  To enable tag management:" -ForegroundColor White
+                Write-Host "    1. Go to https://app.level.io/api-keys" -ForegroundColor DarkGray
+                Write-Host "    2. Edit your API key" -ForegroundColor DarkGray
+                Write-Host "    3. Enable the 'Tags' permission" -ForegroundColor DarkGray
+                Write-Host "    4. Run this setup again" -ForegroundColor DarkGray
+                Write-Host ""
+                Write-LevelInfo "Skipping tag setup - you can create tags manually in Level.io"
+            }
+            else {
+                # Clean up the test tag
+                if ($TestTag.id) {
+                    Remove-LevelTag -ApiKey $Script:ResolvedApiKey -TagId $TestTag.id -TagName "__coolforge_permission_test__" | Out-Null
+                }
+            }
+        }
+
+        if (-not $TagPermissionError) {
+            $ExistingTagNames = $ExistingTags | ForEach-Object { $_.name }
+
+        # Process each detected policy script
+        foreach ($PolicyScript in $DetectedPolicyScripts) {
+            Write-Host ""
+            Write-Host "  $($PolicyScript.Name)" -ForegroundColor Cyan
+            Write-Host "    Script: $($PolicyScript.ScriptFile)" -ForegroundColor DarkGray
+            Write-Host ""
+
+            $CreateTags = Read-YesNo -Prompt "    Do you plan to use this script" -Default $false
+
+            if ($CreateTags) {
+                Write-Host ""
+                $CreatedCount = 0
+                $ExistedCount = 0
+
+                foreach ($Prefix in $PolicyTagPrefixes) {
+                    $FullTagName = "$($Prefix.Emoji)$($PolicyScript.Name)"
+
+                    if ($ExistingTagNames -contains $FullTagName) {
+                        $ExistedCount++
+                    }
+                    else {
+                        $NewTag = New-LevelTag -ApiKey $Script:ResolvedApiKey -TagName $FullTagName
+                        if ($NewTag) {
+                            $CreatedCount++
+                            $ExistingTagNames += $FullTagName
+                        }
+                    }
+                }
+
+                if ($CreatedCount -gt 0) {
+                    Write-LevelSuccess "    Created $CreatedCount tags for $($PolicyScript.Name)"
+                }
+                if ($ExistedCount -gt 0) {
+                    Write-LevelInfo "    $ExistedCount tags already existed"
+                }
+            }
+            else {
+                Write-LevelInfo "    Skipped tags for $($PolicyScript.Name)"
+            }
+        }
+
+        # Create required system tags automatically (no prompt)
+        if ($RequiredSystemTags.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  Required System Tags" -ForegroundColor Cyan
+            Write-Host ""
+
+            foreach ($ReqTag in $RequiredSystemTags) {
+                if ($ExistingTagNames -contains $ReqTag.Name) {
+                    Write-LevelInfo "    Tag '$($ReqTag.Name)' already exists"
+                }
+                else {
+                    Write-Host "    Creating: $($ReqTag.Name)..." -NoNewline
+                    $NewTag = New-LevelTag -ApiKey $Script:ResolvedApiKey -TagName $ReqTag.Name
+                    if ($NewTag) {
+                        Write-Host " Done" -ForegroundColor Green
+                        $ExistingTagNames += $ReqTag.Name
+                    }
+                    else {
+                        Write-Host " Failed" -ForegroundColor Red
+                    }
+                }
+            }
+        }
+
+        # Process optional special tags (like technician) - prompt for these
+        if ($OptionalSpecialTags.Count -gt 0) {
+            Write-Host ""
+            Write-Host "  Optional Tags" -ForegroundColor Cyan
+            Write-Host ""
+
+            foreach ($SpecialTag in $OptionalSpecialTags) {
+                Write-Host "    $($SpecialTag.Name)" -ForegroundColor Yellow
+                Write-Host "    $($SpecialTag.Desc)" -ForegroundColor DarkGray
+
+                $CreateSpecial = Read-YesNo -Prompt "    Create this tag" -Default $false
+
+                if ($CreateSpecial) {
+                    if ($ExistingTagNames -contains $SpecialTag.Name) {
+                        Write-LevelInfo "    Tag '$($SpecialTag.Name)' already exists"
+                    }
+                    else {
+                        $NewTag = New-LevelTag -ApiKey $Script:ResolvedApiKey -TagName $SpecialTag.Name
+                        if ($NewTag) {
+                            Write-LevelSuccess "    Created tag: $($SpecialTag.Name)"
+                            $ExistingTagNames += $SpecialTag.Name
+                        }
+                    }
+                }
+                else {
+                    Write-LevelInfo "    Skipped tag: $($SpecialTag.Name)"
+                }
+            }
+        }
+
+        Write-Host ""
+        Write-LevelSuccess "Tag setup complete!"
+        }  # End of if (-not $TagPermissionError)
+    }
+    else {
+        Write-LevelInfo "Skipped tag setup"
+    }
+}
+
+# ============================================================
+# TAG SETUP FOR POLICY SCRIPTS
+# ============================================================
+
+Write-Host ""
+Write-Host "========================================" -ForegroundColor DarkGray
+Write-Host " Policy Tag Setup" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "COOLForge policy scripts use emoji tags to control software actions."
+Write-Host "Tags are created globally and then applied to devices as needed."
+Write-Host ""
+
+# Define the standard policy tag prefixes (5-tag model per POLICY-TAGS.md)
+# U+1F64F = Pray (Install), U+1F6AB = Prohibited (Remove), U+1F4CC = Pushpin (Pin)
+# U+1F504 = Arrows (Reinstall), U+2705 = Checkmark (Status: Installed)
+$PolicyTagPrefixes = @(
+    @{ Emoji = [char]::ConvertFromUtf32(0x1F64F); Name = "Install";   Desc = "Override: Install if missing (transient)" }
+    @{ Emoji = [char]::ConvertFromUtf32(0x1F6AB); Name = "Remove";    Desc = "Override: Remove if present (transient)" }
+    @{ Emoji = [char]::ConvertFromUtf32(0x1F4CC); Name = "Pin";       Desc = "Override: Pin state, no changes (persistent)" }
+    @{ Emoji = [char]::ConvertFromUtf32(0x1F504); Name = "Reinstall"; Desc = "Override: Remove + reinstall (transient)" }
+    @{ Emoji = [char]0x2705;                      Name = "Installed"; Desc = "Status: Software is installed (set by script)" }
 )
 
 # Scan scripts folder for policy scripts (look for $SoftwareName = "xxx" pattern)

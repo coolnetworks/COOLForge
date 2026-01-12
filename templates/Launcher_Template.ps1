@@ -30,7 +30,7 @@ $ScriptToRun = "👀Test Show Versions.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.10.01
+    Launcher Version: 2026.01.12.06
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -53,17 +53,12 @@ $ScriptToRun = "👀Test Show Versions.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "👀Test Show Versions.ps1"
-    # ... rest of launcher code ...
-
-.EXAMPLE
-    # Or use a custom field to control which script runs:
-    $ScriptToRun = "{{cf_script_to_run}}"
-    # ... rest of launcher code ...
+    $ScriptToRun = "unchecky.ps1"
+    # The launcher will find the full path (scripts/Check/👀unchecky.ps1) from MD5SUMS
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.10.01
+# Launcher Version: 2026.01.12.06
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -75,11 +70,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
 # ============================================================
 # These variables will be passed to the downloaded script
-# Supports both new (CoolForge_*) and legacy field names for backward compatibility
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_coolforge_msp_scratch_folder}}") {
-    $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
-}
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
@@ -89,25 +80,18 @@ if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_coolforge_
     $GitHubPAT = $null
 }
 
-# Version pinning - if set, use specific version tag instead of main branch
-# Check new field name first, then legacy
+# Version pinning - if set, use specific version tag or branch name instead of main branch
 $PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
-if ([string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -eq "{{cf_coolforge_pin_psmodule_to_version}}") {
-    $PinnedVersion = "{{cf_pin_psmodule_to_version}}"  # Fallback to legacy
-}
 $UsePinnedVersion = $false
-if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{{cf_coolforge_pin_psmodule_to_version}}" -and $PinnedVersion -ne "{{cf_pin_psmodule_to_version}}") {
+# Check if we have a valid pin (not empty and not a template placeholder)
+if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}") {
     $UsePinnedVersion = $true
     Write-Host "[*] Version pinned to: $PinnedVersion"
 }
 
 # Library URL - uses custom field if set, otherwise defaults to official repo
-# Check new field name first, then legacy
 $LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
-    $LibraryUrl = "{{cf_ps_module_library_source}}"  # Fallback to legacy
-}
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"
@@ -117,27 +101,22 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
 
+# Level.io API key for tag management (optional - enables automatic tag updates)
+$LevelApiKey = "{{cf_apikey}}"
+if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
+    $LevelApiKey = $null
+}
+
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
-if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -eq "{{cf_coolforge_screenconnect_instance_id}}") {
-    $ScreenConnectInstanceId = "{{cf_screenconnect_instance_id}}"  # Fallback to legacy
-}
-if ($ScreenConnectInstanceId -like "{{*}}") {
+if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
     $ScreenConnectInstanceId = ""
 }
 
 $IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
-if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -eq "{{cf_coolforge_is_screenconnect_server}}") {
-    $IsScreenConnectServer = "{{cf_is_screenconnect_server}}"  # Fallback to legacy
-}
-if ($IsScreenConnectServer -like "{{*}}") {
+if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
     $IsScreenConnectServer = ""
 }
-
-# Additional custom fields can be added here and they will be available
-# in the downloaded script's scope
-# $ApiKey = "{{cf_apikey}}"
-# $CustomField1 = "{{cf_custom_field_1}}"
 
 # ============================================================
 # GITHUB PAT INJECTION HELPER
@@ -159,9 +138,10 @@ function Add-GitHubToken {
 }
 
 # Derive base URL and scripts URL from library URL
-# Example: https://raw.githubusercontent.com/.../main/COOLForge-Common.psm1
-#       -> https://raw.githubusercontent.com/.../main/scripts
-$RepoBaseUrl = $LibraryUrl -replace '/[^/]+$', ''
+# Example: https://raw.githubusercontent.com/.../dev2/modules/COOLForge-Common.psm1
+#       -> https://raw.githubusercontent.com/.../dev2 (repo root)
+#       -> https://raw.githubusercontent.com/.../dev2/scripts
+$RepoBaseUrl = $LibraryUrl -replace '/modules/[^/]+$', ''
 $ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
 $MD5SumsUrl = "$RepoBaseUrl/MD5SUMS"
 
@@ -209,11 +189,16 @@ function Get-ContentMD5 {
 # Function to get expected MD5 from MD5SUMS file
 function Get-ExpectedMD5 {
     param([string]$FileName, [string]$MD5Content)
+    # Extract just the filename for wildcard matching (handles emoji corruption)
+    $SearchName = Split-Path $FileName -Leaf
     foreach ($line in $MD5Content -split "`n") {
         $line = $line.Trim()
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
-            if ($Matches[2].Trim() -eq $FileName) {
+            $FilePath = $Matches[2].Trim()
+            $FileLeaf = Split-Path $FilePath -Leaf
+            # Match by exact path, or by filename ending (for emoji-prefixed scripts)
+            if ($FilePath -eq $FileName -or $FileLeaf -eq $SearchName -or $FileLeaf -like "*$SearchName") {
                 return $Matches[1].ToLower()
             }
         }
@@ -408,8 +393,9 @@ function Get-ScriptPathFromMD5 {
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
             $FilePath = $Matches[2].Trim()
             # Check if filename matches (case-insensitive)
+            # Use wildcard to match emoji-prefixed scripts (e.g., "unchecky.ps1" matches "scripts/Check/👀unchecky.ps1")
             $FileName = Split-Path $FilePath -Leaf
-            if ($FileName -eq $ScriptName) {
+            if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
                 return $FilePath
             }
         }
@@ -431,7 +417,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.10.01"
+Write-Host "[*] Script Launcher v2026.01.12.05"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -571,6 +557,19 @@ Write-Host "============================================================"
 # Read the script content
 $ScriptContent = Get-Content -Path $ScriptPath -Raw
 
+# Build list of policy variables to pass through
+# These are defined in the launcher header as $policy_* = "{{cf_policy_*}}"
+$PolicyVarsBlock = ""
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    $VarName = $_.Name
+    $VarValue = $_.Value
+    # Only pass if it has a value and isn't an unresolved template placeholder
+    if (-not [string]::IsNullOrWhiteSpace($VarValue) -and $VarValue -notlike "{{*}}") {
+        $EscapedValue = $VarValue -replace "'", "''"
+        $PolicyVarsBlock += "`n`$$VarName = '$EscapedValue'"
+    }
+}
+
 # Create a scriptblock that:
 # 1. Defines all Level.io variables in the script's scope
 # 2. Executes the downloaded script content
@@ -580,9 +579,10 @@ $ExecutionBlock = @"
 `$LibraryUrl = '$($LibraryUrl -replace "'", "''")'
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
+`$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''")'" } else { '$null' })
 
-# Additional custom fields can be added here
-# `$ApiKey = '$($ApiKey -replace "'", "''")'
+# Policy custom fields (defined in launcher header)
+$PolicyVarsBlock
 
 # The downloaded script content follows:
 $ScriptContent

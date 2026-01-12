@@ -44,6 +44,11 @@
       "prerequisites": [
         "Tag technician workstations with the technician emoji tag in Level.io"
       ]
+    },
+    "debugging": {
+      "displayName": "Debugging",
+      "description": "These fields enable verbose debug output for troubleshooting COOLForge scripts.",
+      "prerequisites": []
     }
   },
   "fields": {
@@ -184,6 +189,16 @@
         "adminOnly": false,
         "required": false,
         "autoCreate": true
+      }
+    ],
+    "debugging": [
+      {
+        "name": "debug_scripts",
+        "description": "Enable verbose debug output in COOLForge scripts. Set to 'true' to show all variables, tags, policy resolution, and diagnostic information.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "Enable debug output in scripts? (true/false)"
       }
     ]
   }

@@ -5,7 +5,7 @@
 .DESCRIPTION
     This script searches through all PowerShell files in the repository to find Level.io
     custom field references ({{cf_*}}) and generates a JSON configuration file that can be
-    used by the Setup-COOLForgeCustomFields.ps1 script to automatically create these fields.
+    used by the Setup-COOLForge.ps1 script to automatically create these fields.
 
     Field definitions are prioritized to match the Setup wizard's question order.
 
@@ -470,7 +470,7 @@ foreach ($PriorityGroup in $PriorityGroups) {
     }
 }
 
-Write-Host "Configuration file ready for use with Setup-COOLForgeCustomFields.ps1" -ForegroundColor Green
+Write-Host "Configuration file ready for use with Setup-COOLForge.ps1" -ForegroundColor Green
 Write-Host ""
 Write-Host "Field Order in Setup Wizard:" -ForegroundColor Cyan
 Write-Host "  1. Required fields (Priority 1)" -ForegroundColor White

@@ -7,7 +7,7 @@
     replaced by the new CoolForge_* prefixed fields.
 
     IMPORTANT: Only run this AFTER you have:
-    1. Run Setup-COOLForgeCustomFields.ps1 to create the new fields
+    1. Run Setup-COOLForge.ps1 to create the new fields
     2. Verified all your scripts are updated to use the new field names
     3. Confirmed all endpoints are working correctly with the new fields
 
@@ -41,16 +41,16 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Import shared functions
-$ModulePath = Join-Path $PSScriptRoot "..\modules\COOLForge-CustomFields.psm1"
-if (Test-Path $ModulePath) {
-    Import-Module $ModulePath -Force
-}
-else {
-    Write-Host "[X] Could not find COOLForge-CustomFields.psm1" -ForegroundColor Red
+# Import shared module
+$ModulePath = Join-Path $PSScriptRoot "..\modules\COOLForge-Common.psm1"
+
+if (-not (Test-Path $ModulePath)) {
+    Write-Host "[X] Could not find COOLForge-Common.psm1" -ForegroundColor Red
     Write-Host "    Expected at: $ModulePath" -ForegroundColor Red
     exit 1
 }
+
+Import-Module $ModulePath -Force -DisableNameChecking
 
 # Configuration
 $Script:ConfigFileName = ".COOLForge_Lib-setup.json"
@@ -170,7 +170,7 @@ if ($MissingNewFields.Count -gt 0) {
         Write-Host "    - $Missing" -ForegroundColor Red
     }
     Write-Host ""
-    Write-Host "Please run Setup-COOLForgeCustomFields.ps1 first to create the new fields." -ForegroundColor Yellow
+    Write-Host "Please run Setup-COOLForge.ps1 first to create the new fields." -ForegroundColor Yellow
     Write-Host ""
     exit 1
 }

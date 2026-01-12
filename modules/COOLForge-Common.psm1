@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.08.01
+    Version:    2026.01.13.04
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -339,14 +339,27 @@ function Invoke-LevelScript {
 
     try {
         # Execute the main script logic
-        & $ScriptBlock
+        # The scriptblock can return an exit code, or we use $script:ExitCode if set
+        $Result = & $ScriptBlock
 
-        Write-LevelLog "Script completed successfully" -Level "SUCCESS"
+        # Check for exit code from scriptblock return value or $script:ExitCode
+        $FinalExitCode = 0
+        if ($null -ne $Result -and $Result -is [int]) {
+            $FinalExitCode = $Result
+        } elseif ($null -ne $script:ExitCode -and $script:ExitCode -ne 0) {
+            $FinalExitCode = $script:ExitCode
+        }
+
+        if ($FinalExitCode -eq 0) {
+            Write-LevelLog "Script completed successfully" -Level "SUCCESS"
+        } else {
+            Write-LevelLog "Script completed with exit code: $FinalExitCode" -Level "WARNING"
+        }
 
         if (-not $NoCleanup) {
             Remove-LevelLockFile
         }
-        if ($NoExit) { return 0 } else { exit 0 }
+        if ($NoExit) { return $FinalExitCode } else { exit $FinalExitCode }
     }
     catch {
         Write-LevelLog "FATAL: $($_.Exception.Message)" -Level "ERROR"
@@ -538,70 +551,154 @@ function Get-LevelDeviceInfo {
     }
 #>
 function Get-EmojiMap {
+    # 5-TAG POLICY MODEL (per POLICY-TAGS.md)
+    # =========================================
+    # Software-specific tags (with software suffix):
+    #   U+1F64F Pray     = Install   (override: install if missing, transient)
+    #   U+1F6AB Prohibit = Remove    (override: remove if present, transient)
+    #   U+1F4CC Pushpin  = Pin       (override: no changes, persistent)
+    #   U+1F504 Arrows   = Reinstall (override: remove + install, transient)
+    #   U+2705  Check    = Installed (status: software is installed, set by script)
+    #
+    # Global control tags (standalone, no suffix):
+    #   U+2705 Check = Managed  (device is verified for management)
+    #   U+274C Cross = Excluded (device excluded from management)
+    #   Both = GlobalPin (device pinned globally, no changes allowed)
+
     # Observed corruption patterns from Level.io:
-    # ✅ (U+2705) -> CE 93 C2 A3 C3 A0 (displays as: Γ£à)
-    # 📌 (U+1F4CC) -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: ≡ƒôî)
-    # 🙏 (U+1F64F) -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: ≡ƒÖÅ)
-    # 🛑 (U+1F6D1) -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: ≡ƒ¢æ)
-    # ⛔ (U+26D4) -> CE 93 C2 A2 C3 B6 (displays as: Γ¢ö)
-    # 🪟 (U+1FA9F) -> E2 89 A1 C6 92 C2 AC C6 92 (displays as: ≡ƒ¬ƒ)
-    # 🚨 (U+1F6A8) -> E2 89 A1 C6 92 C3 9C C2 BF (displays as: ≡ƒÜ¿)
-    # 🐧 (U+1F427) -> E2 89 A1 C6 92 C3 89 C2 BA (displays as: ≡ƒÉº)
-    # 🌀 (U+1F300) -> E2 89 A1 C6 92 C3 AE C3 87 (displays as: ≡ƒîÇ)
-    # 🛰️ (U+1F6F0) -> E2 89 A1 C6 92 C2 A2 E2 96 91 E2 88 A9 E2 95 95 C3 85
+    # U+2705 -> CE 93 C2 A3 C3 A0 (displays as: checkmark corrupted)
+    # U+1F4CC -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: pushpin corrupted)
+    # U+1F64F -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: pray corrupted)
+    # U+1F6AB -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: prohibit corrupted)
+    # U+1F504 -> E2 89 A1 C6 92 C3 94 C3 84 (displays as: arrows corrupted) - TBD
 
     # Build corrupted string patterns from observed byte sequences
-    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # ✅
-    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # 📌
-    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # 🙏
-    $CorruptedStop = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # 🛑
-    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # ⛔
-    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # 🪟
-    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # 🚨
-    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # 🐧
-    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # 🌀
-    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # 🛰️
+    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # U+2705
+    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # U+1F4CC
+    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # U+1F64F
+    $CorruptedProhibit = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # U+1F6AB
+    # U+1F504 corruption pattern TBD - will be logged to EmojiTags.log when encountered
+    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # U+1FA9F
+    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # U+1F6A8
+    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # U+1F427
+    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # U+1F300
+    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # U+1F6F0
+    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA5, 0xC3, 0xAE))  # U+274C - observed
+    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # U+26D4 Stop/NoEntry - observed
+
+    # Build clean emoji strings programmatically to avoid encoding issues
+    # when module is loaded via scriptblock::Create()
+    $EmojiPray = [char]::ConvertFromUtf32(0x1F64F)       # U+1F64F Pray - Install
+    $EmojiProhibit = [char]::ConvertFromUtf32(0x1F6AB)   # U+1F6AB Prohibited - Remove
+    $EmojiArrows = [char]::ConvertFromUtf32(0x1F504)     # U+1F504 Arrows - Reinstall
+    $EmojiPin = [char]::ConvertFromUtf32(0x1F4CC)        # U+1F4CC Pushpin - Pin
+    $EmojiCheck = [char]0x2705                            # U+2705 Checkmark - Installed
+    $EmojiCross = [char]0x274C                            # U+274C Cross - Excluded
+    $EmojiWindow = [char]::ConvertFromUtf32(0x1FA9F)     # U+1FA9F Window - Windows
+    $EmojiAlert = [char]::ConvertFromUtf32(0x1F6A8)      # U+1F6A8 Police light - Alert
+    $EmojiPenguin = [char]::ConvertFromUtf32(0x1F427)    # U+1F427 Penguin - Linux
+    $EmojiCyclone = [char]::ConvertFromUtf32(0x1F300)    # U+1F300 Cyclone - AdelaideMRI
+    $EmojiSatellite = [char]::ConvertFromUtf32(0x1F6F0)  # U+1F6F0 Satellite
+    $EmojiWrench = [char]::ConvertFromUtf32(0x1F527)     # U+1F527 Wrench - Fix
+    $EmojiEyes = [char]::ConvertFromUtf32(0x1F440)       # U+1F440 Eyes - Check
+    $EmojiNoEntry = [char]::ConvertFromUtf32(0x26D4)     # U+26D4 No Entry - Remove/Block
 
     return @{
         # ============================================================
-        # SOFTWARE POLICY TAGS
+        # SOFTWARE POLICY TAGS (5-tag model per POLICY-TAGS.md)
         # ============================================================
-        # Skip/Hands-off
-        "❌" = "Skip"         # U+274C Cross mark - Skip (machine or software)
-        # Actions
-        "🙏" = "Install"      # U+1F64F Pray/Folded hands - Install/reinstall
-        "⛔" = "Remove"       # U+26D4 No entry - Remove if present
-        "🚫" = "Block"        # U+1F6AB No entry sign - Block install, leave existing
-        "🛑" = "Block"        # U+1F6D1 Stop sign - Block install, leave existing (alt)
-        # Status/Protection
-        "📌" = "Pin"          # U+1F4CC Pushpin - Pin/protect from removal or reinstall
-        "✅" = "Has"          # U+2705 Check mark - Has/installed status
-        "👀" = "Verify"       # U+1F440 Eyes - Verify/check and report
+        # Override tags (transient - removed after action)
+        $EmojiPray = "Install"
+        $EmojiProhibit = "Remove"
+        $EmojiNoEntry = "Remove"
+        $EmojiArrows = "Reinstall"
+        # Override tag (persistent - admin intent)
+        $EmojiPin = "Pin"
+        # Status tag (set by script)
+        $EmojiCheck = "Installed"
 
         # ============================================================
-        # PLATFORM/CATEGORY TAGS
+        # GLOBAL CONTROL TAGS (standalone, no software suffix)
         # ============================================================
-        "🪟" = "Windows"      # U+1FA9F Window - Windows platform tag
-        "🚨" = "Alert"        # U+1F6A8 Police light - Alert/Critical
-        "🐧" = "Linux"        # U+1F427 Penguin - Linux platform tag
-        "🌀" = "AdelaideMRI"  # U+1F300 Cyclone - AdelaideMRI client tag
-        "🛰️" = "Satellite"    # U+1F6F0 Satellite - Satellite/remote site
-        "🔧" = "Fix"          # U+1F527 Wrench - Fix/Repair script
-        "🔄" = "Maintain"     # U+1F504 Counterclockwise - Maintenance script
+        $EmojiCross = "Excluded"
+
+        # ============================================================
+        # PLATFORM/CATEGORY TAGS (informational)
+        # ============================================================
+        $EmojiWindow = "Windows"
+        $EmojiAlert = "Alert"
+        $EmojiPenguin = "Linux"
+        $EmojiCyclone = "AdelaideMRI"
+        $EmojiSatellite = "Satellite"
+        $EmojiWrench = "Fix"
+        $EmojiEyes = "Check"
 
         # ============================================================
         # LEVEL.IO CORRUPTED PATTERNS
         # ============================================================
-        $CorruptedCheckmark = "Has"
+        $CorruptedCheckmark = "Installed"
         $CorruptedPin = "Pin"
         $CorruptedPray = "Install"
-        $CorruptedStop = "Block"
+        $CorruptedProhibit = "Remove"
         $CorruptedNoEntry = "Remove"
+        $CorruptedCross = "Excluded"
         $CorruptedWindow = "Windows"
         $CorruptedAlert = "Alert"
         $CorruptedPenguin = "Linux"
         $CorruptedCyclone = "AdelaideMRI"
         $CorruptedSatellite = "Satellite"
+    }
+}
+
+<#
+.SYNOPSIS
+    Returns emoji character literals for use in string building and comparisons.
+
+.DESCRIPTION
+    Provides clean emoji characters and their Level.io corrupted equivalents.
+    Use this to get the actual emoji strings rather than their semantic meanings.
+    This is the SINGLE SOURCE OF TRUTH for all emoji character definitions.
+
+.OUTPUTS
+    Hashtable with emoji characters keyed by their semantic name:
+    - Check, Cross, Pray, Prohibit, NoEntry, Pin, Arrows (clean)
+    - CorruptedCheck, CorruptedCross, etc. (Level.io corrupted patterns)
+
+.EXAMPLE
+    $Emojis = Get-EmojiLiterals
+    if ($Tag -eq $Emojis.Check -or $Tag -eq $Emojis.CorruptedCheck) {
+        Write-Host "Found checkmark!"
+    }
+#>
+function Get-EmojiLiterals {
+    # Build corrupted patterns from observed byte sequences
+    $CorruptedCheck = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # U+2705
+    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # U+1F4CC
+    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # U+1F64F
+    $CorruptedProhibit = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # U+1F6AB
+    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA5, 0xC3, 0xAE))  # U+274C
+    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # U+26D4
+
+    return @{
+        # Clean emoji characters - Policy tags
+        Check    = [char]0x2705                            # U+2705 Checkmark
+        Cross    = [char]0x274C                            # U+274C Cross
+        Pray     = [char]::ConvertFromUtf32(0x1F64F)       # U+1F64F Pray - Install
+        Prohibit = [char]::ConvertFromUtf32(0x1F6AB)       # U+1F6AB Prohibited - Remove
+        NoEntry  = [char]::ConvertFromUtf32(0x26D4)        # U+26D4 No Entry - Remove
+        Pin      = [char]::ConvertFromUtf32(0x1F4CC)       # U+1F4CC Pushpin - Pin
+        Arrows   = [char]::ConvertFromUtf32(0x1F504)       # U+1F504 Arrows - Reinstall
+
+        # Clean emoji characters - Special tags
+        Technician = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)  # U+1F9D1 U+200D U+1F4BB (person + ZWJ + laptop)
+
+        # Level.io corrupted patterns
+        CorruptedCheck    = $CorruptedCheck
+        CorruptedCross    = $CorruptedCross
+        CorruptedPray     = $CorruptedPray
+        CorruptedProhibit = $CorruptedProhibit
+        CorruptedNoEntry  = $CorruptedNoEntry
+        CorruptedPin      = $CorruptedPin
     }
 }
 
@@ -678,6 +775,40 @@ function Get-EmojiMap {
     Multiple policy tags for the same software are supported and all will be returned.
 #>
 function Get-SoftwarePolicy {
+    <#
+    .SYNOPSIS
+        Determines software policy from device tags following the 5-tag model.
+
+    .DESCRIPTION
+        Implements the policy flow from POLICY-TAGS.md:
+        1. Check global control tags (standalone checkmark/cross)
+        2. Check software-specific override tags (with software suffix)
+        3. Return resolved action based on priority
+
+        Priority order (first match wins):
+        1. Pin (U+1F4CC) - No changes allowed
+        2. Reinstall (U+1F504) - Remove + Install
+        3. Remove (U+1F6AB) - Remove if present
+        4. Install (U+1F64F) - Install if missing
+
+    .PARAMETER SoftwareName
+        The software name to check policy for (e.g., "unchecky").
+
+    .PARAMETER DeviceTags
+        Comma-separated list of device tags from Level.io.
+
+    .PARAMETER CustomFieldPolicy
+        Optional policy value from custom field (install/remove/pin/empty).
+
+    .PARAMETER ShowDebug
+        Enable verbose debug output.
+
+    .OUTPUTS
+        Hashtable with policy information including:
+        - GlobalStatus: Managed/Excluded/GlobalPin/NotVerified
+        - ResolvedAction: Pin/Reinstall/Remove/Install/None
+        - ActionSource: Tag/CustomField/None
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -687,11 +818,21 @@ function Get-SoftwarePolicy {
         [string]$DeviceTags = "",
 
         [Parameter(Mandatory = $false)]
+        [string]$CustomFieldPolicy = "",
+
+        [Parameter(Mandatory = $false)]
         [switch]$ShowDebug
     )
 
-    # Get centralized emoji map (single source of truth)
+    # Get centralized emoji map and literals (single source of truth)
     $EmojiMap = Get-EmojiMap
+    $EmojiLiterals = Get-EmojiLiterals
+
+    # Use centralized emoji definitions for global control tags
+    $CheckmarkEmoji = $EmojiLiterals.Check
+    $CrossEmoji = $EmojiLiterals.Cross
+    $CorruptedCheckmark = $EmojiLiterals.CorruptedCheck
+    $CorruptedCross = $EmojiLiterals.CorruptedCross
 
     # Parse tags into array
     $TagArray = if ($DeviceTags) {
@@ -700,16 +841,80 @@ function Get-SoftwarePolicy {
         @()
     }
 
-    # Track matching tags and actions
-    $MatchedTags = @()
-    $PolicyActions = @()
-    $UnknownEmojiTags = @()
-
     if ($ShowDebug) {
         Write-Host "[DEBUG] Checking $($TagArray.Count) tags for '$SoftwareName' policy"
     }
 
-    # Check each tag for software policy match
+    # ============================================================
+    # STEP 1: CHECK GLOBAL CONTROL TAGS
+    # ============================================================
+    # Look for standalone checkmark and cross (no software suffix)
+    $HasGlobalCheckmark = $false
+    $HasGlobalCross = $false
+
+    foreach ($Tag in $TagArray) {
+        if ($ShowDebug) {
+            $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
+            $TagHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+            $CheckBytes = [System.Text.Encoding]::UTF8.GetBytes($CorruptedCheckmark)
+            $CheckHex = ($CheckBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+            Write-Host "[DEBUG] Comparing tag '$Tag' ($TagHex) vs corrupted checkmark ($CheckHex)"
+            Write-Host "[DEBUG]   Length: $($Tag.Length) vs $($CorruptedCheckmark.Length)"
+            Write-Host "[DEBUG]   Equals: $($Tag -eq $CorruptedCheckmark)"
+        }
+        # Standalone checkmark (exactly the emoji, no suffix)
+        if ($Tag -eq "$CheckmarkEmoji" -or $Tag -eq $CorruptedCheckmark) {
+            $HasGlobalCheckmark = $true
+            if ($ShowDebug) { Write-Host "[DEBUG] Found global checkmark (managed)" }
+        }
+        # Standalone cross (exactly the emoji, no suffix)
+        if ($Tag -eq "$CrossEmoji" -or $Tag -eq $CorruptedCross) {
+            $HasGlobalCross = $true
+            if ($ShowDebug) { Write-Host "[DEBUG] Found global cross (excluded)" }
+        }
+    }
+
+    # Determine global status per POLICY-TAGS.md
+    $GlobalStatus = "NotVerified"  # Default: device not yet verified
+    if ($HasGlobalCheckmark -and $HasGlobalCross) {
+        $GlobalStatus = "GlobalPin"  # Both = globally pinned, no changes
+    }
+    elseif ($HasGlobalCross) {
+        $GlobalStatus = "Excluded"   # Cross only = excluded from management
+    }
+    elseif ($HasGlobalCheckmark) {
+        $GlobalStatus = "Managed"    # Checkmark only = managed device
+    }
+
+    # Early exit if device should be skipped
+    if ($GlobalStatus -in @("NotVerified", "Excluded", "GlobalPin")) {
+        if ($ShowDebug) { Write-Host "[DEBUG] Global status: $GlobalStatus - skipping policy checks" }
+        return @{
+            SoftwareName    = $SoftwareName
+            GlobalStatus    = $GlobalStatus
+            ShouldProcess   = $false
+            ResolvedAction  = "None"
+            ActionSource    = "GlobalTag"
+            SkipReason      = switch ($GlobalStatus) {
+                "NotVerified" { "Device not verified for management (no global checkmark)" }
+                "Excluded"    { "Device excluded from management (global cross)" }
+                "GlobalPin"   { "Device globally pinned (both checkmark and cross)" }
+            }
+            MatchedTags     = @()
+            PolicyActions   = @()
+            RawTags         = $TagArray
+            HasInstalled    = $false
+            IsPinned        = ($GlobalStatus -eq "GlobalPin")
+        }
+    }
+
+    # ============================================================
+    # STEP 2: CHECK SOFTWARE-SPECIFIC OVERRIDE TAGS
+    # ============================================================
+    $MatchedTags = @()
+    $PolicyActions = @()
+    $UnknownEmojiTags = @()
+
     foreach ($Tag in $TagArray) {
         if ($ShowDebug) {
             $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
@@ -717,7 +922,7 @@ function Get-SoftwarePolicy {
             Write-Host "[DEBUG] Tag: '$Tag' | Bytes: $hexBytes"
         }
 
-        # Check if tag starts with any policy emoji (correct or corrupted)
+        # Check if tag starts with any policy emoji
         $MatchedKnownEmoji = $false
         foreach ($Emoji in $EmojiMap.Keys) {
             if ($Tag.StartsWith($Emoji)) {
@@ -729,7 +934,7 @@ function Get-SoftwarePolicy {
                     Write-Host "[DEBUG]   Matched prefix -> software name: '$TagSoftware'"
                 }
 
-                # Case-insensitive match
+                # Case-insensitive match for this specific software
                 if ($TagSoftware -ieq $SoftwareName) {
                     $MatchedTags += $Tag
                     $PolicyActions += $EmojiMap[$Emoji]
@@ -741,19 +946,17 @@ function Get-SoftwarePolicy {
             }
         }
 
-        # Detect unknown emoji patterns - tags starting with non-ASCII that we didn't recognize
-        if (-not $MatchedKnownEmoji) {
+        # Track unknown emoji patterns for debugging
+        if (-not $MatchedKnownEmoji -and $Tag.Length -gt 0) {
             $FirstChar = $Tag[0]
             $FirstCharCode = [int][char]$FirstChar
-            # Check if first character is outside basic ASCII (potential emoji or corrupted emoji)
-            # ASCII printable range is 0x20-0x7E, anything above 0x7F could be emoji/unicode
             if ($FirstCharCode -gt 0x7F -or ($FirstCharCode -lt 0x20 -and $FirstCharCode -ne 0x09)) {
                 $UnknownEmojiTags += $Tag
             }
         }
     }
 
-    # Log unknown emoji patterns to console for debugging
+    # Log unknown emoji patterns
     if ($UnknownEmojiTags.Count -gt 0) {
         foreach ($UnknownTag in $UnknownEmojiTags) {
             $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($UnknownTag)
@@ -763,24 +966,23 @@ function Get-SoftwarePolicy {
         }
     }
 
-    # Log ALL emoji-prefixed tags to file for future reference (regardless of known/unknown)
+    # Log emoji tags to file for pattern discovery
     if ($script:ScratchFolder) {
         $EmojiTagLogPath = Join-Path $script:ScratchFolder "EmojiTags.log"
         $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
         foreach ($Tag in $TagArray) {
-            $FirstChar = $Tag[0]
-            $FirstCharCode = [int][char]$FirstChar
-            # Check if first character is outside basic ASCII (potential emoji)
-            if ($FirstCharCode -gt 0x7F -or ($FirstCharCode -lt 0x20 -and $FirstCharCode -ne 0x09)) {
-                $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
-                $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
-                $LogEntry = "$Timestamp | Tag: '$Tag' | Bytes: $hexBytes"
+            if ($Tag.Length -gt 0) {
+                $FirstCharCode = [int][char]$Tag[0]
+                if ($FirstCharCode -gt 0x7F -or ($FirstCharCode -lt 0x20 -and $FirstCharCode -ne 0x09)) {
+                    $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
+                    $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+                    $LogEntry = "$Timestamp | Tag: '$Tag' | Bytes: $hexBytes"
 
-                # Only log if this exact byte pattern isn't already in the file
-                $ExistingContent = if (Test-Path $EmojiTagLogPath) { Get-Content $EmojiTagLogPath -Raw -ErrorAction SilentlyContinue } else { "" }
-                if ($ExistingContent -notmatch [regex]::Escape("Bytes: $hexBytes")) {
-                    $LogEntry | Out-File -FilePath $EmojiTagLogPath -Append -Encoding UTF8 -ErrorAction SilentlyContinue
+                    $ExistingContent = if (Test-Path $EmojiTagLogPath) { Get-Content $EmojiTagLogPath -Raw -ErrorAction SilentlyContinue } else { "" }
+                    if ($ExistingContent -notmatch [regex]::Escape("Bytes: $hexBytes")) {
+                        $LogEntry | Out-File -FilePath $EmojiTagLogPath -Append -Encoding UTF8 -ErrorAction SilentlyContinue
+                    }
                 }
             }
         }
@@ -789,60 +991,85 @@ function Get-SoftwarePolicy {
     # Get unique actions
     $UniqueActions = $PolicyActions | Select-Object -Unique
 
-    # ============================================================
-    # PRIORITY RESOLUTION LOGIC
-    # ============================================================
-    # Priority order (highest to lowest):
-    # 1. Skip     - Exit immediately, no action
-    # 2. Pin      - Lock state (blocks Install AND Remove)
-    # 3. Block    - Blocks Install only
-    # 4. Remove   - Uninstall if present (wins over Install)
-    # 5. Install  - Install/reinstall
-    # 6. Has      - Verify installed + remediate
+    # Warn about invalid tag combinations (Cross should never have software suffix)
+    if ("Excluded" -in $UniqueActions) {
+        Write-Host "[!] Invalid tag: Cross (U+274C) with software suffix is not valid"
+        Write-Host "[!]   Use Pin (U+1F4CC) to exclude specific software from changes"
+    }
 
-    $IsSkipped = "Skip" -in $UniqueActions
+    # ============================================================
+    # STEP 3: RESOLVE ACTION (Priority order per POLICY-TAGS.md)
+    # ============================================================
+    # Priority: Pin > Reinstall > Remove > Install
     $IsPinned = "Pin" -in $UniqueActions
-    $IsBlocked = "Block" -in $UniqueActions
+    $HasReinstall = "Reinstall" -in $UniqueActions
     $HasRemove = "Remove" -in $UniqueActions
     $HasInstall = "Install" -in $UniqueActions
-    $HasVerify = "Has" -in $UniqueActions
+    $HasInstalled = "Installed" -in $UniqueActions  # Status tag
 
-    # Determine what actions are allowed
-    $CanInstall = -not $IsSkipped -and -not $IsPinned -and -not $IsBlocked
-    $CanRemove = -not $IsSkipped -and -not $IsPinned
+    $ResolvedAction = "None"
+    $ActionSource = "None"
 
-    # Resolve final action (only one primary action)
-    $ResolvedAction = $null
-    if ($IsSkipped) {
-        $ResolvedAction = "Skip"
+    if ($IsPinned) {
+        $ResolvedAction = "Pin"
+        $ActionSource = "Tag"
     }
-    elseif ($HasRemove -and $CanRemove) {
+    elseif ($HasReinstall) {
+        $ResolvedAction = "Reinstall"
+        $ActionSource = "Tag"
+    }
+    elseif ($HasRemove) {
         $ResolvedAction = "Remove"
+        $ActionSource = "Tag"
     }
-    elseif ($HasInstall -and $CanInstall) {
+    elseif ($HasInstall) {
         $ResolvedAction = "Install"
+        $ActionSource = "Tag"
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
+        # ============================================================
+        # STEP 4: FALL BACK TO CUSTOM FIELD POLICY
+        # ============================================================
+        switch ($CustomFieldPolicy.ToLower()) {
+            "install" {
+                $ResolvedAction = "Install"
+                $ActionSource = "CustomField"
+            }
+            "remove" {
+                $ResolvedAction = "Remove"
+                $ActionSource = "CustomField"
+            }
+            "pin" {
+                $ResolvedAction = "Pin"
+                $ActionSource = "CustomField"
+            }
+        }
     }
 
-    # Verify runs if Has tag is present and we're not removing
-    $ShouldVerify = $HasVerify -and ($ResolvedAction -ne "Remove")
-
-    # Return policy information
+    # Return comprehensive policy information
     return @{
-        # Raw detection
-        SoftwareName   = $SoftwareName
-        HasPolicy      = ($MatchedTags.Count -gt 0)
-        PolicyActions  = $UniqueActions
-        MatchedTags    = $MatchedTags
-        RawTags        = $TagArray
+        # Identity
+        SoftwareName    = $SoftwareName
 
-        # Resolved state
-        IsSkipped      = $IsSkipped
-        IsPinned       = $IsPinned
-        IsBlocked      = $IsBlocked
-        CanInstall     = $CanInstall
-        CanRemove      = $CanRemove
-        ResolvedAction = $ResolvedAction
-        ShouldVerify   = $ShouldVerify
+        # Global state
+        GlobalStatus    = $GlobalStatus
+        ShouldProcess   = $true
+
+        # Resolved action
+        ResolvedAction  = $ResolvedAction
+        ActionSource    = $ActionSource
+
+        # Tag detection
+        MatchedTags     = $MatchedTags
+        PolicyActions   = $UniqueActions
+        RawTags         = $TagArray
+
+        # State flags
+        HasInstalled    = $HasInstalled
+        IsPinned        = $IsPinned
+
+        # Custom field
+        CustomFieldPolicy = $CustomFieldPolicy
     }
 }
 
@@ -852,20 +1079,24 @@ function Get-SoftwarePolicy {
 
 .DESCRIPTION
     High-level function that checks device tags for software policy requirements
-    and outputs formatted results. This is the main entry point for software
-    policy checking scripts.
+    and outputs formatted results. Implements the 5-tag model from POLICY-TAGS.md.
 
     The function:
     1. Displays device information
     2. Lists all device tags
-    3. Checks for policy tags matching the software name
-    4. Reports matched policies and required actions
+    3. Checks global control tags (managed/excluded/pinned)
+    4. Checks software-specific override tags
+    5. Falls back to custom field policy if no override tags
+    6. Reports resolved action
 
 .PARAMETER SoftwareName
     The name of the software to check (e.g., "unchecky", "7zip").
 
 .PARAMETER DeviceTags
     Comma-separated list of device tags from Level.io.
+
+.PARAMETER CustomFieldPolicy
+    Optional policy value from custom field (install/remove/pin/empty).
 
 .EXAMPLE
     Invoke-SoftwarePolicyCheck -SoftwareName "unchecky" -DeviceTags $DeviceTags
@@ -880,7 +1111,10 @@ function Invoke-SoftwarePolicyCheck {
         [string]$SoftwareName,
 
         [Parameter(Mandatory = $false)]
-        [string]$DeviceTags = ""
+        [string]$DeviceTags = "",
+
+        [Parameter(Mandatory = $false)]
+        [string]$CustomFieldPolicy = ""
     )
 
     # Log device info
@@ -904,69 +1138,78 @@ function Invoke-SoftwarePolicyCheck {
     }
     Write-Host ""
 
-    # Get software policy from device tags
-    Write-LevelLog "Checking for '$SoftwareName' policy tags..."
-    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
+    # Get software policy from device tags and custom field
+    Write-LevelLog "Checking policy for '$SoftwareName'..."
+    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags -CustomFieldPolicy $CustomFieldPolicy
 
-    # Display results
+    # Display results header
     Write-Host ""
     Write-LevelLog "========================================" -Level "INFO"
-    Write-LevelLog "Software Policy Results: $SoftwareName" -Level "INFO"
+    Write-LevelLog "Policy Results: $SoftwareName" -Level "INFO"
     Write-LevelLog "========================================" -Level "INFO"
     Write-Host ""
 
-    if (-not $Policy.HasPolicy) {
-        Write-LevelLog "No policy tags found for this software" -Level "INFO"
+    # Show global status first
+    Write-LevelLog "Global Status: $($Policy.GlobalStatus)" -Level "INFO"
+
+    # Handle early exit cases (device not processed)
+    if (-not $Policy.ShouldProcess) {
         Write-Host ""
-        Write-LevelLog "To set a policy, add one of these tags in Level.io:" -Level "INFO"
-        Write-Host "  Install/reinstall     : 🙏$SoftwareName"
-        Write-Host "  Remove if present     : ⛔$SoftwareName"
-        Write-Host "  Block install         : 🚫$SoftwareName or 🛑$SoftwareName"
-        Write-Host "  Pin (lock state)      : 📌$SoftwareName"
-        Write-Host "  Has (installed)       : ✅$SoftwareName"
-        Write-Host "  Skip (hands off)      : ❌$SoftwareName"
+        Write-LevelLog "$($Policy.SkipReason)" -Level "WARNING"
         Write-Host ""
-        Write-LevelLog "Resolved Action: NONE" -Level "INFO"
+        Write-LevelLog "Resolved Action: NONE (skipped)" -Level "INFO"
+        return $Policy
     }
-    else {
-        Write-LevelLog "Policy tags detected: $($Policy.MatchedTags.Count)" -Level "SUCCESS"
-        Write-Host ""
 
+    Write-Host ""
+
+    # Show matched software-specific tags
+    if ($Policy.MatchedTags.Count -gt 0) {
+        Write-LevelLog "Override Tags Found: $($Policy.MatchedTags.Count)" -Level "SUCCESS"
         foreach ($Tag in $Policy.MatchedTags) {
-            Write-Host "  Tag: $Tag"
+            Write-Host "  - $Tag"
         }
         Write-Host ""
+    }
 
-        # Show raw actions detected
-        Write-LevelLog "Actions detected:" -Level "INFO"
-        foreach ($Action in $Policy.PolicyActions) {
-            Write-Host "  - $Action"
-        }
+    # Show custom field policy if set
+    if (-not [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
+        Write-LevelLog "Custom Field Policy: $CustomFieldPolicy" -Level "INFO"
+    }
+
+    # Show status flags
+    Write-LevelLog "Status:" -Level "INFO"
+    Write-Host "  - Installed: $($Policy.HasInstalled)"
+    Write-Host "  - Pinned: $($Policy.IsPinned)"
+    Write-Host ""
+
+    # Show resolved action with description
+    $ActionDesc = switch ($Policy.ResolvedAction) {
+        "Pin"       { "PIN - No changes allowed (admin intent)" }
+        "Reinstall" { "REINSTALL - Remove then install fresh" }
+        "Remove"    { "REMOVE - Uninstall software" }
+        "Install"   { "INSTALL - Install if not present" }
+        "None"      { "NONE - No action required" }
+        default     { "UNKNOWN - $($Policy.ResolvedAction)" }
+    }
+
+    $SourceDesc = switch ($Policy.ActionSource) {
+        "Tag"         { "(from device tag)" }
+        "CustomField" { "(from custom field policy)" }
+        "GlobalTag"   { "(from global control)" }
+        default       { "" }
+    }
+
+    Write-LevelLog "Resolved Action: $ActionDesc $SourceDesc" -Level "INFO"
+
+    # Show available override tags if no action
+    if ($Policy.ResolvedAction -eq "None" -and $Policy.MatchedTags.Count -eq 0) {
         Write-Host ""
-
-        # Show state flags
-        Write-LevelLog "State:" -Level "INFO"
-        if ($Policy.IsSkipped) { Write-Host "  - SKIPPED (hands off)" }
-        if ($Policy.IsPinned) { Write-Host "  - PINNED (state locked)" }
-        if ($Policy.IsBlocked) { Write-Host "  - BLOCKED (install prevented)" }
-        if (-not $Policy.IsSkipped -and -not $Policy.IsPinned -and -not $Policy.IsBlocked) {
-            Write-Host "  - CanInstall: $($Policy.CanInstall)"
-            Write-Host "  - CanRemove: $($Policy.CanRemove)"
-        }
-        Write-Host ""
-
-        # Show resolved action
-        $ResolvedDescription = switch ($Policy.ResolvedAction) {
-            "Skip"    { "SKIP - Hands off (managed elsewhere)" }
-            "Install" { "INSTALL - Install/reinstall software" }
-            "Remove"  { "REMOVE - Uninstall if present" }
-            $null     { "NONE - No action (state locked or blocked)" }
-        }
-        Write-LevelLog "Resolved Action: $ResolvedDescription" -Level "INFO"
-
-        if ($Policy.ShouldVerify) {
-            Write-LevelLog "Verify: YES - Check installation health" -Level "INFO"
-        }
+        Write-LevelLog "To override policy, add one of these tags:" -Level "INFO"
+        Write-Host "  Install if missing : [U+1F64F]$SoftwareName"
+        Write-Host "  Remove if present  : [U+1F6AB]$SoftwareName"
+        Write-Host "  Pin (no changes)   : [U+1F4CC]$SoftwareName"
+        Write-Host "  Reinstall          : [U+1F504]$SoftwareName"
     }
 
     return $Policy
@@ -1077,8 +1320,28 @@ function Invoke-LevelApiCall {
         return @{ Success = $true; Data = $Response }
     }
     catch {
-        Write-LevelLog "API call failed: $($_.Exception.Message)" -Level "ERROR"
-        return @{ Success = $false; Error = $_.Exception.Message }
+        $StatusCode = $null
+        $ResponseBody = $null
+        if ($_.Exception.Response) {
+            $StatusCode = [int]$_.Exception.Response.StatusCode
+            # Try to read the response body for error details
+            try {
+                $Stream = $_.Exception.Response.GetResponseStream()
+                $Reader = New-Object System.IO.StreamReader($Stream)
+                $ResponseBody = $Reader.ReadToEnd()
+                $Reader.Close()
+                $Stream.Close()
+            }
+            catch {
+                # Ignore stream read errors
+            }
+        }
+        $ErrorMsg = $_.Exception.Message
+        if ($ResponseBody) {
+            $ErrorMsg = "$ErrorMsg - Response: $ResponseBody"
+        }
+        Write-LevelLog "API call failed: $ErrorMsg" -Level "ERROR"
+        return @{ Success = $false; Error = $ErrorMsg; StatusCode = $StatusCode; ResponseBody = $ResponseBody }
     }
 }
 
@@ -1478,6 +1741,118 @@ function Find-LevelDevice {
     return $null
 }
 
+<#
+.SYNOPSIS
+    Gets a device by ID from Level.io.
+
+.DESCRIPTION
+    Retrieves a single device by its ID. Returns the full device object
+    including tag_ids array.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER DeviceId
+    The ID of the device to retrieve.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Device object if found, $null if not found or on error.
+
+.EXAMPLE
+    $Device = Get-LevelDeviceById -ApiKey $ApiKey -DeviceId "dev_123"
+#>
+function Get-LevelDeviceById {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Uri = "$BaseUrl/devices/$DeviceId"
+    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+    if (-not $Result.Success) {
+        Write-LevelLog "Failed to get device by ID: $($Result.Error)" -Level "ERROR"
+        return $null
+    }
+
+    # Check if response has data wrapper (like list endpoints) or is direct device object
+    if ($Result.Data.data -and $Result.Data.data.id) {
+        # Response is wrapped: { data: { ...device... } }
+        return $Result.Data.data
+    } elseif ($Result.Data.id) {
+        # Response is direct device object
+        return $Result.Data
+    } else {
+        Write-LevelLog "Unexpected device response structure" -Level "WARNING"
+        return $Result.Data
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets the tag names for a device from Level.io.
+
+.DESCRIPTION
+    Retrieves the tag names for a device by fetching the device object
+    and resolving tag_ids to tag names. Useful for debugging tag operations.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER DeviceId
+    The ID of the device to get tags for.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of tag names, or empty array on error.
+
+.EXAMPLE
+    $Tags = Get-LevelDeviceTagNames -ApiKey $ApiKey -DeviceId $Device.id
+    Write-Host "Device has tags: $($Tags -join ', ')"
+#>
+function Get-LevelDeviceTagNames {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    # Get the device - API returns tags array directly with tag names
+    $Device = Get-LevelDeviceById -ApiKey $ApiKey -DeviceId $DeviceId -BaseUrl $BaseUrl
+    if (-not $Device) {
+        Write-LevelLog "Get-LevelDeviceTagNames: No device returned" -Level "DEBUG"
+        return @()
+    }
+
+    # API returns "tags" array with tag names directly (not tag_ids)
+    $Tags = @($Device.tags)  # Force to array even if single value or null
+    if ($Tags.Count -eq 0) {
+        Write-LevelLog "Device has no tags" -Level "DEBUG"
+        return @()
+    }
+
+    Write-LevelLog "Device has $($Tags.Count) tags: $($Tags -join ', ')" -Level "DEBUG"
+    return $Tags
+}
+
 # ============================================================
 # LEVEL.IO TAG MANAGEMENT
 # ============================================================
@@ -1542,58 +1917,6 @@ function Get-LevelTags {
 
     return $AllTags
 }
-<#
-.SYNOPSIS
-    Creates a new tag in Level.io.
-
-.DESCRIPTION
-    Creates a tag in Level.io with the specified name.
-    Uses POST /v2/tags endpoint.
-
-.PARAMETER ApiKey
-    Level.io API key for authentication.
-
-.PARAMETER TagName
-    The tag name to create (e.g., "huntress" or full emoji tag like "U+1F64F huntress").
-
-.PARAMETER BaseUrl
-    Base URL for the Level.io API. Default: "https://api.level.io/v2"
-
-.OUTPUTS
-    Tag object on success, $null on failure.
-
-.EXAMPLE
-    $Tag = New-LevelTag -ApiKey $ApiKey -TagName "huntress"
-    if ($Tag) {
-        Write-LevelLog "Created tag ID: $($Tag.id)"
-    }
-#>
-function New-LevelTag {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$ApiKey,
-
-        [Parameter(Mandatory = $true)]
-        [string]$TagName,
-
-        [Parameter(Mandatory = $false)]
-        [string]$BaseUrl = "https://api.level.io/v2"
-    )
-
-    $Uri = "$BaseUrl/tags"
-    $Body = @{ name = $TagName }
-
-    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
-
-    if (-not $Result.Success) {
-        Write-LevelLog "Failed to create tag '$TagName': $($Result.Error)" -Level "ERROR"
-        return $null
-    }
-
-    Write-LevelLog "Created tag: $TagName" -Level "SUCCESS"
-    return $Result.Data
-}
 
 <#
 .SYNOPSIS
@@ -1646,6 +1969,56 @@ function Find-LevelTag {
 
 <#
 .SYNOPSIS
+    Creates a new tag in Level.io.
+
+.DESCRIPTION
+    Creates a new tag using the Level.io API.
+    Uses POST /v2/tags endpoint.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagName
+    The name of the tag to create.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    The created tag object on success, $null on failure.
+
+.EXAMPLE
+    $Tag = New-LevelTag -ApiKey $ApiKey -TagName "✅UNCHECKY"
+#>
+function New-LevelTag {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Uri = "$BaseUrl/tags"
+    $Body = @{ name = $TagName }
+
+    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
+
+    if (-not $Result.Success) {
+        Write-LevelLog "Failed to create tag '$TagName': $($Result.Error)" -Level "ERROR"
+        return $null
+    }
+
+    Write-LevelLog "Created tag '$TagName'" -Level "SUCCESS"
+    return $Result.Data
+}
+
+<#
+.SYNOPSIS
     Adds a tag to a device in Level.io.
 
 .DESCRIPTION
@@ -1687,11 +2060,24 @@ function Add-LevelTagToDevice {
     )
 
     $Uri = "$BaseUrl/tags/$TagId/devices"
-    $Body = @{ device_id = $DeviceId }
+    # API expects device_ids as an array (plural)
+    $Body = @{ device_ids = @($DeviceId) }
+
+    Write-LevelLog "POST $Uri (TagId: $TagId, DeviceId: $DeviceId)" -Level "DEBUG"
 
     $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
 
     if (-not $Result.Success) {
+        # 422 can mean:
+        # - Device already has this tag (success for idempotent operation)
+        # - Invalid request (actual failure)
+        # Check the response body to distinguish
+        if ($Result.StatusCode -eq 422) {
+            $ResponseInfo = if ($Result.ResponseBody) { " - $($Result.ResponseBody)" } else { "" }
+            Write-LevelLog "API returned 422$ResponseInfo" -Level "DEBUG"
+            # Treat 422 as success (idempotent - tag is on device either way)
+            return $true
+        }
         Write-LevelLog "Failed to add tag to device: $($Result.Error)" -Level "ERROR"
         return $false
     }
@@ -1742,11 +2128,23 @@ function Remove-LevelTagFromDevice {
     )
 
     $Uri = "$BaseUrl/tags/$TagId/devices"
-    $Body = @{ device_id = $DeviceId }
+    # API expects device_ids as an array (plural)
+    $Body = @{ device_ids = @($DeviceId) }
+
+    Write-LevelLog "DELETE $Uri (TagId: $TagId, DeviceId: $DeviceId)" -Level "DEBUG"
 
     $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "DELETE" -Body $Body
 
     if (-not $Result.Success) {
+        # 422 can mean:
+        # - Device doesn't have this tag (success for idempotent operation)
+        # - Invalid request (actual failure)
+        if ($Result.StatusCode -eq 422) {
+            $ResponseInfo = if ($Result.ResponseBody) { " - $($Result.ResponseBody)" } else { "" }
+            Write-LevelLog "API returned 422$ResponseInfo" -Level "DEBUG"
+            # Treat 422 as success (idempotent - tag is off device either way)
+            return $true
+        }
         Write-LevelLog "Failed to remove tag from device: $($Result.Error)" -Level "ERROR"
         return $false
     }
@@ -1801,7 +2199,7 @@ function Add-LevelPolicyTag {
         [string]$TagName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("Install", "Remove", "Has", "Pin", "Block", "Skip", "Verify")]
+        [ValidateSet("Install", "Remove", "Reinstall", "Pin", "Has")]
         [string]$EmojiPrefix,
 
         [Parameter(Mandatory = $true)]
@@ -1811,19 +2209,21 @@ function Add-LevelPolicyTag {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    # Map action names to emoji characters
+    # Get emoji characters from centralized source (5-tag model per POLICY-TAGS.md)
+    $Emojis = Get-EmojiLiterals
     $EmojiChar = switch ($EmojiPrefix) {
-        "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
-        "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
-        "Has"     { [char]0x2705 }                       # U+2705 Check mark
-        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
-        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
-        "Skip"    { [char]0x274C }                       # U+274C Cross mark
-        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Install"   { $Emojis.Pray }      # U+1F64F Pray - Install override
+        "Remove"    { $Emojis.Prohibit }  # U+1F6AB Prohibit - Remove override
+        "Reinstall" { $Emojis.Arrows }    # U+1F504 Arrows - Reinstall override
+        "Pin"       { $Emojis.Pin }       # U+1F4CC Pushpin - Pin override
+        "Has"       { $Emojis.Check }     # U+2705 Checkmark - Installed status
     }
 
     $FullTagName = "$EmojiChar$TagName"
-    Write-LevelLog "Adding tag '$FullTagName' to device..." -Level "DEBUG"
+    # Show tag bytes for debugging emoji issues
+    $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($FullTagName)
+    $TagBytesHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+    Write-LevelLog "Adding tag '$FullTagName' (bytes: $TagBytesHex) to device..." -Level "DEBUG"
 
     # Find the device
     $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
@@ -1832,15 +2232,18 @@ function Add-LevelPolicyTag {
         return $false
     }
 
-    # Find the tag, create if it doesn't exist
+    # Find the tag, create if doesn't exist
     $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
     if (-not $Tag) {
-        Write-LevelLog "Tag '$FullTagName' not found - creating..." -Level "DEBUG"
+        Write-LevelLog "Tag '$FullTagName' not found in Level.io - creating..." -Level "DEBUG"
         $Tag = New-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
         if (-not $Tag) {
-            Write-LevelLog "Failed to create tag '$FullTagName'" -Level "WARN"
+            Write-LevelLog "Failed to create tag '$FullTagName'" -Level "ERROR"
             return $false
         }
+        Write-LevelLog "Created tag with ID: $($Tag.id)" -Level "DEBUG"
+    } else {
+        Write-LevelLog "Found existing tag with ID: $($Tag.id)" -Level "DEBUG"
     }
 
     # Add the tag
@@ -1903,7 +2306,7 @@ function Remove-LevelPolicyTag {
         [string]$TagName,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("Install", "Remove", "Has", "Pin", "Block", "Skip", "Verify")]
+        [ValidateSet("Install", "Remove", "Reinstall", "Pin", "Has")]
         [string]$EmojiPrefix,
 
         [Parameter(Mandatory = $true)]
@@ -1913,19 +2316,21 @@ function Remove-LevelPolicyTag {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    # Map action names to emoji characters
+    # Get emoji characters from centralized source (5-tag model per POLICY-TAGS.md)
+    $Emojis = Get-EmojiLiterals
     $EmojiChar = switch ($EmojiPrefix) {
-        "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
-        "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
-        "Has"     { [char]0x2705 }                       # U+2705 Check mark
-        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
-        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
-        "Skip"    { [char]0x274C }                       # U+274C Cross mark
-        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Install"   { $Emojis.Pray }      # U+1F64F Pray - Install override
+        "Remove"    { $Emojis.Prohibit }  # U+1F6AB Prohibit - Remove override
+        "Reinstall" { $Emojis.Arrows }    # U+1F504 Arrows - Reinstall override
+        "Pin"       { $Emojis.Pin }       # U+1F4CC Pushpin - Pin override
+        "Has"       { $Emojis.Check }     # U+2705 Checkmark - Installed status
     }
 
     $FullTagName = "$EmojiChar$TagName"
-    Write-LevelLog "Removing tag '$FullTagName' from device..." -Level "DEBUG"
+    # Show tag bytes for debugging emoji issues
+    $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($FullTagName)
+    $TagBytesHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+    Write-LevelLog "Removing tag '$FullTagName' (bytes: $TagBytesHex) from device..." -Level "DEBUG"
 
     # Find the device
     $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
@@ -1940,6 +2345,7 @@ function Remove-LevelPolicyTag {
         Write-LevelLog "Tag '$FullTagName' not found in Level.io (may not exist)" -Level "DEBUG"
         return $true  # Not an error - tag may not exist
     }
+    Write-LevelLog "Found tag with ID: $($Tag.id)" -Level "DEBUG"
 
     # Remove the tag
     $Success = Remove-LevelTagFromDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id -BaseUrl $BaseUrl
@@ -1948,6 +2354,778 @@ function Remove-LevelPolicyTag {
     }
 
     return $Success
+}
+
+# ============================================================
+# CUSTOM FIELD MANAGEMENT
+# ============================================================
+
+<#
+.SYNOPSIS
+    Retrieves all custom field definitions from Level.io with pagination.
+
+.DESCRIPTION
+    Fetches all custom field definitions from the Level.io API, automatically
+    handling pagination. Used for policy auto-bootstrapping.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of custom field objects, or $null on failure.
+    Each object contains: id, name, reference, admin_only, etc.
+
+.EXAMPLE
+    $Fields = Get-LevelCustomFields -ApiKey "{{cf_apikey}}"
+    $PolicyField = $Fields | Where-Object { $_.name -eq "policy_unchecky" }
+#>
+function Get-LevelCustomFields {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AllFields = @()
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/custom_fields?limit=100"
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to fetch custom fields: $($Result.Error)" -Level "ERROR"
+            return $null
+        }
+
+        $Data = $Result.Data
+        $Fields = if ($Data.data) { $Data.data } else { @($Data) }
+
+        if ($Fields -and $Fields.Count -gt 0) {
+            $AllFields += $Fields
+
+            # Handle pagination
+            $HasMore = $Data.has_more -eq $true
+            if ($HasMore) {
+                $StartingAfter = $Fields[-1].id
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    } while ($true)
+
+    return $AllFields
+}
+
+<#
+.SYNOPSIS
+    Finds a custom field by name or reference.
+
+.DESCRIPTION
+    Searches through existing custom fields to find one matching
+    the specified name or reference property.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldName
+    The name or reference to search for (e.g., "policy_unchecky").
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Custom field object if found, $null if not found.
+
+.EXAMPLE
+    $Field = Find-LevelCustomField -ApiKey $ApiKey -FieldName "policy_unchecky"
+    if ($Field) {
+        Write-LevelLog "Found field: $($Field.id)"
+    }
+#>
+function Find-LevelCustomField {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Fields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
+    if (-not $Fields) {
+        return $null
+    }
+
+    # Match by name or reference (case-insensitive)
+    $Matched = $Fields | Where-Object {
+        $_.name -ieq $FieldName -or $_.reference -ieq $FieldName
+    } | Select-Object -First 1
+
+    return $Matched
+}
+
+<#
+.SYNOPSIS
+    Creates a new custom field in Level.io.
+
+.DESCRIPTION
+    Creates a new custom field definition. Used for auto-bootstrapping
+    when a policy custom field doesn't exist.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER Name
+    The name for the custom field (e.g., "policy_unchecky").
+
+.PARAMETER DefaultValue
+    Optional default value for the field.
+
+.PARAMETER AdminOnly
+    If $true, field is only visible to admins. Default: $false
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Created custom field object on success, $null on failure.
+
+.EXAMPLE
+    $Field = New-LevelCustomField -ApiKey $ApiKey -Name "policy_unchecky" -DefaultValue ""
+#>
+function New-LevelCustomField {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DefaultValue = "",
+
+        [Parameter(Mandatory = $false)]
+        [bool]$AdminOnly = $false,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Body = @{
+        name       = $Name
+        admin_only = $AdminOnly
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($DefaultValue)) {
+        $Body.default_value = $DefaultValue
+    }
+
+    Write-LevelLog "Creating custom field: $Name" -Level "DEBUG"
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields" -ApiKey $ApiKey -Method "POST" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelLog "Created custom field: $Name" -Level "SUCCESS"
+        return $Result.Data
+    }
+    else {
+        Write-LevelLog "Failed to create custom field '$Name': $($Result.Error)" -Level "ERROR"
+        return $null
+    }
+}
+
+<#
+.SYNOPSIS
+    Sets a custom field value on an entity (organization, folder, or device).
+
+.DESCRIPTION
+    Updates the custom field value for a specific entity. Used for setting
+    device-level policy values during auto-bootstrapping.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER EntityType
+    Type of entity: "organization", "folder", or "device".
+
+.PARAMETER EntityId
+    The ID of the entity to update.
+
+.PARAMETER FieldReference
+    The reference/key of the custom field (e.g., "cf_policy_unchecky").
+
+.PARAMETER Value
+    The value to set.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    Set-LevelCustomFieldValue -ApiKey $ApiKey -EntityType "device" -EntityId $Device.id `
+        -FieldReference "cf_policy_unchecky" -Value "install"
+#>
+function Set-LevelCustomFieldValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("organization", "folder", "device")]
+        [string]$EntityType,
+
+        [Parameter(Mandatory = $true)]
+        [string]$EntityId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldReference,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Endpoint = switch ($EntityType) {
+        "organization" { "/organizations/$EntityId" }
+        "folder"       { "/folders/$EntityId" }
+        "device"       { "/devices/$EntityId" }
+    }
+
+    $Body = @{
+        custom_fields = @{
+            $FieldReference = $Value
+        }
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl$Endpoint" -ApiKey $ApiKey -Method "PATCH" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelLog "Set $EntityType custom field '$FieldReference' = '$Value'" -Level "DEBUG"
+        return $true
+    }
+    else {
+        Write-LevelLog "Failed to set custom field: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+}
+
+<#
+.SYNOPSIS
+    Ensures policy infrastructure exists for a software package.
+
+.DESCRIPTION
+    Auto-bootstrapping function that:
+    1. Checks if policy custom field exists (e.g., "policy_unchecky")
+    2. Creates the custom field if it doesn't exist
+    3. Sets the device-level value to trigger installation
+
+    This allows scripts to be deployed without manual setup of custom fields.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER SoftwareName
+    The software name (e.g., "unchecky").
+
+.PARAMETER DeviceHostname
+    The hostname of the current device.
+
+.PARAMETER DefaultAction
+    Default action to set if creating new policy. Default: "install"
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Hashtable with:
+    - Success: $true if ready to proceed
+    - CustomFieldId: ID of the policy custom field
+    - CustomFieldRef: Reference key (e.g., "cf_policy_unchecky")
+    - Action: The resolved action for this device
+
+.EXAMPLE
+    $Bootstrap = Initialize-LevelSoftwarePolicy -ApiKey $ApiKey -SoftwareName "unchecky" `
+        -DeviceHostname $DeviceHostname
+    if ($Bootstrap.Success) {
+        Write-LevelLog "Policy action: $($Bootstrap.Action)"
+    }
+#>
+function Initialize-LevelSoftwarePolicy {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SoftwareName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceHostname,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DefaultAction = "install",
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $FieldName = "policy_$($SoftwareName.ToLower())"
+    Write-LevelLog "Checking policy infrastructure for '$SoftwareName'..." -Level "DEBUG"
+
+    # Step 1: Check if custom field exists
+    $ExistingField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $FieldName -BaseUrl $BaseUrl
+
+    if (-not $ExistingField) {
+        # Step 2: Create custom field
+        Write-LevelLog "Policy custom field '$FieldName' not found - creating..." -Level "INFO"
+        $ExistingField = New-LevelCustomField -ApiKey $ApiKey -Name $FieldName -DefaultValue "" -BaseUrl $BaseUrl
+
+        if (-not $ExistingField) {
+            Write-LevelLog "Failed to create policy custom field" -Level "ERROR"
+            return @{ Success = $false; Error = "Failed to create custom field" }
+        }
+    }
+
+    # Determine the reference key (usually "cf_<name>")
+    $FieldRef = $ExistingField.reference
+    if (-not $FieldRef) {
+        # Fallback - construct from name
+        $FieldRef = "cf_$($FieldName -replace '[^a-zA-Z0-9_]', '_')"
+    }
+
+    # Step 3: Find the current device
+    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    if (-not $Device) {
+        Write-LevelLog "Could not find device '$DeviceHostname' in Level.io" -Level "WARN"
+        return @{ Success = $false; Error = "Device not found" }
+    }
+
+    # Step 4: Check current device value
+    $CurrentValue = ""
+    if ($Device.custom_fields -and $Device.custom_fields.$FieldRef) {
+        $CurrentValue = $Device.custom_fields.$FieldRef
+    }
+
+    # Step 5: If no value, set the default action on the device
+    if ([string]::IsNullOrWhiteSpace($CurrentValue)) {
+        Write-LevelLog "No policy value set on device - setting to '$DefaultAction'" -Level "INFO"
+        $SetResult = Set-LevelCustomFieldValue -ApiKey $ApiKey -EntityType "device" `
+            -EntityId $Device.id -FieldReference $FieldRef -Value $DefaultAction -BaseUrl $BaseUrl
+
+        if ($SetResult) {
+            $CurrentValue = $DefaultAction
+        }
+    }
+
+    return @{
+        Success        = $true
+        CustomFieldId  = $ExistingField.id
+        CustomFieldRef = $FieldRef
+        Action         = $CurrentValue
+        DeviceId       = $Device.id
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets a single custom field by ID with its default value.
+
+.DESCRIPTION
+    Fetches a custom field definition by ID and also retrieves its
+    account-level default value from the custom_field_values endpoint.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldId
+    The ID of the custom field to retrieve.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Custom field object with default_value property added, or $null on failure.
+
+.EXAMPLE
+    $Field = Get-LevelCustomFieldById -ApiKey $ApiKey -FieldId "cf_123"
+    Write-Host "Default value: $($Field.default_value)"
+#>
+function Get-LevelCustomFieldById {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $ApiKey -Method "GET"
+    if (-not $Result.Success) {
+        return $null
+    }
+
+    $Field = $Result.Data
+
+    # Get the account-level value from custom_field_values
+    $ValueResult = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values?limit=100" -ApiKey $ApiKey -Method "GET"
+    if ($ValueResult.Success) {
+        $Values = if ($ValueResult.Data.data) { $ValueResult.Data.data } else { @($ValueResult.Data) }
+        $GlobalValue = $Values | Where-Object { $_.custom_field_id -eq $FieldId -and [string]::IsNullOrEmpty($_.assigned_to_id) } | Select-Object -First 1
+        if ($GlobalValue) {
+            $Field | Add-Member -NotePropertyName "default_value" -NotePropertyValue $GlobalValue.value -Force
+        }
+    }
+
+    return $Field
+}
+
+<#
+.SYNOPSIS
+    Updates a custom field's global/account-level default value.
+
+.DESCRIPTION
+    Uses PATCH /custom_field_values with assigned_to_id=null to set the
+    global organization-level default value for a custom field.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldId
+    The ID of the custom field to update.
+
+.PARAMETER Value
+    The value to set as the global default.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    Update-LevelCustomFieldValue -ApiKey $ApiKey -FieldId "cf_123" -Value "C:\ProgramData\MSP"
+#>
+function Update-LevelCustomFieldValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Body = @{
+        custom_field_id = $FieldId
+        assigned_to_id  = $null
+        value           = $Value
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values" -ApiKey $ApiKey -Method "PATCH" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelLog "Updated custom field $FieldId default value" -Level "DEBUG"
+        return $true
+    }
+    else {
+        Write-LevelLog "Failed to update custom field value: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+}
+
+<#
+.SYNOPSIS
+    Deletes a custom field by ID.
+
+.DESCRIPTION
+    Permanently removes a custom field definition from Level.io.
+    WARNING: This will also remove all values associated with this field.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldId
+    The ID of the custom field to delete.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    Remove-LevelCustomField -ApiKey $ApiKey -FieldId "cf_123"
+#>
+function Remove-LevelCustomField {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $ApiKey -Method "DELETE"
+
+    if ($Result.Success) {
+        Write-LevelLog "Deleted custom field $FieldId" -Level "DEBUG"
+        return $true
+    }
+    else {
+        Write-LevelLog "Failed to delete custom field: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets all organizations accessible via the API.
+
+.DESCRIPTION
+    Fetches all organizations from Level.io with pagination support.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of organization objects, or empty array on failure.
+
+.EXAMPLE
+    $Orgs = Get-LevelOrganizations -ApiKey $ApiKey
+    foreach ($Org in $Orgs) { Write-Host $Org.name }
+#>
+function Get-LevelOrganizations {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AllOrgs = @()
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/organizations?limit=100"
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to fetch organizations: $($Result.Error)" -Level "ERROR"
+            return @()
+        }
+
+        $Data = $Result.Data
+        $Orgs = if ($Data.data) { $Data.data } else { @($Data) }
+
+        if ($Orgs -and $Orgs.Count -gt 0) {
+            $AllOrgs += $Orgs
+            $HasMore = $Data.has_more -eq $true
+            if ($HasMore) {
+                $StartingAfter = $Orgs[-1].id
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    } while ($true)
+
+    return $AllOrgs
+}
+
+<#
+.SYNOPSIS
+    Gets all folders for an organization.
+
+.DESCRIPTION
+    Fetches all folders within a specific organization.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER OrgId
+    The organization ID.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of folder objects, or empty array on failure.
+
+.EXAMPLE
+    $Folders = Get-LevelOrganizationFolders -ApiKey $ApiKey -OrgId $Org.id
+#>
+function Get-LevelOrganizationFolders {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$OrgId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/organizations/$OrgId/folders" -ApiKey $ApiKey -Method "GET"
+    if ($Result.Success) {
+        $Data = $Result.Data
+        if ($Data.data) { return $Data.data }
+        return @($Data)
+    }
+    return @()
+}
+
+<#
+.SYNOPSIS
+    Gets all devices in a folder.
+
+.DESCRIPTION
+    Fetches all devices within a specific folder of an organization.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER OrgId
+    The organization ID.
+
+.PARAMETER FolderId
+    The folder ID.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of device objects, or empty array on failure.
+
+.EXAMPLE
+    $Devices = Get-LevelFolderDevices -ApiKey $ApiKey -OrgId $Org.id -FolderId $Folder.id
+#>
+function Get-LevelFolderDevices {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$OrgId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FolderId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/organizations/$OrgId/folders/$FolderId/devices" -ApiKey $ApiKey -Method "GET"
+    if ($Result.Success) {
+        $Data = $Result.Data
+        if ($Data.data) { return $Data.data }
+        return @($Data)
+    }
+    return @()
+}
+
+<#
+.SYNOPSIS
+    Gets custom field values for an entity (organization, folder, or device).
+
+.DESCRIPTION
+    Fetches the custom field values assigned to a specific entity.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER EntityType
+    Type of entity: "organization", "folder", or "device".
+
+.PARAMETER EntityId
+    The ID of the entity.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Hashtable of custom field key-value pairs, or empty hashtable on failure.
+
+.EXAMPLE
+    $Fields = Get-LevelEntityCustomFields -ApiKey $ApiKey -EntityType "device" -EntityId $Device.id
+    Write-Host "Policy: $($Fields.cf_policy_unchecky)"
+#>
+function Get-LevelEntityCustomFields {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("organization", "folder", "device")]
+        [string]$EntityType,
+
+        [Parameter(Mandatory = $true)]
+        [string]$EntityId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Endpoint = switch ($EntityType) {
+        "organization" { "/organizations/$EntityId" }
+        "folder"       { "/folders/$EntityId" }
+        "device"       { "/devices/$EntityId" }
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl$Endpoint" -ApiKey $ApiKey -Method "GET"
+    if ($Result.Success -and $Result.Data.custom_fields) {
+        return $Result.Data.custom_fields
+    }
+    return @{}
 }
 
 # ============================================================
@@ -2058,12 +3236,1153 @@ function Send-LevelWakeOnLan {
 }
 
 # ============================================================
+# TECHNICIAN ALERT FUNCTIONS
+# ============================================================
+
+# Module-level alert queue for Add-TechnicianAlert
+$Script:TechnicianAlertQueue = @()
+
+function Test-TechnicianWorkstation {
+    <#
+    .SYNOPSIS
+        Checks if the current device is tagged as a technician workstation.
+
+    .DESCRIPTION
+        Searches device tags for the technician emoji (U+1F9D1 U+200D U+1F4BB).
+        Used by scripts to determine if they're running on a tech's workstation.
+
+    .PARAMETER DeviceTags
+        Comma-separated list of device tags from {{level_tag_names}}.
+
+    .OUTPUTS
+        Boolean - $true if device has technician tag, $false otherwise.
+
+    .EXAMPLE
+        if (Test-TechnicianWorkstation -DeviceTags $DeviceTags) {
+            Write-LevelLog "Running on technician workstation"
+        }
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceTags = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DeviceTags) -or $DeviceTags -match '^\{\{.*\}\}$') {
+        return $false
+    }
+
+    # Get technician emoji from centralized source
+    $Emojis = Get-EmojiLiterals
+    $TechnicianEmoji = $Emojis.Technician
+
+    $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+
+    foreach ($Tag in $TagArray) {
+        if ($Tag.StartsWith($TechnicianEmoji)) {
+            return $true
+        }
+    }
+    return $false
+}
+
+function Get-TechnicianName {
+    <#
+    .SYNOPSIS
+        Extracts the technician name from device tags.
+
+    .DESCRIPTION
+        Finds the technician tag (U+1F9D1 U+200D U+1F4BB + name) and extracts
+        the name portion after the emoji.
+
+    .PARAMETER DeviceTags
+        Comma-separated list of device tags from {{level_tag_names}}.
+
+    .OUTPUTS
+        String - Technician name (e.g., "John" from "U+1F9D1 U+200D U+1F4BBJohn"), or empty string.
+
+    .EXAMPLE
+        $TechName = Get-TechnicianName -DeviceTags $DeviceTags
+        if ($TechName) {
+            Write-LevelLog "Tech: $TechName"
+        }
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceTags = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DeviceTags) -or $DeviceTags -match '^\{\{.*\}\}$') {
+        return ""
+    }
+
+    # Get technician emoji from centralized source
+    $Emojis = Get-EmojiLiterals
+    $TechnicianEmoji = $Emojis.Technician
+
+    $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+
+    foreach ($Tag in $TagArray) {
+        if ($Tag.StartsWith($TechnicianEmoji)) {
+            $Name = $Tag.Substring($TechnicianEmoji.Length).Trim()
+            return $Name
+        }
+    }
+    return ""
+}
+
+function Add-TechnicianAlert {
+    <#
+    .SYNOPSIS
+        Queues an alert to be sent when the script completes.
+
+    .DESCRIPTION
+        Adds an alert to the module-level queue. Alerts are automatically sent
+        when Invoke-LevelScript completes, or can be sent manually with
+        Send-TechnicianAlertQueue.
+
+    .PARAMETER Title
+        Short title for the notification header.
+
+    .PARAMETER Message
+        Detailed message explaining the situation and required action.
+
+    .PARAMETER ClientName
+        Optional client/organization name for context.
+
+    .PARAMETER Priority
+        Alert priority: Low, Normal, High, or Critical.
+
+    .PARAMETER TechnicianName
+        Optional - route to specific technician. Empty = broadcast to all.
+
+    .PARAMETER ExpiresInMinutes
+        Alert expiration time in minutes. Default: 1440 (24 hours).
+
+    .OUTPUTS
+        Hashtable with Success, QueueLength, and AlertId.
+
+    .EXAMPLE
+        Add-TechnicianAlert -Title "Install Failed" `
+            -Message "Huntress installer returned error 1603" `
+            -Priority "High"
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ClientName = "",
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Low", "Normal", "High", "Critical")]
+        [string]$Priority = "Normal",
+
+        [Parameter(Mandatory = $false)]
+        [string]$TechnicianName = "",
+
+        [Parameter(Mandatory = $false)]
+        [int]$ExpiresInMinutes = 1440
+    )
+
+    $AlertId = [guid]::NewGuid().ToString().Substring(0, 8)
+
+    $Alert = @{
+        id = $AlertId
+        title = $Title
+        message = $Message
+        client = $ClientName
+        device = $env:COMPUTERNAME
+        priority = $Priority
+        technician = $TechnicianName
+        timestamp = (Get-Date).ToUniversalTime().ToString("o")
+        expires = (Get-Date).AddMinutes($ExpiresInMinutes).ToUniversalTime().ToString("o")
+    }
+
+    $Script:TechnicianAlertQueue += $Alert
+
+    return @{
+        Success = $true
+        QueueLength = $Script:TechnicianAlertQueue.Count
+        AlertId = $AlertId
+    }
+}
+
+function Send-TechnicianAlert {
+    <#
+    .SYNOPSIS
+        Creates and sends an alert immediately to technician workstations.
+
+    .DESCRIPTION
+        Sends an alert directly to the cf_coolforge_technician_alerts custom field
+        on the device running this script. Technician Alert Monitor scripts on
+        tech workstations will pick up and display the alert.
+
+    .PARAMETER ApiKey
+        Level.io API key ({{cf_apikey}}).
+
+    .PARAMETER Title
+        Short title for the notification header.
+
+    .PARAMETER Message
+        Detailed message explaining the situation and required action.
+
+    .PARAMETER ClientName
+        Optional client/organization name for context.
+
+    .PARAMETER DeviceHostname
+        Source device hostname. Defaults to $env:COMPUTERNAME.
+
+    .PARAMETER Priority
+        Alert priority: Low, Normal, High, or Critical.
+
+    .PARAMETER TechnicianName
+        Optional - route to specific technician. Empty = broadcast to all.
+
+    .PARAMETER ExpiresInMinutes
+        Alert expiration time in minutes. Default: 1440 (24 hours).
+
+    .PARAMETER BaseUrl
+        Level.io API base URL. Default: https://api.level.io/v2
+
+    .OUTPUTS
+        Hashtable with Success, AlertId, and Error.
+
+    .EXAMPLE
+        Send-TechnicianAlert -ApiKey $LevelApiKey `
+            -Title "Ransomware Detected" `
+            -Message "Suspicious encryption activity on C:\Users" `
+            -Priority "Critical"
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ClientName = "",
+
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceHostname = $env:COMPUTERNAME,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Low", "Normal", "High", "Critical")]
+        [string]$Priority = "Normal",
+
+        [Parameter(Mandatory = $false)]
+        [string]$TechnicianName = "",
+
+        [Parameter(Mandatory = $false)]
+        [int]$ExpiresInMinutes = 1440,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AlertId = [guid]::NewGuid().ToString().Substring(0, 8)
+
+    $Alert = @{
+        id = $AlertId
+        title = $Title
+        message = $Message
+        client = $ClientName
+        device = $DeviceHostname
+        priority = $Priority
+        technician = $TechnicianName
+        timestamp = (Get-Date).ToUniversalTime().ToString("o")
+        expires = (Get-Date).AddMinutes($ExpiresInMinutes).ToUniversalTime().ToString("o")
+    }
+
+    try {
+        # Find the device
+        $DeviceResult = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+        if (-not $DeviceResult) {
+            return @{ Success = $false; AlertId = $null; Error = "Device not found: $DeviceHostname" }
+        }
+
+        # Find the custom field
+        $Fields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
+        $AlertField = $Fields | Where-Object { $_.name -eq "coolforge_technician_alerts" }
+
+        if (-not $AlertField) {
+            return @{ Success = $false; AlertId = $null; Error = "Custom field 'coolforge_technician_alerts' not found" }
+        }
+
+        # Get existing alerts
+        $ExistingAlerts = @()
+        $CurrentValue = $DeviceResult.custom_fields | Where-Object { $_.custom_field_id -eq $AlertField.id } | Select-Object -ExpandProperty value -ErrorAction SilentlyContinue
+        if ($CurrentValue) {
+            try {
+                $ExistingAlerts = $CurrentValue | ConvertFrom-Json -ErrorAction SilentlyContinue
+                if ($null -eq $ExistingAlerts) { $ExistingAlerts = @() }
+            }
+            catch {
+                $ExistingAlerts = @()
+            }
+        }
+
+        # Add new alert
+        $ExistingAlerts += $Alert
+        $NewValue = $ExistingAlerts | ConvertTo-Json -Compress
+
+        # Update the custom field
+        $UpdateResult = Set-LevelCustomFieldValue -ApiKey $ApiKey -FieldId $AlertField.id -DeviceId $DeviceResult.id -Value $NewValue -BaseUrl $BaseUrl
+
+        if ($UpdateResult) {
+            return @{ Success = $true; AlertId = $AlertId; Error = $null }
+        }
+        else {
+            return @{ Success = $false; AlertId = $null; Error = "Failed to update custom field" }
+        }
+    }
+    catch {
+        return @{ Success = $false; AlertId = $null; Error = $_.Exception.Message }
+    }
+}
+
+function Send-TechnicianAlertQueue {
+    <#
+    .SYNOPSIS
+        Sends all queued technician alerts.
+
+    .DESCRIPTION
+        Sends all alerts that were queued via Add-TechnicianAlert.
+        Called automatically by Invoke-LevelScript on completion,
+        or can be called manually.
+
+    .PARAMETER ApiKey
+        Level.io API key. If not specified, uses key from Initialize-LevelScript.
+
+    .PARAMETER Force
+        Send even if queue is empty (returns success with 0 alerts).
+
+    .PARAMETER BaseUrl
+        Level.io API base URL. Default: https://api.level.io/v2
+
+    .OUTPUTS
+        Hashtable with Success, AlertsSent, and Error.
+
+    .EXAMPLE
+        $Result = Send-TechnicianAlertQueue -ApiKey $LevelApiKey
+        Write-LevelLog "Sent $($Result.AlertsSent) alerts"
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$ApiKey = "",
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Force,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    if ($Script:TechnicianAlertQueue.Count -eq 0) {
+        if ($Force) {
+            return @{ Success = $true; AlertsSent = 0; Error = $null }
+        }
+        return @{ Success = $true; AlertsSent = 0; Error = $null }
+    }
+
+    # Use provided API key or fall back to script-level key
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        return @{ Success = $false; AlertsSent = 0; Error = "No API key provided" }
+    }
+
+    $SentCount = 0
+    $Errors = @()
+
+    foreach ($Alert in $Script:TechnicianAlertQueue) {
+        $Result = Send-TechnicianAlert -ApiKey $EffectiveApiKey `
+            -Title $Alert.title `
+            -Message $Alert.message `
+            -ClientName $Alert.client `
+            -DeviceHostname $Alert.device `
+            -Priority $Alert.priority `
+            -TechnicianName $Alert.technician `
+            -BaseUrl $BaseUrl
+
+        if ($Result.Success) {
+            $SentCount++
+        }
+        else {
+            $Errors += $Result.Error
+        }
+    }
+
+    # Clear the queue
+    $Script:TechnicianAlertQueue = @()
+
+    if ($Errors.Count -gt 0) {
+        return @{ Success = $false; AlertsSent = $SentCount; Error = ($Errors -join "; ") }
+    }
+
+    return @{ Success = $true; AlertsSent = $SentCount; Error = $null }
+}
+
+# ============================================================
+# UI HELPER FUNCTIONS (Admin Tools)
+# ============================================================
+
+function Write-Header {
+    <#
+    .SYNOPSIS
+        Displays a section header for interactive tools.
+    #>
+    param([string]$Text)
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " $Text" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host ""
+}
+
+function Write-LevelSuccess {
+    <#
+    .SYNOPSIS
+        Displays a success message (green).
+    #>
+    param([string]$Text)
+    Write-Host "[+] $Text" -ForegroundColor Green
+}
+
+function Write-LevelInfo {
+    <#
+    .SYNOPSIS
+        Displays an info message (white).
+    #>
+    param([string]$Text)
+    Write-Host "[*] $Text" -ForegroundColor White
+}
+
+function Write-LevelWarning {
+    <#
+    .SYNOPSIS
+        Displays a warning message (yellow).
+    #>
+    param([string]$Text)
+    Write-Host "[!] $Text" -ForegroundColor Yellow
+}
+
+function Write-LevelError {
+    <#
+    .SYNOPSIS
+        Displays an error message (red).
+    #>
+    param([string]$Text)
+    Write-Host "[X] $Text" -ForegroundColor Red
+}
+
+function Read-UserInput {
+    <#
+    .SYNOPSIS
+        Prompts for user input with optional default value.
+    #>
+    param(
+        [string]$Prompt,
+        [string]$Default = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Default)) {
+        $FullPrompt = "$Prompt`: "
+    }
+    else {
+        $FullPrompt = "$Prompt [$Default]: "
+    }
+
+    Write-Host $FullPrompt -NoNewline -ForegroundColor Yellow
+    $UserInput = Read-Host
+
+    if ([string]::IsNullOrWhiteSpace($UserInput)) {
+        return $Default
+    }
+    return $UserInput
+}
+
+function Read-YesNo {
+    <#
+    .SYNOPSIS
+        Prompts for a yes/no answer.
+    #>
+    param(
+        [string]$Prompt,
+        [bool]$Default = $true
+    )
+
+    $DefaultText = if ($Default) { "Y/n" } else { "y/N" }
+    Write-Host "$Prompt [$DefaultText]: " -NoNewline -ForegroundColor Yellow
+    $UserInput = Read-Host
+
+    if ([string]::IsNullOrWhiteSpace($UserInput)) {
+        return $Default
+    }
+
+    return $UserInput.ToLower() -eq "y" -or $UserInput.ToLower() -eq "yes"
+}
+
+function Get-CompanyNameFromPath {
+    <#
+    .SYNOPSIS
+        Extracts the company name from a scratch folder path.
+    #>
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return ""
+    }
+
+    $Path = $Path.Trim().TrimEnd('\', '/')
+
+    if ($Path -match '^[A-Za-z]:\\ProgramData\\(.+)$') {
+        return $Matches[1]
+    }
+    if ($Path -match '^[A-Za-z]:/ProgramData/(.+)$') {
+        return $Matches[1]
+    }
+
+    return Split-Path $Path -Leaf
+}
+
+# ============================================================
+# CONFIG/SECURITY FUNCTIONS (Admin Tools)
+# ============================================================
+
+function Get-SavedConfig {
+    <#
+    .SYNOPSIS
+        Loads saved configuration from a config file.
+    #>
+    param([string]$Path = "")
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        $Path = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
+    }
+
+    if (Test-Path $Path) {
+        try {
+            $Content = Get-Content $Path -Raw -ErrorAction Stop
+            return $Content | ConvertFrom-Json
+        }
+        catch {
+            Write-LevelWarning "Could not load saved config: $($_.Exception.Message)"
+            return $null
+        }
+    }
+    return $null
+}
+
+function Save-Config {
+    <#
+    .SYNOPSIS
+        Saves configuration to a config file.
+    #>
+    param(
+        [hashtable]$Config,
+        [string]$Path = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        $Path = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
+    }
+
+    try {
+        $Config | ConvertTo-Json -Depth 5 | Set-Content $Path -Encoding UTF8 -ErrorAction Stop
+        return $true
+    }
+    catch {
+        Write-LevelWarning "Could not save config: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Protect-ApiKey {
+    <#
+    .SYNOPSIS
+        Encrypts API key for storage (Windows DPAPI - user-specific).
+    #>
+    param([string]$PlainText)
+
+    try {
+        $SecureString = ConvertTo-SecureString $PlainText -AsPlainText -Force
+        return ConvertFrom-SecureString $SecureString
+    }
+    catch {
+        return $null
+    }
+}
+
+function Unprotect-ApiKey {
+    <#
+    .SYNOPSIS
+        Decrypts API key from storage.
+    #>
+    param([string]$EncryptedText)
+
+    try {
+        $SecureString = ConvertTo-SecureString $EncryptedText -ErrorAction Stop
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)
+        return [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    }
+    catch {
+        return $null
+    }
+}
+
+# ============================================================
+# BACKUP/RESTORE FUNCTIONS (Admin Tools)
+# ============================================================
+
+function Backup-AllCustomFields {
+    <#
+    .SYNOPSIS
+        Creates a complete backup of all custom field values across the hierarchy.
+    #>
+    param([switch]$IncludeDevices = $false)
+
+    $Backup = @{
+        Timestamp     = (Get-Date).ToString("o")
+        Version       = "1.0"
+        CustomFields  = @()
+        Organizations = @()
+    }
+
+    Write-LevelInfo "Backing up custom field definitions..."
+    $Fields = Get-LevelCustomFields -ApiKey $Script:LevelApiKey
+    $Backup.CustomFields = $Fields
+
+    Write-LevelInfo "Fetching organizations..."
+    $Orgs = Get-LevelOrganizations -ApiKey $Script:LevelApiKey
+
+    if (-not $Orgs -or $Orgs.Count -eq 0) {
+        Write-LevelWarning "No organizations found."
+        return $Backup
+    }
+
+    $OrgCount = if ($Orgs -is [array]) { $Orgs.Count } else { 1 }
+    Write-LevelInfo "Found $OrgCount organization(s)."
+
+    foreach ($Org in $Orgs) {
+        Write-Host "  Processing: $($Org.name)" -ForegroundColor DarkGray
+
+        $OrgBackup = @{
+            Id           = $Org.id
+            Name         = $Org.name
+            CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $Org.id
+            Folders      = @()
+        }
+
+        $Folders = Get-LevelOrganizationFolders -ApiKey $Script:LevelApiKey -OrgId $Org.id
+        $FolderCount = if ($Folders -is [array]) { $Folders.Count } else { if ($Folders) { 1 } else { 0 } }
+
+        if ($FolderCount -gt 0) {
+            Write-Host "    Found $FolderCount folder(s)" -ForegroundColor DarkGray
+        }
+
+        foreach ($Folder in $Folders) {
+            $FolderBackup = @{
+                Id           = $Folder.id
+                Name         = $Folder.name
+                ParentId     = $Folder.parent_id
+                CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $Folder.id
+                Devices      = @()
+            }
+
+            if ($IncludeDevices) {
+                $Devices = Get-LevelFolderDevices -ApiKey $Script:LevelApiKey -OrgId $Org.id -FolderId $Folder.id
+                foreach ($Device in $Devices) {
+                    $DeviceBackup = @{
+                        Id           = $Device.id
+                        Name         = $Device.name
+                        CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $Device.id
+                    }
+                    $FolderBackup.Devices += $DeviceBackup
+                }
+            }
+
+            $OrgBackup.Folders += $FolderBackup
+        }
+
+        $Backup.Organizations += $OrgBackup
+    }
+
+    return $Backup
+}
+
+function Save-Backup {
+    <#
+    .SYNOPSIS
+        Saves a backup to a compressed zip file.
+    #>
+    param(
+        [hashtable]$Backup,
+        [string]$Path
+    )
+
+    try {
+        $Backup | ConvertTo-Json -Depth 20 | Set-Content $Path -Encoding UTF8 -ErrorAction Stop
+        $ZipPath = $Path -replace '\.json$', '.zip'
+        Compress-Archive -Path $Path -DestinationPath $ZipPath -Force -ErrorAction Stop
+        Remove-Item $Path -Force -ErrorAction SilentlyContinue
+        return $true
+    }
+    catch {
+        Write-LevelError "Failed to save backup: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Import-Backup {
+    <#
+    .SYNOPSIS
+        Imports a backup from a zip or JSON file.
+    #>
+    param([string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        Write-LevelError "Backup file not found: $Path"
+        return $null
+    }
+
+    try {
+        $JsonContent = $null
+
+        if ($Path -match '\.zip$') {
+            $TempDir = Join-Path $env:TEMP "coolforge_lib_backup_$(Get-Random)"
+            New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
+            Expand-Archive -Path $Path -DestinationPath $TempDir -Force -ErrorAction Stop
+            $JsonFile = Get-ChildItem -Path $TempDir -Filter "*.json" | Select-Object -First 1
+            if ($JsonFile) {
+                $JsonContent = Get-Content $JsonFile.FullName -Raw -ErrorAction Stop
+            }
+            Remove-Item $TempDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        else {
+            $JsonContent = Get-Content $Path -Raw -ErrorAction Stop
+        }
+
+        if ($JsonContent) {
+            return $JsonContent | ConvertFrom-Json
+        }
+        else {
+            Write-LevelError "No JSON content found in backup."
+            return $null
+        }
+    }
+    catch {
+        Write-LevelError "Failed to load backup: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Restore-CustomFields {
+    <#
+    .SYNOPSIS
+        Restores custom field values from a backup.
+    #>
+    param(
+        [PSObject]$Backup,
+        [switch]$DryRun = $false,
+        [switch]$IncludeDevices = $false
+    )
+
+    if (-not $Backup) {
+        Write-LevelError "No backup provided."
+        return $false
+    }
+
+    Write-LevelInfo "Restoring from backup created: $($Backup.Timestamp)"
+    $Changes = 0
+
+    foreach ($Org in $Backup.Organizations) {
+        Write-Host "  Restoring: $($Org.Name)" -ForegroundColor DarkGray
+
+        foreach ($Field in $Org.CustomFields.PSObject.Properties) {
+            if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                if ($DryRun) {
+                    Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on org" -ForegroundColor Yellow
+                }
+                else {
+                    if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $Org.Id -FieldReference $Field.Name -Value $Field.Value) {
+                        $Changes++
+                    }
+                }
+            }
+        }
+
+        foreach ($Folder in $Org.Folders) {
+            foreach ($Field in $Folder.CustomFields.PSObject.Properties) {
+                if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                    if ($DryRun) {
+                        Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on folder $($Folder.Name)" -ForegroundColor Yellow
+                    }
+                    else {
+                        if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $Folder.Id -FieldReference $Field.Name -Value $Field.Value) {
+                            $Changes++
+                        }
+                    }
+                }
+            }
+
+            if ($IncludeDevices) {
+                foreach ($Device in $Folder.Devices) {
+                    foreach ($Field in $Device.CustomFields.PSObject.Properties) {
+                        if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                            if ($DryRun) {
+                                Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on device $($Device.Name)" -ForegroundColor Yellow
+                            }
+                            else {
+                                if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $Device.Id -FieldReference $Field.Name -Value $Field.Value) {
+                                    $Changes++
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if ($DryRun) {
+        Write-LevelInfo "Dry run complete. No changes made."
+    }
+    else {
+        Write-LevelSuccess "Restored $Changes custom field value(s)."
+    }
+
+    return $true
+}
+
+function Get-BackupPath {
+    <#
+    .SYNOPSIS
+        Generates a backup file path with timestamp.
+    #>
+    param([string]$BasePath = "")
+
+    $Date = Get-Date
+    $Timestamp = $Date.ToString("yyyy-MM-dd_HHmmss")
+
+    if ([string]::IsNullOrWhiteSpace($BasePath)) {
+        $RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+        $BasePath = Join-Path $RepoRoot "backups"
+    }
+
+    if (-not (Test-Path $BasePath)) {
+        New-Item -ItemType Directory -Path $BasePath -Force | Out-Null
+    }
+
+    return Join-Path $BasePath "customfields_$Timestamp.json"
+}
+
+function Get-LatestBackup {
+    <#
+    .SYNOPSIS
+        Gets the most recent backup file.
+    #>
+    param([string]$BasePath = "")
+
+    if ([string]::IsNullOrWhiteSpace($BasePath)) {
+        $RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+        $BasePath = Join-Path $RepoRoot "backups"
+    }
+
+    if (-not (Test-Path $BasePath)) {
+        return $null
+    }
+
+    $Latest = Get-ChildItem -Path $BasePath -Filter "customfields_*.zip" |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if ($Latest) {
+        return $Latest.FullName
+    }
+    return $null
+}
+
+function Compare-BackupWithCurrent {
+    <#
+    .SYNOPSIS
+        Compares a backup with current custom field values.
+    #>
+    param(
+        [PSObject]$Backup,
+        [switch]$IncludeDevices = $false
+    )
+
+    $Differences = @()
+    Write-LevelInfo "Comparing backup with current state..."
+
+    foreach ($OrgBackup in $Backup.Organizations) {
+        $CurrentOrgFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $OrgBackup.Id
+
+        foreach ($Field in $OrgBackup.CustomFields.PSObject.Properties) {
+            $BackupValue = $Field.Value
+            $CurrentValue = $CurrentOrgFields.$($Field.Name)
+
+            if ($BackupValue -ne $CurrentValue) {
+                $Differences += @{
+                    EntityType   = "Organization"
+                    EntityName   = $OrgBackup.Name
+                    EntityId     = $OrgBackup.Id
+                    FieldName    = $Field.Name
+                    BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                    CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                }
+            }
+        }
+
+        foreach ($FolderBackup in $OrgBackup.Folders) {
+            $CurrentFolderFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $FolderBackup.Id
+
+            foreach ($Field in $FolderBackup.CustomFields.PSObject.Properties) {
+                $BackupValue = $Field.Value
+                $CurrentValue = $CurrentFolderFields.$($Field.Name)
+
+                if ($BackupValue -ne $CurrentValue) {
+                    $Differences += @{
+                        EntityType   = "Folder"
+                        EntityName   = $FolderBackup.Name
+                        EntityId     = $FolderBackup.Id
+                        FieldName    = $Field.Name
+                        BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                        CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                    }
+                }
+            }
+
+            if ($IncludeDevices) {
+                foreach ($DeviceBackup in $FolderBackup.Devices) {
+                    $CurrentDeviceFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $DeviceBackup.Id
+
+                    foreach ($Field in $DeviceBackup.CustomFields.PSObject.Properties) {
+                        $BackupValue = $Field.Value
+                        $CurrentValue = $CurrentDeviceFields.$($Field.Name)
+
+                        if ($BackupValue -ne $CurrentValue) {
+                            $Differences += @{
+                                EntityType   = "Device"
+                                EntityName   = $DeviceBackup.Name
+                                EntityId     = $DeviceBackup.Id
+                                FieldName    = $Field.Name
+                                BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                                CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $Differences
+}
+
+function Show-BackupDifferences {
+    <#
+    .SYNOPSIS
+        Displays differences between backup and current state.
+    #>
+    param([array]$Differences)
+
+    if ($Differences.Count -eq 0) {
+        Write-LevelSuccess "No differences found - backup matches current state."
+        return
+    }
+
+    Write-Host ""
+    Write-Host "Found $($Differences.Count) difference(s):" -ForegroundColor Yellow
+    Write-Host ""
+
+    $Grouped = $Differences | Group-Object EntityType
+
+    foreach ($Group in $Grouped) {
+        Write-Host "  $($Group.Name)s:" -ForegroundColor Cyan
+
+        foreach ($Diff in $Group.Group) {
+            Write-Host "    $($Diff.EntityName) - $($Diff.FieldName)" -ForegroundColor White
+            Write-Host "      Backup:  $($Diff.BackupValue)" -ForegroundColor Green
+            Write-Host "      Current: $($Diff.CurrentValue)" -ForegroundColor Red
+        }
+        Write-Host ""
+    }
+}
+
+# ============================================================
+# GITHUB FUNCTIONS (Admin Tools)
+# ============================================================
+
+# Script-level variable for GitHub repo
+$Script:GitHubRepo = "coolnetworks/COOLForge"
+
+function Get-GitHubReleases {
+    <#
+    .SYNOPSIS
+        Fetches the latest releases from GitHub.
+    #>
+    param([int]$Count = 5)
+
+    $Uri = "https://api.github.com/repos/$Script:GitHubRepo/releases"
+    $Headers = @{
+        "Accept"     = "application/vnd.github.v3+json"
+        "User-Agent" = "COOLForge_Lib-Setup"
+    }
+
+    try {
+        $Response = Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Get -ErrorAction Stop
+        $Releases = @()
+
+        foreach ($Release in ($Response | Select-Object -First $Count)) {
+            $Releases += @{
+                TagName     = $Release.tag_name
+                Name        = $Release.name
+                Body        = $Release.body
+                PublishedAt = $Release.published_at
+                HtmlUrl     = $Release.html_url
+                Prerelease  = $Release.prerelease
+            }
+        }
+
+        return $Releases
+    }
+    catch {
+        Write-LevelWarning "Could not fetch GitHub releases: $($_.Exception.Message)"
+        return @()
+    }
+}
+
+function Show-ReleaseNotes {
+    <#
+    .SYNOPSIS
+        Displays release notes for a version.
+    #>
+    param([hashtable]$Release)
+
+    Write-Host ""
+    Write-Host "Release: $($Release.Name)" -ForegroundColor Cyan
+    Write-Host "Tag: $($Release.TagName)" -ForegroundColor DarkGray
+    Write-Host "Published: $($Release.PublishedAt)" -ForegroundColor DarkGray
+    if ($Release.Prerelease) {
+        Write-Host "  [PRE-RELEASE]" -ForegroundColor Yellow
+    }
+    Write-Host ""
+    Write-Host "Release Notes:" -ForegroundColor White
+    Write-Host "------------------------------------------------------------" -ForegroundColor DarkGray
+
+    if (-not [string]::IsNullOrWhiteSpace($Release.Body)) {
+        $Body = $Release.Body
+        $Body = $Body -replace '#+\s*', ''
+        $Body = $Body -replace '\*\*([^*]+)\*\*', '$1'
+        $Body = $Body -replace '\*([^*]+)\*', '$1'
+        Write-Host $Body
+    }
+    else {
+        Write-Host "(No release notes available)"
+    }
+    Write-Host "------------------------------------------------------------" -ForegroundColor DarkGray
+    Write-Host ""
+}
+
+function Select-Version {
+    <#
+    .SYNOPSIS
+        Interactive version selector with GitHub releases.
+    #>
+    param([string]$CurrentVersion = "")
+
+    Write-LevelInfo "Fetching available releases from GitHub..."
+    $Releases = Get-GitHubReleases -Count 5
+
+    if ($Releases.Count -eq 0) {
+        Write-LevelWarning "Could not fetch releases. Enter version manually."
+        return Read-UserInput -Prompt "Version tag (e.g., v2025.12.29)" -Default $CurrentVersion
+    }
+
+    Write-Host ""
+    Write-Host "Available versions:" -ForegroundColor Cyan
+    Write-Host ""
+
+    $Index = 1
+    foreach ($Release in $Releases) {
+        $PreReleaseTag = if ($Release.Prerelease) { " [PRE-RELEASE]" } else { "" }
+        $CurrentTag = if ($Release.TagName -eq $CurrentVersion) { " (current)" } else { "" }
+        Write-Host "  [$Index] $($Release.TagName)$PreReleaseTag$CurrentTag" -ForegroundColor White
+        Write-Host "      $($Release.Name)" -ForegroundColor DarkGray
+        $Index++
+    }
+
+    Write-Host ""
+    Write-Host "  [0] Don't pin (use latest from main branch)" -ForegroundColor Yellow
+    Write-Host "  [M] Enter version manually" -ForegroundColor Yellow
+    Write-Host ""
+
+    $Choice = Read-UserInput -Prompt "Select version" -Default "1"
+
+    if ($Choice -eq "0") {
+        return ""
+    }
+    elseif ($Choice.ToUpper() -eq "M") {
+        return Read-UserInput -Prompt "Version tag (e.g., v2025.12.29)" -Default $CurrentVersion
+    }
+    elseif ($Choice -match '^\d+$') {
+        $ChoiceInt = [int]$Choice
+        if ($ChoiceInt -ge 1 -and $ChoiceInt -le $Releases.Count) {
+            $SelectedRelease = $Releases[$ChoiceInt - 1]
+            Show-ReleaseNotes -Release $SelectedRelease
+
+            if (Read-YesNo -Prompt "Pin to $($SelectedRelease.TagName)" -Default $true) {
+                return $SelectedRelease.TagName
+            }
+            else {
+                return Select-Version -CurrentVersion $CurrentVersion
+            }
+        }
+    }
+
+    Write-LevelWarning "Invalid selection. Please try again."
+    return Select-Version -CurrentVersion $CurrentVersion
+}
+
+# ============================================================
+# ADMIN INITIALIZATION
+# ============================================================
+
+# Script-level API key for admin functions
+$Script:LevelApiKey = $null
+
+function Initialize-LevelApi {
+    <#
+    .SYNOPSIS
+        Initializes the Level.io API for admin tools.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey
+    )
+
+    $Script:LevelApiKey = $ApiKey
+    return @{ Success = $true }
+}
+
+# Alias for backward compatibility
+Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Scope Script
+
+# ============================================================
 # MODULE LOAD MESSAGE
 # ============================================================
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.08.01"
+$script:ModuleVersion = "2026.01.13.05"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -2085,6 +4404,7 @@ Export-ModuleMember -Function @(
 
     # Software Policy & Emoji Handling
     'Get-EmojiMap',
+    'Get-EmojiLiterals',
     'Get-SoftwarePolicy',
     'Invoke-SoftwarePolicyCheck',
 
@@ -2093,20 +4413,79 @@ Export-ModuleMember -Function @(
     'Get-LevelGroups',
     'Get-LevelDevices',
     'Find-LevelDevice',
+    'Get-LevelDeviceById',
+    'Get-LevelDeviceTagNames',
 
     # Tag Management
     'Get-LevelTags',
     'Find-LevelTag',
-    'New-LevelTag',
     'Add-LevelTagToDevice',
     'Remove-LevelTagFromDevice',
     'Add-LevelPolicyTag',
     'Remove-LevelPolicyTag',
+
+    # Custom Field Management
+    'Get-LevelCustomFields',
+    'Find-LevelCustomField',
+    'New-LevelCustomField',
+    'Set-LevelCustomFieldValue',
+    'Initialize-LevelSoftwarePolicy',
+    'Get-LevelCustomFieldById',
+    'Update-LevelCustomFieldValue',
+    'Remove-LevelCustomField',
+
+    # Hierarchy Navigation
+    'Get-LevelOrganizations',
+    'Get-LevelOrganizationFolders',
+    'Get-LevelFolderDevices',
+    'Get-LevelEntityCustomFields',
 
     # Wake-on-LAN
     'Send-LevelWakeOnLan',
 
     # Text Processing
     'Repair-LevelEmoji',
-    'Get-LevelUrlEncoded'
+    'Get-LevelUrlEncoded',
+
+    # Technician Alerts
+    'Test-TechnicianWorkstation',
+    'Get-TechnicianName',
+    'Add-TechnicianAlert',
+    'Send-TechnicianAlert',
+    'Send-TechnicianAlertQueue',
+
+    # UI Helpers (Admin Tools)
+    'Write-Header',
+    'Write-LevelSuccess',
+    'Write-LevelInfo',
+    'Write-LevelWarning',
+    'Write-LevelError',
+    'Read-UserInput',
+    'Read-YesNo',
+    'Get-CompanyNameFromPath',
+
+    # Config/Security (Admin Tools)
+    'Get-SavedConfig',
+    'Save-Config',
+    'Protect-ApiKey',
+    'Unprotect-ApiKey',
+
+    # Backup/Restore (Admin Tools)
+    'Backup-AllCustomFields',
+    'Save-Backup',
+    'Import-Backup',
+    'Restore-CustomFields',
+    'Get-BackupPath',
+    'Get-LatestBackup',
+    'Compare-BackupWithCurrent',
+    'Show-BackupDifferences',
+
+    # GitHub (Admin Tools)
+    'Get-GitHubReleases',
+    'Show-ReleaseNotes',
+    'Select-Version',
+
+    # Admin Initialization
+    'Initialize-LevelApi',
+    'Initialize-COOLForgeCustomFields'
 )

@@ -451,7 +451,7 @@ New-LevelClient -TemplatePath "templates/smb-client.json" `
 - **Compliance**: Enforce standards automatically
 - **Site-Specific Settings**: DNS Filter keys, backup configs per location
 
-**Current Status:** In planning/development phase. Core API functions already exist in `COOLForge-CustomFields.psm1` module.
+**Current Status:** In planning/development phase. Core API functions already exist in `COOLForge-Common.psm1` module.
 
 ---
 

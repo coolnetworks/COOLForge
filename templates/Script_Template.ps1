@@ -72,13 +72,9 @@ $ErrorActionPreference = "SilentlyContinue"
 # use the latest version while gracefully handling offline scenarios.
 
 # Level.io custom fields
-# Supports both new (CoolForge_*) and legacy field names for backward compatibility
 # $MspScratchFolder: Persistent storage folder on the endpoint
 # $LibraryUrl: URL to download the COOLForge-Common library (allows private repos/forks)
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_coolforge_msp_scratch_folder}}") {
-    $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
-}
 $LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
     $LibraryUrl = "{{cf_ps_module_library_source}}"  # Fallback to legacy field name

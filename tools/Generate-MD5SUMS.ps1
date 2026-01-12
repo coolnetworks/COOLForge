@@ -12,7 +12,7 @@ $moduleFiles = Get-ChildItem -Path "$RepoRoot\modules\*.psm1" -ErrorAction Silen
     Where-Object { $_.Name -notlike "*CustomFields*" }
 
 $scriptFiles = Get-ChildItem -Path "$RepoRoot\scripts" -Recurse -Filter "*.ps1" -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -notlike "*debug*" -and $_.Name -notlike "*unchecky*" }
+    Where-Object { $_.Name -notlike "*debug*" }
 
 $allFiles = @()
 $allFiles += $moduleFiles

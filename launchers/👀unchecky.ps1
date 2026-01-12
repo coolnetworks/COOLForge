@@ -1,11 +1,10 @@
-# ============================================================
+﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
-$ScriptToRun = "unchecky.ps1"
+$ScriptToRun = "👀unchecky.ps1"
 $ScriptCategory = "Check"  # Check, Fix, Remove, or Maintain
-# ============================================================
-
+$policy_unchecky = "{{cf_policy_unchecky}}"
 <#
 .SYNOPSIS
     Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
@@ -32,7 +31,7 @@ $ScriptCategory = "Check"  # Check, Fix, Remove, or Maintain
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2025.12.31.01
+    Launcher Version: 2026.01.12.06
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -56,73 +55,48 @@ $ScriptCategory = "Check"  # Check, Fix, Remove, or Maintain
 .EXAMPLE
     # Change the script name at the top of the launcher:
     $ScriptToRun = "unchecky.ps1"
-    # ... rest of launcher code ...
-
+    # The launcher will find the full path (scripts/Check/👀unchecky.ps1) from MD5SUMS
 #>
 
 # Script Launcher
-# Launcher Version: 2025.12.31.01
+# Launcher Version: 2026.01.12.06
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
 # Copyright (c) COOLNETWORKS
-# https://github.com/coolnetworks/COOLForge5
+# https://github.com/coolnetworks/COOLForge
 $ErrorActionPreference = "SilentlyContinue"
 
 # ============================================================
 # LEVEL.IO VARIABLES - PASSED TO DOWNLOADED SCRIPT
 # ============================================================
 # These variables will be passed to the downloaded script
-# Supports both new (CoolForge_*) and legacy field names for backward compatibility
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-Write-Host "[DEBUG] cf_coolforge_msp_scratch_folder = '$MspScratchFolder'"
-# Check if the field was substituted (not a template literal)
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder.StartsWith("{{")) {
-    Write-Host "[DEBUG] Primary field empty/unset - trying legacy field"
-    $MspScratchFolder = "{{cf_msp_scratch_folder}}"  # Fallback to legacy field name
-    Write-Host "[DEBUG] cf_msp_scratch_folder = '$MspScratchFolder'"
-}
-# Final validation
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder.StartsWith("{{")) {
-    Write-Host "[X] FATAL: cf_coolforge_msp_scratch_folder custom field is not set in Level.io"
-    Write-Host "[X] Please set this field to your scratch folder path (e.g., C:\ProgramData\MSP)"
-    exit 1
-}
-Write-Host "[DEBUG] Final MspScratchFolder = '$MspScratchFolder'"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
 # GitHub Personal Access Token for private repositories (admin-only custom field)
-$GitHubPAT = "{{cf_coolforge_pat}}"
-if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_coolforge_pat}}") {
+# IMPORTANT: Use here-string to prevent PowerShell expanding $ characters in tokens
+$GitHubPAT = @'
+{{cf_coolforge_pat}}
+'@
+$GitHubPAT = $GitHubPAT.Trim()
+if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -like "{{*}}") {
     $GitHubPAT = $null
 }
 
-# Version pinning - if set, use specific version tag instead of main branch
-# Check new field name first, then legacy
+# Version pinning - if set, use specific version tag or branch name instead of main branch
 $PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
-Write-Host "[DEBUG] cf_coolforge_pin_psmodule_to_version = '$PinnedVersion'"
-if ([string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -eq "{{cf_coolforge_pin_psmodule_to_version}}" -or $PinnedVersion -like "{{*}}") {
-    $PinnedVersion = "{{cf_pin_psmodule_to_version}}"  # Fallback to legacy
-    Write-Host "[DEBUG] cf_pin_psmodule_to_version = '$PinnedVersion'"
-}
 $UsePinnedVersion = $false
-# Check if we have a valid pin (not empty and not a template string)
+# Check if we have a valid pin (not empty and not a template placeholder)
 if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}") {
     $UsePinnedVersion = $true
     Write-Host "[*] Version pinned to: $PinnedVersion"
-} else {
-    Write-Host "[DEBUG] No version pin detected - using main branch"
-    Write-Host "[DEBUG] PinnedVersion final value: '$PinnedVersion'"
 }
 
 # Library URL - uses custom field if set, otherwise defaults to official repo
-# Check new field name first, then legacy
 $LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
-    $LibraryUrl = "{{cf_ps_module_library_source}}"  # Fallback to legacy
-}
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"
@@ -132,10 +106,36 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
 
-# Additional custom fields can be added here and they will be available
-# in the downloaded script's scope
-# $ApiKey = "{{cf_apikey}}"
-# $CustomField1 = "{{cf_custom_field_1}}"
+# Debug mode - enables verbose output for troubleshooting (define early so we can use it)
+$DebugScripts = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
+    $DebugScripts = $false
+} else {
+    $DebugScripts = $DebugScripts -eq "true"
+}
+
+# Level.io API key for tag management (optional - enables automatic tag updates)
+# IMPORTANT: Use here-string to prevent PowerShell expanding $ characters in the key
+$LevelApiKey_Raw = @'
+{{cf_apikey}}
+'@
+$LevelApiKey = $LevelApiKey_Raw.Trim()
+if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
+    $LevelApiKey = $null
+}
+
+# API key debug output is handled by the script itself - no need to duplicate here
+
+# ScreenConnect whitelisting - for RAT detection script
+$ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
+if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
+    $ScreenConnectInstanceId = ""
+}
+
+$IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
+if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
+    $IsScreenConnectServer = ""
+}
 
 # ============================================================
 # GITHUB PAT INJECTION HELPER
@@ -157,16 +157,12 @@ function Add-GitHubToken {
 }
 
 # Derive base URL and scripts URL from library URL
-# Example: https://raw.githubusercontent.com/.../dev/modules/COOLForge-Common.psm1
-#       -> https://raw.githubusercontent.com/.../dev/scripts
-# Strip /modules/COOLForge-Common.psm1 to get branch root
+# Example: https://raw.githubusercontent.com/.../dev2/modules/COOLForge-Common.psm1
+#       -> https://raw.githubusercontent.com/.../dev2 (repo root)
+#       -> https://raw.githubusercontent.com/.../dev2/scripts
 $RepoBaseUrl = $LibraryUrl -replace '/modules/[^/]+$', ''
 $ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
 $MD5SumsUrl = "$RepoBaseUrl/MD5SUMS"
-
-Write-Host "[DEBUG] LibraryUrl = $LibraryUrl"
-Write-Host "[DEBUG] RepoBaseUrl = $RepoBaseUrl"
-Write-Host "[DEBUG] MD5SumsUrl = $MD5SumsUrl"
 
 # Inject PAT if provided (for private repositories)
 if ($GitHubPAT) {
@@ -185,6 +181,12 @@ if ($GitHubPAT) {
 # Define library storage location within the scratch folder
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
 $LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "COOLForge-Common.psm1"
+
+# In debug mode, delete cached library to force fresh download
+if ($DebugScripts -and (Test-Path $LibraryPath)) {
+    Write-Host "[DEBUG] Deleting cached library to force fresh download..."
+    Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
+}
 
 # Create Libraries folder if it doesn't exist
 if (!(Test-Path $LibraryFolder)) {
@@ -212,11 +214,16 @@ function Get-ContentMD5 {
 # Function to get expected MD5 from MD5SUMS file
 function Get-ExpectedMD5 {
     param([string]$FileName, [string]$MD5Content)
+    # Extract just the filename for wildcard matching (handles emoji corruption)
+    $SearchName = Split-Path $FileName -Leaf
     foreach ($line in $MD5Content -split "`n") {
         $line = $line.Trim()
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
-            if ($Matches[2].Trim() -eq $FileName) {
+            $FilePath = $Matches[2].Trim()
+            $FileLeaf = Split-Path $FilePath -Leaf
+            # Match by exact path, or by filename ending (for emoji-prefixed scripts)
+            if ($FilePath -eq $FileName -or $FileLeaf -eq $SearchName -or $FileLeaf -like "*$SearchName") {
                 return $Matches[1].ToLower()
             }
         }
@@ -224,40 +231,10 @@ function Get-ExpectedMD5 {
     return $null
 }
 
-# Function to find script path from MD5SUMS file
-function Find-ScriptPath {
-    param([string]$ScriptName, [string]$MD5Content)
-
-    # Search for script in MD5SUMS entries
-    foreach ($line in $MD5Content -split "`n") {
-        $line = $line.Trim()
-        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
-        if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
-            $fullPath = $Matches[2].Trim()
-            # Extract just the filename from the path
-            $fileName = Split-Path -Path $fullPath -Leaf
-            if ($fileName -eq $ScriptName) {
-                return $fullPath
-            }
-        }
-    }
-
-    # Fallback: try flat structure (backward compatibility)
-    return "scripts/$ScriptName"
-}
-
-# Load MD5SUMS file from repository (download as binary to preserve UTF-8 emoji encoding)
+# Load MD5SUMS file from repository
 $MD5SumsContent = $null
 try {
-    $TempMD5Path = Join-Path -Path $env:TEMP -ChildPath "MD5SUMS.tmp"
-    $WebClient = New-Object System.Net.WebClient
-    $WebClient.DownloadFile($MD5SumsUrl, $TempMD5Path)
-    $WebClient.Dispose()
-
-    # Read as bytes and convert to UTF-8 string
-    $MD5Bytes = [System.IO.File]::ReadAllBytes($TempMD5Path)
-    $MD5SumsContent = [System.Text.Encoding]::UTF8.GetString($MD5Bytes)
-    Remove-Item -Path $TempMD5Path -Force -ErrorAction SilentlyContinue
+    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5SumsUrl -UseBasicParsing -TimeoutSec 5).Content
 }
 catch {
     Write-Host "[!] Could not download MD5SUMS - checksum verification disabled"
@@ -286,15 +263,7 @@ else {
 
 # Attempt to fetch the latest version from GitHub
 try {
-    # Download to temp file as binary to prevent encoding corruption
-    $TempLibPath = "$LibraryPath.download"
-    $WebClient = New-Object System.Net.WebClient
-    $WebClient.DownloadFile($LibraryUrl, $TempLibPath)
-    $WebClient.Dispose()
-
-    # Read as bytes and convert to UTF-8 string
-    $RemoteBytes = [System.IO.File]::ReadAllBytes($TempLibPath)
-    $RemoteContent = [System.Text.Encoding]::UTF8.GetString($RemoteBytes)
+    $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
     $RemoteVersion = Get-ModuleVersion -Content $RemoteContent -Source "remote URL"
 
     if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
@@ -306,20 +275,29 @@ try {
 
     if ($NeedsUpdate) {
         if ($LocalVersion -and $LocalContent) {
-            $BackupBytes = [System.Text.Encoding]::UTF8.GetBytes($LocalContent)
-            [System.IO.File]::WriteAllBytes($BackupPath, $BackupBytes)
+            Set-Content -Path $BackupPath -Value $LocalContent -Force -ErrorAction Stop
         }
 
-        # Move the temp download to final location
-        Move-Item -Path $TempLibPath -Destination $LibraryPath -Force -ErrorAction Stop
+        Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
 
         try {
-            # Verify by reading as bytes
-            $VerifyBytes = [System.IO.File]::ReadAllBytes($LibraryPath)
-            $VerifyContent = [System.Text.Encoding]::UTF8.GetString($VerifyBytes)
+            $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
             $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
 
-            # Skip MD5 verification for library - version check is sufficient
+            # Verify MD5 checksum if available (skip in debug mode)
+            if ($MD5SumsContent -and -not $DebugScripts) {
+                $ExpectedMD5 = Get-ExpectedMD5 -FileName "COOLForge-Common.psm1" -MD5Content $MD5SumsContent
+                if ($ExpectedMD5) {
+                    $ActualMD5 = Get-ContentMD5 -Content $RemoteContent
+                    if ($ActualMD5 -ne $ExpectedMD5) {
+                        throw "MD5 checksum mismatch: expected $ExpectedMD5, got $ActualMD5"
+                    }
+                    Write-Host "[+] Library checksum verified"
+                }
+            }
+            elseif ($DebugScripts) {
+                Write-Host "[*] Debug mode - skipping checksum verification"
+            }
 
             if (Test-Path $BackupPath) {
                 Remove-Item -Path $BackupPath -Force -ErrorAction SilentlyContinue
@@ -336,11 +314,6 @@ try {
     }
 }
 catch {
-    # Clean up temp download file
-    if (Test-Path "$LibraryPath.download") {
-        Remove-Item -Path "$LibraryPath.download" -Force -ErrorAction SilentlyContinue
-    }
-
     if (Test-Path $BackupPath) {
         Move-Item -Path $BackupPath -Destination $LibraryPath -Force -ErrorAction SilentlyContinue
     }
@@ -352,48 +325,27 @@ catch {
     }
     Write-Host "[!] Could not check for library updates (using local v$LocalVersion)"
 }
-finally {
-    # Always clean up temp download file
-    if (Test-Path "$LibraryPath.download") {
-        Remove-Item -Path "$LibraryPath.download" -Force -ErrorAction SilentlyContinue
-    }
-}
 
 # Import the library module
-try {
-    # Read file as binary and create module from scriptblock (bypasses execution policy on downloaded files)
-    $ModuleBytes = [System.IO.File]::ReadAllBytes($LibraryPath)
-    $ModuleContent = [System.Text.Encoding]::UTF8.GetString($ModuleBytes)
-    $null = New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
-    Write-Host "[+] Library imported successfully"
-}
-catch {
-    Write-Host "[!] Library import failed - forcing redownload"
-    Write-Host "[!] Error: $($_.Exception.Message)"
+$ModuleContent = Get-Content -Path $LibraryPath -Raw
+New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+
+# Verify critical functions are available - if not, force redownload
+if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) {
+    Write-Host "[!] Library missing critical functions - forcing redownload"
     Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
     try {
-        # Redownload the library as binary
-        $WebClient = New-Object System.Net.WebClient
-        $WebClient.DownloadFile($LibraryUrl, $LibraryPath)
-        $WebClient.Dispose()
-        Write-Host "[+] Library redownloaded"
-
-        # Read file as binary and create module from scriptblock
-        $ModuleBytes = [System.IO.File]::ReadAllBytes($LibraryPath)
-        $ModuleContent = [System.Text.Encoding]::UTF8.GetString($ModuleBytes)
-        $null = New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
-        Write-Host "[+] Library imported successfully after redownload"
+        $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
+        Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
+        $ModuleContent = Get-Content -Path $LibraryPath -Raw
+        Remove-Module -Name "COOLForge-Common" -Force -ErrorAction SilentlyContinue
+        New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
+        Write-Host "[+] Library redownloaded successfully"
     }
     catch {
         Write-Host "[X] FATAL: Failed to redownload library: $($_.Exception.Message)"
         exit 1
     }
-}
-
-# Verify critical functions are available
-if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) {
-    Write-Host "[X] FATAL: Library missing critical functions after import"
-    exit 1
 }
 
 # ============================================================
@@ -449,16 +401,51 @@ if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
 # FIX EMOJI ENCODING
 # ============================================================
 # Level.io may corrupt UTF-8 emojis when deploying scripts.
-# Note: Repair-LevelEmoji not called because $ScriptToRun is hardcoded
-# and the library itself may have emoji corruption during download.
-# $ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
+# Use library function to repair corrupted emojis.
+$ScriptToRun = Repair-LevelEmoji -Text $ScriptToRun
+
+# ============================================================
+# RESOLVE SCRIPT PATH FROM MD5SUMS
+# ============================================================
+# Scripts are organized in subfolders (Check/, Fix/, Remove/, etc.)
+# Parse MD5SUMS to find the actual path for the script name.
+
+function Get-ScriptPathFromMD5 {
+    param([string]$ScriptName, [string]$MD5Content)
+
+    if ([string]::IsNullOrWhiteSpace($MD5Content)) { return $null }
+
+    foreach ($line in $MD5Content -split "`n") {
+        $line = $line.Trim()
+        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
+            $FilePath = $Matches[2].Trim()
+            # Check if filename matches (case-insensitive)
+            # Use wildcard to match emoji-prefixed scripts (e.g., "unchecky.ps1" matches "scripts/Check/👀unchecky.ps1")
+            $FileName = Split-Path $FilePath -Leaf
+            if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
+                return $FilePath
+            }
+        }
+    }
+    return $null
+}
+
+# Try to resolve the full path from MD5SUMS
+$ScriptRelativePath = $null
+if ($MD5SumsContent) {
+    $ScriptRelativePath = Get-ScriptPathFromMD5 -ScriptName $ScriptToRun -MD5Content $MD5SumsContent
+    if ($ScriptRelativePath) {
+        Write-Host "[*] Resolved script path: $ScriptRelativePath"
+    }
+}
 
 # ============================================================
 # SCRIPT DOWNLOAD & EXECUTION
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2025.12.31.01"
+Write-Host "[*] Script Launcher v2026.01.12.05"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -471,44 +458,15 @@ if (!(Test-Path $ScriptsFolder)) {
 $SafeScriptName = $ScriptToRun -replace '[<>:"/\\|?*]', '_'
 $ScriptPath = Join-Path -Path $ScriptsFolder -ChildPath $SafeScriptName
 
-# Script category was set at the top of the file alongside $ScriptToRun
-# Validate it's one of the allowed values
-if ($ScriptCategory -notin @("Check", "Fix", "Remove", "Maintain")) {
-    Write-Host "[!] Invalid script category '$ScriptCategory' - defaulting to 'Check'"
-    $ScriptCategory = "Check"
+# Build script URL - use resolved path from MD5SUMS if available, otherwise fallback to flat structure
+if ($ScriptRelativePath) {
+    # Use the full path from MD5SUMS (e.g., "scripts/Check/ScriptName.ps1")
+    $ScriptUrl = "$RepoBaseUrl/$(Get-LevelUrlEncoded $ScriptRelativePath)"
+} else {
+    # Fallback: assume script is directly in /scripts/ folder
+    Write-Host "[!] Script not found in MD5SUMS - trying flat path"
+    $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
 }
-
-# Determine emoji prefix for the actual script filename on GitHub
-$EmojiPrefix = switch ($ScriptCategory) {
-    "Check"    { [char]::ConvertFromUtf32(0x1F440) }  #  Eyes
-    "Fix"      { [char]::ConvertFromUtf32(0x1F527) }  #  Wrench
-    "Remove"   { [char]0x26D4 }                       #  Stop sign
-    "Maintain" { [char]::ConvertFromUtf32(0x1F504) }  #  Counterclockwise arrows
-}
-
-# Full script name with emoji for GitHub
-$FullScriptName = "$EmojiPrefix$ScriptToRun"
-
-$ScriptRelativePath = "scripts/$ScriptCategory/$FullScriptName"
-Write-Host "[*] Script category: $ScriptCategory"
-Write-Host "[*] Script name: $FullScriptName"
-Write-Host "[*] Script path: $ScriptRelativePath"
-
-# Build download URL - encode only the filename to preserve emoji UTF-8
-# Convert filename to UTF-8 bytes and URL-encode them manually
-$ScriptNameBytes = [System.Text.Encoding]::UTF8.GetBytes($FullScriptName)
-$EncodedScriptName = [System.Text.StringBuilder]::new()
-foreach ($byte in $ScriptNameBytes) {
-    if (($byte -ge 0x30 -and $byte -le 0x39) -or  # 0-9
-        ($byte -ge 0x41 -and $byte -le 0x5A) -or  # A-Z
-        ($byte -ge 0x61 -and $byte -le 0x7A) -or  # a-z
-        $byte -eq 0x2D -or $byte -eq 0x2E -or $byte -eq 0x5F) {  # - . _
-        [void]$EncodedScriptName.Append([char]$byte)
-    } else {
-        [void]$EncodedScriptName.Append(('%{0:X2}' -f $byte))
-    }
-}
-$ScriptUrl = "$RepoBaseUrl/scripts/$ScriptCategory/$($EncodedScriptName.ToString())"
 
 # Check for local version
 $ScriptNeedsUpdate = $false
@@ -567,9 +525,10 @@ try {
                 throw "Downloaded script appears to be empty or truncated"
             }
 
-            # Verify MD5 checksum if available
-            if ($MD5SumsContent) {
-                $ScriptMD5Key = "scripts/$ScriptToRun"
+            # Verify MD5 checksum if available (skip in debug mode)
+            if ($MD5SumsContent -and -not $DebugScripts) {
+                # Use resolved path if available, otherwise construct from script name
+                $ScriptMD5Key = if ($ScriptRelativePath) { $ScriptRelativePath } else { "scripts/$ScriptToRun" }
                 $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
                 if ($ExpectedScriptMD5) {
                     $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
@@ -578,6 +537,9 @@ try {
                     }
                     Write-Host "[+] Script checksum verified"
                 }
+            }
+            elseif ($DebugScripts) {
+                Write-Host "[*] Debug mode - skipping script checksum verification"
             }
 
             # Success - remove backup
@@ -626,6 +588,19 @@ Write-Host "============================================================"
 # Read the script content
 $ScriptContent = Get-Content -Path $ScriptPath -Raw
 
+# Build list of policy variables to pass through
+# These are defined in the launcher header as $policy_* = "{{cf_policy_*}}"
+$PolicyVarsBlock = ""
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    $VarName = $_.Name
+    $VarValue = $_.Value
+    # Only pass if it has a value and isn't an unresolved template placeholder
+    if (-not [string]::IsNullOrWhiteSpace($VarValue) -and $VarValue -notlike "{{*}}") {
+        $EscapedValue = $VarValue -replace "'", "''"
+        $PolicyVarsBlock += "`n`$$VarName = '$EscapedValue'"
+    }
+}
+
 # Create a scriptblock that:
 # 1. Defines all Level.io variables in the script's scope
 # 2. Executes the downloaded script content
@@ -635,15 +610,11 @@ $ExecutionBlock = @"
 `$LibraryUrl = '$($LibraryUrl -replace "'", "''")'
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
+`$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''" -replace '\$', '`$')'" } else { '$null' })
+`$DebugScripts = `$$DebugScripts
 
-# Library is already loaded by launcher - skip library import in script
-`$UseLibrary = `$true
-
-# Tell scripts not to exit - launcher will handle exit after showing log
-`$RunningFromLauncher = `$true
-
-# Additional custom fields can be added here
-# `$ApiKey = '$($ApiKey -replace "'", "''")'
+# Policy custom fields (defined in launcher header)
+$PolicyVarsBlock
 
 # The downloaded script content follows:
 $ScriptContent
@@ -660,22 +631,6 @@ catch {
     Write-Host "[X] Script execution failed: $($_.Exception.Message)"
     exit 1
 }
-
-# ============================================================
-# SHOW LOG FILE
-# ============================================================
-Write-Host ""
-Write-Host "============================================================"
-Write-Host "SHOWING LOG FILE"
-Write-Host "============================================================"
-$LogDate = Get-Date -Format "yyyy-MM-dd"
-$LogFile = Join-Path (Join-Path $MspScratchFolder "Logs") "COOLForge_$LogDate.log"
-if (Test-Path $LogFile) {
-    Get-Content $LogFile -Encoding UTF8
-} else {
-    Write-Host "[!] Log file not found: $LogFile"
-}
-Write-Host "============================================================"
 
 # Pass through the script's exit code
 exit $ScriptExitCode

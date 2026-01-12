@@ -64,9 +64,6 @@ $RevertScriptName = "🔧Restore Sleep Settings.ps1"
 # ============================================================
 # When run via launcher, these will be populated
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -eq "{{cf_coolforge_msp_scratch_folder}}") {
-    $MspScratchFolder = "{{cf_msp_scratch_folder}}"
-}
 # Fallback for local testing
 if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -like "{{*}}") {
     $MspScratchFolder = "C:\ProgramData\MSP"

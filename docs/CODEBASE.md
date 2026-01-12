@@ -169,25 +169,57 @@ Invoke-LevelScript -ScriptBlock {
 | `Repair-LevelEmoji` | Repairs corrupted UTF-8 emojis in strings |
 | `Get-LevelUrlEncoded` | URL-encode with proper UTF-8 emoji handling |
 
----
+#### Custom Field Management
 
-### COOLForge-CustomFields.psm1
+| Function | Description |
+|----------|-------------|
+| `Get-LevelCustomFields` | Fetch all custom fields with pagination |
+| `Find-LevelCustomField` | Find custom field by name |
+| `New-LevelCustomField` | Create new custom field |
+| `Set-LevelCustomFieldValue` | Set custom field value for device |
+| `Initialize-LevelSoftwarePolicy` | Initialize software policy custom field |
+| `Get-LevelCustomFieldById` | Get custom field by ID |
+| `Update-LevelCustomFieldValue` | Update custom field value |
+| `Remove-LevelCustomField` | Delete a custom field |
 
-**Location**: `modules/COOLForge-CustomFields.psm1`
+#### Hierarchy Navigation
 
-Module for managing Level.io custom fields via the API. Used by setup and backup tools.
+| Function | Description |
+|----------|-------------|
+| `Get-LevelOrganizations` | Get all organizations |
+| `Get-LevelOrganizationFolders` | Get folders within an organization |
+| `Get-LevelFolderDevices` | Get devices in a folder |
+| `Get-LevelEntityCustomFields` | Get custom fields for an entity |
 
-#### Key Functions
+#### Technician Alerts
+
+Functions for sending toast notifications to technician workstations. Technicians are identified by the `🧑‍💻` (U+1F9D1 U+200D U+1F4BB) emoji tag.
+
+| Function | Description |
+|----------|-------------|
+| `Test-TechnicianWorkstation` | Check if device has technician tag |
+| `Get-TechnicianName` | Extract technician name from tags (e.g., `🧑‍💻John` → `John`) |
+| `Add-TechnicianAlert` | Queue alert for auto-send on script completion |
+| `Send-TechnicianAlert` | Send alert immediately to tech workstations |
+| `Send-TechnicianAlertQueue` | Manually send all queued alerts |
+
+**Alert Flow**:
+1. Scripts call `Add-TechnicianAlert` to queue alerts during execution
+2. On script completion, `Invoke-LevelScript` automatically calls `Send-TechnicianAlertQueue`
+3. Alerts are written to the `coolforge_technician_alerts` custom field
+4. The Technician Alert Monitor script polls this field and displays toast notifications
+
+See [TECHNICIAN-ALERTS.md](TECHNICIAN-ALERTS.md) for detailed usage.
+
+#### Admin Tool Functions (also in COOLForge-Common.psm1)
 
 | Category | Functions |
 |----------|-----------|
-| **Initialization** | `Initialize-COOLForgeCustomFields` |
 | **UI Helpers** | `Write-Header`, `Write-LevelSuccess`, `Write-LevelInfo`, `Write-LevelWarning`, `Write-LevelError`, `Read-UserInput`, `Read-YesNo` |
-| **API Core** | `Invoke-LevelApi`, `Get-ExistingCustomFields`, `Find-CustomField`, `New-CustomField`, `Update-CustomFieldValue`, `Remove-CustomField` |
-| **Hierarchy** | `Get-AllOrganizations`, `Get-OrganizationFolders`, `Get-FolderDevices`, `Get-EntityCustomFields`, `Set-EntityCustomField` |
-| **Backup/Restore** | `Backup-AllCustomFields`, `Save-Backup`, `Import-Backup`, `Restore-CustomFields`, `Compare-BackupWithCurrent` |
-| **Security** | `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey` |
+| **Config/Security** | `Get-SavedConfig`, `Save-Config`, `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey` |
+| **Backup/Restore** | `Backup-AllCustomFields`, `Save-Backup`, `Import-Backup`, `Restore-CustomFields`, `Get-BackupPath`, `Get-LatestBackup`, `Compare-BackupWithCurrent`, `Show-BackupDifferences` |
 | **GitHub** | `Get-GitHubReleases`, `Show-ReleaseNotes`, `Select-Version` |
+| **Initialization** | `Initialize-LevelApi`, `Initialize-COOLForgeCustomFields` (alias) |
 
 ---
 
@@ -308,7 +340,7 @@ Administrative tools in `tools/`:
 
 | Tool | Description |
 |------|-------------|
-| `Setup-COOLForgeCustomFields.ps1` | Interactive setup wizard for custom fields |
+| `Setup-COOLForge.ps1` | Interactive setup wizard for custom fields |
 | `Generate-CustomFieldsConfig.ps1` | Generate custom field configuration |
 | `Add-COOLForgeCustomField.ps1` | Add individual custom field |
 | `Sync-COOLForgeCustomFields.ps1` | Sync custom fields from definitions |
@@ -522,8 +554,7 @@ Level.io corrupts UTF-8 emojis when passing them through its variable system. Fo
 ```
 COOLForge/
 ├── modules/
-│   ├── COOLForge-Common.psm1        # Main shared library
-│   └── COOLForge-CustomFields.psm1  # Custom fields API module
+│   └── COOLForge-Common.psm1        # Main shared library (includes admin tools)
 ├── templates/
 │   ├── Launcher_Template.ps1        # Launcher template
 │   └── What is this folder.md       # Scratch folder documentation
@@ -549,9 +580,8 @@ COOLForge/
 
 ## Version Information
 
-- **Module Version**: 2026.01.08.01
-- **Launcher Version**: 2026.01.10.01
-- **Custom Fields Version**: 2026.01.10
+- **Module Version**: 2026.01.12.09 (COOLForge-Common)
+- **Launcher Version**: 2026.01.12.05
 
 ---
 
