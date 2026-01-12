@@ -204,6 +204,12 @@ if ($GitHubPAT) {
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
 $LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "COOLForge-Common.psm1"
 
+# In debug mode, delete cached library to force fresh download
+if ($DebugScripts -and (Test-Path $LibraryPath)) {
+    Write-Host "[DEBUG] Deleting cached library to force fresh download..."
+    Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
+}
+
 # Create Libraries folder if it doesn't exist
 if (!(Test-Path $LibraryFolder)) {
     New-Item -Path $LibraryFolder -ItemType Directory -Force | Out-Null
