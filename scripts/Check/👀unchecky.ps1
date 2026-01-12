@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Software policy enforcement check for Unchecky.
+    Software policy enforcement for Unchecky.
 
 .DESCRIPTION
     Implements the COOLForge 5-tag policy model for Unchecky software management.
@@ -10,7 +10,7 @@
     1. Check global control tags (device must have checkmark to be managed)
     2. Check software-specific override tags (highest priority)
     3. Fall back to custom field policy (policy_unchecky)
-    4. Execute resolved action
+    4. Execute resolved action (install/remove/reinstall)
 
     GLOBAL CONTROL TAGS (standalone):
     - U+2705 = Device is managed (required to process)
@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12
+    Version:          2026.01.12.1
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -45,8 +45,8 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# Software Policy Check - Unchecky
-# Version: 2026.01.12
+# Software Policy - Unchecky
+# Version: 2026.01.12.1
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -57,6 +57,8 @@
 # CONFIGURATION
 # ============================================================
 $SoftwareName = "unchecky"
+$InstallerUrl = "https://s3.ap-southeast-2.wasabisys.com/levelfiles/unchecky_setup.exe"
+$InstallerName = "unchecky_setup.exe"
 
 # ============================================================
 # INITIALIZE
@@ -71,21 +73,155 @@ if (-not $Init.Success) {
 }
 
 # ============================================================
+# SOFTWARE DETECTION FUNCTIONS
+# ============================================================
+
+function Test-UncheckyInstalled {
+    # Check common install locations
+    $Paths = @(
+        "$env:ProgramFiles\Unchecky\unchecky.exe",
+        "${env:ProgramFiles(x86)}\Unchecky\unchecky.exe"
+    )
+    foreach ($Path in $Paths) {
+        if (Test-Path $Path) {
+            return $true
+        }
+    }
+
+    # Check registry
+    $RegPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky"
+    )
+    foreach ($RegPath in $RegPaths) {
+        if (Test-Path $RegPath) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Get-UncheckyUninstallString {
+    $RegPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky"
+    )
+    foreach ($RegPath in $RegPaths) {
+        if (Test-Path $RegPath) {
+            $Uninstall = Get-ItemProperty -Path $RegPath -ErrorAction SilentlyContinue
+            if ($Uninstall.UninstallString) {
+                return $Uninstall.UninstallString
+            }
+        }
+    }
+    return $null
+}
+
+function Install-Unchecky {
+    param([string]$ScratchFolder)
+
+    $InstallerPath = Join-Path $ScratchFolder $InstallerName
+
+    # Download installer
+    Write-LevelLog "Downloading Unchecky installer..."
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing -ErrorAction Stop
+    }
+    catch {
+        Write-LevelLog "Failed to download installer: $($_.Exception.Message)" -Level "ERROR"
+        return $false
+    }
+
+    if (-not (Test-Path $InstallerPath)) {
+        Write-LevelLog "Installer not found after download" -Level "ERROR"
+        return $false
+    }
+
+    # Run silent install
+    Write-LevelLog "Installing Unchecky..."
+    try {
+        $Process = Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait -PassThru -ErrorAction Stop
+        if ($Process.ExitCode -eq 0) {
+            Write-LevelLog "Unchecky installed successfully" -Level "SUCCESS"
+            return $true
+        }
+        else {
+            Write-LevelLog "Installer exited with code: $($Process.ExitCode)" -Level "ERROR"
+            return $false
+        }
+    }
+    catch {
+        Write-LevelLog "Installation failed: $($_.Exception.Message)" -Level "ERROR"
+        return $false
+    }
+    finally {
+        # Cleanup installer
+        if (Test-Path $InstallerPath) {
+            Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Remove-Unchecky {
+    $UninstallString = Get-UncheckyUninstallString
+
+    if (-not $UninstallString) {
+        Write-LevelLog "Unchecky uninstall string not found" -Level "WARNING"
+        return $true  # Not installed = success
+    }
+
+    Write-LevelLog "Uninstalling Unchecky..."
+    try {
+        # Handle quoted paths and add silent flag
+        if ($UninstallString -match '^"([^"]+)"(.*)$') {
+            $Executable = $Matches[1]
+            $UninstallArgs = "$($Matches[2]) /S".Trim()
+        }
+        else {
+            $Executable = $UninstallString
+            $UninstallArgs = "/S"
+        }
+
+        $Process = Start-Process -FilePath $Executable -ArgumentList $UninstallArgs -Wait -PassThru -ErrorAction Stop
+        if ($Process.ExitCode -eq 0) {
+            Write-LevelLog "Unchecky uninstalled successfully" -Level "SUCCESS"
+            return $true
+        }
+        else {
+            Write-LevelLog "Uninstaller exited with code: $($Process.ExitCode)" -Level "ERROR"
+            return $false
+        }
+    }
+    catch {
+        Write-LevelLog "Uninstallation failed: $($_.Exception.Message)" -Level "ERROR"
+        return $false
+    }
+}
+
+# ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12"
+$ScriptVersion = "2026.01.12.1"
+$ExitCode = 0
+
 $InvokeParams = @{ ScriptBlock = {
 
-    Write-LevelLog "Policy Check: $SoftwareName (v$ScriptVersion)"
+    Write-LevelLog "Policy Enforcement: $SoftwareName (v$ScriptVersion)"
     Write-Host ""
 
     # Get custom field policy if available (passed from launcher)
-    # Variable name: policy_<softwarename> (e.g., $policy_unchecky)
     $CustomFieldPolicyVar = "policy_$SoftwareName"
     $CustomFieldPolicy = Get-Variable -Name $CustomFieldPolicyVar -ValueOnly -ErrorAction SilentlyContinue
     if ($CustomFieldPolicy) {
         Write-LevelLog "Custom field policy: $CustomFieldPolicy"
     }
+
+    # Check current installation state
+    $IsInstalled = Test-UncheckyInstalled
+    Write-LevelLog "Current state: $(if ($IsInstalled) { 'Installed' } else { 'Not installed' })"
+    Write-Host ""
 
     # Run the policy check with the 5-tag model
     $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName `
@@ -98,37 +234,75 @@ $InvokeParams = @{ ScriptBlock = {
     if ($Policy.ShouldProcess) {
         switch ($Policy.ResolvedAction) {
             "Install" {
-                Write-LevelLog "ACTION: Would install $SoftwareName" -Level "INFO"
-                # TODO: Implement actual installation
-                # Install-Unchecky
+                if ($IsInstalled) {
+                    Write-LevelLog "Already installed - no action needed" -Level "SUCCESS"
+                }
+                else {
+                    Write-LevelLog "ACTION: Installing $SoftwareName" -Level "INFO"
+                    $Success = Install-Unchecky -ScratchFolder $script:ScratchFolder
+                    if (-not $Success) {
+                        Write-LevelLog "FAILED: Installation unsuccessful" -Level "ERROR"
+                        $script:ExitCode = 1
+                    }
+                }
             }
             "Remove" {
-                Write-LevelLog "ACTION: Would remove $SoftwareName" -Level "INFO"
-                # TODO: Implement actual removal
-                # Remove-Unchecky
+                if (-not $IsInstalled) {
+                    Write-LevelLog "Not installed - no action needed" -Level "SUCCESS"
+                }
+                else {
+                    Write-LevelLog "ACTION: Removing $SoftwareName" -Level "INFO"
+                    $Success = Remove-Unchecky
+                    if (-not $Success) {
+                        Write-LevelLog "FAILED: Removal unsuccessful" -Level "ERROR"
+                        $script:ExitCode = 1
+                    }
+                }
             }
             "Reinstall" {
-                Write-LevelLog "ACTION: Would reinstall $SoftwareName" -Level "INFO"
-                # TODO: Implement removal then installation
-                # Remove-Unchecky
-                # Install-Unchecky
+                Write-LevelLog "ACTION: Reinstalling $SoftwareName" -Level "INFO"
+                if ($IsInstalled) {
+                    $RemoveSuccess = Remove-Unchecky
+                    if (-not $RemoveSuccess) {
+                        Write-LevelLog "FAILED: Could not remove for reinstall" -Level "ERROR"
+                        $script:ExitCode = 1
+                        break
+                    }
+                }
+                $InstallSuccess = Install-Unchecky -ScratchFolder $script:ScratchFolder
+                if (-not $InstallSuccess) {
+                    Write-LevelLog "FAILED: Reinstallation unsuccessful" -Level "ERROR"
+                    $script:ExitCode = 1
+                }
             }
             "Pin" {
-                Write-LevelLog "ACTION: Pinned - no changes allowed" -Level "INFO"
+                Write-LevelLog "Pinned - no changes allowed" -Level "INFO"
             }
             "None" {
-                Write-LevelLog "ACTION: None required" -Level "INFO"
+                # Verify current state matches expected
+                if ($Policy.HasInstalled -and -not $IsInstalled) {
+                    Write-LevelLog "WARNING: Status tag says installed but software not found" -Level "WARNING"
+                }
+                elseif (-not $Policy.HasInstalled -and $IsInstalled) {
+                    Write-LevelLog "INFO: Software is installed (no policy action)" -Level "INFO"
+                }
+                else {
+                    Write-LevelLog "No action required" -Level "INFO"
+                }
             }
         }
-
-        # TODO: After action, update status tag
-        # - If installed: ensure U+2705 unchecky tag is set
-        # - If removed: ensure U+2705 unchecky tag is removed
-        # - Clean up transient action tags (U+1F64F, U+1F6AB, U+1F504)
     }
 
     Write-Host ""
-    Write-LevelLog "Policy check completed" -Level "SUCCESS"
+
+    if ($script:ExitCode -eq 0) {
+        Write-LevelLog "Policy enforcement completed successfully" -Level "SUCCESS"
+    }
+    else {
+        Write-LevelLog "Policy enforcement completed with errors" -Level "ERROR"
+    }
 }}
 if ($RunningFromLauncher) { $InvokeParams.NoExit = $true }
 Invoke-LevelScript @InvokeParams
+
+exit $ExitCode
