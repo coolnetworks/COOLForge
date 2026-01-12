@@ -1,45 +1,42 @@
 <#
 .SYNOPSIS
-    Multi-launch software policy enforcement check for Unchecky.
+    Software policy enforcement check for Unchecky.
 
 .DESCRIPTION
-    This script demonstrates the COOLForge multilaunch pattern - a tag-based approach
-    to software policy enforcement. By using the Get-SoftwarePolicy library function,
-    this single script pattern can be reused for ANY software package.
+    Implements the COOLForge 5-tag policy model for Unchecky software management.
+    See docs/POLICY-TAGS.md for the complete policy specification.
 
-    HOW IT WORKS:
-    1. Reads device tags from Level.io
-    2. Uses Get-SoftwarePolicy to detect policy tags for the software
-    3. Reports what actions are required based on the emoji prefix
+    POLICY FLOW (per POLICY-TAGS.md):
+    1. Check global control tags (device must have checkmark to be managed)
+    2. Check software-specific override tags (highest priority)
+    3. Fall back to custom field policy (policy_unchecky)
+    4. Execute resolved action
 
-    SUPPORTED POLICY TAGS:
-    - 🙏unchecky = Request/Recommend installation
-    - ⛔unchecky = Block/Must not be installed
-    - 🛑unchecky = Stop/Remove if present
-    - 📌unchecky = Pin/Must be installed (enforce presence)
-    - ✅unchecky = Installed/Already present
+    GLOBAL CONTROL TAGS (standalone):
+    - U+2705 = Device is managed (required to process)
+    - U+274C = Device is excluded from management
+    - Both = Device is globally pinned (no changes)
 
-    INITIAL VERSION:
-    This initial implementation simply reports which policy tags are active.
-    Future versions will check actual software installation status and report
-    compliance/non-compliance.
+    SOFTWARE-SPECIFIC OVERRIDE TAGS (with "unchecky" suffix):
+    - U+1F64F unchecky = Install if missing (transient)
+    - U+1F6AB unchecky = Remove if present (transient)
+    - U+1F4CC unchecky = Pin - no changes allowed (persistent)
+    - U+1F504 unchecky = Reinstall - remove + install (transient)
+    - U+2705 unchecky  = Status: software is installed (set by script)
 
-    MULTILAUNCH PATTERN:
-    To use this pattern for other software:
-    1. Copy this script
-    2. Change $SoftwareName to match your software (e.g., "7zip", "vlc")
-    3. Update the tags in your Level.io device configuration
-    4. Deploy via launcher - the same script handles all software packages!
+    CUSTOM FIELD POLICY (inherited Group->Folder->Device):
+    - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.01.05
+    Version:          2026.01.12
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
     Level.io Variables Used (passed from Script Launcher):
-    - $MspScratchFolder  : MSP-defined scratch folder for persistent storage
-    - $DeviceHostname    : Device hostname from Level.io
-    - $DeviceTags        : Comma-separated list of device tags
+    - $MspScratchFolder   : MSP-defined scratch folder for persistent storage
+    - $DeviceHostname     : Device hostname from Level.io
+    - $DeviceTags         : Comma-separated list of device tags
+    - $policy_unchecky    : Custom field policy value (inherited)
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -48,8 +45,8 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# Multi-launch Software Policy Check
-# Version: 2026.01.01.05
+# Software Policy Check - Unchecky
+# Version: 2026.01.12
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -59,17 +56,12 @@
 # ============================================================
 # CONFIGURATION
 # ============================================================
-# SOFTWARE TO CHECK: Change this value to check policy for different software
-# Examples: "unchecky", "7zip", "vlc", "chrome", "firefox"
 $SoftwareName = "unchecky"
 
 # ============================================================
 # INITIALIZE
 # ============================================================
-# Script Launcher has already loaded the library and passed variables
-# We just need to initialize with the passed-through variables
-
-$Init = Initialize-LevelScript -ScriptName "SoftwarePolicy-$SoftwareName" `
+$Init = Initialize-LevelScript -ScriptName "Policy-$SoftwareName" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
                                -DeviceTags $DeviceTags
@@ -81,18 +73,62 @@ if (-not $Init.Success) {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-# Use -NoExit when running from launcher so it can show log file afterwards
-$ScriptVersion = "2026.01.01.05"
+$ScriptVersion = "2026.01.12"
 $InvokeParams = @{ ScriptBlock = {
 
-    Write-LevelLog "Software Policy Check (v$ScriptVersion)"
+    Write-LevelLog "Policy Check: $SoftwareName (v$ScriptVersion)"
     Write-Host ""
 
-    # Run the policy check - all logic is in the library
-    $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName -DeviceTags $DeviceTags
+    # Get custom field policy if available (passed from launcher)
+    # Variable name: policy_<softwarename> (e.g., $policy_unchecky)
+    $CustomFieldPolicyVar = "policy_$SoftwareName"
+    $CustomFieldPolicy = Get-Variable -Name $CustomFieldPolicyVar -ValueOnly -ErrorAction SilentlyContinue
+    if ($CustomFieldPolicy) {
+        Write-LevelLog "Custom field policy: $CustomFieldPolicy"
+    }
+
+    # Run the policy check with the 5-tag model
+    $Policy = Invoke-SoftwarePolicyCheck -SoftwareName $SoftwareName `
+                                         -DeviceTags $DeviceTags `
+                                         -CustomFieldPolicy $CustomFieldPolicy
 
     Write-Host ""
-    Write-LevelLog "Check completed successfully" -Level "SUCCESS"
+
+    # Take action based on resolved policy
+    if ($Policy.ShouldProcess) {
+        switch ($Policy.ResolvedAction) {
+            "Install" {
+                Write-LevelLog "ACTION: Would install $SoftwareName" -Level "INFO"
+                # TODO: Implement actual installation
+                # Install-Unchecky
+            }
+            "Remove" {
+                Write-LevelLog "ACTION: Would remove $SoftwareName" -Level "INFO"
+                # TODO: Implement actual removal
+                # Remove-Unchecky
+            }
+            "Reinstall" {
+                Write-LevelLog "ACTION: Would reinstall $SoftwareName" -Level "INFO"
+                # TODO: Implement removal then installation
+                # Remove-Unchecky
+                # Install-Unchecky
+            }
+            "Pin" {
+                Write-LevelLog "ACTION: Pinned - no changes allowed" -Level "INFO"
+            }
+            "None" {
+                Write-LevelLog "ACTION: None required" -Level "INFO"
+            }
+        }
+
+        # TODO: After action, update status tag
+        # - If installed: ensure U+2705 unchecky tag is set
+        # - If removed: ensure U+2705 unchecky tag is removed
+        # - Clean up transient action tags (U+1F64F, U+1F6AB, U+1F504)
+    }
+
+    Write-Host ""
+    Write-LevelLog "Policy check completed" -Level "SUCCESS"
 }}
 if ($RunningFromLauncher) { $InvokeParams.NoExit = $true }
 Invoke-LevelScript @InvokeParams

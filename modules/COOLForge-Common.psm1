@@ -538,48 +538,64 @@ function Get-LevelDeviceInfo {
     }
 #>
 function Get-EmojiMap {
+    # 5-TAG POLICY MODEL (per POLICY-TAGS.md)
+    # =========================================
+    # Software-specific tags (with software suffix):
+    #   U+1F64F Pray     = Install   (override: install if missing, transient)
+    #   U+1F6AB Prohibit = Remove    (override: remove if present, transient)
+    #   U+1F4CC Pushpin  = Pin       (override: no changes, persistent)
+    #   U+1F504 Arrows   = Reinstall (override: remove + install, transient)
+    #   U+2705  Check    = Installed (status: software is installed, set by script)
+    #
+    # Global control tags (standalone, no suffix):
+    #   U+2705 Check = Managed  (device is verified for management)
+    #   U+274C Cross = Excluded (device excluded from management)
+    #   Both = GlobalPin (device pinned globally, no changes allowed)
+
     # Observed corruption patterns from Level.io:
-    # ✅ (U+2705) -> CE 93 C2 A3 C3 A0 (displays as: Γ£à)
-    # 📌 (U+1F4CC) -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: ≡ƒôî)
-    # 🙏 (U+1F64F) -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: ≡ƒÖÅ)
-    # 🛑 (U+1F6D1) -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: ≡ƒ¢æ)
-    # ⛔ (U+26D4) -> CE 93 C2 A2 C3 B6 (displays as: Γ¢ö)
-    # 🪟 (U+1FA9F) -> E2 89 A1 C6 92 C2 AC C6 92 (displays as: ≡ƒ¬ƒ)
-    # 🚨 (U+1F6A8) -> E2 89 A1 C6 92 C3 9C C2 BF (displays as: ≡ƒÜ¿)
-    # 🐧 (U+1F427) -> E2 89 A1 C6 92 C3 89 C2 BA (displays as: ≡ƒÉº)
-    # 🌀 (U+1F300) -> E2 89 A1 C6 92 C3 AE C3 87 (displays as: ≡ƒîÇ)
-    # 🛰️ (U+1F6F0) -> E2 89 A1 C6 92 C2 A2 E2 96 91 E2 88 A9 E2 95 95 C3 85
+    # U+2705 -> CE 93 C2 A3 C3 A0 (displays as: checkmark corrupted)
+    # U+1F4CC -> E2 89 A1 C6 92 C3 B4 C3 AE (displays as: pushpin corrupted)
+    # U+1F64F -> E2 89 A1 C6 92 C3 96 C3 85 (displays as: pray corrupted)
+    # U+1F6AB -> E2 89 A1 C6 92 C2 A2 C3 A6 (displays as: prohibit corrupted)
+    # U+1F504 -> E2 89 A1 C6 92 C3 94 C3 84 (displays as: arrows corrupted) - TBD
 
     # Build corrupted string patterns from observed byte sequences
-    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # ✅
-    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # 📌
-    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # 🙏
-    $CorruptedStop = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # 🛑
-    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # ⛔
-    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # 🪟
-    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # 🚨
-    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # 🐧
-    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # 🌀
-    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # 🛰️
+    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # U+2705
+    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # U+1F4CC
+    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # U+1F64F
+    $CorruptedProhibit = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # U+1F6AB
+    # U+1F504 corruption pattern TBD - will be logged to EmojiTags.log when encountered
+    $CorruptedWindow = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))  # U+1FA9F
+    $CorruptedAlert = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))  # U+1F6A8
+    $CorruptedPenguin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x89, 0xC2, 0xBA))  # U+1F427
+    $CorruptedCyclone = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xAE, 0xC3, 0x87))  # U+1F300
+    $CorruptedSatellite = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xE2, 0x96, 0x91, 0xE2, 0x88, 0xA9, 0xE2, 0x95, 0x95, 0xC3, 0x85))  # U+1F6F0
+    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0x8C))  # U+274C (TBD - placeholder)
 
     return @{
         # ============================================================
-        # SOFTWARE POLICY TAGS
+        # SOFTWARE POLICY TAGS (5-tag model per POLICY-TAGS.md)
         # ============================================================
-        # Skip/Hands-off
-        "❌" = "Skip"         # U+274C Cross mark - Skip (machine or software)
-        # Actions
-        "🙏" = "Install"      # U+1F64F Pray/Folded hands - Install/reinstall
-        "⛔" = "Remove"       # U+26D4 No entry - Remove if present
-        "🚫" = "Block"        # U+1F6AB No entry sign - Block install, leave existing
-        "🛑" = "Block"        # U+1F6D1 Stop sign - Block install, leave existing (alt)
-        # Status/Protection
-        "📌" = "Pin"          # U+1F4CC Pushpin - Pin/protect from removal or reinstall
-        "✅" = "Has"          # U+2705 Check mark - Has/installed status
-        "👀" = "Verify"       # U+1F440 Eyes - Verify/check and report
+        # Override tags (transient - removed after action)
+        "🙏" = "Install"      # U+1F64F Pray - Install if missing
+        "🚫" = "Remove"       # U+1F6AB Prohibited - Remove if present
+        "🔄" = "Reinstall"    # U+1F504 Arrows - Remove + reinstall
+        # Override tag (persistent - admin intent)
+        "📌" = "Pin"          # U+1F4CC Pushpin - No changes allowed
+        # Status tag (set by script)
+        "✅" = "Installed"    # U+2705 Checkmark - Software is installed
 
         # ============================================================
-        # PLATFORM/CATEGORY TAGS
+        # GLOBAL CONTROL TAGS (standalone, no software suffix)
+        # ============================================================
+        # These are checked separately for device-level management
+        # "✅" alone = device is managed
+        # "❌" alone = device is excluded
+        # Both = device is globally pinned
+        "❌" = "Excluded"     # U+274C Cross - Device excluded from management
+
+        # ============================================================
+        # PLATFORM/CATEGORY TAGS (informational)
         # ============================================================
         "🪟" = "Windows"      # U+1FA9F Window - Windows platform tag
         "🚨" = "Alert"        # U+1F6A8 Police light - Alert/Critical
@@ -587,16 +603,16 @@ function Get-EmojiMap {
         "🌀" = "AdelaideMRI"  # U+1F300 Cyclone - AdelaideMRI client tag
         "🛰️" = "Satellite"    # U+1F6F0 Satellite - Satellite/remote site
         "🔧" = "Fix"          # U+1F527 Wrench - Fix/Repair script
-        "🔄" = "Maintain"     # U+1F504 Counterclockwise - Maintenance script
+        "👀" = "Check"        # U+1F440 Eyes - Check script marker
 
         # ============================================================
         # LEVEL.IO CORRUPTED PATTERNS
         # ============================================================
-        $CorruptedCheckmark = "Has"
+        $CorruptedCheckmark = "Installed"
         $CorruptedPin = "Pin"
         $CorruptedPray = "Install"
-        $CorruptedStop = "Block"
-        $CorruptedNoEntry = "Remove"
+        $CorruptedProhibit = "Remove"
+        $CorruptedCross = "Excluded"
         $CorruptedWindow = "Windows"
         $CorruptedAlert = "Alert"
         $CorruptedPenguin = "Linux"
@@ -678,6 +694,40 @@ function Get-EmojiMap {
     Multiple policy tags for the same software are supported and all will be returned.
 #>
 function Get-SoftwarePolicy {
+    <#
+    .SYNOPSIS
+        Determines software policy from device tags following the 5-tag model.
+
+    .DESCRIPTION
+        Implements the policy flow from POLICY-TAGS.md:
+        1. Check global control tags (standalone checkmark/cross)
+        2. Check software-specific override tags (with software suffix)
+        3. Return resolved action based on priority
+
+        Priority order (first match wins):
+        1. Pin (U+1F4CC) - No changes allowed
+        2. Reinstall (U+1F504) - Remove + Install
+        3. Remove (U+1F6AB) - Remove if present
+        4. Install (U+1F64F) - Install if missing
+
+    .PARAMETER SoftwareName
+        The software name to check policy for (e.g., "unchecky").
+
+    .PARAMETER DeviceTags
+        Comma-separated list of device tags from Level.io.
+
+    .PARAMETER CustomFieldPolicy
+        Optional policy value from custom field (install/remove/pin/empty).
+
+    .PARAMETER ShowDebug
+        Enable verbose debug output.
+
+    .OUTPUTS
+        Hashtable with policy information including:
+        - GlobalStatus: Managed/Excluded/GlobalPin/NotVerified
+        - ResolvedAction: Pin/Reinstall/Remove/Install/None
+        - ActionSource: Tag/CustomField/None
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -687,11 +737,20 @@ function Get-SoftwarePolicy {
         [string]$DeviceTags = "",
 
         [Parameter(Mandatory = $false)]
+        [string]$CustomFieldPolicy = "",
+
+        [Parameter(Mandatory = $false)]
         [switch]$ShowDebug
     )
 
     # Get centralized emoji map (single source of truth)
     $EmojiMap = Get-EmojiMap
+
+    # Define global control emojis (clean and corrupted)
+    $CheckmarkEmoji = [char]0x2705  # U+2705 checkmark
+    $CrossEmoji = [char]0x274C      # U+274C cross
+    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))
+    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0x8C))  # TBD
 
     # Parse tags into array
     $TagArray = if ($DeviceTags) {
@@ -700,16 +759,71 @@ function Get-SoftwarePolicy {
         @()
     }
 
-    # Track matching tags and actions
-    $MatchedTags = @()
-    $PolicyActions = @()
-    $UnknownEmojiTags = @()
-
     if ($ShowDebug) {
         Write-Host "[DEBUG] Checking $($TagArray.Count) tags for '$SoftwareName' policy"
     }
 
-    # Check each tag for software policy match
+    # ============================================================
+    # STEP 1: CHECK GLOBAL CONTROL TAGS
+    # ============================================================
+    # Look for standalone checkmark and cross (no software suffix)
+    $HasGlobalCheckmark = $false
+    $HasGlobalCross = $false
+
+    foreach ($Tag in $TagArray) {
+        # Standalone checkmark (exactly the emoji, no suffix)
+        if ($Tag -eq "$CheckmarkEmoji" -or $Tag -eq $CorruptedCheckmark) {
+            $HasGlobalCheckmark = $true
+            if ($ShowDebug) { Write-Host "[DEBUG] Found global checkmark (managed)" }
+        }
+        # Standalone cross (exactly the emoji, no suffix)
+        if ($Tag -eq "$CrossEmoji" -or $Tag -eq $CorruptedCross) {
+            $HasGlobalCross = $true
+            if ($ShowDebug) { Write-Host "[DEBUG] Found global cross (excluded)" }
+        }
+    }
+
+    # Determine global status per POLICY-TAGS.md
+    $GlobalStatus = "NotVerified"  # Default: device not yet verified
+    if ($HasGlobalCheckmark -and $HasGlobalCross) {
+        $GlobalStatus = "GlobalPin"  # Both = globally pinned, no changes
+    }
+    elseif ($HasGlobalCross) {
+        $GlobalStatus = "Excluded"   # Cross only = excluded from management
+    }
+    elseif ($HasGlobalCheckmark) {
+        $GlobalStatus = "Managed"    # Checkmark only = managed device
+    }
+
+    # Early exit if device should be skipped
+    if ($GlobalStatus -in @("NotVerified", "Excluded", "GlobalPin")) {
+        if ($ShowDebug) { Write-Host "[DEBUG] Global status: $GlobalStatus - skipping policy checks" }
+        return @{
+            SoftwareName    = $SoftwareName
+            GlobalStatus    = $GlobalStatus
+            ShouldProcess   = $false
+            ResolvedAction  = "None"
+            ActionSource    = "GlobalTag"
+            SkipReason      = switch ($GlobalStatus) {
+                "NotVerified" { "Device not verified for management (no global checkmark)" }
+                "Excluded"    { "Device excluded from management (global cross)" }
+                "GlobalPin"   { "Device globally pinned (both checkmark and cross)" }
+            }
+            MatchedTags     = @()
+            PolicyActions   = @()
+            RawTags         = $TagArray
+            HasInstalled    = $false
+            IsPinned        = ($GlobalStatus -eq "GlobalPin")
+        }
+    }
+
+    # ============================================================
+    # STEP 2: CHECK SOFTWARE-SPECIFIC OVERRIDE TAGS
+    # ============================================================
+    $MatchedTags = @()
+    $PolicyActions = @()
+    $UnknownEmojiTags = @()
+
     foreach ($Tag in $TagArray) {
         if ($ShowDebug) {
             $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
@@ -717,7 +831,7 @@ function Get-SoftwarePolicy {
             Write-Host "[DEBUG] Tag: '$Tag' | Bytes: $hexBytes"
         }
 
-        # Check if tag starts with any policy emoji (correct or corrupted)
+        # Check if tag starts with any policy emoji
         $MatchedKnownEmoji = $false
         foreach ($Emoji in $EmojiMap.Keys) {
             if ($Tag.StartsWith($Emoji)) {
@@ -729,7 +843,7 @@ function Get-SoftwarePolicy {
                     Write-Host "[DEBUG]   Matched prefix -> software name: '$TagSoftware'"
                 }
 
-                # Case-insensitive match
+                # Case-insensitive match for this specific software
                 if ($TagSoftware -ieq $SoftwareName) {
                     $MatchedTags += $Tag
                     $PolicyActions += $EmojiMap[$Emoji]
@@ -741,19 +855,17 @@ function Get-SoftwarePolicy {
             }
         }
 
-        # Detect unknown emoji patterns - tags starting with non-ASCII that we didn't recognize
-        if (-not $MatchedKnownEmoji) {
+        # Track unknown emoji patterns for debugging
+        if (-not $MatchedKnownEmoji -and $Tag.Length -gt 0) {
             $FirstChar = $Tag[0]
             $FirstCharCode = [int][char]$FirstChar
-            # Check if first character is outside basic ASCII (potential emoji or corrupted emoji)
-            # ASCII printable range is 0x20-0x7E, anything above 0x7F could be emoji/unicode
             if ($FirstCharCode -gt 0x7F -or ($FirstCharCode -lt 0x20 -and $FirstCharCode -ne 0x09)) {
                 $UnknownEmojiTags += $Tag
             }
         }
     }
 
-    # Log unknown emoji patterns to console for debugging
+    # Log unknown emoji patterns
     if ($UnknownEmojiTags.Count -gt 0) {
         foreach ($UnknownTag in $UnknownEmojiTags) {
             $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($UnknownTag)
@@ -763,24 +875,23 @@ function Get-SoftwarePolicy {
         }
     }
 
-    # Log ALL emoji-prefixed tags to file for future reference (regardless of known/unknown)
+    # Log emoji tags to file for pattern discovery
     if ($script:ScratchFolder) {
         $EmojiTagLogPath = Join-Path $script:ScratchFolder "EmojiTags.log"
         $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
         foreach ($Tag in $TagArray) {
-            $FirstChar = $Tag[0]
-            $FirstCharCode = [int][char]$FirstChar
-            # Check if first character is outside basic ASCII (potential emoji)
-            if ($FirstCharCode -gt 0x7F -or ($FirstCharCode -lt 0x20 -and $FirstCharCode -ne 0x09)) {
-                $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
-                $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
-                $LogEntry = "$Timestamp | Tag: '$Tag' | Bytes: $hexBytes"
+            if ($Tag.Length -gt 0) {
+                $FirstCharCode = [int][char]$Tag[0]
+                if ($FirstCharCode -gt 0x7F -or ($FirstCharCode -lt 0x20 -and $FirstCharCode -ne 0x09)) {
+                    $tagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
+                    $hexBytes = ($tagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+                    $LogEntry = "$Timestamp | Tag: '$Tag' | Bytes: $hexBytes"
 
-                # Only log if this exact byte pattern isn't already in the file
-                $ExistingContent = if (Test-Path $EmojiTagLogPath) { Get-Content $EmojiTagLogPath -Raw -ErrorAction SilentlyContinue } else { "" }
-                if ($ExistingContent -notmatch [regex]::Escape("Bytes: $hexBytes")) {
-                    $LogEntry | Out-File -FilePath $EmojiTagLogPath -Append -Encoding UTF8 -ErrorAction SilentlyContinue
+                    $ExistingContent = if (Test-Path $EmojiTagLogPath) { Get-Content $EmojiTagLogPath -Raw -ErrorAction SilentlyContinue } else { "" }
+                    if ($ExistingContent -notmatch [regex]::Escape("Bytes: $hexBytes")) {
+                        $LogEntry | Out-File -FilePath $EmojiTagLogPath -Append -Encoding UTF8 -ErrorAction SilentlyContinue
+                    }
                 }
             }
         }
@@ -790,59 +901,78 @@ function Get-SoftwarePolicy {
     $UniqueActions = $PolicyActions | Select-Object -Unique
 
     # ============================================================
-    # PRIORITY RESOLUTION LOGIC
+    # STEP 3: RESOLVE ACTION (Priority order per POLICY-TAGS.md)
     # ============================================================
-    # Priority order (highest to lowest):
-    # 1. Skip     - Exit immediately, no action
-    # 2. Pin      - Lock state (blocks Install AND Remove)
-    # 3. Block    - Blocks Install only
-    # 4. Remove   - Uninstall if present (wins over Install)
-    # 5. Install  - Install/reinstall
-    # 6. Has      - Verify installed + remediate
-
-    $IsSkipped = "Skip" -in $UniqueActions
+    # Priority: Pin > Reinstall > Remove > Install
     $IsPinned = "Pin" -in $UniqueActions
-    $IsBlocked = "Block" -in $UniqueActions
+    $HasReinstall = "Reinstall" -in $UniqueActions
     $HasRemove = "Remove" -in $UniqueActions
     $HasInstall = "Install" -in $UniqueActions
-    $HasVerify = "Has" -in $UniqueActions
+    $HasInstalled = "Installed" -in $UniqueActions  # Status tag
 
-    # Determine what actions are allowed
-    $CanInstall = -not $IsSkipped -and -not $IsPinned -and -not $IsBlocked
-    $CanRemove = -not $IsSkipped -and -not $IsPinned
+    $ResolvedAction = "None"
+    $ActionSource = "None"
 
-    # Resolve final action (only one primary action)
-    $ResolvedAction = $null
-    if ($IsSkipped) {
-        $ResolvedAction = "Skip"
+    if ($IsPinned) {
+        $ResolvedAction = "Pin"
+        $ActionSource = "Tag"
     }
-    elseif ($HasRemove -and $CanRemove) {
+    elseif ($HasReinstall) {
+        $ResolvedAction = "Reinstall"
+        $ActionSource = "Tag"
+    }
+    elseif ($HasRemove) {
         $ResolvedAction = "Remove"
+        $ActionSource = "Tag"
     }
-    elseif ($HasInstall -and $CanInstall) {
+    elseif ($HasInstall) {
         $ResolvedAction = "Install"
+        $ActionSource = "Tag"
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
+        # ============================================================
+        # STEP 4: FALL BACK TO CUSTOM FIELD POLICY
+        # ============================================================
+        switch ($CustomFieldPolicy.ToLower()) {
+            "install" {
+                $ResolvedAction = "Install"
+                $ActionSource = "CustomField"
+            }
+            "remove" {
+                $ResolvedAction = "Remove"
+                $ActionSource = "CustomField"
+            }
+            "pin" {
+                $ResolvedAction = "Pin"
+                $ActionSource = "CustomField"
+            }
+        }
     }
 
-    # Verify runs if Has tag is present and we're not removing
-    $ShouldVerify = $HasVerify -and ($ResolvedAction -ne "Remove")
-
-    # Return policy information
+    # Return comprehensive policy information
     return @{
-        # Raw detection
-        SoftwareName   = $SoftwareName
-        HasPolicy      = ($MatchedTags.Count -gt 0)
-        PolicyActions  = $UniqueActions
-        MatchedTags    = $MatchedTags
-        RawTags        = $TagArray
+        # Identity
+        SoftwareName    = $SoftwareName
 
-        # Resolved state
-        IsSkipped      = $IsSkipped
-        IsPinned       = $IsPinned
-        IsBlocked      = $IsBlocked
-        CanInstall     = $CanInstall
-        CanRemove      = $CanRemove
-        ResolvedAction = $ResolvedAction
-        ShouldVerify   = $ShouldVerify
+        # Global state
+        GlobalStatus    = $GlobalStatus
+        ShouldProcess   = $true
+
+        # Resolved action
+        ResolvedAction  = $ResolvedAction
+        ActionSource    = $ActionSource
+
+        # Tag detection
+        MatchedTags     = $MatchedTags
+        PolicyActions   = $UniqueActions
+        RawTags         = $TagArray
+
+        # State flags
+        HasInstalled    = $HasInstalled
+        IsPinned        = $IsPinned
+
+        # Custom field
+        CustomFieldPolicy = $CustomFieldPolicy
     }
 }
 
@@ -852,20 +982,24 @@ function Get-SoftwarePolicy {
 
 .DESCRIPTION
     High-level function that checks device tags for software policy requirements
-    and outputs formatted results. This is the main entry point for software
-    policy checking scripts.
+    and outputs formatted results. Implements the 5-tag model from POLICY-TAGS.md.
 
     The function:
     1. Displays device information
     2. Lists all device tags
-    3. Checks for policy tags matching the software name
-    4. Reports matched policies and required actions
+    3. Checks global control tags (managed/excluded/pinned)
+    4. Checks software-specific override tags
+    5. Falls back to custom field policy if no override tags
+    6. Reports resolved action
 
 .PARAMETER SoftwareName
     The name of the software to check (e.g., "unchecky", "7zip").
 
 .PARAMETER DeviceTags
     Comma-separated list of device tags from Level.io.
+
+.PARAMETER CustomFieldPolicy
+    Optional policy value from custom field (install/remove/pin/empty).
 
 .EXAMPLE
     Invoke-SoftwarePolicyCheck -SoftwareName "unchecky" -DeviceTags $DeviceTags
@@ -880,7 +1014,10 @@ function Invoke-SoftwarePolicyCheck {
         [string]$SoftwareName,
 
         [Parameter(Mandatory = $false)]
-        [string]$DeviceTags = ""
+        [string]$DeviceTags = "",
+
+        [Parameter(Mandatory = $false)]
+        [string]$CustomFieldPolicy = ""
     )
 
     # Log device info
@@ -904,69 +1041,78 @@ function Invoke-SoftwarePolicyCheck {
     }
     Write-Host ""
 
-    # Get software policy from device tags
-    Write-LevelLog "Checking for '$SoftwareName' policy tags..."
-    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
+    # Get software policy from device tags and custom field
+    Write-LevelLog "Checking policy for '$SoftwareName'..."
+    $Policy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags -CustomFieldPolicy $CustomFieldPolicy
 
-    # Display results
+    # Display results header
     Write-Host ""
     Write-LevelLog "========================================" -Level "INFO"
-    Write-LevelLog "Software Policy Results: $SoftwareName" -Level "INFO"
+    Write-LevelLog "Policy Results: $SoftwareName" -Level "INFO"
     Write-LevelLog "========================================" -Level "INFO"
     Write-Host ""
 
-    if (-not $Policy.HasPolicy) {
-        Write-LevelLog "No policy tags found for this software" -Level "INFO"
+    # Show global status first
+    Write-LevelLog "Global Status: $($Policy.GlobalStatus)" -Level "INFO"
+
+    # Handle early exit cases (device not processed)
+    if (-not $Policy.ShouldProcess) {
         Write-Host ""
-        Write-LevelLog "To set a policy, add one of these tags in Level.io:" -Level "INFO"
-        Write-Host "  Install/reinstall     : 🙏$SoftwareName"
-        Write-Host "  Remove if present     : ⛔$SoftwareName"
-        Write-Host "  Block install         : 🚫$SoftwareName or 🛑$SoftwareName"
-        Write-Host "  Pin (lock state)      : 📌$SoftwareName"
-        Write-Host "  Has (installed)       : ✅$SoftwareName"
-        Write-Host "  Skip (hands off)      : ❌$SoftwareName"
+        Write-LevelLog "$($Policy.SkipReason)" -Level "WARNING"
         Write-Host ""
-        Write-LevelLog "Resolved Action: NONE" -Level "INFO"
+        Write-LevelLog "Resolved Action: NONE (skipped)" -Level "INFO"
+        return $Policy
     }
-    else {
-        Write-LevelLog "Policy tags detected: $($Policy.MatchedTags.Count)" -Level "SUCCESS"
-        Write-Host ""
 
+    Write-Host ""
+
+    # Show matched software-specific tags
+    if ($Policy.MatchedTags.Count -gt 0) {
+        Write-LevelLog "Override Tags Found: $($Policy.MatchedTags.Count)" -Level "SUCCESS"
         foreach ($Tag in $Policy.MatchedTags) {
-            Write-Host "  Tag: $Tag"
+            Write-Host "  - $Tag"
         }
         Write-Host ""
+    }
 
-        # Show raw actions detected
-        Write-LevelLog "Actions detected:" -Level "INFO"
-        foreach ($Action in $Policy.PolicyActions) {
-            Write-Host "  - $Action"
-        }
+    # Show custom field policy if set
+    if (-not [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
+        Write-LevelLog "Custom Field Policy: $CustomFieldPolicy" -Level "INFO"
+    }
+
+    # Show status flags
+    Write-LevelLog "Status:" -Level "INFO"
+    Write-Host "  - Installed: $($Policy.HasInstalled)"
+    Write-Host "  - Pinned: $($Policy.IsPinned)"
+    Write-Host ""
+
+    # Show resolved action with description
+    $ActionDesc = switch ($Policy.ResolvedAction) {
+        "Pin"       { "PIN - No changes allowed (admin intent)" }
+        "Reinstall" { "REINSTALL - Remove then install fresh" }
+        "Remove"    { "REMOVE - Uninstall software" }
+        "Install"   { "INSTALL - Install if not present" }
+        "None"      { "NONE - No action required" }
+        default     { "UNKNOWN - $($Policy.ResolvedAction)" }
+    }
+
+    $SourceDesc = switch ($Policy.ActionSource) {
+        "Tag"         { "(from device tag)" }
+        "CustomField" { "(from custom field policy)" }
+        "GlobalTag"   { "(from global control)" }
+        default       { "" }
+    }
+
+    Write-LevelLog "Resolved Action: $ActionDesc $SourceDesc" -Level "INFO"
+
+    # Show available override tags if no action
+    if ($Policy.ResolvedAction -eq "None" -and $Policy.MatchedTags.Count -eq 0) {
         Write-Host ""
-
-        # Show state flags
-        Write-LevelLog "State:" -Level "INFO"
-        if ($Policy.IsSkipped) { Write-Host "  - SKIPPED (hands off)" }
-        if ($Policy.IsPinned) { Write-Host "  - PINNED (state locked)" }
-        if ($Policy.IsBlocked) { Write-Host "  - BLOCKED (install prevented)" }
-        if (-not $Policy.IsSkipped -and -not $Policy.IsPinned -and -not $Policy.IsBlocked) {
-            Write-Host "  - CanInstall: $($Policy.CanInstall)"
-            Write-Host "  - CanRemove: $($Policy.CanRemove)"
-        }
-        Write-Host ""
-
-        # Show resolved action
-        $ResolvedDescription = switch ($Policy.ResolvedAction) {
-            "Skip"    { "SKIP - Hands off (managed elsewhere)" }
-            "Install" { "INSTALL - Install/reinstall software" }
-            "Remove"  { "REMOVE - Uninstall if present" }
-            $null     { "NONE - No action (state locked or blocked)" }
-        }
-        Write-LevelLog "Resolved Action: $ResolvedDescription" -Level "INFO"
-
-        if ($Policy.ShouldVerify) {
-            Write-LevelLog "Verify: YES - Check installation health" -Level "INFO"
-        }
+        Write-LevelLog "To override policy, add one of these tags:" -Level "INFO"
+        Write-Host "  Install if missing : [U+1F64F]$SoftwareName"
+        Write-Host "  Remove if present  : [U+1F6AB]$SoftwareName"
+        Write-Host "  Pin (no changes)   : [U+1F4CC]$SoftwareName"
+        Write-Host "  Reinstall          : [U+1F504]$SoftwareName"
     }
 
     return $Policy
