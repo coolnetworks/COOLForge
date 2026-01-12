@@ -1788,6 +1788,56 @@ function Find-LevelTag {
 
 <#
 .SYNOPSIS
+    Creates a new tag in Level.io.
+
+.DESCRIPTION
+    Creates a new tag using the Level.io API.
+    Uses POST /v2/tags endpoint.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER TagName
+    The name of the tag to create.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    The created tag object on success, $null on failure.
+
+.EXAMPLE
+    $Tag = New-LevelTag -ApiKey $ApiKey -TagName "✅UNCHECKY"
+#>
+function New-LevelTag {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Uri = "$BaseUrl/tags"
+    $Body = @{ name = $TagName }
+
+    $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
+
+    if (-not $Result.Success) {
+        Write-LevelLog "Failed to create tag '$TagName': $($Result.Error)" -Level "ERROR"
+        return $null
+    }
+
+    Write-LevelLog "Created tag '$TagName'" -Level "SUCCESS"
+    return $Result.Data
+}
+
+<#
+.SYNOPSIS
     Adds a tag to a device in Level.io.
 
 .DESCRIPTION
@@ -1982,11 +2032,15 @@ function Add-LevelPolicyTag {
         return $false
     }
 
-    # Find the tag
+    # Find the tag, create if doesn't exist
     $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
     if (-not $Tag) {
-        Write-LevelLog "Tag '$FullTagName' not found in Level.io - cannot add" -Level "WARN"
-        return $false
+        Write-LevelLog "Tag '$FullTagName' not found - creating..." -Level "DEBUG"
+        $Tag = New-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+        if (-not $Tag) {
+            Write-LevelLog "Failed to create tag '$FullTagName'" -Level "ERROR"
+            return $false
+        }
     }
 
     # Add the tag
@@ -4118,7 +4172,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.12.10"
+$script:ModuleVersion = "2026.01.12.11"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
