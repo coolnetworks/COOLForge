@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.1
+    Version:          2026.01.12.2
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.1
+# Version: 2026.01.12.2
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -139,10 +139,11 @@ function Install-Unchecky {
         return $false
     }
 
-    # Run silent install
+    # Run silent install (uses -install -no_desktop_icon syntax)
     Write-LevelLog "Installing Unchecky..."
     try {
-        $Process = Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait -PassThru -ErrorAction Stop
+        $InstallArgs = "-install -no_desktop_icon"
+        $Process = Start-Process -FilePath $InstallerPath -ArgumentList $InstallArgs -Wait -PassThru -ErrorAction Stop
         if ($Process.ExitCode -eq 0) {
             Write-LevelLog "Unchecky installed successfully" -Level "SUCCESS"
             return $true
@@ -165,28 +166,49 @@ function Install-Unchecky {
 }
 
 function Remove-Unchecky {
-    $UninstallString = Get-UncheckyUninstallString
+    # Find the Unchecky install folder
+    $InstallPaths = @(
+        "${env:ProgramFiles(x86)}\Unchecky",
+        "$env:ProgramFiles\Unchecky"
+    )
 
-    if (-not $UninstallString) {
-        Write-LevelLog "Unchecky uninstall string not found" -Level "WARNING"
+    $InstallPath = $null
+    foreach ($Path in $InstallPaths) {
+        if (Test-Path $Path) {
+            $InstallPath = $Path
+            break
+        }
+    }
+
+    if (-not $InstallPath) {
+        Write-LevelLog "Unchecky install folder not found" -Level "WARNING"
         return $true  # Not installed = success
+    }
+
+    $Uninstaller = Join-Path $InstallPath "uninstall.exe"
+    if (-not (Test-Path $Uninstaller)) {
+        Write-LevelLog "Unchecky uninstaller not found at $Uninstaller" -Level "WARNING"
+        return $true  # Uninstaller missing = consider uninstalled
     }
 
     Write-LevelLog "Uninstalling Unchecky..."
     try {
-        # Handle quoted paths and add silent flag
-        if ($UninstallString -match '^"([^"]+)"(.*)$') {
-            $Executable = $Matches[1]
-            $UninstallArgs = "$($Matches[2]) /S".Trim()
+        # Copy uninstaller to temp folder (required for proper uninstall)
+        $TempFolder = Join-Path $env:TEMP "Unchecky_Uninstall"
+        if (-not (Test-Path $TempFolder)) {
+            New-Item -ItemType Directory -Path $TempFolder -Force | Out-Null
         }
-        else {
-            $Executable = $UninstallString
-            $UninstallArgs = "/S"
-        }
+        $TempUninstaller = Join-Path $TempFolder "uninstall.exe"
+        Copy-Item -Path $Uninstaller -Destination $TempUninstaller -Force
 
-        $Process = Start-Process -FilePath $Executable -ArgumentList $UninstallArgs -Wait -PassThru -ErrorAction Stop
+        # Run silent uninstall with proper arguments
+        $UninstallArgs = "-uninstall -path `"$InstallPath`" -delsettings 1"
+        $Process = Start-Process -FilePath $TempUninstaller -ArgumentList $UninstallArgs -Wait -PassThru -ErrorAction Stop
+
         if ($Process.ExitCode -eq 0) {
             Write-LevelLog "Unchecky uninstalled successfully" -Level "SUCCESS"
+            # Cleanup temp folder
+            Remove-Item $TempFolder -Recurse -Force -ErrorAction SilentlyContinue
             return $true
         }
         else {
@@ -203,7 +225,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.1"
+$ScriptVersion = "2026.01.12.2"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
