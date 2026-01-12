@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.7
+    Version:          2026.01.12.8
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.12.7
+# Version: 2026.01.12.8
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -292,7 +292,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.7"
+$ScriptVersion = "2026.01.12.8"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -305,6 +305,31 @@ $InvokeParams = @{ ScriptBlock = {
     $CustomFieldPolicy = Get-Variable -Name $CustomFieldPolicyVar -ValueOnly -ErrorAction SilentlyContinue
     if ($CustomFieldPolicy) {
         Write-LevelLog "Custom field policy: $CustomFieldPolicy"
+    }
+
+    # ============================================================
+    # AUTO-BOOTSTRAP: Create policy infrastructure if needed
+    # ============================================================
+    # If no custom field policy AND no override tags, bootstrap the policy
+    # This allows first-run setup without manual configuration
+    if ($LevelApiKey -and [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
+        # Quick check for override tags before bootstrapping
+        $QuickPolicy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
+        if ($QuickPolicy.ShouldProcess -and $QuickPolicy.ResolvedAction -eq "None" -and $QuickPolicy.MatchedTags.Count -eq 0) {
+            Write-LevelLog "No policy configured - auto-bootstrapping..." -Level "INFO"
+            $Bootstrap = Initialize-LevelSoftwarePolicy -ApiKey $LevelApiKey `
+                -SoftwareName $SoftwareName `
+                -DeviceHostname $DeviceHostname `
+                -DefaultAction "install"
+
+            if ($Bootstrap.Success) {
+                Write-LevelLog "Created policy_$SoftwareName custom field with default 'install'" -Level "SUCCESS"
+                $CustomFieldPolicy = $Bootstrap.Action
+            }
+            else {
+                Write-LevelLog "Auto-bootstrap failed: $($Bootstrap.Error)" -Level "WARNING"
+            }
+        }
     }
 
     # Check current installation state

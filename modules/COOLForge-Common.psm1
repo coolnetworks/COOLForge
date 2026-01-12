@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.06
+    Version:    2026.01.12.07
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -2072,6 +2072,398 @@ function Remove-LevelPolicyTag {
 }
 
 # ============================================================
+# CUSTOM FIELD MANAGEMENT
+# ============================================================
+
+<#
+.SYNOPSIS
+    Retrieves all custom field definitions from Level.io with pagination.
+
+.DESCRIPTION
+    Fetches all custom field definitions from the Level.io API, automatically
+    handling pagination. Used for policy auto-bootstrapping.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Array of custom field objects, or $null on failure.
+    Each object contains: id, name, reference, admin_only, etc.
+
+.EXAMPLE
+    $Fields = Get-LevelCustomFields -ApiKey "{{cf_apikey}}"
+    $PolicyField = $Fields | Where-Object { $_.name -eq "policy_unchecky" }
+#>
+function Get-LevelCustomFields {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AllFields = @()
+    $StartingAfter = $null
+
+    do {
+        $Uri = "$BaseUrl/custom_fields?limit=100"
+        if ($StartingAfter) {
+            $Uri += "&starting_after=$StartingAfter"
+        }
+
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+
+        if (-not $Result.Success) {
+            Write-LevelLog "Failed to fetch custom fields: $($Result.Error)" -Level "ERROR"
+            return $null
+        }
+
+        $Data = $Result.Data
+        $Fields = if ($Data.data) { $Data.data } else { @($Data) }
+
+        if ($Fields -and $Fields.Count -gt 0) {
+            $AllFields += $Fields
+
+            # Handle pagination
+            $HasMore = $Data.has_more -eq $true
+            if ($HasMore) {
+                $StartingAfter = $Fields[-1].id
+            } else {
+                break
+            }
+        } else {
+            break
+        }
+    } while ($true)
+
+    return $AllFields
+}
+
+<#
+.SYNOPSIS
+    Finds a custom field by name or reference.
+
+.DESCRIPTION
+    Searches through existing custom fields to find one matching
+    the specified name or reference property.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER FieldName
+    The name or reference to search for (e.g., "policy_unchecky").
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Custom field object if found, $null if not found.
+
+.EXAMPLE
+    $Field = Find-LevelCustomField -ApiKey $ApiKey -FieldName "policy_unchecky"
+    if ($Field) {
+        Write-LevelLog "Found field: $($Field.id)"
+    }
+#>
+function Find-LevelCustomField {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Fields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
+    if (-not $Fields) {
+        return $null
+    }
+
+    # Match by name or reference (case-insensitive)
+    $Matched = $Fields | Where-Object {
+        $_.name -ieq $FieldName -or $_.reference -ieq $FieldName
+    } | Select-Object -First 1
+
+    return $Matched
+}
+
+<#
+.SYNOPSIS
+    Creates a new custom field in Level.io.
+
+.DESCRIPTION
+    Creates a new custom field definition. Used for auto-bootstrapping
+    when a policy custom field doesn't exist.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER Name
+    The name for the custom field (e.g., "policy_unchecky").
+
+.PARAMETER DefaultValue
+    Optional default value for the field.
+
+.PARAMETER AdminOnly
+    If $true, field is only visible to admins. Default: $false
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Created custom field object on success, $null on failure.
+
+.EXAMPLE
+    $Field = New-LevelCustomField -ApiKey $ApiKey -Name "policy_unchecky" -DefaultValue ""
+#>
+function New-LevelCustomField {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DefaultValue = "",
+
+        [Parameter(Mandatory = $false)]
+        [bool]$AdminOnly = $false,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Body = @{
+        name       = $Name
+        admin_only = $AdminOnly
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($DefaultValue)) {
+        $Body.default_value = $DefaultValue
+    }
+
+    Write-LevelLog "Creating custom field: $Name" -Level "DEBUG"
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields" -ApiKey $ApiKey -Method "POST" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelLog "Created custom field: $Name" -Level "SUCCESS"
+        return $Result.Data
+    }
+    else {
+        Write-LevelLog "Failed to create custom field '$Name': $($Result.Error)" -Level "ERROR"
+        return $null
+    }
+}
+
+<#
+.SYNOPSIS
+    Sets a custom field value on an entity (organization, folder, or device).
+
+.DESCRIPTION
+    Updates the custom field value for a specific entity. Used for setting
+    device-level policy values during auto-bootstrapping.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER EntityType
+    Type of entity: "organization", "folder", or "device".
+
+.PARAMETER EntityId
+    The ID of the entity to update.
+
+.PARAMETER FieldReference
+    The reference/key of the custom field (e.g., "cf_policy_unchecky").
+
+.PARAMETER Value
+    The value to set.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    $true on success, $false on failure.
+
+.EXAMPLE
+    Set-LevelCustomFieldValue -ApiKey $ApiKey -EntityType "device" -EntityId $Device.id `
+        -FieldReference "cf_policy_unchecky" -Value "install"
+#>
+function Set-LevelCustomFieldValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("organization", "folder", "device")]
+        [string]$EntityType,
+
+        [Parameter(Mandatory = $true)]
+        [string]$EntityId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldReference,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Endpoint = switch ($EntityType) {
+        "organization" { "/organizations/$EntityId" }
+        "folder"       { "/folders/$EntityId" }
+        "device"       { "/devices/$EntityId" }
+    }
+
+    $Body = @{
+        custom_fields = @{
+            $FieldReference = $Value
+        }
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl$Endpoint" -ApiKey $ApiKey -Method "PATCH" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelLog "Set $EntityType custom field '$FieldReference' = '$Value'" -Level "DEBUG"
+        return $true
+    }
+    else {
+        Write-LevelLog "Failed to set custom field: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
+}
+
+<#
+.SYNOPSIS
+    Ensures policy infrastructure exists for a software package.
+
+.DESCRIPTION
+    Auto-bootstrapping function that:
+    1. Checks if policy custom field exists (e.g., "policy_unchecky")
+    2. Creates the custom field if it doesn't exist
+    3. Sets the device-level value to trigger installation
+
+    This allows scripts to be deployed without manual setup of custom fields.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER SoftwareName
+    The software name (e.g., "unchecky").
+
+.PARAMETER DeviceHostname
+    The hostname of the current device.
+
+.PARAMETER DefaultAction
+    Default action to set if creating new policy. Default: "install"
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Hashtable with:
+    - Success: $true if ready to proceed
+    - CustomFieldId: ID of the policy custom field
+    - CustomFieldRef: Reference key (e.g., "cf_policy_unchecky")
+    - Action: The resolved action for this device
+
+.EXAMPLE
+    $Bootstrap = Initialize-LevelSoftwarePolicy -ApiKey $ApiKey -SoftwareName "unchecky" `
+        -DeviceHostname $DeviceHostname
+    if ($Bootstrap.Success) {
+        Write-LevelLog "Policy action: $($Bootstrap.Action)"
+    }
+#>
+function Initialize-LevelSoftwarePolicy {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SoftwareName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceHostname,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DefaultAction = "install",
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $FieldName = "policy_$($SoftwareName.ToLower())"
+    Write-LevelLog "Checking policy infrastructure for '$SoftwareName'..." -Level "DEBUG"
+
+    # Step 1: Check if custom field exists
+    $ExistingField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $FieldName -BaseUrl $BaseUrl
+
+    if (-not $ExistingField) {
+        # Step 2: Create custom field
+        Write-LevelLog "Policy custom field '$FieldName' not found - creating..." -Level "INFO"
+        $ExistingField = New-LevelCustomField -ApiKey $ApiKey -Name $FieldName -DefaultValue "" -BaseUrl $BaseUrl
+
+        if (-not $ExistingField) {
+            Write-LevelLog "Failed to create policy custom field" -Level "ERROR"
+            return @{ Success = $false; Error = "Failed to create custom field" }
+        }
+    }
+
+    # Determine the reference key (usually "cf_<name>")
+    $FieldRef = $ExistingField.reference
+    if (-not $FieldRef) {
+        # Fallback - construct from name
+        $FieldRef = "cf_$($FieldName -replace '[^a-zA-Z0-9_]', '_')"
+    }
+
+    # Step 3: Find the current device
+    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    if (-not $Device) {
+        Write-LevelLog "Could not find device '$DeviceHostname' in Level.io" -Level "WARN"
+        return @{ Success = $false; Error = "Device not found" }
+    }
+
+    # Step 4: Check current device value
+    $CurrentValue = ""
+    if ($Device.custom_fields -and $Device.custom_fields.$FieldRef) {
+        $CurrentValue = $Device.custom_fields.$FieldRef
+    }
+
+    # Step 5: If no value, set the default action on the device
+    if ([string]::IsNullOrWhiteSpace($CurrentValue)) {
+        Write-LevelLog "No policy value set on device - setting to '$DefaultAction'" -Level "INFO"
+        $SetResult = Set-LevelCustomFieldValue -ApiKey $ApiKey -EntityType "device" `
+            -EntityId $Device.id -FieldReference $FieldRef -Value $DefaultAction -BaseUrl $BaseUrl
+
+        if ($SetResult) {
+            $CurrentValue = $DefaultAction
+        }
+    }
+
+    return @{
+        Success        = $true
+        CustomFieldId  = $ExistingField.id
+        CustomFieldRef = $FieldRef
+        Action         = $CurrentValue
+        DeviceId       = $Device.id
+    }
+}
+
+# ============================================================
 # WAKE-ON-LAN
 # ============================================================
 
@@ -2184,7 +2576,7 @@ function Send-LevelWakeOnLan {
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.08.01"
+$script:ModuleVersion = "2026.01.12.07"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -2222,6 +2614,13 @@ Export-ModuleMember -Function @(
     'Remove-LevelTagFromDevice',
     'Add-LevelPolicyTag',
     'Remove-LevelPolicyTag',
+
+    # Custom Field Management
+    'Get-LevelCustomFields',
+    'Find-LevelCustomField',
+    'New-LevelCustomField',
+    'Set-LevelCustomFieldValue',
+    'Initialize-LevelSoftwarePolicy',
 
     # Wake-on-LAN
     'Send-LevelWakeOnLan',
