@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.12.9
+    Version:          2026.01.12.10
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -282,6 +282,7 @@ function Test-UncheckyInstalled {
     )
     foreach ($Path in $Paths) {
         if (Test-Path $Path) {
+            if ($DebugScripts) { Write-Host "  [DEBUG] Found: $Path" -ForegroundColor Green }
             return $true
         }
     }
@@ -293,6 +294,7 @@ function Test-UncheckyInstalled {
     )
     foreach ($RegPath in $RegPaths) {
         if (Test-Path $RegPath) {
+            if ($DebugScripts) { Write-Host "  [DEBUG] Found registry: $RegPath" -ForegroundColor Green }
             return $true
         }
     }
@@ -490,7 +492,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.12.9"
+$ScriptVersion = "2026.01.12.10"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
