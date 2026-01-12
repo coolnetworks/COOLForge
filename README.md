@@ -93,8 +93,7 @@ See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 ```
 COOLForge/
 ├── modules/                     # PowerShell modules
-│   ├── COOLForge-Common.psm1    # Main library module
-│   └── COOLForge-CustomFields.psm1  # Level.io custom fields API module
+│   └── COOLForge-Common.psm1    # Main library module (includes admin tools)
 ├── scripts/                     # Ready-to-use automation scripts
 │   ├── Check/                   # Audits, compliance, health monitoring
 │   ├── Configure/               # Settings changes

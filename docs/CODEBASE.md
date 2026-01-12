@@ -169,27 +169,15 @@ Invoke-LevelScript -ScriptBlock {
 | `Repair-LevelEmoji` | Repairs corrupted UTF-8 emojis in strings |
 | `Get-LevelUrlEncoded` | URL-encode with proper UTF-8 emoji handling |
 
----
-
-### COOLForge-CustomFields.psm1
-
-**Location**: `modules/COOLForge-CustomFields.psm1`
-
-Admin-only module for interactive setup tools. Imports `COOLForge-Common.psm1` for shared API functions.
-
-**Note**: Core API functions have been moved to `COOLForge-Common.psm1`. This module provides admin-specific functionality only.
-
-#### Key Functions
+#### Admin Tool Functions (also in COOLForge-Common.psm1)
 
 | Category | Functions |
 |----------|-----------|
-| **Initialization** | `Initialize-COOLForgeCustomFields` |
 | **UI Helpers** | `Write-Header`, `Write-LevelSuccess`, `Write-LevelInfo`, `Write-LevelWarning`, `Write-LevelError`, `Read-UserInput`, `Read-YesNo` |
-| **Backup/Restore** | `Backup-AllCustomFields`, `Save-Backup`, `Import-Backup`, `Restore-CustomFields`, `Compare-BackupWithCurrent` |
-| **Security** | `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey` |
+| **Config/Security** | `Get-SavedConfig`, `Save-Config`, `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey` |
+| **Backup/Restore** | `Backup-AllCustomFields`, `Save-Backup`, `Import-Backup`, `Restore-CustomFields`, `Get-BackupPath`, `Get-LatestBackup`, `Compare-BackupWithCurrent`, `Show-BackupDifferences` |
 | **GitHub** | `Get-GitHubReleases`, `Show-ReleaseNotes`, `Select-Version` |
-
-**Moved to COOLForge-Common.psm1**: Custom Field Management (`Get-LevelCustomFields`, `New-LevelCustomField`, etc.), Hierarchy Navigation (`Get-LevelOrganizations`, etc.)
+| **Initialization** | `Initialize-LevelApi`, `Initialize-COOLForgeCustomFields` (alias) |
 
 ---
 
@@ -524,8 +512,7 @@ Level.io corrupts UTF-8 emojis when passing them through its variable system. Fo
 ```
 COOLForge/
 ├── modules/
-│   ├── COOLForge-Common.psm1        # Main shared library
-│   └── COOLForge-CustomFields.psm1  # Custom fields API module
+│   └── COOLForge-Common.psm1        # Main shared library (includes admin tools)
 ├── templates/
 │   ├── Launcher_Template.ps1        # Launcher template
 │   └── What is this folder.md       # Scratch folder documentation
@@ -551,9 +538,8 @@ COOLForge/
 
 ## Version Information
 
-- **Module Version**: 2026.01.12.08 (COOLForge-Common)
+- **Module Version**: 2026.01.12.09 (COOLForge-Common)
 - **Launcher Version**: 2026.01.12.05
-- **Custom Fields Version**: 2026.01.12.02
 
 ---
 

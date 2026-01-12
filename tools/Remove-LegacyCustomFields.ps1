@@ -41,20 +41,16 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Import shared functions - Common for API, CustomFields for admin helpers
-$CommonModulePath = Join-Path $PSScriptRoot "..\modules\COOLForge-Common.psm1"
-$CustomFieldsModulePath = Join-Path $PSScriptRoot "..\modules\COOLForge-CustomFields.psm1"
+# Import shared module
+$ModulePath = Join-Path $PSScriptRoot "..\modules\COOLForge-Common.psm1"
 
-if (-not (Test-Path $CommonModulePath)) {
+if (-not (Test-Path $ModulePath)) {
     Write-Host "[X] Could not find COOLForge-Common.psm1" -ForegroundColor Red
-    Write-Host "    Expected at: $CommonModulePath" -ForegroundColor Red
+    Write-Host "    Expected at: $ModulePath" -ForegroundColor Red
     exit 1
 }
 
-Import-Module $CommonModulePath -Force -DisableNameChecking
-if (Test-Path $CustomFieldsModulePath) {
-    Import-Module $CustomFieldsModulePath -Force -DisableNameChecking
-}
+Import-Module $ModulePath -Force -DisableNameChecking
 
 # Configuration
 $Script:ConfigFileName = ".COOLForge_Lib-setup.json"

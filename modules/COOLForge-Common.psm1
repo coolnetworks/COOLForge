@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.08
+    Version:    2026.01.12.09
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -2951,12 +2951,759 @@ function Send-LevelWakeOnLan {
 }
 
 # ============================================================
+# UI HELPER FUNCTIONS (Admin Tools)
+# ============================================================
+
+function Write-Header {
+    <#
+    .SYNOPSIS
+        Displays a section header for interactive tools.
+    #>
+    param([string]$Text)
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " $Text" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host ""
+}
+
+function Write-LevelSuccess {
+    <#
+    .SYNOPSIS
+        Displays a success message (green).
+    #>
+    param([string]$Text)
+    Write-Host "[+] $Text" -ForegroundColor Green
+}
+
+function Write-LevelInfo {
+    <#
+    .SYNOPSIS
+        Displays an info message (white).
+    #>
+    param([string]$Text)
+    Write-Host "[*] $Text" -ForegroundColor White
+}
+
+function Write-LevelWarning {
+    <#
+    .SYNOPSIS
+        Displays a warning message (yellow).
+    #>
+    param([string]$Text)
+    Write-Host "[!] $Text" -ForegroundColor Yellow
+}
+
+function Write-LevelError {
+    <#
+    .SYNOPSIS
+        Displays an error message (red).
+    #>
+    param([string]$Text)
+    Write-Host "[X] $Text" -ForegroundColor Red
+}
+
+function Read-UserInput {
+    <#
+    .SYNOPSIS
+        Prompts for user input with optional default value.
+    #>
+    param(
+        [string]$Prompt,
+        [string]$Default = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Default)) {
+        $FullPrompt = "$Prompt`: "
+    }
+    else {
+        $FullPrompt = "$Prompt [$Default]: "
+    }
+
+    Write-Host $FullPrompt -NoNewline -ForegroundColor Yellow
+    $UserInput = Read-Host
+
+    if ([string]::IsNullOrWhiteSpace($UserInput)) {
+        return $Default
+    }
+    return $UserInput
+}
+
+function Read-YesNo {
+    <#
+    .SYNOPSIS
+        Prompts for a yes/no answer.
+    #>
+    param(
+        [string]$Prompt,
+        [bool]$Default = $true
+    )
+
+    $DefaultText = if ($Default) { "Y/n" } else { "y/N" }
+    Write-Host "$Prompt [$DefaultText]: " -NoNewline -ForegroundColor Yellow
+    $UserInput = Read-Host
+
+    if ([string]::IsNullOrWhiteSpace($UserInput)) {
+        return $Default
+    }
+
+    return $UserInput.ToLower() -eq "y" -or $UserInput.ToLower() -eq "yes"
+}
+
+function Get-CompanyNameFromPath {
+    <#
+    .SYNOPSIS
+        Extracts the company name from a scratch folder path.
+    #>
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return ""
+    }
+
+    $Path = $Path.Trim().TrimEnd('\', '/')
+
+    if ($Path -match '^[A-Za-z]:\\ProgramData\\(.+)$') {
+        return $Matches[1]
+    }
+    if ($Path -match '^[A-Za-z]:/ProgramData/(.+)$') {
+        return $Matches[1]
+    }
+
+    return Split-Path $Path -Leaf
+}
+
+# ============================================================
+# CONFIG/SECURITY FUNCTIONS (Admin Tools)
+# ============================================================
+
+function Get-SavedConfig {
+    <#
+    .SYNOPSIS
+        Loads saved configuration from a config file.
+    #>
+    param([string]$Path = "")
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        $Path = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
+    }
+
+    if (Test-Path $Path) {
+        try {
+            $Content = Get-Content $Path -Raw -ErrorAction Stop
+            return $Content | ConvertFrom-Json
+        }
+        catch {
+            Write-LevelWarning "Could not load saved config: $($_.Exception.Message)"
+            return $null
+        }
+    }
+    return $null
+}
+
+function Save-Config {
+    <#
+    .SYNOPSIS
+        Saves configuration to a config file.
+    #>
+    param(
+        [hashtable]$Config,
+        [string]$Path = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        $Path = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
+    }
+
+    try {
+        $Config | ConvertTo-Json -Depth 5 | Set-Content $Path -Encoding UTF8 -ErrorAction Stop
+        return $true
+    }
+    catch {
+        Write-LevelWarning "Could not save config: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Protect-ApiKey {
+    <#
+    .SYNOPSIS
+        Encrypts API key for storage (Windows DPAPI - user-specific).
+    #>
+    param([string]$PlainText)
+
+    try {
+        $SecureString = ConvertTo-SecureString $PlainText -AsPlainText -Force
+        return ConvertFrom-SecureString $SecureString
+    }
+    catch {
+        return $null
+    }
+}
+
+function Unprotect-ApiKey {
+    <#
+    .SYNOPSIS
+        Decrypts API key from storage.
+    #>
+    param([string]$EncryptedText)
+
+    try {
+        $SecureString = ConvertTo-SecureString $EncryptedText -ErrorAction Stop
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)
+        return [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    }
+    catch {
+        return $null
+    }
+}
+
+# ============================================================
+# BACKUP/RESTORE FUNCTIONS (Admin Tools)
+# ============================================================
+
+function Backup-AllCustomFields {
+    <#
+    .SYNOPSIS
+        Creates a complete backup of all custom field values across the hierarchy.
+    #>
+    param([switch]$IncludeDevices = $false)
+
+    $Backup = @{
+        Timestamp     = (Get-Date).ToString("o")
+        Version       = "1.0"
+        CustomFields  = @()
+        Organizations = @()
+    }
+
+    Write-LevelInfo "Backing up custom field definitions..."
+    $Fields = Get-LevelCustomFields -ApiKey $Script:LevelApiKey
+    $Backup.CustomFields = $Fields
+
+    Write-LevelInfo "Fetching organizations..."
+    $Orgs = Get-LevelOrganizations -ApiKey $Script:LevelApiKey
+
+    if (-not $Orgs -or $Orgs.Count -eq 0) {
+        Write-LevelWarning "No organizations found."
+        return $Backup
+    }
+
+    $OrgCount = if ($Orgs -is [array]) { $Orgs.Count } else { 1 }
+    Write-LevelInfo "Found $OrgCount organization(s)."
+
+    foreach ($Org in $Orgs) {
+        Write-Host "  Processing: $($Org.name)" -ForegroundColor DarkGray
+
+        $OrgBackup = @{
+            Id           = $Org.id
+            Name         = $Org.name
+            CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $Org.id
+            Folders      = @()
+        }
+
+        $Folders = Get-LevelOrganizationFolders -ApiKey $Script:LevelApiKey -OrgId $Org.id
+        $FolderCount = if ($Folders -is [array]) { $Folders.Count } else { if ($Folders) { 1 } else { 0 } }
+
+        if ($FolderCount -gt 0) {
+            Write-Host "    Found $FolderCount folder(s)" -ForegroundColor DarkGray
+        }
+
+        foreach ($Folder in $Folders) {
+            $FolderBackup = @{
+                Id           = $Folder.id
+                Name         = $Folder.name
+                ParentId     = $Folder.parent_id
+                CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $Folder.id
+                Devices      = @()
+            }
+
+            if ($IncludeDevices) {
+                $Devices = Get-LevelFolderDevices -ApiKey $Script:LevelApiKey -OrgId $Org.id -FolderId $Folder.id
+                foreach ($Device in $Devices) {
+                    $DeviceBackup = @{
+                        Id           = $Device.id
+                        Name         = $Device.name
+                        CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $Device.id
+                    }
+                    $FolderBackup.Devices += $DeviceBackup
+                }
+            }
+
+            $OrgBackup.Folders += $FolderBackup
+        }
+
+        $Backup.Organizations += $OrgBackup
+    }
+
+    return $Backup
+}
+
+function Save-Backup {
+    <#
+    .SYNOPSIS
+        Saves a backup to a compressed zip file.
+    #>
+    param(
+        [hashtable]$Backup,
+        [string]$Path
+    )
+
+    try {
+        $Backup | ConvertTo-Json -Depth 20 | Set-Content $Path -Encoding UTF8 -ErrorAction Stop
+        $ZipPath = $Path -replace '\.json$', '.zip'
+        Compress-Archive -Path $Path -DestinationPath $ZipPath -Force -ErrorAction Stop
+        Remove-Item $Path -Force -ErrorAction SilentlyContinue
+        return $true
+    }
+    catch {
+        Write-LevelError "Failed to save backup: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Import-Backup {
+    <#
+    .SYNOPSIS
+        Imports a backup from a zip or JSON file.
+    #>
+    param([string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        Write-LevelError "Backup file not found: $Path"
+        return $null
+    }
+
+    try {
+        $JsonContent = $null
+
+        if ($Path -match '\.zip$') {
+            $TempDir = Join-Path $env:TEMP "coolforge_lib_backup_$(Get-Random)"
+            New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
+            Expand-Archive -Path $Path -DestinationPath $TempDir -Force -ErrorAction Stop
+            $JsonFile = Get-ChildItem -Path $TempDir -Filter "*.json" | Select-Object -First 1
+            if ($JsonFile) {
+                $JsonContent = Get-Content $JsonFile.FullName -Raw -ErrorAction Stop
+            }
+            Remove-Item $TempDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        else {
+            $JsonContent = Get-Content $Path -Raw -ErrorAction Stop
+        }
+
+        if ($JsonContent) {
+            return $JsonContent | ConvertFrom-Json
+        }
+        else {
+            Write-LevelError "No JSON content found in backup."
+            return $null
+        }
+    }
+    catch {
+        Write-LevelError "Failed to load backup: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Restore-CustomFields {
+    <#
+    .SYNOPSIS
+        Restores custom field values from a backup.
+    #>
+    param(
+        [PSObject]$Backup,
+        [switch]$DryRun = $false,
+        [switch]$IncludeDevices = $false
+    )
+
+    if (-not $Backup) {
+        Write-LevelError "No backup provided."
+        return $false
+    }
+
+    Write-LevelInfo "Restoring from backup created: $($Backup.Timestamp)"
+    $Changes = 0
+
+    foreach ($Org in $Backup.Organizations) {
+        Write-Host "  Restoring: $($Org.Name)" -ForegroundColor DarkGray
+
+        foreach ($Field in $Org.CustomFields.PSObject.Properties) {
+            if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                if ($DryRun) {
+                    Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on org" -ForegroundColor Yellow
+                }
+                else {
+                    if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $Org.Id -FieldReference $Field.Name -Value $Field.Value) {
+                        $Changes++
+                    }
+                }
+            }
+        }
+
+        foreach ($Folder in $Org.Folders) {
+            foreach ($Field in $Folder.CustomFields.PSObject.Properties) {
+                if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                    if ($DryRun) {
+                        Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on folder $($Folder.Name)" -ForegroundColor Yellow
+                    }
+                    else {
+                        if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $Folder.Id -FieldReference $Field.Name -Value $Field.Value) {
+                            $Changes++
+                        }
+                    }
+                }
+            }
+
+            if ($IncludeDevices) {
+                foreach ($Device in $Folder.Devices) {
+                    foreach ($Field in $Device.CustomFields.PSObject.Properties) {
+                        if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                            if ($DryRun) {
+                                Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on device $($Device.Name)" -ForegroundColor Yellow
+                            }
+                            else {
+                                if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $Device.Id -FieldReference $Field.Name -Value $Field.Value) {
+                                    $Changes++
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if ($DryRun) {
+        Write-LevelInfo "Dry run complete. No changes made."
+    }
+    else {
+        Write-LevelSuccess "Restored $Changes custom field value(s)."
+    }
+
+    return $true
+}
+
+function Get-BackupPath {
+    <#
+    .SYNOPSIS
+        Generates a backup file path with timestamp.
+    #>
+    param([string]$BasePath = "")
+
+    $Date = Get-Date
+    $Timestamp = $Date.ToString("yyyy-MM-dd_HHmmss")
+
+    if ([string]::IsNullOrWhiteSpace($BasePath)) {
+        $RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+        $BasePath = Join-Path $RepoRoot "backups"
+    }
+
+    if (-not (Test-Path $BasePath)) {
+        New-Item -ItemType Directory -Path $BasePath -Force | Out-Null
+    }
+
+    return Join-Path $BasePath "customfields_$Timestamp.json"
+}
+
+function Get-LatestBackup {
+    <#
+    .SYNOPSIS
+        Gets the most recent backup file.
+    #>
+    param([string]$BasePath = "")
+
+    if ([string]::IsNullOrWhiteSpace($BasePath)) {
+        $RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+        $BasePath = Join-Path $RepoRoot "backups"
+    }
+
+    if (-not (Test-Path $BasePath)) {
+        return $null
+    }
+
+    $Latest = Get-ChildItem -Path $BasePath -Filter "customfields_*.zip" |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if ($Latest) {
+        return $Latest.FullName
+    }
+    return $null
+}
+
+function Compare-BackupWithCurrent {
+    <#
+    .SYNOPSIS
+        Compares a backup with current custom field values.
+    #>
+    param(
+        [PSObject]$Backup,
+        [switch]$IncludeDevices = $false
+    )
+
+    $Differences = @()
+    Write-LevelInfo "Comparing backup with current state..."
+
+    foreach ($OrgBackup in $Backup.Organizations) {
+        $CurrentOrgFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $OrgBackup.Id
+
+        foreach ($Field in $OrgBackup.CustomFields.PSObject.Properties) {
+            $BackupValue = $Field.Value
+            $CurrentValue = $CurrentOrgFields.$($Field.Name)
+
+            if ($BackupValue -ne $CurrentValue) {
+                $Differences += @{
+                    EntityType   = "Organization"
+                    EntityName   = $OrgBackup.Name
+                    EntityId     = $OrgBackup.Id
+                    FieldName    = $Field.Name
+                    BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                    CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                }
+            }
+        }
+
+        foreach ($FolderBackup in $OrgBackup.Folders) {
+            $CurrentFolderFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $FolderBackup.Id
+
+            foreach ($Field in $FolderBackup.CustomFields.PSObject.Properties) {
+                $BackupValue = $Field.Value
+                $CurrentValue = $CurrentFolderFields.$($Field.Name)
+
+                if ($BackupValue -ne $CurrentValue) {
+                    $Differences += @{
+                        EntityType   = "Folder"
+                        EntityName   = $FolderBackup.Name
+                        EntityId     = $FolderBackup.Id
+                        FieldName    = $Field.Name
+                        BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                        CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                    }
+                }
+            }
+
+            if ($IncludeDevices) {
+                foreach ($DeviceBackup in $FolderBackup.Devices) {
+                    $CurrentDeviceFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $DeviceBackup.Id
+
+                    foreach ($Field in $DeviceBackup.CustomFields.PSObject.Properties) {
+                        $BackupValue = $Field.Value
+                        $CurrentValue = $CurrentDeviceFields.$($Field.Name)
+
+                        if ($BackupValue -ne $CurrentValue) {
+                            $Differences += @{
+                                EntityType   = "Device"
+                                EntityName   = $DeviceBackup.Name
+                                EntityId     = $DeviceBackup.Id
+                                FieldName    = $Field.Name
+                                BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                                CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $Differences
+}
+
+function Show-BackupDifferences {
+    <#
+    .SYNOPSIS
+        Displays differences between backup and current state.
+    #>
+    param([array]$Differences)
+
+    if ($Differences.Count -eq 0) {
+        Write-LevelSuccess "No differences found - backup matches current state."
+        return
+    }
+
+    Write-Host ""
+    Write-Host "Found $($Differences.Count) difference(s):" -ForegroundColor Yellow
+    Write-Host ""
+
+    $Grouped = $Differences | Group-Object EntityType
+
+    foreach ($Group in $Grouped) {
+        Write-Host "  $($Group.Name)s:" -ForegroundColor Cyan
+
+        foreach ($Diff in $Group.Group) {
+            Write-Host "    $($Diff.EntityName) - $($Diff.FieldName)" -ForegroundColor White
+            Write-Host "      Backup:  $($Diff.BackupValue)" -ForegroundColor Green
+            Write-Host "      Current: $($Diff.CurrentValue)" -ForegroundColor Red
+        }
+        Write-Host ""
+    }
+}
+
+# ============================================================
+# GITHUB FUNCTIONS (Admin Tools)
+# ============================================================
+
+# Script-level variable for GitHub repo
+$Script:GitHubRepo = "coolnetworks/COOLForge"
+
+function Get-GitHubReleases {
+    <#
+    .SYNOPSIS
+        Fetches the latest releases from GitHub.
+    #>
+    param([int]$Count = 5)
+
+    $Uri = "https://api.github.com/repos/$Script:GitHubRepo/releases"
+    $Headers = @{
+        "Accept"     = "application/vnd.github.v3+json"
+        "User-Agent" = "COOLForge_Lib-Setup"
+    }
+
+    try {
+        $Response = Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Get -ErrorAction Stop
+        $Releases = @()
+
+        foreach ($Release in ($Response | Select-Object -First $Count)) {
+            $Releases += @{
+                TagName     = $Release.tag_name
+                Name        = $Release.name
+                Body        = $Release.body
+                PublishedAt = $Release.published_at
+                HtmlUrl     = $Release.html_url
+                Prerelease  = $Release.prerelease
+            }
+        }
+
+        return $Releases
+    }
+    catch {
+        Write-LevelWarning "Could not fetch GitHub releases: $($_.Exception.Message)"
+        return @()
+    }
+}
+
+function Show-ReleaseNotes {
+    <#
+    .SYNOPSIS
+        Displays release notes for a version.
+    #>
+    param([hashtable]$Release)
+
+    Write-Host ""
+    Write-Host "Release: $($Release.Name)" -ForegroundColor Cyan
+    Write-Host "Tag: $($Release.TagName)" -ForegroundColor DarkGray
+    Write-Host "Published: $($Release.PublishedAt)" -ForegroundColor DarkGray
+    if ($Release.Prerelease) {
+        Write-Host "  [PRE-RELEASE]" -ForegroundColor Yellow
+    }
+    Write-Host ""
+    Write-Host "Release Notes:" -ForegroundColor White
+    Write-Host "------------------------------------------------------------" -ForegroundColor DarkGray
+
+    if (-not [string]::IsNullOrWhiteSpace($Release.Body)) {
+        $Body = $Release.Body
+        $Body = $Body -replace '#+\s*', ''
+        $Body = $Body -replace '\*\*([^*]+)\*\*', '$1'
+        $Body = $Body -replace '\*([^*]+)\*', '$1'
+        Write-Host $Body
+    }
+    else {
+        Write-Host "(No release notes available)"
+    }
+    Write-Host "------------------------------------------------------------" -ForegroundColor DarkGray
+    Write-Host ""
+}
+
+function Select-Version {
+    <#
+    .SYNOPSIS
+        Interactive version selector with GitHub releases.
+    #>
+    param([string]$CurrentVersion = "")
+
+    Write-LevelInfo "Fetching available releases from GitHub..."
+    $Releases = Get-GitHubReleases -Count 5
+
+    if ($Releases.Count -eq 0) {
+        Write-LevelWarning "Could not fetch releases. Enter version manually."
+        return Read-UserInput -Prompt "Version tag (e.g., v2025.12.29)" -Default $CurrentVersion
+    }
+
+    Write-Host ""
+    Write-Host "Available versions:" -ForegroundColor Cyan
+    Write-Host ""
+
+    $Index = 1
+    foreach ($Release in $Releases) {
+        $PreReleaseTag = if ($Release.Prerelease) { " [PRE-RELEASE]" } else { "" }
+        $CurrentTag = if ($Release.TagName -eq $CurrentVersion) { " (current)" } else { "" }
+        Write-Host "  [$Index] $($Release.TagName)$PreReleaseTag$CurrentTag" -ForegroundColor White
+        Write-Host "      $($Release.Name)" -ForegroundColor DarkGray
+        $Index++
+    }
+
+    Write-Host ""
+    Write-Host "  [0] Don't pin (use latest from main branch)" -ForegroundColor Yellow
+    Write-Host "  [M] Enter version manually" -ForegroundColor Yellow
+    Write-Host ""
+
+    $Choice = Read-UserInput -Prompt "Select version" -Default "1"
+
+    if ($Choice -eq "0") {
+        return ""
+    }
+    elseif ($Choice.ToUpper() -eq "M") {
+        return Read-UserInput -Prompt "Version tag (e.g., v2025.12.29)" -Default $CurrentVersion
+    }
+    elseif ($Choice -match '^\d+$') {
+        $ChoiceInt = [int]$Choice
+        if ($ChoiceInt -ge 1 -and $ChoiceInt -le $Releases.Count) {
+            $SelectedRelease = $Releases[$ChoiceInt - 1]
+            Show-ReleaseNotes -Release $SelectedRelease
+
+            if (Read-YesNo -Prompt "Pin to $($SelectedRelease.TagName)" -Default $true) {
+                return $SelectedRelease.TagName
+            }
+            else {
+                return Select-Version -CurrentVersion $CurrentVersion
+            }
+        }
+    }
+
+    Write-LevelWarning "Invalid selection. Please try again."
+    return Select-Version -CurrentVersion $CurrentVersion
+}
+
+# ============================================================
+# ADMIN INITIALIZATION
+# ============================================================
+
+# Script-level API key for admin functions
+$Script:LevelApiKey = $null
+
+function Initialize-LevelApi {
+    <#
+    .SYNOPSIS
+        Initializes the Level.io API for admin tools.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey
+    )
+
+    $Script:LevelApiKey = $ApiKey
+    return @{ Success = $true }
+}
+
+# Alias for backward compatibility
+Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Scope Script
+
+# ============================================================
 # MODULE LOAD MESSAGE
 # ============================================================
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.12.08"
+$script:ModuleVersion = "2026.01.12.09"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -3016,5 +3763,40 @@ Export-ModuleMember -Function @(
 
     # Text Processing
     'Repair-LevelEmoji',
-    'Get-LevelUrlEncoded'
+    'Get-LevelUrlEncoded',
+
+    # UI Helpers (Admin Tools)
+    'Write-Header',
+    'Write-LevelSuccess',
+    'Write-LevelInfo',
+    'Write-LevelWarning',
+    'Write-LevelError',
+    'Read-UserInput',
+    'Read-YesNo',
+    'Get-CompanyNameFromPath',
+
+    # Config/Security (Admin Tools)
+    'Get-SavedConfig',
+    'Save-Config',
+    'Protect-ApiKey',
+    'Unprotect-ApiKey',
+
+    # Backup/Restore (Admin Tools)
+    'Backup-AllCustomFields',
+    'Save-Backup',
+    'Import-Backup',
+    'Restore-CustomFields',
+    'Get-BackupPath',
+    'Get-LatestBackup',
+    'Compare-BackupWithCurrent',
+    'Show-BackupDifferences',
+
+    # GitHub (Admin Tools)
+    'Get-GitHubReleases',
+    'Show-ReleaseNotes',
+    'Select-Version',
+
+    # Admin Initialization
+    'Initialize-LevelApi',
+    'Initialize-COOLForgeCustomFields'
 )

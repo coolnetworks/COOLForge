@@ -32,22 +32,16 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # LOAD MODULE
 # ============================================================
 
-# Load both modules - Common for API functions, CustomFields for admin helpers
-$CommonModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1"
-$CustomFieldsModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-CustomFields.psm1"
+$ModulePath = Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1"
 
-if (-not (Test-Path $CommonModulePath)) {
-    Write-Host "ERROR: Cannot find COOLForge-Common.psm1 at: $CommonModulePath" -ForegroundColor Red
+if (-not (Test-Path $ModulePath)) {
+    Write-Host "ERROR: Cannot find COOLForge-Common.psm1 at: $ModulePath" -ForegroundColor Red
     exit 1
 }
 
 # Force reimport to get latest changes
 Remove-Module COOLForge-Common -ErrorAction SilentlyContinue
-Remove-Module COOLForge-CustomFields -ErrorAction SilentlyContinue
-Import-Module $CommonModulePath -Force -DisableNameChecking
-if (Test-Path $CustomFieldsModulePath) {
-    Import-Module $CustomFieldsModulePath -Force -DisableNameChecking
-}
+Import-Module $ModulePath -Force -DisableNameChecking
 
 # ============================================================
 # CONFIGURATION
