@@ -179,7 +179,7 @@ Write-Header "COOLForge Custom Field Manager"
 
 if (-not (Test-Path $ConfigPath)) {
     Write-Host "[X] Config not found: $ConfigPath" -ForegroundColor Red
-    Write-Host "    Run Setup-COOLForgeCustomFields.ps1 first to create the config." -ForegroundColor Gray
+    Write-Host "    Run Setup-COOLForge.ps1 first to create the config." -ForegroundColor Gray
     exit 1
 }
 

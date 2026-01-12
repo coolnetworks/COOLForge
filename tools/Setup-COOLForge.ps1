@@ -43,12 +43,12 @@
     https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
-    .\Setup-COOLForgeCustomFields.ps1
+    .\Setup-COOLForge.ps1
 
     Runs the interactive setup wizard.
 
 .EXAMPLE
-    .\Setup-COOLForgeCustomFields.ps1 -ApiKey "your-api-key"
+    .\Setup-COOLForge.ps1 -ApiKey "your-api-key"
 
     Runs setup with API key provided (skips the prompt).
 #>

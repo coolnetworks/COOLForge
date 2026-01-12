@@ -7,7 +7,7 @@
     replaced by the new CoolForge_* prefixed fields.
 
     IMPORTANT: Only run this AFTER you have:
-    1. Run Setup-COOLForgeCustomFields.ps1 to create the new fields
+    1. Run Setup-COOLForge.ps1 to create the new fields
     2. Verified all your scripts are updated to use the new field names
     3. Confirmed all endpoints are working correctly with the new fields
 
@@ -170,7 +170,7 @@ if ($MissingNewFields.Count -gt 0) {
         Write-Host "    - $Missing" -ForegroundColor Red
     }
     Write-Host ""
-    Write-Host "Please run Setup-COOLForgeCustomFields.ps1 first to create the new fields." -ForegroundColor Yellow
+    Write-Host "Please run Setup-COOLForge.ps1 first to create the new fields." -ForegroundColor Yellow
     Write-Host ""
     exit 1
 }

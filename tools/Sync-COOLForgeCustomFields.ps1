@@ -12,7 +12,7 @@
     - Ensure all required fields exist before deploying scripts
     - Run as part of CI/CD or automated setup
 
-    For interactive setup with value configuration, use Setup-COOLForgeCustomFields.ps1
+    For interactive setup with value configuration, use Setup-COOLForge.ps1
 
 .PARAMETER FeatureGroups
     Comma-separated list of feature groups to include (e.g., "screenconnect").

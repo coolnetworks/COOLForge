@@ -284,7 +284,7 @@ Create this custom field in Level.io (Settings → Custom Fields):
 |------------|------|-------------|
 | `cf_coolforge_technician_alerts` | Text | JSON array of pending alerts (managed by scripts) |
 
-> **Note:** The setup wizard (`Setup-COOLForgeCustomFields.ps1`) will create this automatically if you run it.
+> **Note:** The setup wizard (`Setup-COOLForge.ps1`) will create this automatically if you run it.
 
 ### Step 2: Tag Your Workstation
 

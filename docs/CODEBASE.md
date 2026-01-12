@@ -298,7 +298,7 @@ Administrative tools in `tools/`:
 
 | Tool | Description |
 |------|-------------|
-| `Setup-COOLForgeCustomFields.ps1` | Interactive setup wizard for custom fields |
+| `Setup-COOLForge.ps1` | Interactive setup wizard for custom fields |
 | `Generate-CustomFieldsConfig.ps1` | Generate custom field configuration |
 | `Add-COOLForgeCustomField.ps1` | Add individual custom field |
 | `Sync-COOLForgeCustomFields.ps1` | Sync custom fields from definitions |

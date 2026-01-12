@@ -167,7 +167,7 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 >
 > **Option A: Run the Setup Wizard (Recommended)**
 > 1. Clone or download this repository to your local workstation
-> 2. Run `tools/Setup-COOLForgeCustomFields.ps1`
+> 2. Run `tools/Setup-COOLForge.ps1`
 > 3. Follow the prompts — creates required field and optional integrations
 >
 > **Option B: Manual Setup (Minimum)**
@@ -197,8 +197,8 @@ Use the setup wizard to automatically create and configure custom fields:
 
 ```powershell
 # Download and run the setup script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/tools/Setup-COOLForgeCustomFields.ps1" -OutFile "Setup-COOLForgeCustomFields.ps1"
-.\Setup-COOLForgeCustomFields.ps1
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/tools/Setup-COOLForge.ps1" -OutFile "Setup-COOLForge.ps1"
+.\Setup-COOLForge.ps1
 ```
 
 The wizard will:
