@@ -31,7 +31,7 @@ $ScriptToRun = "??Test Variable Output.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.12.01
+    Launcher Version: 2026.01.12.02
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -64,7 +64,7 @@ $ScriptToRun = "??Test Variable Output.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.12.01
+# Launcher Version: 2026.01.12.02
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -147,9 +147,10 @@ function Add-GitHubToken {
 }
 
 # Derive base URL and scripts URL from library URL
-# Example: https://raw.githubusercontent.com/.../main/COOLForge-Common.psm1
-#       -> https://raw.githubusercontent.com/.../main/scripts
-$RepoBaseUrl = $LibraryUrl -replace '/[^/]+$', ''
+# Example: https://raw.githubusercontent.com/.../dev2/modules/COOLForge-Common.psm1
+#       -> https://raw.githubusercontent.com/.../dev2 (repo root)
+#       -> https://raw.githubusercontent.com/.../dev2/scripts
+$RepoBaseUrl = $LibraryUrl -replace '/modules/[^/]+$', ''
 $ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
 $MD5SumsUrl = "$RepoBaseUrl/MD5SUMS"
 
@@ -419,7 +420,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.01"
+Write-Host "[*] Script Launcher v2026.01.12.02"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
