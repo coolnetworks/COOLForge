@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.12.12
+    Version:    2026.01.12.16
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -650,6 +650,58 @@ function Get-EmojiMap {
     }
 }
 
+<#
+.SYNOPSIS
+    Returns emoji character literals for use in string building and comparisons.
+
+.DESCRIPTION
+    Provides clean emoji characters and their Level.io corrupted equivalents.
+    Use this to get the actual emoji strings rather than their semantic meanings.
+    This is the SINGLE SOURCE OF TRUTH for all emoji character definitions.
+
+.OUTPUTS
+    Hashtable with emoji characters keyed by their semantic name:
+    - Check, Cross, Pray, Prohibit, NoEntry, Pin, Arrows (clean)
+    - CorruptedCheck, CorruptedCross, etc. (Level.io corrupted patterns)
+
+.EXAMPLE
+    $Emojis = Get-EmojiLiterals
+    if ($Tag -eq $Emojis.Check -or $Tag -eq $Emojis.CorruptedCheck) {
+        Write-Host "Found checkmark!"
+    }
+#>
+function Get-EmojiLiterals {
+    # Build corrupted patterns from observed byte sequences
+    $CorruptedCheck = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))  # U+2705
+    $CorruptedPin = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))  # U+1F4CC
+    $CorruptedPray = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))  # U+1F64F
+    $CorruptedProhibit = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))  # U+1F6AB
+    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA5, 0xC3, 0xAE))  # U+274C
+    $CorruptedNoEntry = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))  # U+26D4
+
+    return @{
+        # Clean emoji characters - Policy tags
+        Check    = [char]0x2705                            # U+2705 Checkmark
+        Cross    = [char]0x274C                            # U+274C Cross
+        Pray     = [char]::ConvertFromUtf32(0x1F64F)       # U+1F64F Pray - Install
+        Prohibit = [char]::ConvertFromUtf32(0x1F6AB)       # U+1F6AB Prohibited - Remove
+        NoEntry  = [char]::ConvertFromUtf32(0x26D4)        # U+26D4 No Entry - Remove
+        Pin      = [char]::ConvertFromUtf32(0x1F4CC)       # U+1F4CC Pushpin - Pin
+        Arrows   = [char]::ConvertFromUtf32(0x1F504)       # U+1F504 Arrows - Reinstall
+
+        # Clean emoji characters - Special tags
+        Technician = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)  # U+1F9D1 U+200D U+1F4BB (person + ZWJ + laptop)
+
+        # Level.io corrupted patterns
+        CorruptedCheck    = $CorruptedCheck
+        CorruptedCross    = $CorruptedCross
+        CorruptedPray     = $CorruptedPray
+        CorruptedProhibit = $CorruptedProhibit
+        CorruptedNoEntry  = $CorruptedNoEntry
+        CorruptedPin      = $CorruptedPin
+    }
+}
+
 # ============================================================
 # SOFTWARE POLICY DETECTION
 # ============================================================
@@ -772,14 +824,15 @@ function Get-SoftwarePolicy {
         [switch]$ShowDebug
     )
 
-    # Get centralized emoji map (single source of truth)
+    # Get centralized emoji map and literals (single source of truth)
     $EmojiMap = Get-EmojiMap
+    $EmojiLiterals = Get-EmojiLiterals
 
-    # Define global control emojis (clean and corrupted)
-    $CheckmarkEmoji = [char]0x2705  # U+2705 checkmark
-    $CrossEmoji = [char]0x274C      # U+274C cross
-    $CorruptedCheckmark = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0xA0))
-    $CorruptedCross = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA3, 0xC3, 0x8C))  # TBD
+    # Use centralized emoji definitions for global control tags
+    $CheckmarkEmoji = $EmojiLiterals.Check
+    $CrossEmoji = $EmojiLiterals.Cross
+    $CorruptedCheckmark = $EmojiLiterals.CorruptedCheck
+    $CorruptedCross = $EmojiLiterals.CorruptedCross
 
     # Parse tags into array
     $TagArray = if ($DeviceTags) {
@@ -2013,13 +2066,14 @@ function Add-LevelPolicyTag {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    # Map action names to emoji characters (5-tag model per POLICY-TAGS.md)
+    # Get emoji characters from centralized source (5-tag model per POLICY-TAGS.md)
+    $Emojis = Get-EmojiLiterals
     $EmojiChar = switch ($EmojiPrefix) {
-        "Install"   { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray - Install override
-        "Remove"    { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB Prohibit - Remove override
-        "Reinstall" { [char]::ConvertFromUtf32(0x1F504) }  # U+1F504 Arrows - Reinstall override
-        "Pin"       { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin - Pin override
-        "Has"       { [char]0x2705 }                       # U+2705 Checkmark - Installed status
+        "Install"   { $Emojis.Pray }      # U+1F64F Pray - Install override
+        "Remove"    { $Emojis.Prohibit }  # U+1F6AB Prohibit - Remove override
+        "Reinstall" { $Emojis.Arrows }    # U+1F504 Arrows - Reinstall override
+        "Pin"       { $Emojis.Pin }       # U+1F4CC Pushpin - Pin override
+        "Has"       { $Emojis.Check }     # U+2705 Checkmark - Installed status
     }
 
     $FullTagName = "$EmojiChar$TagName"
@@ -2113,13 +2167,14 @@ function Remove-LevelPolicyTag {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    # Map action names to emoji characters (5-tag model per POLICY-TAGS.md)
+    # Get emoji characters from centralized source (5-tag model per POLICY-TAGS.md)
+    $Emojis = Get-EmojiLiterals
     $EmojiChar = switch ($EmojiPrefix) {
-        "Install"   { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray - Install override
-        "Remove"    { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB Prohibit - Remove override
-        "Reinstall" { [char]::ConvertFromUtf32(0x1F504) }  # U+1F504 Arrows - Reinstall override
-        "Pin"       { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin - Pin override
-        "Has"       { [char]0x2705 }                       # U+2705 Checkmark - Installed status
+        "Install"   { $Emojis.Pray }      # U+1F64F Pray - Install override
+        "Remove"    { $Emojis.Prohibit }  # U+1F6AB Prohibit - Remove override
+        "Reinstall" { $Emojis.Arrows }    # U+1F504 Arrows - Reinstall override
+        "Pin"       { $Emojis.Pin }       # U+1F4CC Pushpin - Pin override
+        "Has"       { $Emojis.Check }     # U+2705 Checkmark - Installed status
     }
 
     $FullTagName = "$EmojiChar$TagName"
@@ -3063,8 +3118,9 @@ function Test-TechnicianWorkstation {
         return $false
     }
 
-    # Technician emoji: U+1F9D1 U+200D U+1F4BB (person + ZWJ + laptop)
-    $TechnicianEmoji = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)
+    # Get technician emoji from centralized source
+    $Emojis = Get-EmojiLiterals
+    $TechnicianEmoji = $Emojis.Technician
 
     $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
 
@@ -3106,8 +3162,9 @@ function Get-TechnicianName {
         return ""
     }
 
-    # Technician emoji: U+1F9D1 U+200D U+1F4BB
-    $TechnicianEmoji = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)
+    # Get technician emoji from centralized source
+    $Emojis = Get-EmojiLiterals
+    $TechnicianEmoji = $Emojis.Technician
 
     $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
 
@@ -4194,6 +4251,7 @@ Export-ModuleMember -Function @(
 
     # Software Policy & Emoji Handling
     'Get-EmojiMap',
+    'Get-EmojiLiterals',
     'Get-SoftwarePolicy',
     'Invoke-SoftwarePolicyCheck',
 
