@@ -63,7 +63,7 @@ $ScriptToRun = "👀Test Show Versions.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.10.01
+# Launcher Version: 2026.01.12.01
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -418,7 +418,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.10.01"
+Write-Host "[*] Script Launcher v2026.01.12.01"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

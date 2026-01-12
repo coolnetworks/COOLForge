@@ -5,6 +5,7 @@ $ScriptToRun = "??Enable System Restore and Create Restore Point.ps1"
 # ============================================================
 
 <#
+<#
 .SYNOPSIS
     Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
 
@@ -30,7 +31,7 @@ $ScriptToRun = "??Enable System Restore and Create Restore Point.ps1"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.10.01
+    Launcher Version: 2026.01.12.01
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -53,7 +54,7 @@ $ScriptToRun = "??Enable System Restore and Create Restore Point.ps1"
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "ðŸ‘€Test Show Versions.ps1"
+    $ScriptToRun = "👀Test Show Versions.ps1"
     # ... rest of launcher code ...
 
 .EXAMPLE
@@ -63,7 +64,7 @@ $ScriptToRun = "??Enable System Restore and Create Restore Point.ps1"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.10.01
+# Launcher Version: 2026.01.12.01
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -89,25 +90,18 @@ if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_coolforge_
     $GitHubPAT = $null
 }
 
-# Version pinning - if set, use specific version tag instead of main branch
-# Check new field name first, then legacy
+# Version pinning - if set, use specific version tag or branch name instead of main branch
 $PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
-if ([string]::IsNullOrWhiteSpace($PinnedVersion) -or $PinnedVersion -eq "{{cf_coolforge_pin_psmodule_to_version}}") {
-    $PinnedVersion = "{{cf_pin_psmodule_to_version}}"  # Fallback to legacy
-}
 $UsePinnedVersion = $false
-if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -ne "{{cf_coolforge_pin_psmodule_to_version}}" -and $PinnedVersion -ne "{{cf_pin_psmodule_to_version}}") {
+# Check if we have a valid pin (not empty and not a template placeholder)
+if (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}") {
     $UsePinnedVersion = $true
     Write-Host "[*] Version pinned to: $PinnedVersion"
 }
 
 # Library URL - uses custom field if set, otherwise defaults to official repo
-# Check new field name first, then legacy
 $LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
-    $LibraryUrl = "{{cf_ps_module_library_source}}"  # Fallback to legacy
-}
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_module_library_source}}" -or $LibraryUrl -eq "{{cf_coolforge_ps_module_library_source}}") {
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
     # Default to official repo - use pinned version or main branch
     $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
     $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"
@@ -119,18 +113,12 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -eq "{{cf_ps_modul
 
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
-if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -eq "{{cf_coolforge_screenconnect_instance_id}}") {
-    $ScreenConnectInstanceId = "{{cf_screenconnect_instance_id}}"  # Fallback to legacy
-}
-if ($ScreenConnectInstanceId -like "{{*}}") {
+if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
     $ScreenConnectInstanceId = ""
 }
 
 $IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
-if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -eq "{{cf_coolforge_is_screenconnect_server}}") {
-    $IsScreenConnectServer = "{{cf_is_screenconnect_server}}"  # Fallback to legacy
-}
-if ($IsScreenConnectServer -like "{{*}}") {
+if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
     $IsScreenConnectServer = ""
 }
 
@@ -431,7 +419,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.10.01"
+Write-Host "[*] Script Launcher v2026.01.12.01"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
