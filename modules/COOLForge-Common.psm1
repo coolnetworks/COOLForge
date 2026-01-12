@@ -2951,6 +2951,398 @@ function Send-LevelWakeOnLan {
 }
 
 # ============================================================
+# TECHNICIAN ALERT FUNCTIONS
+# ============================================================
+
+# Module-level alert queue for Add-TechnicianAlert
+$Script:TechnicianAlertQueue = @()
+
+function Test-TechnicianWorkstation {
+    <#
+    .SYNOPSIS
+        Checks if the current device is tagged as a technician workstation.
+
+    .DESCRIPTION
+        Searches device tags for the technician emoji (U+1F9D1 U+200D U+1F4BB).
+        Used by scripts to determine if they're running on a tech's workstation.
+
+    .PARAMETER DeviceTags
+        Comma-separated list of device tags from {{level_tag_names}}.
+
+    .OUTPUTS
+        Boolean - $true if device has technician tag, $false otherwise.
+
+    .EXAMPLE
+        if (Test-TechnicianWorkstation -DeviceTags $DeviceTags) {
+            Write-LevelLog "Running on technician workstation"
+        }
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceTags = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DeviceTags) -or $DeviceTags -match '^\{\{.*\}\}$') {
+        return $false
+    }
+
+    # Technician emoji: U+1F9D1 U+200D U+1F4BB (person + ZWJ + laptop)
+    $TechnicianEmoji = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)
+
+    $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+
+    foreach ($Tag in $TagArray) {
+        if ($Tag.StartsWith($TechnicianEmoji)) {
+            return $true
+        }
+    }
+    return $false
+}
+
+function Get-TechnicianName {
+    <#
+    .SYNOPSIS
+        Extracts the technician name from device tags.
+
+    .DESCRIPTION
+        Finds the technician tag (U+1F9D1 U+200D U+1F4BB + name) and extracts
+        the name portion after the emoji.
+
+    .PARAMETER DeviceTags
+        Comma-separated list of device tags from {{level_tag_names}}.
+
+    .OUTPUTS
+        String - Technician name (e.g., "John" from "U+1F9D1 U+200D U+1F4BBJohn"), or empty string.
+
+    .EXAMPLE
+        $TechName = Get-TechnicianName -DeviceTags $DeviceTags
+        if ($TechName) {
+            Write-LevelLog "Tech: $TechName"
+        }
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceTags = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DeviceTags) -or $DeviceTags -match '^\{\{.*\}\}$') {
+        return ""
+    }
+
+    # Technician emoji: U+1F9D1 U+200D U+1F4BB
+    $TechnicianEmoji = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)
+
+    $TagArray = $DeviceTags -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+
+    foreach ($Tag in $TagArray) {
+        if ($Tag.StartsWith($TechnicianEmoji)) {
+            $Name = $Tag.Substring($TechnicianEmoji.Length).Trim()
+            return $Name
+        }
+    }
+    return ""
+}
+
+function Add-TechnicianAlert {
+    <#
+    .SYNOPSIS
+        Queues an alert to be sent when the script completes.
+
+    .DESCRIPTION
+        Adds an alert to the module-level queue. Alerts are automatically sent
+        when Invoke-LevelScript completes, or can be sent manually with
+        Send-TechnicianAlertQueue.
+
+    .PARAMETER Title
+        Short title for the notification header.
+
+    .PARAMETER Message
+        Detailed message explaining the situation and required action.
+
+    .PARAMETER ClientName
+        Optional client/organization name for context.
+
+    .PARAMETER Priority
+        Alert priority: Low, Normal, High, or Critical.
+
+    .PARAMETER TechnicianName
+        Optional - route to specific technician. Empty = broadcast to all.
+
+    .PARAMETER ExpiresInMinutes
+        Alert expiration time in minutes. Default: 1440 (24 hours).
+
+    .OUTPUTS
+        Hashtable with Success, QueueLength, and AlertId.
+
+    .EXAMPLE
+        Add-TechnicianAlert -Title "Install Failed" `
+            -Message "Huntress installer returned error 1603" `
+            -Priority "High"
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ClientName = "",
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Low", "Normal", "High", "Critical")]
+        [string]$Priority = "Normal",
+
+        [Parameter(Mandatory = $false)]
+        [string]$TechnicianName = "",
+
+        [Parameter(Mandatory = $false)]
+        [int]$ExpiresInMinutes = 1440
+    )
+
+    $AlertId = [guid]::NewGuid().ToString().Substring(0, 8)
+
+    $Alert = @{
+        id = $AlertId
+        title = $Title
+        message = $Message
+        client = $ClientName
+        device = $env:COMPUTERNAME
+        priority = $Priority
+        technician = $TechnicianName
+        timestamp = (Get-Date).ToUniversalTime().ToString("o")
+        expires = (Get-Date).AddMinutes($ExpiresInMinutes).ToUniversalTime().ToString("o")
+    }
+
+    $Script:TechnicianAlertQueue += $Alert
+
+    return @{
+        Success = $true
+        QueueLength = $Script:TechnicianAlertQueue.Count
+        AlertId = $AlertId
+    }
+}
+
+function Send-TechnicianAlert {
+    <#
+    .SYNOPSIS
+        Creates and sends an alert immediately to technician workstations.
+
+    .DESCRIPTION
+        Sends an alert directly to the cf_coolforge_technician_alerts custom field
+        on the device running this script. Technician Alert Monitor scripts on
+        tech workstations will pick up and display the alert.
+
+    .PARAMETER ApiKey
+        Level.io API key ({{cf_apikey}}).
+
+    .PARAMETER Title
+        Short title for the notification header.
+
+    .PARAMETER Message
+        Detailed message explaining the situation and required action.
+
+    .PARAMETER ClientName
+        Optional client/organization name for context.
+
+    .PARAMETER DeviceHostname
+        Source device hostname. Defaults to $env:COMPUTERNAME.
+
+    .PARAMETER Priority
+        Alert priority: Low, Normal, High, or Critical.
+
+    .PARAMETER TechnicianName
+        Optional - route to specific technician. Empty = broadcast to all.
+
+    .PARAMETER ExpiresInMinutes
+        Alert expiration time in minutes. Default: 1440 (24 hours).
+
+    .PARAMETER BaseUrl
+        Level.io API base URL. Default: https://api.level.io/v2
+
+    .OUTPUTS
+        Hashtable with Success, AlertId, and Error.
+
+    .EXAMPLE
+        Send-TechnicianAlert -ApiKey $LevelApiKey `
+            -Title "Ransomware Detected" `
+            -Message "Suspicious encryption activity on C:\Users" `
+            -Priority "Critical"
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ClientName = "",
+
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceHostname = $env:COMPUTERNAME,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Low", "Normal", "High", "Critical")]
+        [string]$Priority = "Normal",
+
+        [Parameter(Mandatory = $false)]
+        [string]$TechnicianName = "",
+
+        [Parameter(Mandatory = $false)]
+        [int]$ExpiresInMinutes = 1440,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $AlertId = [guid]::NewGuid().ToString().Substring(0, 8)
+
+    $Alert = @{
+        id = $AlertId
+        title = $Title
+        message = $Message
+        client = $ClientName
+        device = $DeviceHostname
+        priority = $Priority
+        technician = $TechnicianName
+        timestamp = (Get-Date).ToUniversalTime().ToString("o")
+        expires = (Get-Date).AddMinutes($ExpiresInMinutes).ToUniversalTime().ToString("o")
+    }
+
+    try {
+        # Find the device
+        $DeviceResult = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+        if (-not $DeviceResult) {
+            return @{ Success = $false; AlertId = $null; Error = "Device not found: $DeviceHostname" }
+        }
+
+        # Find the custom field
+        $Fields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
+        $AlertField = $Fields | Where-Object { $_.name -eq "coolforge_technician_alerts" }
+
+        if (-not $AlertField) {
+            return @{ Success = $false; AlertId = $null; Error = "Custom field 'coolforge_technician_alerts' not found" }
+        }
+
+        # Get existing alerts
+        $ExistingAlerts = @()
+        $CurrentValue = $DeviceResult.custom_fields | Where-Object { $_.custom_field_id -eq $AlertField.id } | Select-Object -ExpandProperty value -ErrorAction SilentlyContinue
+        if ($CurrentValue) {
+            try {
+                $ExistingAlerts = $CurrentValue | ConvertFrom-Json -ErrorAction SilentlyContinue
+                if ($null -eq $ExistingAlerts) { $ExistingAlerts = @() }
+            }
+            catch {
+                $ExistingAlerts = @()
+            }
+        }
+
+        # Add new alert
+        $ExistingAlerts += $Alert
+        $NewValue = $ExistingAlerts | ConvertTo-Json -Compress
+
+        # Update the custom field
+        $UpdateResult = Set-LevelCustomFieldValue -ApiKey $ApiKey -FieldId $AlertField.id -DeviceId $DeviceResult.id -Value $NewValue -BaseUrl $BaseUrl
+
+        if ($UpdateResult) {
+            return @{ Success = $true; AlertId = $AlertId; Error = $null }
+        }
+        else {
+            return @{ Success = $false; AlertId = $null; Error = "Failed to update custom field" }
+        }
+    }
+    catch {
+        return @{ Success = $false; AlertId = $null; Error = $_.Exception.Message }
+    }
+}
+
+function Send-TechnicianAlertQueue {
+    <#
+    .SYNOPSIS
+        Sends all queued technician alerts.
+
+    .DESCRIPTION
+        Sends all alerts that were queued via Add-TechnicianAlert.
+        Called automatically by Invoke-LevelScript on completion,
+        or can be called manually.
+
+    .PARAMETER ApiKey
+        Level.io API key. If not specified, uses key from Initialize-LevelScript.
+
+    .PARAMETER Force
+        Send even if queue is empty (returns success with 0 alerts).
+
+    .PARAMETER BaseUrl
+        Level.io API base URL. Default: https://api.level.io/v2
+
+    .OUTPUTS
+        Hashtable with Success, AlertsSent, and Error.
+
+    .EXAMPLE
+        $Result = Send-TechnicianAlertQueue -ApiKey $LevelApiKey
+        Write-LevelLog "Sent $($Result.AlertsSent) alerts"
+    #>
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$ApiKey = "",
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Force,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    if ($Script:TechnicianAlertQueue.Count -eq 0) {
+        if ($Force) {
+            return @{ Success = $true; AlertsSent = 0; Error = $null }
+        }
+        return @{ Success = $true; AlertsSent = 0; Error = $null }
+    }
+
+    # Use provided API key or fall back to script-level key
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        return @{ Success = $false; AlertsSent = 0; Error = "No API key provided" }
+    }
+
+    $SentCount = 0
+    $Errors = @()
+
+    foreach ($Alert in $Script:TechnicianAlertQueue) {
+        $Result = Send-TechnicianAlert -ApiKey $EffectiveApiKey `
+            -Title $Alert.title `
+            -Message $Alert.message `
+            -ClientName $Alert.client `
+            -DeviceHostname $Alert.device `
+            -Priority $Alert.priority `
+            -TechnicianName $Alert.technician `
+            -BaseUrl $BaseUrl
+
+        if ($Result.Success) {
+            $SentCount++
+        }
+        else {
+            $Errors += $Result.Error
+        }
+    }
+
+    # Clear the queue
+    $Script:TechnicianAlertQueue = @()
+
+    if ($Errors.Count -gt 0) {
+        return @{ Success = $false; AlertsSent = $SentCount; Error = ($Errors -join "; ") }
+    }
+
+    return @{ Success = $true; AlertsSent = $SentCount; Error = $null }
+}
+
+# ============================================================
 # UI HELPER FUNCTIONS (Admin Tools)
 # ============================================================
 
@@ -3764,6 +4156,13 @@ Export-ModuleMember -Function @(
     # Text Processing
     'Repair-LevelEmoji',
     'Get-LevelUrlEncoded',
+
+    # Technician Alerts
+    'Test-TechnicianWorkstation',
+    'Get-TechnicianName',
+    'Add-TechnicianAlert',
+    'Send-TechnicianAlert',
+    'Send-TechnicianAlertQueue',
 
     # UI Helpers (Admin Tools)
     'Write-Header',

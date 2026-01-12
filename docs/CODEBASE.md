@@ -169,6 +169,48 @@ Invoke-LevelScript -ScriptBlock {
 | `Repair-LevelEmoji` | Repairs corrupted UTF-8 emojis in strings |
 | `Get-LevelUrlEncoded` | URL-encode with proper UTF-8 emoji handling |
 
+#### Custom Field Management
+
+| Function | Description |
+|----------|-------------|
+| `Get-LevelCustomFields` | Fetch all custom fields with pagination |
+| `Find-LevelCustomField` | Find custom field by name |
+| `New-LevelCustomField` | Create new custom field |
+| `Set-LevelCustomFieldValue` | Set custom field value for device |
+| `Initialize-LevelSoftwarePolicy` | Initialize software policy custom field |
+| `Get-LevelCustomFieldById` | Get custom field by ID |
+| `Update-LevelCustomFieldValue` | Update custom field value |
+| `Remove-LevelCustomField` | Delete a custom field |
+
+#### Hierarchy Navigation
+
+| Function | Description |
+|----------|-------------|
+| `Get-LevelOrganizations` | Get all organizations |
+| `Get-LevelOrganizationFolders` | Get folders within an organization |
+| `Get-LevelFolderDevices` | Get devices in a folder |
+| `Get-LevelEntityCustomFields` | Get custom fields for an entity |
+
+#### Technician Alerts
+
+Functions for sending toast notifications to technician workstations. Technicians are identified by the `🧑‍💻` (U+1F9D1 U+200D U+1F4BB) emoji tag.
+
+| Function | Description |
+|----------|-------------|
+| `Test-TechnicianWorkstation` | Check if device has technician tag |
+| `Get-TechnicianName` | Extract technician name from tags (e.g., `🧑‍💻John` → `John`) |
+| `Add-TechnicianAlert` | Queue alert for auto-send on script completion |
+| `Send-TechnicianAlert` | Send alert immediately to tech workstations |
+| `Send-TechnicianAlertQueue` | Manually send all queued alerts |
+
+**Alert Flow**:
+1. Scripts call `Add-TechnicianAlert` to queue alerts during execution
+2. On script completion, `Invoke-LevelScript` automatically calls `Send-TechnicianAlertQueue`
+3. Alerts are written to the `coolforge_technician_alerts` custom field
+4. The Technician Alert Monitor script polls this field and displays toast notifications
+
+See [TECHNICIAN-ALERTS.md](TECHNICIAN-ALERTS.md) for detailed usage.
+
 #### Admin Tool Functions (also in COOLForge-Common.psm1)
 
 | Category | Functions |
