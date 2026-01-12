@@ -31,7 +31,7 @@ $ScriptCategory = "Check"  # Check, Fix, Remove, or Maintain
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.12.03
+    Launcher Version: 2026.01.12.04
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -64,7 +64,7 @@ $ScriptCategory = "Check"  # Check, Fix, Remove, or Maintain
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.12.03
+# Launcher Version: 2026.01.12.04
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -421,7 +421,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.03"
+Write-Host "[*] Script Launcher v2026.01.12.04"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -561,6 +561,19 @@ Write-Host "============================================================"
 # Read the script content
 $ScriptContent = Get-Content -Path $ScriptPath -Raw
 
+# Build list of policy variables to pass through
+# These are defined in the launcher header as $policy_* = "{{cf_policy_*}}"
+$PolicyVarsBlock = ""
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    $VarName = $_.Name
+    $VarValue = $_.Value
+    # Only pass if it has a value and isn't an unresolved template placeholder
+    if (-not [string]::IsNullOrWhiteSpace($VarValue) -and $VarValue -notlike "{{*}}") {
+        $EscapedValue = $VarValue -replace "'", "''"
+        $PolicyVarsBlock += "`n`$$VarName = '$EscapedValue'"
+    }
+}
+
 # Create a scriptblock that:
 # 1. Defines all Level.io variables in the script's scope
 # 2. Executes the downloaded script content
@@ -571,8 +584,8 @@ $ExecutionBlock = @"
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
 
-# Additional custom fields can be added here
-# `$ApiKey = '$($ApiKey -replace "'", "''")'
+# Policy custom fields (defined in launcher header)
+$PolicyVarsBlock
 
 # The downloaded script content follows:
 $ScriptContent
