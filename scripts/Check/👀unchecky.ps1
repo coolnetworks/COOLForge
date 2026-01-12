@@ -395,6 +395,9 @@ $InvokeParams = @{ ScriptBlock = {
         Write-Host "  See details above for specific error"
         Write-LevelLog "Policy enforcement completed with errors" -Level "ERROR"
     }
+
+    # Return exit code to Invoke-LevelScript
+    return $script:ExitCode
 }}
 if ($RunningFromLauncher) { $InvokeParams.NoExit = $true }
 Invoke-LevelScript @InvokeParams

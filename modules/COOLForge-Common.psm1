@@ -339,14 +339,27 @@ function Invoke-LevelScript {
 
     try {
         # Execute the main script logic
-        & $ScriptBlock
+        # The scriptblock can return an exit code, or we use $script:ExitCode if set
+        $Result = & $ScriptBlock
 
-        Write-LevelLog "Script completed successfully" -Level "SUCCESS"
+        # Check for exit code from scriptblock return value or $script:ExitCode
+        $FinalExitCode = 0
+        if ($null -ne $Result -and $Result -is [int]) {
+            $FinalExitCode = $Result
+        } elseif ($null -ne $script:ExitCode -and $script:ExitCode -ne 0) {
+            $FinalExitCode = $script:ExitCode
+        }
+
+        if ($FinalExitCode -eq 0) {
+            Write-LevelLog "Script completed successfully" -Level "SUCCESS"
+        } else {
+            Write-LevelLog "Script completed with exit code: $FinalExitCode" -Level "WARNING"
+        }
 
         if (-not $NoCleanup) {
             Remove-LevelLockFile
         }
-        if ($NoExit) { return 0 } else { exit 0 }
+        if ($NoExit) { return $FinalExitCode } else { exit $FinalExitCode }
     }
     catch {
         Write-LevelLog "FATAL: $($_.Exception.Message)" -Level "ERROR"
