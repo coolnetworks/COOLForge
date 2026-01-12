@@ -268,8 +268,8 @@ try {
             $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
             $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
 
-            # Verify MD5 checksum if available
-            if ($MD5SumsContent) {
+            # Verify MD5 checksum if available (skip in debug mode)
+            if ($MD5SumsContent -and -not $DebugScripts) {
                 $ExpectedMD5 = Get-ExpectedMD5 -FileName "COOLForge-Common.psm1" -MD5Content $MD5SumsContent
                 if ($ExpectedMD5) {
                     $ActualMD5 = Get-ContentMD5 -Content $RemoteContent
@@ -278,6 +278,9 @@ try {
                     }
                     Write-Host "[+] Library checksum verified"
                 }
+            }
+            elseif ($DebugScripts) {
+                Write-Host "[*] Debug mode - skipping checksum verification"
             }
 
             if (Test-Path $BackupPath) {
@@ -506,8 +509,8 @@ try {
                 throw "Downloaded script appears to be empty or truncated"
             }
 
-            # Verify MD5 checksum if available
-            if ($MD5SumsContent) {
+            # Verify MD5 checksum if available (skip in debug mode)
+            if ($MD5SumsContent -and -not $DebugScripts) {
                 # Use resolved path if available, otherwise construct from script name
                 $ScriptMD5Key = if ($ScriptRelativePath) { $ScriptRelativePath } else { "scripts/$ScriptToRun" }
                 $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
@@ -518,6 +521,9 @@ try {
                     }
                     Write-Host "[+] Script checksum verified"
                 }
+            }
+            elseif ($DebugScripts) {
+                Write-Host "[*] Debug mode - skipping script checksum verification"
             }
 
             # Success - remove backup
