@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.13.03
+    Version:    2026.01.13.04
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -1843,13 +1843,14 @@ function Get-LevelDeviceTagNames {
     }
 
     # API returns "tags" array with tag names directly (not tag_ids)
-    if (-not $Device.tags -or $Device.tags.Count -eq 0) {
+    $Tags = @($Device.tags)  # Force to array even if single value or null
+    if ($Tags.Count -eq 0) {
         Write-LevelLog "Device has no tags" -Level "DEBUG"
         return @()
     }
 
-    Write-LevelLog "Device has $($Device.tags.Count) tags: $($Device.tags -join ', ')" -Level "DEBUG"
-    return @($Device.tags)
+    Write-LevelLog "Device has $($Tags.Count) tags: $($Tags -join ', ')" -Level "DEBUG"
+    return $Tags
 }
 
 # ============================================================
