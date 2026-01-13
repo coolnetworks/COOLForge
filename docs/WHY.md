@@ -221,7 +221,7 @@ Invoke-LevelScript -ScriptBlock {
 }
 ```
 
-**Result:** New scripts in 5 minutes instead of 2 hours.
+**Result:** Start with a working template instead of from scratch.
 
 ---
 
@@ -387,37 +387,6 @@ foreach ($Peer in $Peers) {
 
 ---
 
-### 13. **Stale Device Cleanup**
-
-**Problem:** Devices disappear but remain in Level.io:
-
-- Decommissioned machines still showing in inventory
-- No easy way to identify offline devices
-- Manual cleanup wastes time
-- Licenses consumed by ghost devices
-
-**COOLForge Solution:** Stale Device Detection
-
-Script: `Get-StaleDevices.ps1` (in `start_here/`)
-
-```powershell
-# Find devices offline for 30+ days
-.\start_here\Get-StaleDevices.ps1 -Days 30
-
-# Filter to specific group
-.\start_here\Get-StaleDevices.ps1 -GroupFilter "*Production*"
-
-# Export to CSV for review
-.\start_here\Get-StaleDevices.ps1 -Days 60 -ExportCsv "stale.csv"
-
-# Show reinstall commands for recovery
-.\start_here\Get-StaleDevices.ps1 -ShowReinstallCommands
-```
-
-**Result:** Keep your Level.io inventory clean and accurate.
-
----
-
 ## Design Philosophy
 
 ### 1. **Convention Over Configuration**
@@ -477,7 +446,7 @@ Always know what's happening:
 - Staged rollouts to test devices
 - Lockfiles prevent conflicts
 - Tag gates prevent accidents
-- 5 minutes to write a new script
+- Start from templates instead of scratch
 
 ---
 
@@ -506,7 +475,7 @@ Always know what's happening:
 ## What COOLForge Is NOT
 
 - **Not a replacement for Level.io** - Works with Level.io, extends it
-- **Not a programming framework** - Just removes boilerplate
+- **Not a programming framework** - A shared library and conventions, not a new language
 - **Not complex** - Three lines to initialize, then write normal PowerShell
 - **Not vendor lock-in** - Scripts are portable, library is MIT licensed
 
