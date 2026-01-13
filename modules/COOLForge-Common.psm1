@@ -3734,6 +3734,226 @@ function Read-YesNo {
     return $UserInput.ToLower() -eq "y" -or $UserInput.ToLower() -eq "yes"
 }
 
+# ============================================================
+# DEBUG OUTPUT HELPERS (Policy Scripts)
+# ============================================================
+# When $DebugScripts is true (from cf_debug_scripts custom field),
+# outputs verbose diagnostic information for troubleshooting.
+
+function Write-DebugSection {
+    <#
+    .SYNOPSIS
+        Writes a debug section with key/value data when $DebugScripts is enabled.
+    .DESCRIPTION
+        Outputs a formatted debug section showing variable names and their values,
+        with indicators for missing or unresolved Level.io variables.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Title,
+        [Parameter(Mandatory = $true)][hashtable]$Data,
+        [switch]$MaskApiKey
+    )
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: $Title" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    foreach ($Key in $Data.Keys) {
+        $Value = $Data[$Key]
+        $DisplayValue = if ([string]::IsNullOrWhiteSpace($Value)) {
+            "(empty)"
+        }
+        elseif ($Value -like "{{*}}") {
+            "(unresolved: $Value)"
+        }
+        elseif ($MaskApiKey -and $Key -like "*ApiKey*" -and $Value.Length -gt 3) {
+            ("*" * ($Value.Length - 3)) + $Value.Substring($Value.Length - 3)
+        }
+        else {
+            $Value
+        }
+
+        $Status = if ([string]::IsNullOrWhiteSpace($Value) -or $Value -like "{{*}}") {
+            "[MISSING]"
+        } else {
+            "[OK]"
+        }
+        $Color = if ($Status -eq "[OK]") { "Green" } else { "Red" }
+
+        Write-Host "  ${Key}: " -NoNewline
+        Write-Host "$Status " -ForegroundColor $Color -NoNewline
+        Write-Host "$DisplayValue"
+    }
+}
+
+function Write-DebugTags {
+    <#
+    .SYNOPSIS
+        Outputs detailed tag analysis when $DebugScripts is enabled.
+    .DESCRIPTION
+        Shows all device tags with their byte representations and identifies
+        global control tags and software-specific tags.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$TagString,
+        [Parameter(Mandatory = $true)][string]$SoftwareName
+    )
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: Device Tags Analysis" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    if ([string]::IsNullOrWhiteSpace($TagString) -or $TagString -like "{{*}}") {
+        Write-Host "  [WARNING] No device tags available" -ForegroundColor Red
+        return
+    }
+
+    $TagArray = $TagString -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+    Write-Host "  Total tags: $($TagArray.Count)"
+    Write-Host ""
+
+    # Get emoji map for reference
+    $EmojiMap = Get-EmojiMap
+
+    # Check for global and software-specific tags
+    $HasGlobalCheckmark = $false
+    $HasGlobalCross = $false
+    $SoftwareSpecificTags = @()
+    $SoftwareNameUpper = $SoftwareName.ToUpper()
+
+    foreach ($Tag in $TagArray) {
+        $TagBytes = [System.Text.Encoding]::UTF8.GetBytes($Tag)
+        $HexBytes = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
+
+        # Check global tags
+        if ($EmojiMap[$Tag] -eq "GlobalManaged") { $HasGlobalCheckmark = $true }
+        if ($EmojiMap[$Tag] -eq "GlobalExcluded") { $HasGlobalCross = $true }
+
+        # Check software-specific
+        if ($Tag.ToUpper() -match $SoftwareNameUpper) {
+            $SoftwareSpecificTags += $Tag
+        }
+
+        Write-Host "  Tag: '$Tag'"
+        Write-Host "       Bytes: $HexBytes" -ForegroundColor DarkGray
+    }
+
+    Write-Host ""
+    Write-Host "  --- Global Control Tags ---"
+    Write-Host "  Global Checkmark: $(if ($HasGlobalCheckmark) { '[FOUND]' } else { '[NOT FOUND]' })" -ForegroundColor $(if ($HasGlobalCheckmark) { 'Green' } else { 'Yellow' })
+    Write-Host "  Global Cross: $(if ($HasGlobalCross) { '[FOUND]' } else { '[NOT FOUND]' })" -ForegroundColor $(if ($HasGlobalCross) { 'Green' } else { 'DarkGray' })
+
+    Write-Host ""
+    Write-Host "  --- Software-Specific Tags ($SoftwareName) ---"
+    if ($SoftwareSpecificTags.Count -eq 0) {
+        Write-Host "  (none found)" -ForegroundColor DarkGray
+    } else {
+        foreach ($Tag in $SoftwareSpecificTags) {
+            Write-Host "  - $Tag"
+        }
+    }
+}
+
+function Write-DebugPolicy {
+    <#
+    .SYNOPSIS
+        Outputs policy resolution details when $DebugScripts is enabled.
+    .DESCRIPTION
+        Shows the resolved policy including global status, action source,
+        and matched tags.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Policy
+    )
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: Policy Resolution" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    Write-Host "  GlobalStatus:    $($Policy.GlobalStatus)" -ForegroundColor $(if ($Policy.GlobalStatus -eq 'Managed') { 'Green' } else { 'Yellow' })
+    Write-Host "  ShouldProcess:   $($Policy.ShouldProcess)" -ForegroundColor $(if ($Policy.ShouldProcess) { 'Green' } else { 'Yellow' })
+    Write-Host "  ResolvedAction:  $($Policy.ResolvedAction)"
+    Write-Host "  ActionSource:    $($Policy.ActionSource)"
+    Write-Host "  HasInstalled:    $($Policy.HasInstalled) (refers to tag, not actual install)"
+    Write-Host "  IsPinned:        $($Policy.IsPinned)"
+
+    if ($Policy.SkipReason) {
+        Write-Host "  SkipReason:      $($Policy.SkipReason)" -ForegroundColor Yellow
+    }
+
+    if ($Policy.MatchedTags.Count -gt 0) {
+        Write-Host "  MatchedTags:     $($Policy.MatchedTags -join ', ')"
+    }
+}
+
+function Write-DebugTagManagement {
+    <#
+    .SYNOPSIS
+        Outputs tag management readiness when $DebugScripts is enabled.
+    .DESCRIPTION
+        Shows whether the script has the required API key and hostname
+        to perform tag management operations.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][bool]$HasApiKey,
+        [Parameter(Mandatory = $true)][string]$DeviceHostname,
+        [string]$ApiKeyValue
+    )
+    if (-not $DebugScripts) { return }
+
+    Write-Host ""
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host " DEBUG: Tag Management Readiness" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    $HostnameReady = -not [string]::IsNullOrWhiteSpace($DeviceHostname) -and $DeviceHostname -notlike "{{*}}"
+
+    Write-Host "  API Key Present:     $(if ($HasApiKey) { '[YES]' } else { '[NO] - Tag updates will be SKIPPED!' })" -ForegroundColor $(if ($HasApiKey) { 'Green' } else { 'Red' })
+
+    # Show API key diagnostics - masked format for security
+    if ($ApiKeyValue) {
+        $KeyLen = $ApiKeyValue.Length
+        $HasWhitespace = $ApiKeyValue -match '^\s|\s$'
+        $HasNewline = $ApiKeyValue -match '[\r\n]'
+        # Show first 4 + ... + last 4 chars (or less if key is short)
+        $MaskedKey = if ($KeyLen -gt 12) {
+            $ApiKeyValue.Substring(0, 4) + "..." + $ApiKeyValue.Substring($KeyLen - 4)
+        } elseif ($KeyLen -gt 4) {
+            $ApiKeyValue.Substring(0, 2) + "..." + $ApiKeyValue.Substring($KeyLen - 2)
+        } else {
+            "****"
+        }
+        Write-Host "  API Key Length:      $KeyLen chars" -ForegroundColor $(if ($KeyLen -gt 20) { 'Green' } else { 'Yellow' })
+        Write-Host "  API Key (masked):    $MaskedKey" -ForegroundColor Yellow
+        if ($HasWhitespace) {
+            Write-Host "  [WARNING] API key has leading/trailing whitespace!" -ForegroundColor Red
+        }
+        if ($HasNewline) {
+            Write-Host "  [WARNING] API key contains newline characters!" -ForegroundColor Red
+        }
+    }
+
+    Write-Host "  Device Hostname:     $(if ($HostnameReady) { "[YES] $DeviceHostname" } else { '[NO]' })" -ForegroundColor $(if ($HostnameReady) { 'Green' } else { 'Red' })
+
+    if ($HasApiKey -and $HostnameReady) {
+        Write-Host ""
+        Write-Host "  [OK] Tag management is READY" -ForegroundColor Green
+    } else {
+        Write-Host ""
+        Write-Host "  [WARNING] Tag management will be SKIPPED" -ForegroundColor Red
+        if (-not $HasApiKey) {
+            Write-Host "  -> Create 'apikey' custom field in Level.io (admin-only)" -ForegroundColor Yellow
+            Write-Host "  -> Set value to your Level.io API key" -ForegroundColor Yellow
+        }
+    }
+}
+
 function Get-CompanyNameFromPath {
     <#
     .SYNOPSIS
@@ -4387,7 +4607,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.13.10"
+$script:ModuleVersion = "2026.01.13.11"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -4467,6 +4687,13 @@ Export-ModuleMember -Function @(
     'Write-LevelError',
     'Read-UserInput',
     'Read-YesNo',
+
+    # Debug Output Helpers (Policy Scripts)
+    'Write-DebugSection',
+    'Write-DebugTags',
+    'Write-DebugPolicy',
+    'Write-DebugTagManagement',
+
     'Get-CompanyNameFromPath',
 
     # Config/Security (Admin Tools)

@@ -9,12 +9,12 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-f8aea1170d0adea20bacca1d30125510  modules/COOLForge-Common.psm1
+f90c77539b818729a8fae368aa2daab0  modules/COOLForge-Common.psm1
 7a8fb4ff7973b51ac709c93569b31d36  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 ce7971087e023dd883650a2ed40fc3d1  scripts/Check/👀huntress.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
-98995f3b9591798bbe6990cf2c1c9b9a  scripts/Check/👀unchecky.ps1
+847a96313fde08358e0dcf8491d03ad5  scripts/Check/👀unchecky.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
 0b21652beac13ca2d365c53011846b3c  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 6bae62fc42ea30a1ace3c2472dc4f901  scripts/Fix/🔧Fix Windows 10 Services.ps1
