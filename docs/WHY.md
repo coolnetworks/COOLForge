@@ -250,7 +250,7 @@ Send-LevelWakeOnLan -MacAddress "00:11:22:33:44:55"
 
 **Problem:** Need to wake multiple devices for maintenance windows or urgent tasks:
 
-- Level.io can wake individual devices, but not entire folder hierarchies
+- Level.io can wake individual devices, but has no built-in capability to wake entire folder hierarchies
 - Manually waking 50+ devices one-by-one is impractical
 - Scripts running on one device can't wake peer devices
 - No way to cascade wake operations through folder structure
