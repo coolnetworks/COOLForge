@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.13.01
+    Version:          2026.01.13.02
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.13.01
+# Version: 2026.01.13.02
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -516,7 +516,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.13.01"
+$ScriptVersion = "2026.01.13.02"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -622,7 +622,7 @@ $InvokeParams = @{ ScriptBlock = {
                 if ($Policy.ActionSource -eq "Tag" -and $LevelApiKey) {
                     $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
                     if ($Device) {
-                        $FieldRef = "cf_policy_$SoftwareName"
+                        $FieldRef = "policy_$SoftwareName"
                         $SetResult = Set-LevelCustomFieldValue -ApiKey $LevelApiKey -EntityType "device" -EntityId $Device.id -FieldReference $FieldRef -Value "install"
                         if ($SetResult) {
                             Write-LevelLog "Set device custom field '$FieldRef' = 'install'" -Level "SUCCESS"
@@ -678,7 +678,7 @@ $InvokeParams = @{ ScriptBlock = {
                 if ($LevelApiKey) {
                     $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
                     if ($Device) {
-                        $FieldRef = "cf_policy_$SoftwareName"
+                        $FieldRef = "policy_$SoftwareName"
                         $SetResult = Set-LevelCustomFieldValue -ApiKey $LevelApiKey -EntityType "device" -EntityId $Device.id -FieldReference $FieldRef -Value "pin"
                         if ($SetResult) {
                             Write-LevelLog "Set device custom field '$FieldRef' = 'pin'" -Level "SUCCESS"
