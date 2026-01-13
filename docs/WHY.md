@@ -348,6 +348,148 @@ Script: `🙏Wake all devices in parent to level.io folder.ps1`
 
 ---
 
+### 12. **No Real-Time Alerts to Technicians**
+
+**Problem:** Scripts detect issues but technicians don't know until they check:
+
+- Client scripts find problems but can only log to files
+- No way to notify the right technician in real-time
+- Checking logs across hundreds of devices is impractical
+- Critical issues go unnoticed for hours or days
+
+**COOLForge Solution:** Technician Alert System
+
+```powershell
+# From any script running on a client device:
+Send-TechnicianAlert -Title "Disk Space Critical" `
+                     -Message "C: drive below 5% on $DeviceHostname" `
+                     -TechnicianName "Allen"
+
+# Or broadcast to all technicians:
+Send-TechnicianAlert -Title "Security Alert" `
+                     -Message "Unauthorized software detected"
+```
+
+**How It Works:**
+1. Client scripts call `Send-TechnicianAlert` when issues are detected
+2. Alert is stored in Level.io custom field on the target technician's workstation
+3. Alert Monitor script (running on tech workstations) polls for new alerts
+4. Windows toast notifications appear in real-time
+5. Alerts can be targeted to specific technicians or broadcast to all
+
+**Features:**
+- Real-time Windows toast notifications
+- Technician-specific routing via tags
+- Broadcast alerts to all technicians
+- Auto-expiring alerts
+- Click-to-dismiss functionality
+
+**Result:** Technicians get instant notifications when scripts need attention.
+
+---
+
+### 13. **Software Policy Chaos**
+
+**Problem:** Managing software across hundreds of devices is inconsistent:
+
+- No standardized way to enforce "install on these, remove on those"
+- Manual tracking of which devices should have which software
+- Different scripts with different approaches to the same problem
+- No way to pin software versions or prevent changes on specific devices
+
+**COOLForge Solution:** 5-Tag Policy Model
+
+```powershell
+# Tags control software state (override everything):
+# U+1F64F unchecky  = Install if missing (transient - removed after install)
+# U+1F6AB unchecky  = Remove if present (transient - removed after removal)
+# U+1F4CC unchecky  = Pin - no changes allowed (persistent)
+# U+1F504 unchecky  = Reinstall (transient)
+# U+2705 unchecky   = Status: installed (set automatically by script)
+
+# Custom field policy (inherited from Group -> Folder -> Device):
+# policy_unchecky = "install" | "remove" | "pin" | ""
+```
+
+**Hierarchy:**
+1. Software-specific tags (highest priority)
+2. Custom field policy (inherited)
+3. Default behavior (do nothing)
+
+**Global Controls:**
+- U+2705 = Device is managed (required for any action)
+- U+274C = Device is excluded from all management
+- Both = Device is globally pinned
+
+**Result:** Consistent software management with clear override hierarchy.
+
+---
+
+### 14. **Wake-on-LAN Configuration Nightmare**
+
+**Problem:** Configuring WOL on Windows is complex and inconsistent:
+
+- Multiple settings across NIC, power options, and BIOS
+- Energy Efficient Ethernet (EEE) silently blocks WOL
+- Modern Standby vs S3 sleep compatibility varies by hardware
+- Wireless WOL (WoWLAN) requires different configuration
+- Manual configuration doesn't scale to hundreds of devices
+
+**COOLForge Solution:** Intelligent WOL Configuration Script
+
+Script: `Configure Wake-on-LAN.ps1`
+
+```powershell
+# Automatically configures all physical NICs for WOL:
+# - Enables WakeOnMagicPacket on wired adapters
+# - Enables WoWLAN on wireless adapters
+# - Disables Energy Efficient Ethernet (EEE)
+# - Configures power management settings
+# - Handles Modern Standby vs S3 sleep automatically
+```
+
+**Intelligent Handling:**
+- Detects adapter capabilities and configures appropriately
+- Keeps Modern Standby enabled if WoWLAN-capable adapter present
+- Disables Modern Standby only when legacy wired-only setup detected
+- Disables hibernation, fast startup (both block WOL)
+- Enables wake timers
+
+**Result:** Deploy once, WOL works across your fleet regardless of hardware mix.
+
+---
+
+### 15. **Stale Device Cleanup**
+
+**Problem:** Devices disappear but remain in Level.io:
+
+- Decommissioned machines still showing in inventory
+- No easy way to identify offline devices
+- Manual cleanup wastes time
+- Licenses consumed by ghost devices
+
+**COOLForge Solution:** Stale Device Detection
+
+Script: `Get-StaleDevices.ps1` (in `start_here/`)
+
+```powershell
+# Find devices offline for 30+ days
+.\start_here\Get-StaleDevices.ps1 -Days 30
+
+# Filter to specific group
+.\start_here\Get-StaleDevices.ps1 -GroupFilter "*Production*"
+
+# Export to CSV for review
+.\start_here\Get-StaleDevices.ps1 -Days 60 -ExportCsv "stale.csv"
+
+# Show reinstall commands for recovery
+.\start_here\Get-StaleDevices.ps1 -ShowReinstallCommands
+```
+
+**Result:** Keep your Level.io inventory clean and accurate.
+
+---
+
 ## Design Philosophy
 
 ### 1. **Convention Over Configuration**
