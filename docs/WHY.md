@@ -372,9 +372,11 @@ foreach ($Peer in $Peers) {
 - Manual tracking of which devices should have which software
 - Different scripts with different approaches to the same problem
 
-**COOLForge Solution:** Custom Field Policy
+**COOLForge Solution:** Custom Field Policy + Tags
 
-Set the `policy_unchecky` custom field to control Unchecky on all devices below that level:
+**Step 1: Set the policy via custom field**
+
+Set `policy_unchecky` to control Unchecky on all devices below that level:
 
 | Value | What it does |
 |-------|--------------|
@@ -388,14 +390,27 @@ Set the `policy_unchecky` custom field to control Unchecky on all devices below 
 - **Subgroup** — applies to devices in that folder
 - **Device** — overrides everything above for that one device
 
+**Step 2: Tags show current state**
+
+The script automatically manages tags to show what's happening:
+
+| Tag | Meaning |
+|-----|---------|
+| ✅unchecky | Unchecky is installed on this device |
+| 🙏unchecky | Waiting to install (override tag) |
+| 🚫unchecky | Waiting to remove (override tag) |
+| 📌unchecky | Pinned - don't change (override tag) |
+
+Override tags let you handle exceptions without changing the custom field policy. Add 🙏unchecky to a device and it will install regardless of the policy setting.
+
 **Setup required:**
 1. Host the Unchecky installer on a publicly accessible URL (S3, Azure Blob, your web server)
 2. Set `policy_unchecky_url` custom field to your hosted URL
 3. Set `policy_unchecky` to `install`, `remove`, or `pin` where you want it applied
 
-**Example:** Set `policy_unchecky = install` on your "All Workstations" group, and every workstation gets Unchecky automatically. Set it to `remove` on the "Servers" group, and servers won't have it.
+**Example:** Set `policy_unchecky = install` on your "All Workstations" group, and every workstation gets Unchecky automatically. Set it to `remove` on the "Servers" group, and servers won't have it. One server needs it? Add the 🙏unchecky tag to that device.
 
-**Result:** Consistent software management across your fleet with simple custom field settings.
+**Result:** Consistent software management with simple custom fields, plus tag overrides for exceptions.
 
 See [Software Policy Flowchart](SOFTWARE-POLICY-FLOWCHART.md) for the complete technical flow.
 
