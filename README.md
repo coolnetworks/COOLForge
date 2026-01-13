@@ -420,8 +420,10 @@ See [LICENSE](LICENSE) for details.
 
 ## TODO
 
-Future improvements and feature requests:
+**Needs Testing:**
+- [ ] **Technician Alerts** — Toast notifications to tech workstations when scripts need attention. Functions exist (`Send-TechnicianAlert`, `Add-TechnicianAlert`) but end-to-end flow needs validation.
 
+**Future Improvements:**
 - [ ] **Request `level_current_scriptname` variable from Level.io** — Would allow a single universal launcher that auto-detects which script to run based on its name in Level.io, eliminating the need for per-script `$ScriptToRun` configuration
 
 ---

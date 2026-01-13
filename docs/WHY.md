@@ -349,47 +349,7 @@ foreach ($Peer in $Peers) {
 
 ---
 
-### 12. **No Real-Time Alerts to Technicians**
-
-**Problem:** Scripts detect issues but technicians don't know until they check:
-
-- Client scripts find problems but can only log to files
-- No way to notify the right technician in real-time
-- Checking logs across hundreds of devices is impractical
-- Critical issues go unnoticed for hours or days
-
-**COOLForge Solution:** Technician Alert System
-
-```powershell
-# From any script running on a client device:
-Send-TechnicianAlert -Title "Disk Space Critical" `
-                     -Message "C: drive below 5% on $DeviceHostname" `
-                     -TechnicianName "Allen"
-
-# Or broadcast to all technicians:
-Send-TechnicianAlert -Title "Security Alert" `
-                     -Message "Unauthorized software detected"
-```
-
-**How It Works:**
-1. Client scripts call `Send-TechnicianAlert` when issues are detected
-2. Alert is stored in Level.io custom field on the target technician's workstation
-3. Alert Monitor script (running on tech workstations) polls for new alerts
-4. Windows toast notifications appear in real-time
-5. Alerts can be targeted to specific technicians or broadcast to all
-
-**Features:**
-- Real-time Windows toast notifications
-- Technician-specific routing via tags
-- Broadcast alerts to all technicians
-- Auto-expiring alerts
-- Click-to-dismiss functionality
-
-**Result:** Technicians get instant notifications when scripts need attention.
-
----
-
-### 13. **Software Policy Chaos**
+### 12. **Software Policy Chaos**
 
 **Problem:** Managing software across hundreds of devices is inconsistent:
 
@@ -400,17 +360,18 @@ Send-TechnicianAlert -Title "Security Alert" `
 
 **COOLForge Solution:** 5-Tag Policy Model
 
-```powershell
-# Tags control software state (override everything):
-# U+1F64F unchecky  = Install if missing (transient - removed after install)
-# U+1F6AB unchecky  = Remove if present (transient - removed after removal)
-# U+1F4CC unchecky  = Pin - no changes allowed (persistent)
-# U+1F504 unchecky  = Reinstall (transient)
-# U+2705 unchecky   = Status: installed (set automatically by script)
+**Tags control software state (override custom field policy):**
 
-# Custom field policy (inherited from Group -> Folder -> Device):
-# policy_unchecky = "install" | "remove" | "pin" | ""
-```
+| Tag | Action | Persistence |
+|-----|--------|-------------|
+| 🙏unchecky | Install if missing | Transient (removed after install) |
+| 🚫unchecky | Remove if present | Transient (removed after removal) |
+| 📌unchecky | Pin - no changes allowed | Persistent |
+| 🔄unchecky | Reinstall | Transient |
+| ✅unchecky | Status: installed | Set automatically by script |
+
+**Custom field policy** (inherited from Group → Folder → Device):
+- `policy_unchecky` = `"install"` | `"remove"` | `"pin"` | `""`
 
 **Hierarchy:**
 1. Software-specific tags (highest priority)
@@ -418,15 +379,15 @@ Send-TechnicianAlert -Title "Security Alert" `
 3. Default behavior (do nothing)
 
 **Global Controls:**
-- U+2705 = Device is managed (required for any action)
-- U+274C = Device is excluded from all management
+- ✅ = Device is managed (required for any action)
+- ❌ = Device is excluded from all management
 - Both = Device is globally pinned
 
 **Result:** Consistent software management with clear override hierarchy.
 
 ---
 
-### 14. **Wake-on-LAN Configuration Nightmare**
+### 13. **Wake-on-LAN Configuration Nightmare**
 
 **Problem:** Configuring WOL on Windows is complex and inconsistent:
 
@@ -460,7 +421,7 @@ Script: `Configure Wake-on-LAN.ps1`
 
 ---
 
-### 15. **Stale Device Cleanup**
+### 14. **Stale Device Cleanup**
 
 **Problem:** Devices disappear but remain in Level.io:
 
