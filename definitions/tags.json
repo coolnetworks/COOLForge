@@ -1,0 +1,127 @@
+{
+  "$schema": "./tags.schema.json",
+  "version": "2026.01.13",
+  "description": "COOLForge tag definitions for Level.io policy enforcement",
+  "documentation": "See docs/POLICY-TAGS.md for complete policy specification",
+  "globalTags": {
+    "description": "Standalone tags that control device-level management (no software suffix)",
+    "tags": [
+      {
+        "emoji": "✅",
+        "unicode": "U+2705",
+        "name": "Checkmark",
+        "purpose": "Device is verified/managed by COOLForge",
+        "style": "blue"
+      },
+      {
+        "emoji": "❌",
+        "unicode": "U+274C",
+        "name": "Cross",
+        "purpose": "Device is excluded from all COOLForge management",
+        "style": "blue"
+      }
+    ],
+    "combinations": [
+      {
+        "tags": ["✅"],
+        "result": "Managed - run policy checks"
+      },
+      {
+        "tags": ["❌"],
+        "result": "Excluded - skip all policy scripts"
+      },
+      {
+        "tags": ["✅", "❌"],
+        "result": "Globally pinned - no changes to ANY software"
+      },
+      {
+        "tags": [],
+        "result": "Not verified - scripts skip (no action)"
+      }
+    ]
+  },
+  "softwareTags": {
+    "description": "Tags with software suffix (e.g., HUNTRESS, UNCHECKY) that control individual software",
+    "prefixes": [
+      {
+        "emoji": "🙏",
+        "unicode": "U+1F64F",
+        "name": "Install",
+        "action": "Install if missing",
+        "setBy": "Admin",
+        "transient": true,
+        "setsCustomField": "install",
+        "style": "green",
+        "priority": 4
+      },
+      {
+        "emoji": "🚫",
+        "unicode": "U+1F6AB",
+        "name": "Remove",
+        "action": "Remove if present",
+        "setBy": "Admin",
+        "transient": true,
+        "setsCustomField": "remove",
+        "style": "orange",
+        "priority": 3
+      },
+      {
+        "emoji": "📌",
+        "unicode": "U+1F4CC",
+        "name": "Pin",
+        "action": "No changes allowed",
+        "setBy": "Admin",
+        "transient": true,
+        "setsCustomField": "pin",
+        "style": "red",
+        "priority": 1
+      },
+      {
+        "emoji": "🔄",
+        "unicode": "U+1F504",
+        "name": "Reinstall",
+        "action": "Remove then install",
+        "setBy": "Admin/Automation",
+        "transient": true,
+        "setsCustomField": null,
+        "style": "cyan",
+        "priority": 2
+      },
+      {
+        "emoji": "✅",
+        "unicode": "U+2705",
+        "name": "Has/Installed",
+        "action": "Status: software is installed",
+        "setBy": "Script",
+        "transient": false,
+        "setsCustomField": null,
+        "style": "gray",
+        "priority": null
+      }
+    ],
+    "priorityOrder": ["Pin", "Reinstall", "Remove", "Install"],
+    "notes": [
+      "Action tags (🙏, 🚫, 🔄) are transient - removed after action completes",
+      "Pin tag (📌) is transient - intent captured in custom field then tag removed",
+      "Status tag (✅) is persistent - reflects actual installation state",
+      "Pin + Remove combination sets custom field to 'remove' (block installs)"
+    ]
+  },
+  "softwareDefinitions": {
+    "unchecky": {
+      "displayName": "Unchecky",
+      "tags": ["🙏UNCHECKY", "🚫UNCHECKY", "📌UNCHECKY", "🔄UNCHECKY", "✅UNCHECKY"],
+      "customFields": ["policy_unchecky", "policy_unchecky_url"]
+    },
+    "huntress": {
+      "displayName": "Huntress",
+      "tags": ["🙏HUNTRESS", "🚫HUNTRESS", "📌HUNTRESS", "🔄HUNTRESS", "✅HUNTRESS"],
+      "customFields": ["policy_huntress"]
+    },
+    "dnsfilter": {
+      "displayName": "DNSFilter",
+      "tags": ["🙏DNSFILTER", "🚫DNSFILTER", "📌DNSFILTER", "🔄DNSFILTER", "✅DNSFILTER"],
+      "customFields": ["policy_dnsfilter"]
+    }
+  }
+}

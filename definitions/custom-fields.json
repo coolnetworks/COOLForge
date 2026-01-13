@@ -1,6 +1,6 @@
 {
   "$schema": "./custom-fields.schema.json",
-  "version": "2026.01.10",
+  "version": "2026.01.13",
   "description": "COOLForge custom field definitions for Level.io",
   "setup": {
     "prerequisites": [
@@ -36,6 +36,13 @@
       "prerequisites": [
         "Huntress account key (from Huntress dashboard > Agents > Deploy)",
         "Huntress organization key (from Huntress dashboard > Agents > Deploy)"
+      ]
+    },
+    "unchecky": {
+      "displayName": "Unchecky",
+      "description": "These fields enable automated Unchecky deployment using the 5-tag policy model. Tags override custom field policy.",
+      "prerequisites": [
+        "(Optional) Custom URL if hosting your own Unchecky installer"
       ]
     },
     "technician_alerts": {
@@ -179,6 +186,24 @@
         "adminOnly": false,
         "required": false,
         "prompt": "Default Huntress tags (comma-separated, optional)"
+      }
+    ],
+    "unchecky": [
+      {
+        "name": "policy_unchecky",
+        "description": "Default Unchecky policy: install, remove, pin, or empty. Tags override this value.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "Default Unchecky policy (install/remove/pin/empty)"
+      },
+      {
+        "name": "policy_unchecky_url",
+        "description": "Custom URL to download Unchecky installer. Leave empty to use default.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "Custom Unchecky installer URL (leave empty for default)"
       }
     ],
     "technician_alerts": [
