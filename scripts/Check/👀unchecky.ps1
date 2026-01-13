@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.13.07
+    Version:          2026.01.13.08
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.13.07
+# Version: 2026.01.13.08
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -403,24 +403,52 @@ $InvokeParams = @{ ScriptBlock = {
     # ============================================================
     # AUTO-BOOTSTRAP: Create policy infrastructure if needed
     # ============================================================
-    # If no custom field policy AND no override tags, bootstrap the policy
-    # This allows first-run setup without manual configuration
-    if ($LevelApiKey -and [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
+    # On first run, create required tags and custom fields
+    # This allows deployment without manual setup
+    if ($LevelApiKey) {
         # Quick check for override tags before bootstrapping
         $QuickPolicy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
-        if ($QuickPolicy.ShouldProcess -and $QuickPolicy.ResolvedAction -eq "None" -and $QuickPolicy.MatchedTags.Count -eq 0) {
-            Write-LevelLog "No policy configured - auto-bootstrapping..." -Level "INFO"
-            $Bootstrap = Initialize-LevelSoftwarePolicy -ApiKey $LevelApiKey `
-                -SoftwareName $SoftwareName `
-                -DeviceHostname $DeviceHostname `
-                -DefaultAction "install"
+        $NeedsBootstrap = $QuickPolicy.ShouldProcess -and $QuickPolicy.ResolvedAction -eq "None" -and $QuickPolicy.MatchedTags.Count -eq 0
 
-            if ($Bootstrap.Success) {
-                Write-LevelLog "Created policy_$SoftwareName custom field with default 'install'" -Level "SUCCESS"
-                $CustomFieldPolicy = $Bootstrap.Action
+        if ($NeedsBootstrap -or [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
+            Write-LevelLog "Checking policy infrastructure..." -Level "INFO"
+
+            # Create tags and custom fields if they don't exist
+            $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
+                -SoftwareName $SoftwareName `
+                -RequireUrl $true
+
+            if ($InfraResult.Success) {
+                if ($InfraResult.TagsCreated -gt 0 -or $InfraResult.FieldsCreated -gt 0) {
+                    Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $($InfraResult.FieldsCreated) fields" -Level "SUCCESS"
+                    # Alert user to configure the new custom fields
+                    Write-Host ""
+                    Write-Host "Alert: Policy infrastructure created - please configure custom fields"
+                    Write-Host "  Set the following custom fields in Level.io:"
+                    Write-Host "  - policy_unchecky: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
+                    Write-Host "  - policy_unchecky_url: Set to your hosted Unchecky installer URL"
+                    Write-Host "    (Download from https://www.fosshub.com/Unchecky.html and host it yourself)"
+                    Write-Host ""
+                    Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
+                    $script:ExitCode = 1
+                    return 1
+                }
             }
             else {
-                Write-LevelLog "Auto-bootstrap failed: $($Bootstrap.Error)" -Level "WARNING"
+                Write-LevelLog "Infrastructure setup warning: $($InfraResult.Error)" -Level "WARNING"
+            }
+
+            # Set default policy on device if none exists
+            if ([string]::IsNullOrWhiteSpace($CustomFieldPolicy) -and $NeedsBootstrap) {
+                $Bootstrap = Initialize-LevelSoftwarePolicy -ApiKey $LevelApiKey `
+                    -SoftwareName $SoftwareName `
+                    -DeviceHostname $DeviceHostname `
+                    -DefaultAction "install"
+
+                if ($Bootstrap.Success) {
+                    Write-LevelLog "Set device policy to 'install'" -Level "SUCCESS"
+                    $CustomFieldPolicy = $Bootstrap.Action
+                }
             }
         }
     }

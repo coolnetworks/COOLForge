@@ -2752,6 +2752,182 @@ function Initialize-LevelSoftwarePolicy {
 
 <#
 .SYNOPSIS
+    Ensures all required tags and custom fields exist for a software policy.
+
+.DESCRIPTION
+    Auto-creates the infrastructure needed for a software policy script:
+    - 5 policy tags: Install, Remove, Pin, Reinstall, Has/Installed
+    - Custom fields: policy_<software> and policy_<software>_url
+
+    This function is idempotent - it only creates items that don't exist.
+    Call it on first run to bootstrap the policy infrastructure.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER SoftwareName
+    The software name (e.g., "unchecky", "huntress").
+
+.PARAMETER RequireUrl
+    If $true, creates the policy_<software>_url custom field. Default: $false
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Hashtable with:
+    - Success: $true if infrastructure is ready
+    - TagsCreated: Number of tags created
+    - FieldsCreated: Number of custom fields created
+    - Error: Error message if failed
+
+.EXAMPLE
+    $Result = Initialize-SoftwarePolicyInfrastructure -ApiKey $ApiKey -SoftwareName "unchecky" -RequireUrl $true
+    if ($Result.Success) {
+        Write-LevelLog "Policy infrastructure ready"
+    }
+#>
+function Initialize-SoftwarePolicyInfrastructure {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SoftwareName,
+
+        [Parameter(Mandatory = $false)]
+        [bool]$RequireUrl = $false,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $SoftwareName = $SoftwareName.ToLower()
+    $SoftwareNameUpper = $SoftwareName.ToUpper()
+    $TagsCreated = 0
+    $FieldsCreated = 0
+
+    Write-LevelLog "Initializing policy infrastructure for '$SoftwareName'..." -Level "INFO"
+
+    # ================================================================
+    # STEP 1: Create policy tags (5-tag model)
+    # ================================================================
+    # Tag prefixes with their emoji characters
+    # U+1F64F = Pray (Install), U+1F6AB = Prohibited (Remove), U+1F4CC = Pushpin (Pin)
+    # U+1F504 = Arrows (Reinstall), U+2705 = Checkmark (Has/Installed)
+    $PolicyTagPrefixes = @(
+        @{ Emoji = [char]::ConvertFromUtf32(0x1F64F); Name = "Install" }
+        @{ Emoji = [char]::ConvertFromUtf32(0x1F6AB); Name = "Remove" }
+        @{ Emoji = [char]::ConvertFromUtf32(0x1F4CC); Name = "Pin" }
+        @{ Emoji = [char]::ConvertFromUtf32(0x1F504); Name = "Reinstall" }
+        @{ Emoji = [char]0x2705;                      Name = "Has" }
+    )
+
+    # Get existing tags
+    $ExistingTags = Get-LevelTags -ApiKey $ApiKey -BaseUrl $BaseUrl
+    if ($null -eq $ExistingTags) {
+        Write-LevelLog "Could not fetch existing tags - API may not have Tags permission" -Level "WARNING"
+        # Continue anyway - will try to create tags
+        $ExistingTags = @()
+    }
+    $ExistingTagNames = @($ExistingTags | ForEach-Object { $_.name })
+
+    foreach ($Prefix in $PolicyTagPrefixes) {
+        $FullTagName = "$($Prefix.Emoji)$SoftwareNameUpper"
+
+        if ($ExistingTagNames -contains $FullTagName) {
+            Write-LevelLog "Tag '$FullTagName' already exists" -Level "DEBUG"
+        }
+        else {
+            $NewTag = New-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+            if ($NewTag) {
+                Write-LevelLog "Created tag: $FullTagName" -Level "SUCCESS"
+                $TagsCreated++
+            }
+            else {
+                Write-LevelLog "Failed to create tag: $FullTagName" -Level "WARNING"
+            }
+        }
+    }
+
+    # ================================================================
+    # STEP 2: Create required system tags (checkmark and cross)
+    # ================================================================
+    $SystemTags = @(
+        [char]0x2705  # Checkmark - device verified/managed
+        [char]0x274C  # Cross - device excluded
+    )
+
+    foreach ($SystemTag in $SystemTags) {
+        $TagName = [string]$SystemTag
+        if ($ExistingTagNames -contains $TagName) {
+            Write-LevelLog "System tag '$TagName' already exists" -Level "DEBUG"
+        }
+        else {
+            $NewTag = New-LevelTag -ApiKey $ApiKey -TagName $TagName -BaseUrl $BaseUrl
+            if ($NewTag) {
+                Write-LevelLog "Created system tag: $TagName" -Level "SUCCESS"
+                $TagsCreated++
+            }
+        }
+    }
+
+    # ================================================================
+    # STEP 3: Create custom fields
+    # ================================================================
+    # Policy field (e.g., policy_unchecky)
+    $PolicyFieldName = "policy_$SoftwareName"
+    $ExistingPolicyField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $PolicyFieldName -BaseUrl $BaseUrl
+
+    if (-not $ExistingPolicyField) {
+        Write-LevelLog "Creating custom field: $PolicyFieldName" -Level "INFO"
+        $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $PolicyFieldName -DefaultValue "" -BaseUrl $BaseUrl
+        if ($NewField) {
+            Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
+            $FieldsCreated++
+        }
+        else {
+            Write-LevelLog "Failed to create custom field: $PolicyFieldName" -Level "ERROR"
+            return @{ Success = $false; Error = "Failed to create policy custom field" }
+        }
+    }
+    else {
+        Write-LevelLog "Custom field '$PolicyFieldName' already exists" -Level "DEBUG"
+    }
+
+    # URL field (e.g., policy_unchecky_url) - only if required
+    if ($RequireUrl) {
+        $UrlFieldName = "policy_${SoftwareName}_url"
+        $ExistingUrlField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $UrlFieldName -BaseUrl $BaseUrl
+
+        if (-not $ExistingUrlField) {
+            Write-LevelLog "Creating custom field: $UrlFieldName" -Level "INFO"
+            $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $UrlFieldName -DefaultValue "" -BaseUrl $BaseUrl
+            if ($NewField) {
+                Write-LevelLog "Created custom field: $UrlFieldName" -Level "SUCCESS"
+                $FieldsCreated++
+            }
+            else {
+                Write-LevelLog "Failed to create custom field: $UrlFieldName" -Level "WARNING"
+            }
+        }
+        else {
+            Write-LevelLog "Custom field '$UrlFieldName' already exists" -Level "DEBUG"
+        }
+    }
+
+    Write-LevelLog "Policy infrastructure ready: $TagsCreated tags created, $FieldsCreated fields created" -Level "SUCCESS"
+
+    return @{
+        Success       = $true
+        TagsCreated   = $TagsCreated
+        FieldsCreated = $FieldsCreated
+    }
+}
+
+<#
+.SYNOPSIS
     Gets a single custom field by ID with its default value.
 
 .DESCRIPTION
@@ -4607,7 +4783,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.13.11"
+$script:ModuleVersion = "2026.01.13.12"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -4656,6 +4832,7 @@ Export-ModuleMember -Function @(
     'Set-LevelCustomFieldValue',
     'Set-LevelCustomFieldDefaultValue',
     'Initialize-LevelSoftwarePolicy',
+    'Initialize-SoftwarePolicyInfrastructure',
     'Get-LevelCustomFieldById',
     'Remove-LevelCustomField',
 
