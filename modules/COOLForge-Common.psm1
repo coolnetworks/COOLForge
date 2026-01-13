@@ -353,7 +353,7 @@ function Invoke-LevelScript {
         if ($FinalExitCode -eq 0) {
             Write-LevelLog "Script completed successfully" -Level "SUCCESS"
         } else {
-            Write-LevelLog "Script completed with exit code: $FinalExitCode" -Level "WARNING"
+            Write-LevelLog "Script completed with exit code: $FinalExitCode" -Level "WARN"
         }
 
         if (-not $NoCleanup) {
@@ -1150,7 +1150,7 @@ function Invoke-SoftwarePolicyCheck {
     # Handle early exit cases (device not processed)
     if (-not $Policy.ShouldProcess) {
         Write-Host ""
-        Write-LevelLog "$($Policy.SkipReason)" -Level "WARNING"
+        Write-LevelLog "$($Policy.SkipReason)" -Level "WARN"
         Write-Host ""
         Write-LevelLog "Resolved Action: NONE (skipped)" -Level "INFO"
         return $Policy
@@ -1292,7 +1292,7 @@ function Invoke-LevelApiCall {
     # Note: Level.io v2 API does NOT use "Bearer" prefix - just the API key directly
     $Headers = @{
         "Authorization" = $ApiKey
-        "Content-Type"  = "application/json"
+        "Content-Type"  = "application/json; charset=utf-8"
         "Accept"        = "application/json"
     }
 
@@ -1305,9 +1305,11 @@ function Invoke-LevelApiCall {
         UseBasicParsing = $true
     }
 
-    # Add body for non-GET requests
+    # Add body for non-GET requests - ensure UTF-8 encoding for emojis
     if ($Body -and $Method -ne "GET") {
-        $Params.Body = ($Body | ConvertTo-Json -Depth 10)
+        $JsonString = ($Body | ConvertTo-Json -Depth 10)
+        # Explicitly encode as UTF-8 bytes to handle emojis correctly
+        $Params.Body = [System.Text.Encoding]::UTF8.GetBytes($JsonString)
     }
 
     try {
@@ -1788,7 +1790,7 @@ function Get-LevelDeviceById {
         # Response is direct device object
         return $Result.Data
     } else {
-        Write-LevelLog "Unexpected device response structure" -Level "WARNING"
+        Write-LevelLog "Unexpected device response structure" -Level "WARN"
         return $Result.Data
     }
 }
@@ -2827,7 +2829,7 @@ function Initialize-SoftwarePolicyInfrastructure {
     # Get existing tags
     $ExistingTags = Get-LevelTags -ApiKey $ApiKey -BaseUrl $BaseUrl
     if ($null -eq $ExistingTags) {
-        Write-LevelLog "Could not fetch existing tags - API may not have Tags permission" -Level "WARNING"
+        Write-LevelLog "Could not fetch existing tags - API may not have Tags permission" -Level "WARN"
         # Continue anyway - will try to create tags
         $ExistingTags = @()
     }
@@ -2846,7 +2848,7 @@ function Initialize-SoftwarePolicyInfrastructure {
                 $TagsCreated++
             }
             else {
-                Write-LevelLog "Failed to create tag: $FullTagName" -Level "WARNING"
+                Write-LevelLog "Failed to create tag: $FullTagName" -Level "WARN"
             }
         }
     }
@@ -2909,7 +2911,7 @@ function Initialize-SoftwarePolicyInfrastructure {
                 $FieldsCreated++
             }
             else {
-                Write-LevelLog "Failed to create custom field: $UrlFieldName" -Level "WARNING"
+                Write-LevelLog "Failed to create custom field: $UrlFieldName" -Level "WARN"
             }
         }
         else {
