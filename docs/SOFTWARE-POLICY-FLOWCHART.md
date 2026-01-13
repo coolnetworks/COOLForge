@@ -161,19 +161,25 @@ Each managed software uses 5 tags with emoji prefixes:
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  STEP 7: TAG MANAGEMENT                                                     │
+│  STEP 7: TAG + CUSTOM FIELD MANAGEMENT                                      │
 │                                                                             │
-│  After successful action, update tags via Level.io API:                    │
+│  After successful action, update tags AND persist intent to custom field:  │
 │                                                                             │
 │  ┌───────────────┬─────────────────────────────────────────────────────┐   │
-│  │ Action        │ Tag Changes                                         │   │
-│  ├───────────────┼─────────────────────────────────────────────────────┤   │
-│  │ Install       │ Remove 🙏unchecky, Add ✅unchecky                   │   │
-│  │ Remove        │ Remove 🚫unchecky, Remove ✅unchecky                │   │
-│  │ Reinstall     │ Remove 🔄unchecky, Add ✅unchecky                   │   │
-│  │ Pin           │ Remove 📌unchecky (intent saved to custom field)    │   │
-│  │ None          │ Reconcile ✅unchecky with actual install state      │   │
-│  └───────────────┴─────────────────────────────────────────────────────┘   │
+│  │ Action        │ Tag Changes              │ Custom Field Update      │   │
+│  ├───────────────┼──────────────────────────┼──────────────────────────┤   │
+│  │ Install (tag) │ Remove 🙏, Add ✅        │ policy_unchecky="install"│   │
+│  │ Remove (tag)  │ Remove 🚫, Remove ✅     │ policy_unchecky="remove" │   │
+│  │ Reinstall     │ Remove 🔄, Add ✅        │ policy_unchecky="install"│   │
+│  │ Pin           │ Remove 📌                │ policy_unchecky="pin"    │   │
+│  │ None          │ Reconcile ✅ with state  │ (no change)              │   │
+│  └───────────────┴──────────────────────────┴──────────────────────────┘   │
+│                                                                             │
+│  WHY PERSIST TO CUSTOM FIELD?                                              │
+│  Tags are one-time overrides. Setting the device custom field ensures:     │
+│  - Intent persists after tag is removed                                    │
+│  - Device-level policy overrides group/folder inheritance                  │
+│  - Software stays in desired state on future script runs                   │
 │                                                                             │
 │  Note: Transient tags (🙏🚫🔄📌) are removed after action completes.       │
 │  The ✅unchecky (Has) tag persists to show current install state.          │

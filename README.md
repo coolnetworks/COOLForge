@@ -287,9 +287,10 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 Use the setup wizard to automatically create and configure custom fields:
 
 ```powershell
-# Download and run the setup script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/start_here/Setup-COOLForge.ps1" -OutFile "Setup-COOLForge.ps1"
-.\Setup-COOLForge.ps1
+# Clone the repo (setup script requires the library module)
+git clone https://github.com/coolnetworks/COOLForge.git
+cd COOLForge
+.\start_here\Setup-COOLForge.ps1
 ```
 
 The wizard will:
