@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.13.05
+    Version:          2026.01.13.06
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.13.05
+# Version: 2026.01.13.06
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -103,8 +103,18 @@ function Write-DebugInstallCheck {
 # CONFIGURATION
 # ============================================================
 $SoftwareName = "unchecky"
-$InstallerUrl = "https://s3.ap-southeast-2.wasabisys.com/levelfiles/unchecky_setup.exe"
 $InstallerName = "unchecky_setup.exe"
+
+# Installer URL - use custom field if set, otherwise default
+$DefaultInstallerUrl = "https://s3.ap-southeast-2.wasabisys.com/levelfiles/unchecky_setup.exe"
+$CustomUrlVar = "url_$SoftwareName"
+$CustomUrl = Get-Variable -Name $CustomUrlVar -ValueOnly -ErrorAction SilentlyContinue
+if (-not [string]::IsNullOrWhiteSpace($CustomUrl) -and $CustomUrl -notlike "{{*}}") {
+    $InstallerUrl = $CustomUrl
+    Write-Host "[*] Using custom installer URL from $CustomUrlVar"
+} else {
+    $InstallerUrl = $DefaultInstallerUrl
+}
 
 # ============================================================
 # INITIALIZE
