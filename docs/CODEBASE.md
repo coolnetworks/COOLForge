@@ -151,7 +151,7 @@ $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
 |-------|--------|-------------|
 | `🙏` | Install | Request/recommend installation |
 | `⛔` | Remove | Remove if present |
-| `🚫`/`🛑` | Block | Block install, leave existing |
+| `🚫` | Block | Block install, leave existing |
 | `📌` | Pin | Lock state (blocks install AND remove) |
 | `✅` | Has | Installed/verified status |
 | `❌` | Skip | Hands off (managed elsewhere) |

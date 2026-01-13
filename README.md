@@ -102,6 +102,7 @@ See [Function Reference](docs/FUNCTIONS.md) for complete documentation of all 79
 | [Function Reference](docs/FUNCTIONS.md) | Complete documentation for all library functions |
 | [Start Here](#start-here) | **Start here!** — Setup-COOLForge, New-LevelClient, Backup/Restore tools |
 | [Script Documentation](docs/scripts/README.md) | **Per-script documentation** — Detailed docs for each script |
+| [Software Policy Flowchart](docs/SOFTWARE-POLICY-FLOWCHART.md) | Complete flow for tag-based software management |
 | [Technician Alerts](docs/TECHNICIAN-ALERTS.md) | Real-time toast notifications to tech workstations |
 | [Script Launcher Guide](docs/LAUNCHER.md) | How to use the launcher to run scripts from GitHub |
 | [Private Fork Guide](docs/PRIVATE-FORK.md) | Using COOLForge with a private GitHub repository |

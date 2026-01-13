@@ -45,7 +45,7 @@ This document explains the problems COOLForge was built to solve and the philoso
 ```powershell
 $Init = Initialize-LevelScript -ScriptName "MyScript" `
                                -DeviceTags "{{level_tag_names}}" `
-                               -BlockingTags @("❌", "🛑")
+                               -BlockingTags @("❌", "🚫")
 ```
 
 - Scripts automatically skip execution if device has blocking tags

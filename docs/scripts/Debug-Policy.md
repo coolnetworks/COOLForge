@@ -22,7 +22,7 @@ Debug script for testing software policy enforcement logic. Demonstrates the COO
 |-----|--------|
 | 🙏DEBUG | Install/reinstall |
 | ⛔DEBUG | Remove if present |
-| 🚫DEBUG or 🛑DEBUG | Block install |
+| 🚫DEBUG | Block install |
 | 📌DEBUG | Pin (lock state) |
 | ✅DEBUG | Has (verify installed) |
 | ❌DEBUG | Skip (hands off) |

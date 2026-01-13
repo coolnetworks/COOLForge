@@ -60,7 +60,7 @@ Each managed software uses 5 tags with emoji prefixes:
 │  STEP 2: SCRIPT INITIALIZATION                                              │
 │                                                                             │
 │  Initialize-LevelScript:                                                    │
-│  ├─ Check blocking tags (❌, 🛑)                                           │
+│  ├─ Check blocking tags (❌, 🚫)                                           │
 │  │   └─ If blocked → Exit 0 (skip silently)                                │
 │  ├─ Create lockfile (prevent concurrent runs)                              │
 │  └─ Setup logging                                                          │
@@ -386,7 +386,7 @@ Copy `launchers/unchecky.ps1` to Level.io with:
 
 1. **Check for ✅ tag** - Device must have the checkmark tag to be managed
 2. **Check for ❌ tag** - Excluded devices are skipped
-3. **Check blocking tags** - 🛑 blocks all scripts
+3. **Check blocking tags** - 🚫 blocks all scripts
 
 ### Tags not updating?
 

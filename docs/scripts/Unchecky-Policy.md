@@ -1,29 +1,30 @@
 # Unchecky Policy Script
 
-**Script:** `scripts/Check/👀unchecky.ps1`
+**Script:** `scripts/SoftwarePolicy/👀unchecky.ps1`
 **Launcher:** `launchers/👀unchecky.ps1`
-**Version:** 2026.01.01.05
-**Category:** Check
+**Version:** 2026.01.13
+**Category:** SoftwarePolicy
 
 ## Purpose
 
-Tag-based policy enforcement check for Unchecky software. Demonstrates the COOLForge multilaunch pattern for software policy management.
+Policy enforcement for Unchecky software. Uses the COOLForge 5-tag model for software management.
 
 ## Features
 
-- **Tag-based policy detection** using emoji prefixes
-- **Reusable pattern** - Change `$SoftwareName` to manage any software
+- **Custom field policy** - Set `policy_unchecky` to `install`, `remove`, or `pin`
+- **Tag overrides** - Override policy per-device with emoji tags
+- **Automatic tag management** - Script updates tags to reflect actual state
 - **Library-powered** - Uses `Invoke-SoftwarePolicyCheck` from COOLForge-Common
 
 ## Policy Tags
 
 | Tag | Meaning |
 |-----|---------|
-| 🙏unchecky | Request/Recommend installation |
-| ⛔unchecky | Block/Must not be installed |
-| 🛑unchecky | Stop/Remove if present |
-| 📌unchecky | Pin/Must be installed (enforce presence) |
-| ✅unchecky | Installed/Already present |
+| 🙏unchecky | Install if missing (override tag) |
+| 🚫unchecky | Remove if present (override tag) |
+| 📌unchecky | Pin - don't change (override tag) |
+| 🔄unchecky | Reinstall (override tag) |
+| ✅unchecky | Installed (status tag, set by script) |
 
 ## Exit Codes
 

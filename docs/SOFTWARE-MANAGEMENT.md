@@ -52,7 +52,6 @@ COOLForge uses an emoji-based tag system for software policy enforcement. Device
 | 🙏 | Install | Install or reinstall |
 | ⛔ | Remove | Uninstall if present |
 | 🚫 | Block | Never install, leave existing |
-| 🛑 | Block | Never install, leave existing (alternate) |
 | 📌 | Pin | Lock state (no install, no remove) |
 | ✅ | Has | Verify installed + services + remediate |
 
@@ -63,7 +62,7 @@ When multiple tags are present, they are resolved in this order:
 ```
 1. ❌ Skip     → IsSkipped=true, ResolvedAction="Skip", exit
 2. 📌 Pin     → IsPinned=true, CanInstall=false, CanRemove=false
-3. 🚫/🛑 Block → IsBlocked=true, CanInstall=false
+3. 🚫 Block   → IsBlocked=true, CanInstall=false
 4. ⛔ Remove  → If CanRemove: ResolvedAction="Remove"
 5. 🙏 Install → If CanInstall: ResolvedAction="Install"
 6. ✅ Has     → ShouldVerify=true (runs if not removing)
@@ -78,7 +77,7 @@ When multiple tags are present, they are resolved in this order:
 
 ## Tag Combination Examples
 
-**🛑SOFTWARE + ⛔SOFTWARE** (Block + Remove)
+**🚫SOFTWARE + ⛔SOFTWARE** (Block + Remove)
 - Block prevents Install, but allows Remove
 - **Result**: `ResolvedAction = "Remove"`, future installs blocked
 
