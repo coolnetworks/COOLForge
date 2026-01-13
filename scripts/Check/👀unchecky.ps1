@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.13.04
+    Version:          2026.01.13.05
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.13.04
+# Version: 2026.01.13.05
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -592,8 +592,13 @@ $InvokeParams = @{ ScriptBlock = {
                     }
                 }
                 "Pin" {
-                    # Remove Pin tag (intent now captured in custom field), ensure Has tag reflects actual state
+                    # Remove Pin tag (intent now captured in custom field)
                     Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Pin" -DeviceHostname $DeviceHostname
+                    # Also remove Remove tag if present (intent captured in custom field as "remove")
+                    if ("Remove" -in $Policy.PolicyActions) {
+                        Remove-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Remove" -DeviceHostname $DeviceHostname
+                    }
+                    # Ensure Has tag reflects actual state
                     if ($FinalInstallState -and -not $Policy.HasInstalled) {
                         Add-LevelPolicyTag -ApiKey $LevelApiKey -TagName $SoftwareNameUpper -EmojiPrefix "Has" -DeviceHostname $DeviceHostname
                     }
