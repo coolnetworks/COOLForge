@@ -333,17 +333,19 @@ Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-
 |--------|--------|-------------|
 | Check | [👀Check for Unauthorized Remote Access Tools](docs/scripts/RAT-Detection.md) | Detects 60+ RATs with whitelisting support |
 | Check | [👀huntress](docs/scripts/Huntress-Policy.md) | Huntress agent policy enforcement |
-| Check | [👀unchecky](docs/scripts/Unchecky-Policy.md) | Unchecky software policy check |
 | Check | [👀Test Show Versions](docs/scripts/Test-Show-Versions.md) | Library test suite and version info |
 | Check | [👀Test Variable Output](docs/scripts/Test-Variable-Output.md) | Level.io automation variable testing |
 | Check | [👀debug](docs/scripts/Debug-Policy.md) | Debug script for policy testing |
 | Configure | [⚙️Extract and Set ScreenConnect Device URL](docs/scripts/ScreenConnect-Device-URL.md) | Extracts ScreenConnect GUID and sets custom field |
+| Configure | [⚙️Configure Wake-on-LAN](docs/scripts/Configure-WOL.md) | Enables WOL in BIOS/NIC settings |
 | Fix | [🔧Fix Windows Services](docs/scripts/Fix-Windows-Services.md) | Restores Windows services to defaults (7/8/8.1/10/11) |
 | Fix | [🔧Enable System Restore](docs/scripts/System-Restore.md) | Enables System Restore and creates checkpoint |
 | Fix | [🔧Prevent Sleep](docs/scripts/Prevent-Sleep.md) | Temporarily prevents sleep with auto-restore |
 | Remove | [⛔Force Remove Anydesk](docs/scripts/Force-Remove-AnyDesk.md) | Removes AnyDesk with escalating force (5 phases) |
 | Remove | [⛔Force Remove Non MSP ScreenConnect](docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md) | Removes non-whitelisted ScreenConnect instances |
-| Utility | [🙏Wake all devices](docs/scripts/Wake-Devices.md) | Wakes devices in folder hierarchy via WOL |
+| SoftwarePolicy | [👀unchecky](docs/scripts/Unchecky-Policy.md) | Unchecky software policy enforcement |
+| Utility | [🙏Wake all devices in Level group](docs/scripts/Wake-Devices.md) | Wakes devices in parent folder hierarchy via WOL |
+| Utility | [🔔Wake tagged devices](docs/scripts/Wake-Tagged-Devices.md) | Wakes devices with specific tags |
 | Utility | [🔔Technician Alert Monitor](docs/scripts/Technician-Alert-Monitor.md) | Toast notifications for tech alerts |
 
 ---
