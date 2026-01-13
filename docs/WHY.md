@@ -74,7 +74,7 @@ $Init = Initialize-LevelScript -ScriptName "MyScript" `
 - API helpers for Level.io REST API
 - Fix once, all scripts benefit
 
-**Result:** Write scripts in 20 lines instead of 200.
+**Result:** Focus on your actual task logic instead of reinventing logging, lockfiles, and API calls.
 
 ---
 
@@ -217,7 +217,7 @@ $Init = Initialize-LevelScript -ScriptName "YourScriptName" `
 if (-not $Init.Success) { exit 0 }
 
 Invoke-LevelScript -ScriptBlock {
-    # Your actual code here (10-20 lines instead of 200)
+    # Your actual task logic here - no boilerplate needed
 }
 ```
 
