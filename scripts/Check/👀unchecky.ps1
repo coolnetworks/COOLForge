@@ -107,7 +107,7 @@ $InstallerName = "unchecky_setup.exe"
 
 # Installer URL - use custom field if set, otherwise default
 $DefaultInstallerUrl = "https://s3.ap-southeast-2.wasabisys.com/levelfiles/unchecky_setup.exe"
-$CustomUrlVar = "url_$SoftwareName"
+$CustomUrlVar = "policy_${SoftwareName}_url"
 $CustomUrl = Get-Variable -Name $CustomUrlVar -ValueOnly -ErrorAction SilentlyContinue
 if (-not [string]::IsNullOrWhiteSpace($CustomUrl) -and $CustomUrl -notlike "{{*}}") {
     $InstallerUrl = $CustomUrl

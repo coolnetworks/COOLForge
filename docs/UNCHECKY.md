@@ -52,7 +52,7 @@ Automated installation and removal of [Unchecky](https://unchecky.com/) across y
 | Field Name | Type | Level | Values | Description |
 |------------|------|-------|--------|-------------|
 | `policy_unchecky` | Text | Group/Folder/Device | `install`, `remove`, `pin`, (empty) | Default policy with inheritance |
-| `url_unchecky` | Text | Organization | URL | Custom installer download URL (optional) |
+| `policy_unchecky_url` | Text | Organization | URL | Custom installer download URL (optional) |
 
 ### Optional Custom Fields
 

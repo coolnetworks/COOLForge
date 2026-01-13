@@ -588,18 +588,16 @@ Write-Host "============================================================"
 # Read the script content
 $ScriptContent = Get-Content -Path $ScriptPath -Raw
 
-# Build list of custom field variables to pass through
-# These are defined in the launcher header as $policy_* = "{{cf_policy_*}}" and $url_* = "{{cf_url_*}}"
+# Build list of policy variables to pass through
+# These are defined in the launcher header as $policy_* = "{{cf_policy_*}}"
 $PolicyVarsBlock = ""
-@("policy_*", "url_*") | ForEach-Object {
-    Get-Variable -Name $_ -ErrorAction SilentlyContinue | ForEach-Object {
-        $VarName = $_.Name
-        $VarValue = $_.Value
-        # Only pass if it has a value and isn't an unresolved template placeholder
-        if (-not [string]::IsNullOrWhiteSpace($VarValue) -and $VarValue -notlike "{{*}}") {
-            $EscapedValue = $VarValue -replace "'", "''"
-            $PolicyVarsBlock += "`n`$$VarName = '$EscapedValue'"
-        }
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    $VarName = $_.Name
+    $VarValue = $_.Value
+    # Only pass if it has a value and isn't an unresolved template placeholder
+    if (-not [string]::IsNullOrWhiteSpace($VarValue) -and $VarValue -notlike "{{*}}") {
+        $EscapedValue = $VarValue -replace "'", "''"
+        $PolicyVarsBlock += "`n`$$VarName = '$EscapedValue'"
     }
 }
 
