@@ -4,26 +4,32 @@ Automated installation and removal of [Unchecky](https://unchecky.com/) across y
 
 ## Quick Start
 
-### 1. Import the Policy Check
+> **IMPORTANT:** Complete ALL steps before running the script. The script will fail if custom fields are not configured.
 
-Import the pre-built automation:
-**https://app.level.io/import/monitor/Z2lkOi8vbGV2ZWwvQWxsb3dlZEltcG9ydC8zNDY**
+### 1. Configure Required Custom Fields FIRST
+
+Create these custom fields in Level.io at the **Organization** level:
+
+| Field | Value | Example |
+|-------|-------|---------|
+| `coolforge_msp_scratch_folder` | Local folder for scripts/downloads | `C:\ProgramData\YourMSP` |
+| `policy_unchecky` | `install`, `remove`, or `pin` | `install` |
+| `policy_unchecky_url` | URL to your hosted installer | `https://your-bucket.s3.amazonaws.com/unchecky_setup.exe` |
 
 ### 2. Host the Unchecky Installer
 
 1. Download `unchecky_setup.exe` from [FossHub](https://www.fosshub.com/Unchecky.html)
-2. Upload to a publicly accessible URL (S3, Azure Blob, web server, etc.)
+2. Upload to a publicly accessible URL (S3, Azure Blob, Wasabi, web server, etc.)
+3. Set `policy_unchecky_url` to your hosted URL
 
-### 3. Configure Custom Fields
+### 3. Import the Policy Check
 
-Set these custom fields in Level.io:
+Import the pre-built automation:
+**https://app.level.io/import/monitor/Z2lkOi8vbGV2ZWwvQWxsb3dlZEltcG9ydC8zNDY**
 
-| Field | Value |
-|-------|-------|
-| `policy_unchecky` | `install`, `remove`, or `pin` |
-| `policy_unchecky_url` | URL to your hosted installer |
+### 4. Run the Script
 
-That's it. The script will auto-create required tags on first run.
+The script will auto-create required tags on first run.
 
 ---
 
