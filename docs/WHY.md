@@ -387,41 +387,7 @@ foreach ($Peer in $Peers) {
 
 ---
 
-### 13. **Wake-on-LAN Configuration Nightmare**
-
-**Problem:** Configuring WOL on Windows is complex and inconsistent:
-
-- Multiple settings across NIC, power options, and BIOS
-- Energy Efficient Ethernet (EEE) silently blocks WOL
-- Modern Standby vs S3 sleep compatibility varies by hardware
-- Wireless WOL (WoWLAN) requires different configuration
-- Manual configuration doesn't scale to hundreds of devices
-
-**COOLForge Solution:** Intelligent WOL Configuration Script
-
-Script: `Configure Wake-on-LAN.ps1`
-
-```powershell
-# Automatically configures all physical NICs for WOL:
-# - Enables WakeOnMagicPacket on wired adapters
-# - Enables WoWLAN on wireless adapters
-# - Disables Energy Efficient Ethernet (EEE)
-# - Configures power management settings
-# - Handles Modern Standby vs S3 sleep automatically
-```
-
-**Intelligent Handling:**
-- Detects adapter capabilities and configures appropriately
-- Keeps Modern Standby enabled if WoWLAN-capable adapter present
-- Disables Modern Standby only when legacy wired-only setup detected
-- Disables hibernation, fast startup (both block WOL)
-- Enables wake timers
-
-**Result:** Deploy once, WOL works across your fleet regardless of hardware mix.
-
----
-
-### 14. **Stale Device Cleanup**
+### 13. **Stale Device Cleanup**
 
 **Problem:** Devices disappear but remain in Level.io:
 
