@@ -3,7 +3,7 @@
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
 $ScriptToRun = "👀unchecky.ps1"
-$ScriptCategory = "Check"  # Check, Fix, Remove, or Maintain
+$ScriptCategory = "SoftwarePolicy"
 $policy_unchecky = "{{cf_policy_unchecky}}"
 $policy_unchecky_url = "{{cf_policy_unchecky_url}}"
 <#
