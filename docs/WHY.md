@@ -246,35 +246,36 @@ Send-LevelWakeOnLan -MacAddress "00:11:22:33:44:55"
 
 ---
 
-### 10. **No Built-in Wake-on-LAN for Folders**
+### 10. **Scripts Can't Coordinate Across Devices**
 
-**Problem:** Need to wake multiple devices for maintenance windows or urgent tasks:
+**Problem:** Scripts run in isolation on individual devices:
 
-- Level.io can wake individual devices, but has no built-in capability to wake entire folder hierarchies
-- Manually waking 50+ devices one-by-one is impractical
-- Scripts running on one device can't wake peer devices
-- No way to cascade wake operations through folder structure
+- No way for a script on one device to trigger actions on other devices
+- Maintenance windows require waking devices one-by-one manually
+- Peer-to-peer coordination requires external orchestration
+- Can't cascade operations through device groups
 
-**COOLForge Solution:** Hierarchical Wake-on-LAN
-
-Script: `🙏Wake all devices in parent to level.io folder.ps1`
+**COOLForge Solution:** Cross-Device Coordination via API
 
 ```powershell
-# Running on any device in a folder wakes all siblings and descendants
-# Uses Level.io API to:
-# 1. Find the parent folder of the current device
-# 2. Recursively enumerate all devices in folder hierarchy
-# 3. Send WOL magic packets to each device
-# 4. Reports success/failure for each wake attempt
+# Wake all devices in current folder hierarchy
+Send-LevelWakeOnLan -FolderDevices
+
+# Find and interact with peer devices
+$Peers = Get-LevelDevices -GroupId $CurrentGroup.id
+foreach ($Peer in $Peers) {
+    # Tag devices for coordinated actions
+    Add-LevelTagToDevice -DeviceId $Peer.id -TagName "WAKEME"
+}
 ```
 
-**Use Cases:**
-- **Maintenance windows**: Wake all devices in "Servers" folder for patching
-- **Emergency response**: Wake all devices in a site for incident investigation
-- **Scheduled tasks**: One device wakes peers before running distributed operations
-- **Cascading operations**: Wake folder, then run scripts on all newly-woken devices
+**Capabilities:**
+- **Wake-on-LAN**: Send magic packets to peer devices from any online device
+- **Tag coordination**: Tag devices for batch operations
+- **Folder awareness**: Scripts know their group context and can find siblings
+- **API access**: Full Level.io API available from endpoint scripts
 
-**Result:** Wake entire folder hierarchies from a single script execution on any device in the folder.
+**Result:** Coordinate maintenance windows and batch operations from any device in the fleet.
 
 ---
 
