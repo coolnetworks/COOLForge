@@ -371,34 +371,33 @@ foreach ($Peer in $Peers) {
 - No standardized way to enforce "install on these, remove on those"
 - Manual tracking of which devices should have which software
 - Different scripts with different approaches to the same problem
-- No way to pin software versions or prevent changes on specific devices
 
-**COOLForge Solution:** 5-Tag Policy Model
+**COOLForge Solution:** Custom Field Policy
 
-**Tags control software state (override custom field policy):**
+Set the `policy_unchecky` custom field to control Unchecky on all devices below that level:
 
-| Tag | Action | Persistence |
-|-----|--------|-------------|
-| 🙏unchecky | Install if missing | Transient (removed after install) |
-| 🚫unchecky | Remove if present | Transient (removed after removal) |
-| 📌unchecky | Pin - no changes allowed | Persistent |
-| 🔄unchecky | Reinstall | Transient |
-| ✅unchecky | Status: installed | Set automatically by script |
+| Value | What it does |
+|-------|--------------|
+| `install` | Install Unchecky if missing |
+| `remove` | Remove Unchecky if present |
+| `pin` | Don't change anything |
 
-**Custom field policy** (inherited from Group → Folder → Device):
-- `policy_unchecky` = `"install"` | `"remove"` | `"pin"` | `""`
+**Where to set it:**
+- **Global settings** — applies to all devices in your tenant
+- **Company group** — applies to all devices for that client
+- **Subgroup** — applies to devices in that folder
+- **Device** — overrides everything above for that one device
 
-**Hierarchy:**
-1. Software-specific tags (highest priority)
-2. Custom field policy (inherited)
-3. Default behavior (do nothing)
+**Setup required:**
+1. Host the Unchecky installer on a publicly accessible URL (S3, Azure Blob, your web server)
+2. Set `policy_unchecky_url` custom field to your hosted URL
+3. Set `policy_unchecky` to `install`, `remove`, or `pin` where you want it applied
 
-**Global Controls:**
-- ✅ = Device is managed (required for any action)
-- ❌ = Device is excluded from all management
-- Both = Device is globally pinned
+**Example:** Set `policy_unchecky = install` on your "All Workstations" group, and every workstation gets Unchecky automatically. Set it to `remove` on the "Servers" group, and servers won't have it.
 
-**Result:** Consistent software management with clear override hierarchy.
+**Result:** Consistent software management across your fleet with simple custom field settings.
+
+See [Software Policy Flowchart](SOFTWARE-POLICY-FLOWCHART.md) for the complete technical flow.
 
 ---
 
