@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.13.06
+    Version:          2026.01.13.07
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.13.06
+# Version: 2026.01.13.07
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -105,15 +105,12 @@ function Write-DebugInstallCheck {
 $SoftwareName = "unchecky"
 $InstallerName = "unchecky_setup.exe"
 
-# Installer URL - use custom field if set, otherwise default
-$DefaultInstallerUrl = "https://s3.ap-southeast-2.wasabisys.com/levelfiles/unchecky_setup.exe"
+# Installer URL - MUST be set via custom field (no default)
+# Download from https://www.fosshub.com/Unchecky.html and host on your own publicly accessible URL
 $CustomUrlVar = "policy_${SoftwareName}_url"
-$CustomUrl = Get-Variable -Name $CustomUrlVar -ValueOnly -ErrorAction SilentlyContinue
-if (-not [string]::IsNullOrWhiteSpace($CustomUrl) -and $CustomUrl -notlike "{{*}}") {
-    $InstallerUrl = $CustomUrl
-    Write-Host "[*] Using custom installer URL from $CustomUrlVar"
-} else {
-    $InstallerUrl = $DefaultInstallerUrl
+$InstallerUrl = Get-Variable -Name $CustomUrlVar -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($InstallerUrl) -or $InstallerUrl -like "{{*}}") {
+    $InstallerUrl = $null
 }
 
 # ============================================================
@@ -178,6 +175,17 @@ function Get-UncheckyUninstallString {
 
 function Install-Unchecky {
     param([string]$ScratchFolder)
+
+    # Validate installer URL is configured
+    if ([string]::IsNullOrWhiteSpace($InstallerUrl)) {
+        Write-Host "Alert: Unchecky install failed - policy_unchecky_url custom field not configured"
+        Write-Host "  To fix this:"
+        Write-Host "  1. Download installer from: https://www.fosshub.com/Unchecky.html"
+        Write-Host "  2. Host the file on a publicly accessible URL (S3, Azure Blob, web server)"
+        Write-Host "  3. Set the 'policy_unchecky_url' custom field to your hosted URL"
+        Write-LevelLog "Installer URL not configured - set policy_unchecky_url custom field" -Level "ERROR"
+        return $false
+    }
 
     # Validate scratch folder path
     if ([string]::IsNullOrWhiteSpace($ScratchFolder) -or $ScratchFolder -like "*{{*") {

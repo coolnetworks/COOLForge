@@ -52,7 +52,7 @@ Automated installation and removal of [Unchecky](https://unchecky.com/) across y
 | Field Name | Type | Level | Values | Description |
 |------------|------|-------|--------|-------------|
 | `policy_unchecky` | Text | Group/Folder/Device | `install`, `remove`, `pin`, (empty) | Default policy with inheritance |
-| `policy_unchecky_url` | Text | Organization | URL | Custom installer download URL (optional) |
+| `policy_unchecky_url` | Text | Organization | URL | **Required** - URL to download Unchecky installer |
 
 ### Optional Custom Fields
 
@@ -211,9 +211,12 @@ Unchecky is detected by checking:
 3. Run silent install: `unchecky_setup.exe -install -no_desktop_icon`
 4. Delete installer after completion
 
-**Default Download URL:** `https://s3.ap-southeast-2.wasabisys.com/levelfiles/unchecky_setup.exe`
+**Installer URL:** You must host the Unchecky installer yourself and set the `policy_unchecky_url` custom field.
 
-**Custom URL:** Set `url_unchecky` custom field to override
+**Getting the Installer:**
+1. Download from [FossHub - Unchecky](https://www.fosshub.com/Unchecky.html)
+2. Host the `unchecky_setup.exe` file on a publicly accessible URL (e.g., S3, Azure Blob, your own web server)
+3. Set the `policy_unchecky_url` custom field to your hosted URL
 
 ### Uninstall Process
 
@@ -230,13 +233,16 @@ Unchecky is detected by checking:
 
 ```
 1. Create custom fields (run Setup-COOLForge.ps1)
-2. Set Organization custom fields:
+2. Download Unchecky installer from https://www.fosshub.com/Unchecky.html
+3. Host the installer on a publicly accessible URL
+4. Set Organization custom fields:
    - cf_coolforge_msp_scratch_folder = C:\ProgramData\YourMSP
    - cf_coolforge_ps_module_library_source = (GitHub URL)
    - cf_apikey = (your Level.io API key)
-3. Set Group policy:
+   - policy_unchecky_url = (your hosted installer URL)
+5. Set Group policy:
    - policy_unchecky = install
-4. Add ✅ tag to devices
+6. Add ✅ tag to devices
 5. Create automation to run 👀unchecky launcher
 ```
 
@@ -293,7 +299,7 @@ Set `cf_debug_scripts = true` on the device to see verbose output including:
 | Script does nothing | Device missing ✅ tag | Add ✅ tag to device |
 | Tags not updating | Missing API key | Set `cf_apikey` custom field |
 | Wrong policy resolved | Tag corruption | Check debug output for byte patterns |
-| Install fails | Download URL blocked | Set custom `url_unchecky` |
+| Install fails | URL not configured | Set `policy_unchecky_url` custom field |
 | Uninstall fails | Unchecky in use | Reboot and retry |
 
 ### Log Files
@@ -307,6 +313,8 @@ Set `cf_debug_scripts = true` on the device to see verbose output including:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2026.01.13.07 | 2026-01-13 | Require policy_unchecky_url custom field (no default URL) |
+| 2026.01.13.06 | 2026-01-13 | Add policy_unchecky_url custom field support |
 | 2026.01.13.05 | 2026-01-13 | Pin+Remove sets custom field to "remove", removes both tags |
 | 2026.01.13.04 | 2026-01-13 | Remove tag sets custom field to "remove" |
 | 2026.01.13.03 | 2026-01-13 | Move debug functions to module |

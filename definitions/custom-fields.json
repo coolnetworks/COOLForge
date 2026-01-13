@@ -42,7 +42,8 @@
       "displayName": "Unchecky",
       "description": "These fields enable automated Unchecky deployment using the 5-tag policy model. Tags override custom field policy.",
       "prerequisites": [
-        "(Optional) Custom URL if hosting your own Unchecky installer"
+        "Download Unchecky installer from https://www.fosshub.com/Unchecky.html",
+        "Host the installer on a publicly accessible URL (S3, Azure Blob, web server, etc.)"
       ]
     },
     "technician_alerts": {
@@ -199,11 +200,11 @@
       },
       {
         "name": "policy_unchecky_url",
-        "description": "Custom URL to download Unchecky installer. Leave empty to use default.",
+        "description": "URL to download Unchecky installer. Required for installation. Get installer from https://www.fosshub.com/Unchecky.html and host it yourself.",
         "legacyNames": [],
         "adminOnly": false,
-        "required": false,
-        "prompt": "Custom Unchecky installer URL (leave empty for default)"
+        "required": true,
+        "prompt": "URL to your hosted Unchecky installer (required)"
       }
     ],
     "technician_alerts": [
