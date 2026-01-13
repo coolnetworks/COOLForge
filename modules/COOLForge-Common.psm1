@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.13.07
+    Version:    2026.01.13.08
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -2614,10 +2614,16 @@ function Set-LevelCustomFieldValue {
         }
     }
 
+    Write-LevelLog "PATCH $BaseUrl$Endpoint with body: $($Body | ConvertTo-Json -Compress)" -Level "DEBUG"
     $Result = Invoke-LevelApiCall -Uri "$BaseUrl$Endpoint" -ApiKey $ApiKey -Method "PATCH" -Body $Body
 
     if ($Result.Success) {
         Write-LevelLog "Set $EntityType custom field '$FieldReference' = '$Value'" -Level "DEBUG"
+        # Log returned custom_fields to verify the change
+        if ($Result.Data.custom_fields) {
+            $ReturnedValue = $Result.Data.custom_fields.$FieldReference
+            Write-LevelLog "API returned custom_fields.$FieldReference = '$ReturnedValue'" -Level "DEBUG"
+        }
         return $true
     }
     else {
@@ -4380,7 +4386,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.13.07"
+$script:ModuleVersion = "2026.01.13.08"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================

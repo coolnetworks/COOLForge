@@ -9,7 +9,7 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-308ad51ca85d7ecc3e8677b6987ad213  modules/COOLForge-Common.psm1
+3157523d1cfb9d894f5a0892ad5401b7  modules/COOLForge-Common.psm1
 7a8fb4ff7973b51ac709c93569b31d36  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 ce7971087e023dd883650a2ed40fc3d1  scripts/Check/👀huntress.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
