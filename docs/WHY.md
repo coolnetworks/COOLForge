@@ -279,7 +279,31 @@ foreach ($Peer in $Peers) {
 
 ---
 
-### 11. **Client Onboarding Automation**
+### 11. **Level.io Tenant Setup**
+
+**Problem:** Setting up Level.io for COOLForge requires manual configuration:
+
+- Custom fields must be created one-by-one in the web UI
+- No standardized field naming across tenants
+- Integration settings (Huntress, ScreenConnect) configured manually
+- API key management is ad-hoc
+- Easy to miss required fields, causing script failures
+
+**COOLForge Solution:** Setup Wizard
+
+```powershell
+.\start_here\Setup-COOLForge.ps1
+
+# Creates required custom fields (coolforge_msp_scratch_folder, etc.)
+# Configures integrations (Huntress, ScreenConnect, etc.)
+# Saves API key securely for other tools
+```
+
+**Result:** One-time setup that ensures all COOLForge scripts will work correctly.
+
+---
+
+### 12. **Client Onboarding Automation**
 
 **Problem:** Setting up new clients in Level.io requires extensive manual work:
 
@@ -294,16 +318,7 @@ foreach ($Peer in $Peers) {
 
 **Available Scripts:**
 
-1. **Setup-COOLForge.ps1** - Initial tenant setup (run this first)
-   ```powershell
-   .\start_here\Setup-COOLForge.ps1
-
-   # Creates required custom fields
-   # Configures integrations (Huntress, ScreenConnect, etc.)
-   # Saves API key securely for other tools
-   ```
-
-2. **New-LevelClient.ps1** - Create standardized client hierarchy
+1. **New-LevelClient.ps1** - Create standardized client hierarchy
    ```powershell
    .\start_here\New-LevelClient.ps1
 
@@ -327,7 +342,7 @@ foreach ($Peer in $Peers) {
    - Custom field configuration during creation
    - Dry-run mode to preview changes
 
-3. **Backup-LevelGroup.ps1** - Backup group hierarchies
+2. **Backup-LevelGroup.ps1** - Backup group hierarchies
    ```powershell
    .\start_here\Backup-LevelGroup.ps1 -GroupName "ClientName"
 
@@ -337,7 +352,7 @@ foreach ($Peer in $Peers) {
    # - Parent/child relationships
    ```
 
-4. **Restore-LevelGroup.ps1** - Restore with new name
+3. **Restore-LevelGroup.ps1** - Restore with new name
    ```powershell
    .\start_here\Restore-LevelGroup.ps1 -BackupPath "backup.zip" -NewGroupName "NewClient"
 
@@ -349,7 +364,7 @@ foreach ($Peer in $Peers) {
 
 ---
 
-### 12. **Software Policy Chaos**
+### 13. **Software Policy Chaos**
 
 **Problem:** Managing software across hundreds of devices is inconsistent:
 
