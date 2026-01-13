@@ -294,7 +294,16 @@ foreach ($Peer in $Peers) {
 
 **Available Scripts:**
 
-1. **New-LevelClient.ps1** - Create standardized client hierarchy
+1. **Setup-COOLForge.ps1** - Initial tenant setup (run this first)
+   ```powershell
+   .\start_here\Setup-COOLForge.ps1
+
+   # Creates required custom fields
+   # Configures integrations (Huntress, ScreenConnect, etc.)
+   # Saves API key securely for other tools
+   ```
+
+2. **New-LevelClient.ps1** - Create standardized client hierarchy
    ```powershell
    .\start_here\New-LevelClient.ps1
 
@@ -318,7 +327,7 @@ foreach ($Peer in $Peers) {
    - Custom field configuration during creation
    - Dry-run mode to preview changes
 
-2. **Backup-LevelGroup.ps1** - Backup group hierarchies
+3. **Backup-LevelGroup.ps1** - Backup group hierarchies
    ```powershell
    .\start_here\Backup-LevelGroup.ps1 -GroupName "ClientName"
 
@@ -328,21 +337,12 @@ foreach ($Peer in $Peers) {
    # - Parent/child relationships
    ```
 
-3. **Restore-LevelGroup.ps1** - Restore with new name
+4. **Restore-LevelGroup.ps1** - Restore with new name
    ```powershell
    .\start_here\Restore-LevelGroup.ps1 -BackupPath "backup.zip" -NewGroupName "NewClient"
 
    # Recreates entire hierarchy under new name
    # Restores all custom field values
-   ```
-
-4. **Setup-COOLForge.ps1** - Initial tenant setup
-   ```powershell
-   .\start_here\Setup-COOLForge.ps1
-
-   # Creates required custom fields
-   # Configures integrations (Huntress, ScreenConnect, etc.)
-   # Saves API key securely for other tools
    ```
 
 **Result:** New client onboarding in minutes instead of hours. Consistent structure across all clients.
