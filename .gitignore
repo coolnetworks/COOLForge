@@ -20,3 +20,6 @@ ScreenConnectUrls_*.csv
 
 # Claude Code local settings
 .claude/
+
+# Private notes (API questions, support tickets, etc.)
+LEVEL-SUPPORT-QUESTIONS.md
