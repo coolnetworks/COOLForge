@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.13.08
+    Version:    2026.01.13.09
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -2619,15 +2619,45 @@ function Set-LevelCustomFieldValue {
 
     if ($Result.Success) {
         Write-LevelLog "Set $EntityType custom field '$FieldReference' = '$Value'" -Level "DEBUG"
-        # Log returned custom_fields to verify the change
+
+        # Log what the API returned
+        Write-LevelLog "API response keys: $($Result.Data.PSObject.Properties.Name -join ', ')" -Level "DEBUG"
+
+        # Check custom_fields in response
         if ($Result.Data.custom_fields) {
-            $ReturnedValue = $Result.Data.custom_fields.$FieldReference
-            Write-LevelLog "API returned custom_fields.$FieldReference = '$ReturnedValue'" -Level "DEBUG"
+            Write-LevelLog "API returned custom_fields type: $($Result.Data.custom_fields.GetType().Name)" -Level "DEBUG"
+            # If it's an array, show first few entries
+            if ($Result.Data.custom_fields -is [array]) {
+                Write-LevelLog "API returned custom_fields (array): $($Result.Data.custom_fields | Select-Object -First 3 | ConvertTo-Json -Compress)" -Level "DEBUG"
+            } else {
+                Write-LevelLog "API returned custom_fields: $($Result.Data.custom_fields | ConvertTo-Json -Compress)" -Level "DEBUG"
+            }
+        } else {
+            Write-LevelLog "API response has no custom_fields property" -Level "DEBUG"
         }
+
+        # Verify by fetching the device again
+        $VerifyResult = Invoke-LevelApiCall -Uri "$BaseUrl$Endpoint" -ApiKey $ApiKey -Method "GET"
+        if ($VerifyResult.Success -and $VerifyResult.Data.custom_fields) {
+            $VerifyFields = $VerifyResult.Data.custom_fields
+            if ($VerifyFields -is [array]) {
+                # Find our field by name in the array
+                $FoundField = $VerifyFields | Where-Object { $_.name -eq $FieldReference -or $_.custom_field_name -eq $FieldReference }
+                if ($FoundField) {
+                    Write-LevelLog "VERIFY: Field '$FieldReference' = '$($FoundField.value)'" -Level "DEBUG"
+                } else {
+                    Write-LevelLog "VERIFY: Field '$FieldReference' not found in device custom_fields array" -Level "WARNING"
+                }
+            } else {
+                $VerifyValue = $VerifyFields.$FieldReference
+                Write-LevelLog "VERIFY: Field '$FieldReference' = '$VerifyValue'" -Level "DEBUG"
+            }
+        }
+
         return $true
     }
     else {
-        Write-LevelLog "Failed to set custom field: $($Result.Error)" -Level "ERROR"
+        Write-LevelLog "ALERT: Failed to set custom field '$FieldReference': $($Result.Error)" -Level "ERROR"
         return $false
     }
 }
@@ -4386,7 +4416,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.13.08"
+$script:ModuleVersion = "2026.01.13.09"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
