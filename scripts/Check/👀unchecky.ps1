@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.13.03
+    Version:          2026.01.13.04
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.13.03
+# Version: 2026.01.13.04
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -467,6 +467,18 @@ $InvokeParams = @{ ScriptBlock = {
                 }
             }
             "Remove" {
+                # If triggered by tag, set device custom field to "remove" so intent persists
+                if ($Policy.ActionSource -eq "Tag" -and $LevelApiKey) {
+                    $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
+                    if ($Device) {
+                        $FieldRef = "policy_$SoftwareName"
+                        $SetResult = Set-LevelCustomFieldValue -ApiKey $LevelApiKey -EntityType "device" -EntityId $Device.id -FieldReference $FieldRef -Value "remove"
+                        if ($SetResult) {
+                            Write-LevelLog "Set device custom field '$FieldRef' = 'remove'" -Level "SUCCESS"
+                        }
+                    }
+                }
+
                 if (-not $IsInstalled) {
                     Write-LevelLog "Not installed - no action needed" -Level "SUCCESS"
                     $ActionSuccess = $true
@@ -498,14 +510,17 @@ $InvokeParams = @{ ScriptBlock = {
             }
             "Pin" {
                 Write-LevelLog "Pinned - no changes allowed" -Level "INFO"
-                # Set device-level custom field to "pin" so the intent persists
+                # Set device-level custom field based on intent:
+                # - If Remove tag also present, set to "remove" (block installs)
+                # - Otherwise set to "pin" (preserve current state)
                 if ($LevelApiKey) {
                     $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
                     if ($Device) {
                         $FieldRef = "policy_$SoftwareName"
-                        $SetResult = Set-LevelCustomFieldValue -ApiKey $LevelApiKey -EntityType "device" -EntityId $Device.id -FieldReference $FieldRef -Value "pin"
+                        $FieldValue = if ("Remove" -in $Policy.PolicyActions) { "remove" } else { "pin" }
+                        $SetResult = Set-LevelCustomFieldValue -ApiKey $LevelApiKey -EntityType "device" -EntityId $Device.id -FieldReference $FieldRef -Value $FieldValue
                         if ($SetResult) {
-                            Write-LevelLog "Set device custom field '$FieldRef' = 'pin'" -Level "SUCCESS"
+                            Write-LevelLog "Set device custom field '$FieldRef' = '$FieldValue'" -Level "SUCCESS"
                         }
                     }
                 }
