@@ -1,9 +1,10 @@
 # ============================================================
-# SCRIPT TO RUN - CHANGE THIS VALUE
+# SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀Test Show Versions.ps1"
-# ============================================================
-
+# Use plain text identifier to avoid emoji corruption by Level.io
+$ScriptToRun = "SCRIPT_NAME_HERE.ps1"
+$ScriptCategory = "Check"  # Check, Fix, Remove, Configure, or Utility
+# $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
     Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
@@ -54,7 +55,7 @@ $ScriptToRun = "👀Test Show Versions.ps1"
 .EXAMPLE
     # Change the script name at the top of the launcher:
     $ScriptToRun = "unchecky.ps1"
-    # The launcher will find the full path (scripts/Check/👀unchecky.ps1) from MD5SUMS
+    # The launcher will find the full path (scripts/Check/unchecky.ps1) from MD5SUMS
 #>
 
 # Script Launcher
@@ -75,8 +76,12 @@ $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
 
 # GitHub Personal Access Token for private repositories (admin-only custom field)
-$GitHubPAT = "{{cf_coolforge_pat}}"
-if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -eq "{{cf_coolforge_pat}}") {
+# IMPORTANT: Use here-string to prevent PowerShell expanding $ characters in tokens
+$GitHubPAT = @'
+{{cf_coolforge_pat}}
+'@
+$GitHubPAT = $GitHubPAT.Trim()
+if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -like "{{*}}") {
     $GitHubPAT = $null
 }
 
@@ -101,11 +106,25 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
 
+# Debug mode - enables verbose output for troubleshooting (define early so we can use it)
+$DebugScripts = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
+    $DebugScripts = $false
+} else {
+    $DebugScripts = $DebugScripts -eq "true"
+}
+
 # Level.io API key for tag management (optional - enables automatic tag updates)
-$LevelApiKey = "{{cf_apikey}}"
+# IMPORTANT: Use here-string to prevent PowerShell expanding $ characters in the key
+$LevelApiKey_Raw = @'
+{{cf_apikey}}
+'@
+$LevelApiKey = $LevelApiKey_Raw.Trim()
 if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
     $LevelApiKey = $null
 }
+
+# API key debug output is handled by the script itself - no need to duplicate here
 
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
@@ -162,6 +181,12 @@ if ($GitHubPAT) {
 # Define library storage location within the scratch folder
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
 $LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "COOLForge-Common.psm1"
+
+# In debug mode, delete cached library to force fresh download
+if ($DebugScripts -and (Test-Path $LibraryPath)) {
+    Write-Host "[DEBUG] Deleting cached library to force fresh download..."
+    Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
+}
 
 # Create Libraries folder if it doesn't exist
 if (!(Test-Path $LibraryFolder)) {
@@ -259,8 +284,8 @@ try {
             $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
             $null = Get-ModuleVersion -Content $VerifyContent -Source "downloaded file"
 
-            # Verify MD5 checksum if available
-            if ($MD5SumsContent) {
+            # Verify MD5 checksum if available (skip in debug mode)
+            if ($MD5SumsContent -and -not $DebugScripts) {
                 $ExpectedMD5 = Get-ExpectedMD5 -FileName "COOLForge-Common.psm1" -MD5Content $MD5SumsContent
                 if ($ExpectedMD5) {
                     $ActualMD5 = Get-ContentMD5 -Content $RemoteContent
@@ -269,6 +294,9 @@ try {
                     }
                     Write-Host "[+] Library checksum verified"
                 }
+            }
+            elseif ($DebugScripts) {
+                Write-Host "[*] Debug mode - skipping checksum verification"
             }
 
             if (Test-Path $BackupPath) {
@@ -393,7 +421,7 @@ function Get-ScriptPathFromMD5 {
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
             $FilePath = $Matches[2].Trim()
             # Check if filename matches (case-insensitive)
-            # Use wildcard to match emoji-prefixed scripts (e.g., "unchecky.ps1" matches "scripts/Check/👀unchecky.ps1")
+            # Use wildcard to match emoji-prefixed scripts (e.g., "unchecky.ps1" matches "scripts/Check/unchecky.ps1")
             $FileName = Split-Path $FilePath -Leaf
             if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
                 return $FilePath
@@ -417,7 +445,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.05"
+Write-Host "[*] Script Launcher v2026.01.12.06"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -497,8 +525,8 @@ try {
                 throw "Downloaded script appears to be empty or truncated"
             }
 
-            # Verify MD5 checksum if available
-            if ($MD5SumsContent) {
+            # Verify MD5 checksum if available (skip in debug mode)
+            if ($MD5SumsContent -and -not $DebugScripts) {
                 # Use resolved path if available, otherwise construct from script name
                 $ScriptMD5Key = if ($ScriptRelativePath) { $ScriptRelativePath } else { "scripts/$ScriptToRun" }
                 $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
@@ -509,6 +537,9 @@ try {
                     }
                     Write-Host "[+] Script checksum verified"
                 }
+            }
+            elseif ($DebugScripts) {
+                Write-Host "[*] Debug mode - skipping script checksum verification"
             }
 
             # Success - remove backup
@@ -579,7 +610,8 @@ $ExecutionBlock = @"
 `$LibraryUrl = '$($LibraryUrl -replace "'", "''")'
 `$DeviceHostname = '$($DeviceHostname -replace "'", "''")'
 `$DeviceTags = '$($DeviceTags -replace "'", "''")'
-`$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''")'" } else { '$null' })
+`$LevelApiKey = $(if ($LevelApiKey) { "'$($LevelApiKey -replace "'", "''" -replace '\$', '`$')'" } else { '$null' })
+`$DebugScripts = `$$DebugScripts
 
 # Policy custom fields (defined in launcher header)
 $PolicyVarsBlock
