@@ -68,7 +68,7 @@ $Init = Initialize-LevelScript -ScriptName "MyScript" `
 - Bug fixes need to be applied to hundreds of files
 
 **COOLForge Solution:** Shared Library Module
-- 14 reusable functions in `COOLForge-Common.psm1`
+- 79+ reusable functions in `COOLForge-Common.psm1`
 - Auto-downloaded and updated on each script run
 - Standardized logging, error handling, lockfile management
 - API helpers for Level.io REST API
@@ -278,180 +278,73 @@ Script: `🙏Wake all devices in parent to level.io folder.ps1`
 
 ---
 
-## Planned Features
-
-### Client Onboarding Automation
+### 11. **Client Onboarding Automation**
 
 **Problem:** Setting up new clients in Level.io requires extensive manual work:
 
 - Manually creating folder structure for each new client
 - No standardized folder hierarchy across clients
 - Custom fields must be configured individually per client/folder
-- Site-specific configurations (DNS filter keys, etc.) set one device at a time
 - No backup/restore capability for folder structures
-- Can't clone a working client setup to a new client
 - Inconsistent folder naming and organization
 - Hours of repetitive clicking in the web UI
 
-**Planned COOLForge Solution:** Client Provisioning System
+**COOLForge Solution:** Client Provisioning Tools in `start_here/` folder
 
-**Features in Development:**
+**Available Scripts:**
 
-1. **Backup Level.io Tenant Configuration**
+1. **New-LevelClient.ps1** - Create standardized client hierarchy
    ```powershell
-   # Export entire tenant configuration to JSON
-   Backup-LevelTenantConfiguration -OutputPath "backups/tenant-backup-2025-12-30.json"
+   .\start_here\New-LevelClient.ps1
+
+   # Creates structure like:
+   # 🏢1️⃣ClientName           <- Business, Priority 1
+   # ├── Main                   <- Site
+   # │   ├── WS                 <- Workstations
+   # │   │   ├── 🪟 WIN
+   # │   │   ├── 🐧 LINUX
+   # │   │   └── 🍎 MAC
+   # │   └── SRV                <- Servers
+   # │       ├── 🪟 WIN
+   # │       └── 🐧 LINUX
+   ```
+
+   **Features:**
+   - Client type selection (Business/Personal) with visual prefix
+   - Priority level (1-5) for sorting and triage
+   - Platform selection per company and per site
+   - Multi-site support with per-site overrides
+   - Custom field configuration during creation
+   - Dry-run mode to preview changes
+
+2. **Backup-LevelGroup.ps1** - Backup group hierarchies
+   ```powershell
+   .\start_here\Backup-LevelGroup.ps1 -GroupName "ClientName"
 
    # Backs up:
-   # - All organizations and folder hierarchies
-   # - Custom field definitions (global)
-   # - Custom field values per organization/folder/device
-   # - Device group assignments
-   # - Folder structures for all clients
-
-   # Or backup specific client:
-   Export-LevelFolderStructure -ClientName "ACME Corp" -OutputPath "backups/ACME-structure.json"
+   # - Group hierarchy structure
+   # - Custom field values at each level
+   # - Parent/child relationships
    ```
 
-   **Scope:** Level.io tenant configuration only (not endpoint backups)
-   - Backs up: RMM folder structure, custom fields, organizational settings
-   - Does NOT backup: Endpoint files, registry, applications, user data
-   - Restoration limited to what the Level.io API can modify
-
-2. **Restore Tenant Configuration**
+3. **Restore-LevelGroup.ps1** - Restore with new name
    ```powershell
-   # Restore from backup (API-controllable items only)
-   Restore-LevelTenantConfiguration -BackupPath "backups/tenant-backup-2025-12-30.json" `
-                                     -WhatIf  # Preview changes first
+   .\start_here\Restore-LevelGroup.ps1 -BackupPath "backup.zip" -NewGroupName "NewClient"
 
-   # Can restore:
-   # ✓ Folder structures
-   # ✓ Custom field definitions
-   # ✓ Custom field values
-   # ✓ Organization settings
-
-   # Cannot restore (outside API scope):
-   # ✗ Endpoint system state
-   # ✗ Installed applications
-   # ✗ User files or registry
-   # ✗ Device-level OS configurations
+   # Recreates entire hierarchy under new name
+   # Restores all custom field values
    ```
 
-3. **Deploy Standardized Folder Structure**
+4. **Setup-COOLForge.ps1** - Initial tenant setup
    ```powershell
-   # Create new client from template
-   New-LevelClientFromTemplate -TemplatePath "templates/standard-client.json" `
-                                -ClientName "NewCorp Inc"
+   .\start_here\Setup-COOLForge.ps1
 
-   # Automatically creates:
-   # ├── NewCorp Inc/
-   # │   ├── Servers/
-   # │   ├── Workstations/
-   # │   ├── Network Devices/
-   # │   └── Mobile Devices/
+   # Creates required custom fields
+   # Configures integrations (Huntress, ScreenConnect, etc.)
+   # Saves API key securely for other tools
    ```
 
-4. **Bulk Custom Field Configuration**
-   ```powershell
-   # Set custom fields across folder hierarchy
-   Set-LevelFolderCustomFields -FolderPath "NewCorp Inc/Servers" `
-                                -CustomFields @{
-                                    DNSFilter_SiteKey = "abc123xyz"
-                                    Backup_Schedule = "Daily-3AM"
-                                    Maintenance_Window = "Sunday-2AM"
-                                }
-
-   # Cascades to all devices in folder
-   ```
-
-5. **Site-Specific Configuration Templates**
-   ```json
-   {
-     "template_name": "standard-client-v2",
-     "folders": [
-       {
-         "name": "Servers",
-         "custom_fields": {
-           "DNSFilter_SiteKey": "{{SITE_KEY}}",
-           "CoolForge_nosleep_duration_min": "120",
-           "Backup_Retention_Days": "90"
-         }
-       },
-       {
-         "name": "Workstations",
-         "custom_fields": {
-           "DNSFilter_SiteKey": "{{SITE_KEY}}",
-           "CoolForge_nosleep_duration_min": "60"
-         }
-       }
-     ]
-   }
-   ```
-
-**Use Cases:**
-
-- **New Client Onboarding**
-  - Deploy standardized folder structure in seconds
-  - Apply consistent custom fields across all folders
-  - Set site-specific keys (DNS Filter, backup credentials, etc.)
-  - Ensure compliance with MSP standards
-
-- **DNS Filter Agent Management**
-  - Different site keys per folder/location
-  - Bulk update all devices in a folder with new key
-  - Standardize deployment across all clients
-
-- **Disaster Recovery (Tenant Configuration)**
-  - Backup entire Level.io tenant configuration to JSON
-  - Restore folder structures if accidentally deleted
-  - Restore custom field configurations
-  - Clone successful client setup to new client
-  - Version control your RMM configuration in Git
-  - **Note:** Backs up RMM tenant settings only, not endpoint system state
-
-- **Multi-Site Clients**
-  - Create sub-folders per physical location
-  - Each location gets unique DNS Filter site key
-  - Centralized management, location-specific settings
-
-- **Compliance and Standards**
-  - Enforce standardized folder naming
-  - Ensure all clients have required custom fields
-  - Audit client configurations against template
-
-**Example Workflow:**
-
-```powershell
-# 1. Define your standard client template (one time)
-$Template = @{
-    Name = "Standard SMB Client"
-    Folders = @(
-        @{ Name = "Servers"; DNSFilter_SiteKey = "{{REPLACE}}" }
-        @{ Name = "Workstations"; DNSFilter_SiteKey = "{{REPLACE}}" }
-        @{ Name = "Network Devices" }
-    )
-}
-Export-LevelClientTemplate -Template $Template -Path "templates/smb-client.json"
-
-# 2. Onboard new client
-New-LevelClient -TemplatePath "templates/smb-client.json" `
-                -ClientName "NewCorp Inc" `
-                -Variables @{
-                    DNSFilter_SiteKey = "newcorp-abc123"
-                }
-
-# Result: Folder structure created, custom fields set, ready for devices in minutes
-```
-
-**Benefits:**
-- **Time Savings**: Hours → minutes for client onboarding
-- **Consistency**: Every client follows the same structure
-- **Scalability**: Manage hundreds of clients with templates
-- **Backup/Restore**: Disaster recovery for configurations
-- **Compliance**: Enforce standards automatically
-- **Site-Specific Settings**: DNS Filter keys, backup configs per location
-
-**Current Status:** In planning/development phase. Core API functions already exist in `COOLForge-Common.psm1` module.
+**Result:** New client onboarding in minutes instead of hours. Consistent structure across all clients.
 
 ---
 

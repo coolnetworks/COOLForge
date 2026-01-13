@@ -34,7 +34,6 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 - **API Helper** — REST API calls with bearer token authentication
 - **Device Info** — Quick access to common system properties
 - **Auto-Update** — Scripts automatically download the latest library from GitHub
-- **Emoji Encoding Repair** — Fixes UTF-8 emoji corruption from deployment systems
 - **Script Launcher** — Manage scripts in Git, deploy once to Level.io, updates happen automatically
 - **Technician Alerts** — Send toast notifications to tech workstations when scripts need attention
 
@@ -48,14 +47,14 @@ The `COOLForge-Common.psm1` module exports functions organized into these catego
 | **Logging** | 1 | Timestamped output with severity levels |
 | **System Info** | 2 | Admin check, device properties |
 | **Software Detection** | 6 | Generic install detection, process/service control |
-| **Software Policy** | 4 | Tag-based policy enforcement, emoji handling |
+| **Software Policy** | 4 | Tag-based policy enforcement |
 | **Level.io API** | 18+ | Groups, devices, tags, custom fields |
 | **Tag Management** | 6 | Add/remove tags, policy tags |
 | **Custom Fields** | 7 | CRUD operations for custom fields |
 | **Hierarchy** | 4 | Organizations, folders, navigation |
 | **Technician Alerts** | 5 | Toast notifications to tech workstations |
 | **Network** | 1 | Wake-on-LAN |
-| **Text Processing** | 2 | Emoji repair, URL encoding |
+| **Text Processing** | 2 | String utilities, URL encoding |
 | **Config & Backup** | 14 | API config, backup/restore operations |
 | **UI Helpers** | 7 | Console output, user input |
 
@@ -77,13 +76,13 @@ The `COOLForge-Common.psm1` module exports functions organized into these catego
 | | `Test-ServiceRunning` | Check if Windows service is running |
 | **Policy** | `Get-SoftwarePolicy` | Parse device tags for software policy |
 | | `Invoke-SoftwarePolicyCheck` | Execute policy-based actions |
-| | `Get-EmojiMap` | Emoji-to-action mapping (handles Level.io corruption) |
+| | `Get-EmojiMap` | Tag-to-action mapping for policy enforcement |
 | **API** | `Invoke-LevelApiCall` | Make authenticated REST API calls |
 | | `Get-LevelDevices` | Retrieve devices |
 | | `Find-LevelDevice` | Search for device by hostname |
 | **Tags** | `Add-LevelTagToDevice` | Add tag to device |
 | | `Remove-LevelTagFromDevice` | Remove tag from device |
-| | `Add-LevelPolicyTag` | Add policy tag with emoji prefix |
+| | `Add-LevelPolicyTag` | Add policy tag to device |
 | **Custom Fields** | `Get-LevelCustomFields` | Retrieve all custom fields |
 | | `Set-LevelCustomFieldValue` | Set field value for device |
 | **Network** | `Send-LevelWakeOnLan` | Send WOL magic packet |
@@ -108,7 +107,6 @@ See [Function Reference](docs/FUNCTIONS.md) for complete documentation of all 79
 | [Private Fork Guide](docs/PRIVATE-FORK.md) | Using COOLForge with a private GitHub repository |
 | [Version Pinning](docs/VERSION-PINNING.md) | Pin devices to specific library versions for testing and rollback |
 | [Release Workflow](docs/RELEASE-WORKFLOW.md) | Dev vs main releases, testing procedures, and rollback strategies |
-| [Emoji Handling](docs/EMOJI-HANDLING.md) | UTF-8 emoji corruption repair |
 | [Variables Reference](docs/VARIABLES.md) | Level.io variables and setting automation variables |
 | [Folder Structure](docs/FOLDER-STRUCTURE.md) | Script category organization |
 | [Changelog](CHANGELOG.md) | Version history and changes |
