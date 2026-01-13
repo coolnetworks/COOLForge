@@ -1,4 +1,4 @@
-# Why COOLForge Exists
+# Why COOLForge Exists (for Level.io)
 
 This document explains the problems COOLForge was built to solve and the philosophy behind its design.
 
