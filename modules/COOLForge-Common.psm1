@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.13.04
+    Version:    2026.01.13.07
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -563,7 +563,8 @@ function Get-EmojiBytePatterns {
     # U+274C  Cross     -> CE 93 C2 A5 C3 AE
     # U+26D4  NoEntry   -> CE 93 C2 A2 C3 B6
     # U+1F64F Pray      -> E2 89 A1 C6 92 C3 96 C3 85
-    # U+1F6AB Prohibit  -> E2 89 A1 C6 92 C2 A2 C3 A6
+    # U+1F6AB Prohibit  -> E2 89 A1 C6 92 C2 A2 C3 A6 (variant 1)
+    #                   -> E2 89 A1 C6 92 C3 9C C2 BD (variant 2 - observed 2026-01-13)
     # U+1F4CC Pin       -> E2 89 A1 C6 92 C3 B4 C3 AE
     # U+1F504 Arrows    -> TBD (will be logged to EmojiTags.log)
     # U+1FA9F Window    -> E2 89 A1 C6 92 C2 AC C6 92
@@ -579,6 +580,7 @@ function Get-EmojiBytePatterns {
         CorruptedNoEntry   = [System.Text.Encoding]::UTF8.GetString([byte[]](0xCE, 0x93, 0xC2, 0xA2, 0xC3, 0xB6))
         CorruptedPray      = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x96, 0xC3, 0x85))
         CorruptedProhibit  = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xA2, 0xC3, 0xA6))
+        CorruptedProhibit2 = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBD))
         CorruptedPin       = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0xB4, 0xC3, 0xAE))
         CorruptedWindow    = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC2, 0xAC, 0xC6, 0x92))
         CorruptedAlert     = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE2, 0x89, 0xA1, 0xC6, 0x92, 0xC3, 0x9C, 0xC2, 0xBF))
@@ -659,6 +661,7 @@ function Get-EmojiMap {
         $E.CorruptedPin = "Pin"
         $E.CorruptedPray = "Install"
         $E.CorruptedProhibit = "Remove"
+        $E.CorruptedProhibit2 = "Remove"
         $E.CorruptedNoEntry = "Remove"
         $E.CorruptedCross = "Excluded"
         $E.CorruptedWindow = "Windows"
@@ -4377,7 +4380,7 @@ Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Sco
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.13.06"
+$script:ModuleVersion = "2026.01.13.07"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
