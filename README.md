@@ -1,6 +1,6 @@
 # COOLForge_Lib - Level.io PowerShell Automation Library
 
-**Version:** 2026.01.10.01
+**Version:** 2026.01.13.10
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -38,33 +38,59 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 - **Script Launcher** — Manage scripts in Git, deploy once to Level.io, updates happen automatically
 - **Technician Alerts** — Send toast notifications to tech workstations when scripts need attention
 
-### Module Functions (19 total)
+### Module Functions (79+ exported)
 
-The `COOLForge-Common.psm1` module exports these functions:
+The `COOLForge-Common.psm1` module exports functions organized into these categories:
+
+| Category | Functions | Description |
+|----------|-----------|-------------|
+| **Initialization** | 5 | Script setup, lockfiles, error handling |
+| **Logging** | 1 | Timestamped output with severity levels |
+| **System Info** | 2 | Admin check, device properties |
+| **Software Detection** | 6 | Generic install detection, process/service control |
+| **Software Policy** | 4 | Tag-based policy enforcement, emoji handling |
+| **Level.io API** | 18+ | Groups, devices, tags, custom fields |
+| **Tag Management** | 6 | Add/remove tags, policy tags |
+| **Custom Fields** | 7 | CRUD operations for custom fields |
+| **Hierarchy** | 4 | Organizations, folders, navigation |
+| **Technician Alerts** | 5 | Toast notifications to tech workstations |
+| **Network** | 1 | Wake-on-LAN |
+| **Text Processing** | 2 | Emoji repair, URL encoding |
+| **Config & Backup** | 14 | API config, backup/restore operations |
+| **UI Helpers** | 7 | Console output, user input |
+
+#### Key Functions
 
 | Category | Function | Description |
 |----------|----------|-------------|
 | **Initialization** | `Initialize-LevelScript` | Initialize script, check tags, create lockfile |
-| | `Invoke-LevelScript` | Execute script block with error handling + auto-send alerts |
+| | `Invoke-LevelScript` | Execute script block with error handling |
 | | `Complete-LevelScript` | End script with custom exit code/message |
-| | `Remove-LevelLockFile` | Manually remove lockfile |
 | **Logging** | `Write-LevelLog` | Timestamped log output with severity levels |
 | **System** | `Test-LevelAdmin` | Check if running as administrator |
 | | `Get-LevelDeviceInfo` | Get device hostname, OS, username, etc. |
+| **Software** | `Test-SoftwareInstalled` | Generic software detection (processes, services, paths, registry) |
+| | `Stop-SoftwareProcesses` | Stop processes by pattern |
+| | `Stop-SoftwareServices` | Stop/disable services by pattern |
+| | `Get-SoftwareUninstallString` | Get uninstall command from registry |
+| | `Test-ServiceExists` | Check if Windows service exists |
+| | `Test-ServiceRunning` | Check if Windows service is running |
+| **Policy** | `Get-SoftwarePolicy` | Parse device tags for software policy |
+| | `Invoke-SoftwarePolicyCheck` | Execute policy-based actions |
+| | `Get-EmojiMap` | Emoji-to-action mapping (handles Level.io corruption) |
 | **API** | `Invoke-LevelApiCall` | Make authenticated REST API calls |
-| | `Get-LevelGroups` | Retrieve all Level.io groups |
-| | `Get-LevelDevices` | Retrieve devices (optionally by group) |
+| | `Get-LevelDevices` | Retrieve devices |
 | | `Find-LevelDevice` | Search for device by hostname |
-| **Network** | `Send-LevelWakeOnLan` | Send WOL magic packet to MAC address |
-| **Alerts** | `Send-TechnicianAlert` | Send alert immediately to tech workstations |
-| | `Add-TechnicianAlert` | Queue alert for auto-send on script completion |
-| | `Send-TechnicianAlertQueue` | Manually send queued alerts |
-| | `Test-TechnicianWorkstation` | Check if device has technician tag |
-| | `Get-TechnicianName` | Extract technician name from tags |
-| **Text** | `Repair-LevelEmoji` | Fix corrupted UTF-8 emojis |
-| | `Get-LevelUrlEncoded` | URL-encode strings with UTF-8 support |
+| **Tags** | `Add-LevelTagToDevice` | Add tag to device |
+| | `Remove-LevelTagFromDevice` | Remove tag from device |
+| | `Add-LevelPolicyTag` | Add policy tag with emoji prefix |
+| **Custom Fields** | `Get-LevelCustomFields` | Retrieve all custom fields |
+| | `Set-LevelCustomFieldValue` | Set field value for device |
+| **Network** | `Send-LevelWakeOnLan` | Send WOL magic packet |
+| **Alerts** | `Send-TechnicianAlert` | Send alert to tech workstations |
+| | `Add-TechnicianAlert` | Queue alert for auto-send |
 
-See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
+See [Function Reference](docs/FUNCTIONS.md) for complete documentation of all 79+ functions.
 
 ---
 
@@ -73,7 +99,9 @@ See [Function Reference](docs/FUNCTIONS.md) for detailed documentation.
 | Document | Description |
 |----------|-------------|
 | [Why COOLForge?](docs/WHY.md) | **Start here** — Problems COOLForge solves and design philosophy |
+| [Codebase Overview](docs/CODEBASE.md) | **Technical reference** — Complete architecture and module documentation |
 | [Function Reference](docs/FUNCTIONS.md) | Complete documentation for all library functions |
+| [Start Here](#start-here) | **Start here!** — Setup-COOLForge, New-LevelClient, Backup/Restore tools |
 | [Script Documentation](docs/scripts/README.md) | **Per-script documentation** — Detailed docs for each script |
 | [Technician Alerts](docs/TECHNICIAN-ALERTS.md) | Real-time toast notifications to tech workstations |
 | [Script Launcher Guide](docs/LAUNCHER.md) | How to use the launcher to run scripts from GitHub |
@@ -109,9 +137,73 @@ COOLForge/
 ├── automations/                 # Multi-step automation workflows (same structure)
 ├── launchers/                   # Pre-configured launchers (copy-paste to Level.io)
 ├── templates/                   # Templates for creating new scripts
-├── tools/                       # Development and setup tools
-├── testing/                     # Test scripts
+├── start_here/                  # Start here! Setup and management tools
 └── docs/                        # Documentation
+```
+
+---
+
+## Start Here
+
+The `start_here/` folder contains scripts for setting up and managing your Level.io environment. **Run these from your admin workstation**, not on endpoints.
+
+> **New to COOLForge?** Start with `Setup-COOLForge.ps1` to configure your Level.io tenant, then use `New-LevelClient.ps1` to create your first client.
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| **Setup-COOLForge.ps1** | Tested | Initial setup wizard — creates required custom fields, configures API key, sets up integrations |
+| **New-LevelClient.ps1** | Tested | Create a new client with standardized group hierarchy (sites, workstations, servers, platforms) |
+| **Backup-LevelGroup.ps1** | Tested | Backup a group hierarchy including subgroups and custom field values |
+| **Restore-LevelGroup.ps1** | Tested | Restore a backed-up group hierarchy with a new name |
+| **Get-StaleDevices.ps1** | Tested | Find devices that haven't checked in recently |
+
+### New-LevelClient.ps1
+
+Creates a new client with a standardized, consistent group structure:
+
+```
+🏢1️⃣ClientName           <- Business, Priority 1
+├── Main                   <- Site
+│   ├── WS                 <- Workstations
+│   │   ├── 🪟 WIN
+│   │   ├── 🐧 LINUX
+│   │   └── 🍎 MAC
+│   └── SRV                <- Servers
+│       ├── 🪟 WIN
+│       └── 🐧 LINUX
+└── Branch
+    └── ...
+```
+
+**Features:**
+- **Client type prefix**: 🏢 Business or 🛖 Personal
+- **Priority prefix**: 1️⃣ through 5️⃣ (1 = highest)
+- **Platform selection**: Choose which platforms (Win/Linux/Mac) at company and site level
+- **Multi-site support**: Add as many sites as needed
+- **Custom field configuration**: Set field values during creation
+- **Dry-run mode**: Preview changes without creating anything
+
+```powershell
+# Interactive mode
+.\start_here\New-LevelClient.ps1
+
+# With options
+.\start_here\New-LevelClient.ps1 -CompanyName "AcmeCorp" -IncludeMac -IncludeLinux
+
+# Preview only
+.\start_here\New-LevelClient.ps1 -DryRun
+```
+
+### Setup-COOLForge.ps1
+
+Run this **first** when setting up COOLForge. It will:
+1. Connect to Level.io using your API key
+2. Create the required `coolforge_msp_scratch_folder` custom field
+3. Optionally configure additional integrations (Huntress, ScreenConnect, etc.)
+4. Save your API key securely for other tools
+
+```powershell
+.\start_here\Setup-COOLForge.ps1
 ```
 
 ---
@@ -167,7 +259,7 @@ Level.io runs launcher → Launcher downloads script from GitHub → Script exec
 >
 > **Option A: Run the Setup Wizard (Recommended)**
 > 1. Clone or download this repository to your local workstation
-> 2. Run `tools/Setup-COOLForge.ps1`
+> 2. Run `start_here/Setup-COOLForge.ps1`
 > 3. Follow the prompts — creates required field and optional integrations
 >
 > **Option B: Manual Setup (Minimum)**
@@ -197,7 +289,7 @@ Use the setup wizard to automatically create and configure custom fields:
 
 ```powershell
 # Download and run the setup script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/tools/Setup-COOLForge.ps1" -OutFile "Setup-COOLForge.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/coolnetworks/COOLForge/main/start_here/Setup-COOLForge.ps1" -OutFile "Setup-COOLForge.ps1"
 .\Setup-COOLForge.ps1
 ```
 

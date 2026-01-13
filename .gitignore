@@ -1,6 +1,9 @@
 # COOLForge_Lib setup config (contains encrypted API key)
 .COOLForge_Lib-setup.json
 
+# Testing folder (dev tools, cache files, local configs)
+/testing/
+
 # Custom field backups (may contain sensitive data)
 /backups/
 
@@ -23,3 +26,4 @@ ScreenConnectUrls_*.csv
 
 # Private notes (API questions, support tickets, etc.)
 LEVEL-SUPPORT-QUESTIONS.md
+NEEDS_TESTING.md

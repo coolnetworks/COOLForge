@@ -102,18 +102,7 @@ function Test-HuntressInstalled {
     return (Test-Path $agentExe)
 }
 
-function Test-ServiceExists {
-    param([string]$ServiceName)
-    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
-    return ($null -ne $svc)
-}
-
-function Test-ServiceRunning {
-    param([string]$ServiceName)
-    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
-    if ($null -eq $svc) { return $false }
-    return ($svc.Status -eq 'Running')
-}
+# Test-ServiceExists and Test-ServiceRunning are now provided by COOLForge-Common library
 
 function Test-TamperProtectionEnabled {
     <#

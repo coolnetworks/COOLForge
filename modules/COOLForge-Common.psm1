@@ -521,6 +521,332 @@ function Get-LevelDeviceInfo {
 }
 
 # ============================================================
+# SOFTWARE DETECTION UTILITIES
+# ============================================================
+
+<#
+.SYNOPSIS
+    Checks if software is installed on the system.
+
+.DESCRIPTION
+    Generic software detection function that checks multiple locations:
+    - Running processes (by name pattern)
+    - Windows services (by name pattern)
+    - File system paths (array of paths to check)
+    - Registry uninstall entries (by DisplayName pattern)
+
+    All parameters except SoftwareName are optional. The function returns
+    $true if ANY check finds a match.
+
+.PARAMETER SoftwareName
+    The display name pattern to search for in registry uninstall entries.
+    Supports wildcards (e.g., "*AnyDesk*").
+
+.PARAMETER ProcessPattern
+    Pattern to match against running process names. Default: same as SoftwareName.
+
+.PARAMETER ServicePattern
+    Pattern to match against service names. Default: same as SoftwareName.
+
+.PARAMETER InstallPaths
+    Array of file system paths to check for existence.
+
+.PARAMETER SkipProcessCheck
+    Skip checking for running processes.
+
+.PARAMETER SkipServiceCheck
+    Skip checking for services.
+
+.PARAMETER SkipRegistryCheck
+    Skip checking registry uninstall entries.
+
+.OUTPUTS
+    $true if software is detected, $false otherwise.
+
+.EXAMPLE
+    Test-SoftwareInstalled -SoftwareName "AnyDesk"
+
+.EXAMPLE
+    Test-SoftwareInstalled -SoftwareName "Unchecky" -InstallPaths @(
+        "$env:ProgramFiles\Unchecky",
+        "${env:ProgramFiles(x86)}\Unchecky"
+    ) -SkipProcessCheck -SkipServiceCheck
+
+.EXAMPLE
+    Test-SoftwareInstalled -SoftwareName "Huntress" -InstallPaths @(
+        "$env:ProgramFiles\Huntress\HuntressAgent.exe"
+    ) -SkipProcessCheck -SkipServiceCheck -SkipRegistryCheck
+#>
+function Test-SoftwareInstalled {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SoftwareName,
+
+        [string]$ProcessPattern,
+        [string]$ServicePattern,
+        [string[]]$InstallPaths,
+
+        [switch]$SkipProcessCheck,
+        [switch]$SkipServiceCheck,
+        [switch]$SkipRegistryCheck
+    )
+
+    # Default patterns to SoftwareName if not specified
+    if (-not $ProcessPattern) { $ProcessPattern = $SoftwareName }
+    if (-not $ServicePattern) { $ServicePattern = $SoftwareName }
+
+    # Check for running processes
+    if (-not $SkipProcessCheck) {
+        $processes = Get-Process -Name "$ProcessPattern*" -ErrorAction SilentlyContinue
+        if ($processes) { return $true }
+    }
+
+    # Check for services
+    if (-not $SkipServiceCheck) {
+        $services = Get-Service -Name "$ServicePattern*" -ErrorAction SilentlyContinue
+        if ($services) { return $true }
+    }
+
+    # Check file system paths
+    if ($InstallPaths) {
+        foreach ($path in $InstallPaths) {
+            if (Test-Path $path) { return $true }
+        }
+    }
+
+    # Check registry uninstall entries
+    if (-not $SkipRegistryCheck) {
+        $regPaths = @(
+            "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+            "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+            "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+        )
+        foreach ($regPath in $regPaths) {
+            $entries = Get-ItemProperty $regPath -ErrorAction SilentlyContinue |
+                       Where-Object { $_.DisplayName -like "*$SoftwareName*" }
+            if ($entries) { return $true }
+        }
+    }
+
+    return $false
+}
+
+<#
+.SYNOPSIS
+    Stops all processes matching a pattern.
+
+.DESCRIPTION
+    Finds and forcefully stops all processes matching the specified name pattern.
+    Returns the count of processes that were successfully stopped.
+
+.PARAMETER ProcessPattern
+    Pattern to match against process names. Wildcards are appended automatically.
+
+.PARAMETER Silent
+    Suppress logging output.
+
+.OUTPUTS
+    Integer count of processes stopped.
+
+.EXAMPLE
+    $count = Stop-SoftwareProcesses -ProcessPattern "AnyDesk"
+    Write-Host "Stopped $count processes"
+#>
+function Stop-SoftwareProcesses {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ProcessPattern,
+
+        [switch]$Silent
+    )
+
+    $count = 0
+    $processes = Get-Process -Name "$ProcessPattern*" -ErrorAction SilentlyContinue
+
+    foreach ($proc in $processes) {
+        try {
+            Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+            $count++
+            if (-not $Silent) {
+                Write-LevelLog "Stopped process: $($proc.Name) (PID: $($proc.Id))"
+            }
+        }
+        catch {
+            if (-not $Silent) {
+                Write-LevelLog "Failed to stop process: $($proc.Name) - $($_.Exception.Message)" -Level "WARN"
+            }
+        }
+    }
+
+    return $count
+}
+
+<#
+.SYNOPSIS
+    Stops and optionally disables services matching a pattern.
+
+.DESCRIPTION
+    Finds and stops all services matching the specified name pattern.
+    Optionally disables the services to prevent restart.
+    Returns the count of services that were successfully stopped.
+
+.PARAMETER ServicePattern
+    Pattern to match against service names. Wildcards are appended automatically.
+
+.PARAMETER Disable
+    Also disable the services after stopping them.
+
+.PARAMETER Silent
+    Suppress logging output.
+
+.OUTPUTS
+    Integer count of services stopped.
+
+.EXAMPLE
+    $count = Stop-SoftwareServices -ServicePattern "AnyDesk" -Disable
+#>
+function Stop-SoftwareServices {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ServicePattern,
+
+        [switch]$Disable,
+        [switch]$Silent
+    )
+
+    $count = 0
+    $services = Get-Service -Name "$ServicePattern*" -ErrorAction SilentlyContinue
+
+    foreach ($svc in $services) {
+        try {
+            if ($svc.Status -eq 'Running') {
+                Stop-Service -Name $svc.Name -Force -ErrorAction Stop
+                $count++
+                if (-not $Silent) {
+                    Write-LevelLog "Stopped service: $($svc.Name)"
+                }
+            }
+
+            if ($Disable) {
+                Set-Service -Name $svc.Name -StartupType Disabled -ErrorAction Stop
+                if (-not $Silent) {
+                    Write-LevelLog "Disabled service: $($svc.Name)"
+                }
+            }
+        }
+        catch {
+            if (-not $Silent) {
+                Write-LevelLog "Failed to stop/disable service: $($svc.Name) - $($_.Exception.Message)" -Level "WARN"
+            }
+        }
+    }
+
+    return $count
+}
+
+<#
+.SYNOPSIS
+    Gets the uninstall string for software from the registry.
+
+.DESCRIPTION
+    Searches Windows registry uninstall entries for software matching
+    the specified name and returns the UninstallString value.
+
+.PARAMETER SoftwareName
+    The display name pattern to search for. Supports wildcards.
+
+.PARAMETER Quiet
+    Use QuietUninstallString if available, otherwise fall back to UninstallString.
+
+.OUTPUTS
+    The uninstall string if found, $null otherwise.
+
+.EXAMPLE
+    $uninstall = Get-SoftwareUninstallString -SoftwareName "Unchecky"
+    if ($uninstall) { Start-Process cmd -ArgumentList "/c $uninstall" }
+
+.EXAMPLE
+    $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
+#>
+function Get-SoftwareUninstallString {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SoftwareName,
+
+        [switch]$Quiet
+    )
+
+    $regPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    )
+
+    foreach ($regPath in $regPaths) {
+        $entries = Get-ItemProperty $regPath -ErrorAction SilentlyContinue |
+                   Where-Object { $_.DisplayName -like "*$SoftwareName*" }
+
+        foreach ($entry in $entries) {
+            if ($Quiet -and $entry.QuietUninstallString) {
+                return $entry.QuietUninstallString
+            }
+            if ($entry.UninstallString) {
+                return $entry.UninstallString
+            }
+        }
+    }
+
+    return $null
+}
+
+<#
+.SYNOPSIS
+    Tests if a Windows service exists.
+
+.PARAMETER ServiceName
+    The exact service name to check.
+
+.OUTPUTS
+    $true if the service exists, $false otherwise.
+
+.EXAMPLE
+    if (Test-ServiceExists -ServiceName "HuntressAgent") { ... }
+#>
+function Test-ServiceExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ServiceName
+    )
+
+    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    return ($null -ne $svc)
+}
+
+<#
+.SYNOPSIS
+    Tests if a Windows service is running.
+
+.PARAMETER ServiceName
+    The exact service name to check.
+
+.OUTPUTS
+    $true if the service exists and is running, $false otherwise.
+
+.EXAMPLE
+    if (Test-ServiceRunning -ServiceName "HuntressAgent") { ... }
+#>
+function Test-ServiceRunning {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ServiceName
+    )
+
+    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if ($null -eq $svc) { return $false }
+    return ($svc.Status -eq 'Running')
+}
+
+# ============================================================
 # EMOJI PATTERN DEFINITIONS (Single Source of Truth)
 # ============================================================
 
@@ -572,6 +898,7 @@ function Get-EmojiBytePatterns {
     # U+1F427 Penguin   -> E2 89 A1 C6 92 C3 89 C2 BA
     # U+1F300 Cyclone   -> E2 89 A1 C6 92 C3 AE C3 87
     # U+1F6F0 Satellite -> E2 89 A1 C6 92 C2 A2 E2 96 91 E2 88 A9 E2 95 95 C3 85
+    # U+1F34E Apple     -> TBD (will be logged to EmojiTags.log)
 
     return @{
         # Corrupted patterns (from Level.io byte sequences)
@@ -603,6 +930,7 @@ function Get-EmojiBytePatterns {
         Satellite = [char]::ConvertFromUtf32(0x1F6F0)
         Wrench    = [char]::ConvertFromUtf32(0x1F527)
         Eyes      = [char]::ConvertFromUtf32(0x1F440)
+        Apple     = [char]::ConvertFromUtf32(0x1F34E)
         Technician = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)
     }
 }
@@ -649,6 +977,7 @@ function Get-EmojiMap {
         $E.Window = "Windows"
         $E.Alert = "Alert"
         $E.Penguin = "Linux"
+        $E.Apple = "macOS"
         $E.Cyclone = "AdelaideMRI"
         $E.Satellite = "Satellite"
         $E.Wrench = "Fix"
@@ -3317,14 +3646,19 @@ function Get-LevelEntityCustomFields {
 
 <#
 .SYNOPSIS
-    Sends a Wake-on-LAN magic packet to wake a device.
+    Sends Wake-on-LAN magic packets using all available methods to wake a device.
 
 .DESCRIPTION
-    Constructs and broadcasts a WOL magic packet to wake a device from sleep
-    or powered-off state. The magic packet consists of 6 bytes of 0xFF followed
-    by the target MAC address repeated 16 times (102 bytes total).
+    Constructs and broadcasts WOL magic packets to wake a device from sleep
+    or powered-off state. Uses multiple methods to maximize wake reliability:
 
-    Packets are sent via UDP broadcast on port 9.
+    1. UDP broadcast on port 9 (standard WOL port)
+    2. UDP broadcast on port 7 (echo port, fallback)
+    3. Directed subnet broadcasts from all local network interfaces
+    4. Global broadcast (255.255.255.255)
+
+    The magic packet consists of 6 bytes of 0xFF followed by the target MAC
+    address repeated 16 times (102 bytes total).
 
 .PARAMETER MacAddress
     The MAC address of the target device. Accepts formats:
@@ -3333,11 +3667,15 @@ function Get-LevelEntityCustomFields {
     - No delimiter: XXXXXXXXXXXX
 
 .PARAMETER Attempts
-    Number of magic packets to send. Default: 10
+    Number of magic packets to send per method. Default: 3
     Multiple attempts increase reliability on congested networks.
 
 .PARAMETER DelayMs
-    Milliseconds to wait between packet sends. Default: 500
+    Milliseconds to wait between packet sends. Default: 100
+
+.PARAMETER SecureOn
+    Optional SecureOn password (6 bytes) for WOL with password.
+    Format: XX:XX:XX:XX:XX:XX or XXXXXXXXXXXX
 
 .OUTPUTS
     [bool] $true if packets were sent successfully, $false on error.
@@ -3345,16 +3683,17 @@ function Get-LevelEntityCustomFields {
 .EXAMPLE
     $Success = Send-LevelWakeOnLan -MacAddress "AA:BB:CC:DD:EE:FF"
     if ($Success) {
-        Write-LevelLog "WOL packet sent"
+        Write-LevelLog "WOL packets sent via all methods"
     }
 
 .EXAMPLE
     # Send with more attempts for unreliable network
-    Send-LevelWakeOnLan -MacAddress $Mac -Attempts 20 -DelayMs 250
+    Send-LevelWakeOnLan -MacAddress $Mac -Attempts 5 -DelayMs 50
 
 .NOTES
     - Device must have WOL enabled in BIOS/UEFI
-    - Device must be on the same broadcast domain (subnet)
+    - Device should be on the same broadcast domain for best results
+    - Directed broadcasts may reach devices across VLANs if routing allows
     - Some NICs require WOL to be enabled in device properties
 #>
 function Send-LevelWakeOnLan {
@@ -3364,10 +3703,13 @@ function Send-LevelWakeOnLan {
         [string]$MacAddress,
 
         [Parameter(Mandatory = $false)]
-        [int]$Attempts = 10,
+        [int]$Attempts = 3,
 
         [Parameter(Mandatory = $false)]
-        [int]$DelayMs = 500
+        [int]$DelayMs = 100,
+
+        [Parameter(Mandatory = $false)]
+        [string]$SecureOn = ""
     )
 
     # Normalize MAC address by removing delimiters
@@ -3385,10 +3727,24 @@ function Send-LevelWakeOnLan {
             $MacBytes[$i] = [Convert]::ToByte($CleanMac.Substring($i * 2, 2), 16)
         }
 
-        # Build magic packet: 6 bytes of 0xFF + MAC repeated 16 times = 102 bytes
-        $MagicPacket = [byte[]]::new(102)
+        # Build magic packet: 6 bytes of 0xFF + MAC repeated 16 times = 102 bytes (or 108 with SecureOn)
+        $PacketSize = 102
+        $SecureOnBytes = $null
 
-        # First 6 bytes are 0xFF
+        if ($SecureOn) {
+            $CleanSecureOn = $SecureOn -replace '[:-]', ''
+            if ($CleanSecureOn.Length -eq 12) {
+                $SecureOnBytes = [byte[]]::new(6)
+                for ($i = 0; $i -lt 6; $i++) {
+                    $SecureOnBytes[$i] = [Convert]::ToByte($CleanSecureOn.Substring($i * 2, 2), 16)
+                }
+                $PacketSize = 108
+            }
+        }
+
+        $MagicPacket = [byte[]]::new($PacketSize)
+
+        # First 6 bytes are 0xFF (sync stream)
         for ($i = 0; $i -lt 6; $i++) {
             $MagicPacket[$i] = 0xFF
         }
@@ -3398,19 +3754,94 @@ function Send-LevelWakeOnLan {
             [Array]::Copy($MacBytes, 0, $MagicPacket, 6 + ($i * 6), 6)
         }
 
-        # Broadcast via UDP port 9
-        $UdpClient = New-Object System.Net.Sockets.UdpClient
-        $UdpClient.Connect([System.Net.IPAddress]::Broadcast, 9)
+        # Append SecureOn password if provided
+        if ($SecureOnBytes) {
+            [Array]::Copy($SecureOnBytes, 0, $MagicPacket, 102, 6)
+        }
 
-        for ($i = 1; $i -le $Attempts; $i++) {
-            $UdpClient.Send($MagicPacket, $MagicPacket.Length) | Out-Null
-            if ($i -lt $Attempts) {
-                Start-Sleep -Milliseconds $DelayMs
+        # Collect all broadcast addresses to use
+        $BroadcastAddresses = @()
+
+        # Method 1: Global broadcast (255.255.255.255)
+        $BroadcastAddresses += [System.Net.IPAddress]::Broadcast
+
+        # Method 2: Get subnet broadcast addresses from all network interfaces
+        try {
+            $NetworkConfigs = Get-NetIPConfiguration -ErrorAction SilentlyContinue |
+                Where-Object { $_.IPv4Address -and $_.NetAdapter.Status -eq 'Up' }
+
+            foreach ($Config in $NetworkConfigs) {
+                foreach ($IpInfo in $Config.IPv4Address) {
+                    $IpAddress = [System.Net.IPAddress]::Parse($IpInfo.IPAddress)
+                    $PrefixLength = $IpInfo.PrefixLength
+
+                    # Calculate subnet broadcast address
+                    $IpBytes = $IpAddress.GetAddressBytes()
+                    $MaskBits = [uint32]((-bnot 0) -shl (32 - $PrefixLength))
+                    $MaskBytes = [System.BitConverter]::GetBytes($MaskBits)
+                    [Array]::Reverse($MaskBytes)
+
+                    $BroadcastBytes = [byte[]]::new(4)
+                    for ($i = 0; $i -lt 4; $i++) {
+                        $BroadcastBytes[$i] = $IpBytes[$i] -bor (-bnot $MaskBytes[$i] -band 0xFF)
+                    }
+
+                    $SubnetBroadcast = [System.Net.IPAddress]::new($BroadcastBytes)
+
+                    # Only add if it's not already in the list and not the global broadcast
+                    if ($SubnetBroadcast.ToString() -ne "255.255.255.255" -and
+                        $BroadcastAddresses.ToString() -notcontains $SubnetBroadcast.ToString()) {
+                        $BroadcastAddresses += $SubnetBroadcast
+                    }
+                }
+            }
+        }
+        catch {
+            # If we can't enumerate interfaces, continue with global broadcast only
+        }
+
+        # Standard WOL ports
+        $WolPorts = @(9, 7)
+
+        $PacketsSent = 0
+
+        # Send to all broadcast addresses on all ports
+        foreach ($BroadcastAddr in $BroadcastAddresses) {
+            foreach ($Port in $WolPorts) {
+                try {
+                    $UdpClient = New-Object System.Net.Sockets.UdpClient
+                    $UdpClient.EnableBroadcast = $true
+                    $UdpClient.Client.SetSocketOption(
+                        [System.Net.Sockets.SocketOptionLevel]::Socket,
+                        [System.Net.Sockets.SocketOptionName]::Broadcast,
+                        $true
+                    )
+
+                    $Endpoint = New-Object System.Net.IPEndPoint($BroadcastAddr, $Port)
+
+                    for ($i = 1; $i -le $Attempts; $i++) {
+                        $UdpClient.Send($MagicPacket, $MagicPacket.Length, $Endpoint) | Out-Null
+                        $PacketsSent++
+                        if ($i -lt $Attempts) {
+                            Start-Sleep -Milliseconds $DelayMs
+                        }
+                    }
+
+                    $UdpClient.Close()
+                }
+                catch {
+                    # Continue with other addresses/ports even if one fails
+                }
             }
         }
 
-        $UdpClient.Close()
-        return $true
+        if ($PacketsSent -gt 0) {
+            return $true
+        }
+        else {
+            Write-LevelLog "No WOL packets could be sent" -Level "WARN"
+            return $false
+        }
     }
     catch {
         Write-LevelLog "Failed to send WOL packet: $($_.Exception.Message)" -Level "ERROR"
@@ -4804,6 +5235,14 @@ Export-ModuleMember -Function @(
     # Device & System Info
     'Test-LevelAdmin',
     'Get-LevelDeviceInfo',
+
+    # Software Detection Utilities
+    'Test-SoftwareInstalled',
+    'Stop-SoftwareProcesses',
+    'Stop-SoftwareServices',
+    'Get-SoftwareUninstallString',
+    'Test-ServiceExists',
+    'Test-ServiceRunning',
 
     # Software Policy & Emoji Handling
     'Get-EmojiMap',

@@ -7,6 +7,12 @@
     up the folder hierarchy by a configurable number of levels, then sends WOL magic packets
     to all devices in that folder and its subfolders.
 
+    WOL packets are sent using multiple methods for maximum reliability:
+    - UDP broadcast on port 9 (standard WOL port)
+    - UDP broadcast on port 7 (echo port, fallback)
+    - Directed subnet broadcasts from all local network interfaces
+    - Global broadcast (255.255.255.255)
+
     Use cases:
     - Wake up all devices in a client site before maintenance
     - Remotely power on devices for updates or deployments
@@ -38,8 +44,10 @@
 $ApiKey = "{{cf_apikey}}"
 $LevelsUp = 1  # 0 = current folder, 1 = parent, 2 = grandparent, etc.
 
-$WolAttempts = 10      # Number of WOL packets to send per device
-$WolDelayMs = 500      # Delay between WOL packet attempts (milliseconds)
+# WOL packets are now sent via multiple methods (ports 9 and 7, all subnet broadcasts)
+# so fewer attempts per method are needed
+$WolAttempts = 3       # Number of WOL packets to send per method
+$WolDelayMs = 100      # Delay between WOL packet attempts (milliseconds)
 #endregion Configuration
 
 #region Module Import

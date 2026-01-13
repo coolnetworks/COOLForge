@@ -6,20 +6,37 @@ This document provides detailed documentation for all functions exported by the 
 
 ## Table of Contents
 
+### Initialization & Execution
 - [Initialize-LevelScript](#initialize-levelscript)
 - [Write-LevelLog](#write-levellog)
 - [Invoke-LevelScript](#invoke-levelscript)
 - [Complete-LevelScript](#complete-levelscript)
 - [Remove-LevelLockFile](#remove-levellockfile)
+
+### Device & System Info
 - [Test-LevelAdmin](#test-leveladmin)
 - [Get-LevelDeviceInfo](#get-leveldeviceinfo)
+
+### Software Detection Utilities
+- [Test-SoftwareInstalled](#test-softwareinstalled)
+- [Stop-SoftwareProcesses](#stop-softwareprocesses)
+- [Stop-SoftwareServices](#stop-softwareservices)
+- [Get-SoftwareUninstallString](#get-softwareuninstallstring)
+- [Test-ServiceExists](#test-serviceexists)
+- [Test-ServiceRunning](#test-servicerunning)
+
+### API & Text Processing
 - [Invoke-LevelApiCall](#invoke-levelapicall)
 - [Repair-LevelEmoji](#repair-levelemoji)
 - [Get-LevelUrlEncoded](#get-levelurlencoded)
+
+### Level.io API Functions
 - [Get-LevelGroups](#get-levelgroups)
 - [Get-LevelDevices](#get-leveldevices)
 - [Find-LevelDevice](#find-leveldevice)
 - [Send-LevelWakeOnLan](#send-levelwakeonlan)
+
+### Technician Alerts
 - [Send-TechnicianAlert](#send-technicianalert)
 - [Add-TechnicianAlert](#add-technicianalert)
 - [Send-TechnicianAlertQueue](#send-technicianalertqueue)
@@ -201,6 +218,174 @@ Write-LevelLog "Running on: $($Info.OS) ($($Info.OSVersion))"
     ScriptPID  = 4832
 }
 ```
+
+---
+
+## Test-SoftwareInstalled
+
+Checks if software is installed on the system by examining multiple locations.
+
+```powershell
+# Simple check by name
+$installed = Test-SoftwareInstalled -SoftwareName "AnyDesk"
+
+# Check with specific paths
+$installed = Test-SoftwareInstalled -SoftwareName "Unchecky" -InstallPaths @(
+    "$env:ProgramFiles\Unchecky\unchecky.exe",
+    "${env:ProgramFiles(x86)}\Unchecky\unchecky.exe"
+) -SkipProcessCheck -SkipServiceCheck
+
+# Path-only check (no process/service/registry)
+$installed = Test-SoftwareInstalled -SoftwareName "Huntress" -InstallPaths @(
+    "$env:ProgramFiles\Huntress\HuntressAgent.exe"
+) -SkipProcessCheck -SkipServiceCheck -SkipRegistryCheck
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-SoftwareName` | String | Yes | — | Display name pattern for registry search |
+| `-ProcessPattern` | String | No | SoftwareName | Pattern to match running processes |
+| `-ServicePattern` | String | No | SoftwareName | Pattern to match Windows services |
+| `-InstallPaths` | String[] | No | — | Array of file paths to check for existence |
+| `-SkipProcessCheck` | Switch | No | `$false` | Skip checking running processes |
+| `-SkipServiceCheck` | Switch | No | `$false` | Skip checking Windows services |
+| `-SkipRegistryCheck` | Switch | No | `$false` | Skip checking registry uninstall entries |
+
+### Detection Order
+
+1. Running processes (if not skipped)
+2. Windows services (if not skipped)
+3. File system paths (if provided)
+4. Registry uninstall entries (if not skipped)
+
+**Returns:** `$true` if ANY check finds a match, `$false` otherwise.
+
+---
+
+## Stop-SoftwareProcesses
+
+Stops all processes matching a name pattern.
+
+```powershell
+# Stop all AnyDesk processes
+$count = Stop-SoftwareProcesses -ProcessPattern "AnyDesk"
+Write-LevelLog "Stopped $count processes"
+
+# Stop silently (no logging)
+$count = Stop-SoftwareProcesses -ProcessPattern "TeamViewer" -Silent
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ProcessPattern` | String | Yes | — | Pattern to match (wildcards appended automatically) |
+| `-Silent` | Switch | No | `$false` | Suppress logging output |
+
+**Returns:** Integer count of processes successfully stopped.
+
+---
+
+## Stop-SoftwareServices
+
+Stops and optionally disables Windows services matching a pattern.
+
+```powershell
+# Stop services
+$count = Stop-SoftwareServices -ServicePattern "AnyDesk"
+
+# Stop and disable services
+$count = Stop-SoftwareServices -ServicePattern "AnyDesk" -Disable
+
+# Stop silently
+$count = Stop-SoftwareServices -ServicePattern "RemoteApp" -Silent
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ServicePattern` | String | Yes | — | Pattern to match (wildcards appended automatically) |
+| `-Disable` | Switch | No | `$false` | Also disable services after stopping |
+| `-Silent` | Switch | No | `$false` | Suppress logging output |
+
+**Returns:** Integer count of services successfully stopped.
+
+---
+
+## Get-SoftwareUninstallString
+
+Retrieves the uninstall command from Windows registry.
+
+```powershell
+# Get uninstall string
+$uninstall = Get-SoftwareUninstallString -SoftwareName "Unchecky"
+if ($uninstall) {
+    Start-Process cmd -ArgumentList "/c $uninstall" -Wait
+}
+
+# Prefer quiet uninstall string if available
+$uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-SoftwareName` | String | Yes | — | Display name pattern to search for |
+| `-Quiet` | Switch | No | `$false` | Return QuietUninstallString if available |
+
+### Search Locations
+
+- `HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*`
+- `HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*`
+- `HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*`
+
+**Returns:** Uninstall string if found, `$null` otherwise.
+
+---
+
+## Test-ServiceExists
+
+Checks if a Windows service exists by exact name.
+
+```powershell
+if (Test-ServiceExists -ServiceName "HuntressAgent") {
+    Write-LevelLog "Huntress agent service is installed"
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ServiceName` | String | Yes | Exact service name to check |
+
+**Returns:** `$true` if service exists, `$false` otherwise.
+
+---
+
+## Test-ServiceRunning
+
+Checks if a Windows service is currently running.
+
+```powershell
+if (Test-ServiceRunning -ServiceName "HuntressAgent") {
+    Write-LevelLog "Huntress agent is running"
+} else {
+    Write-LevelLog "Huntress agent is not running" -Level "WARN"
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ServiceName` | String | Yes | Exact service name to check |
+
+**Returns:** `$true` if service exists AND is running, `$false` otherwise.
 
 ---
 

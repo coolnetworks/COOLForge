@@ -109,6 +109,35 @@ Invoke-LevelScript -ScriptBlock {
 | `Test-LevelAdmin` | Checks if running with administrator privileges |
 | `Get-LevelDeviceInfo` | Returns hashtable of device info (Hostname, OS, IsAdmin, etc.) |
 
+#### Software Detection Utilities
+
+Generic functions for detecting and managing software installations. These consolidate common patterns used across removal and policy scripts.
+
+| Function | Description |
+|----------|-------------|
+| `Test-SoftwareInstalled` | Generic software detection (processes, services, paths, registry) |
+| `Stop-SoftwareProcesses` | Stop all processes matching a pattern, returns count |
+| `Stop-SoftwareServices` | Stop and optionally disable services matching a pattern |
+| `Get-SoftwareUninstallString` | Get uninstall command from registry |
+| `Test-ServiceExists` | Check if a Windows service exists by name |
+| `Test-ServiceRunning` | Check if a Windows service is running |
+
+**Usage Example**:
+```powershell
+# Check if software is installed
+$installed = Test-SoftwareInstalled -SoftwareName "AnyDesk" -InstallPaths @(
+    "$env:ProgramFiles\AnyDesk",
+    "${env:ProgramFiles(x86)}\AnyDesk"
+)
+
+# Stop processes and services before removal
+$procsStopped = Stop-SoftwareProcesses -ProcessPattern "AnyDesk"
+$svcsStopped = Stop-SoftwareServices -ServicePattern "AnyDesk" -Disable
+
+# Get uninstall command
+$uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
+```
+
 #### Software Policy System
 
 | Function | Description |
@@ -580,8 +609,9 @@ COOLForge/
 
 ## Version Information
 
-- **Module Version**: 2026.01.12.09 (COOLForge-Common)
-- **Launcher Version**: 2026.01.12.05
+- **Module Version**: 2026.01.13.10 (COOLForge-Common)
+- **Launcher Version**: 2026.01.13.05
+- **Last Documentation Update**: 2026-01-13
 
 ---
 

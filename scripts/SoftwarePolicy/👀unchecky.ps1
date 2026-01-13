@@ -126,51 +126,23 @@ if (-not $Init.Success) {
 }
 
 # ============================================================
-# SOFTWARE DETECTION FUNCTIONS
+# SOFTWARE DETECTION (uses library functions)
 # ============================================================
 
+$UncheckyInstallPaths = @(
+    "$env:ProgramFiles\Unchecky\unchecky.exe",
+    "${env:ProgramFiles(x86)}\Unchecky\unchecky.exe"
+)
+
 function Test-UncheckyInstalled {
-    # Check common install locations
-    $Paths = @(
-        "$env:ProgramFiles\Unchecky\unchecky.exe",
-        "${env:ProgramFiles(x86)}\Unchecky\unchecky.exe"
-    )
-    foreach ($Path in $Paths) {
-        if (Test-Path $Path) {
-            if ($DebugScripts) { Write-Host "  [DEBUG] Found: $Path" -ForegroundColor Green }
-            return $true
-        }
+    $result = Test-SoftwareInstalled -SoftwareName "Unchecky" `
+                                     -InstallPaths $UncheckyInstallPaths `
+                                     -SkipProcessCheck `
+                                     -SkipServiceCheck
+    if ($DebugScripts -and $result) {
+        Write-Host "  [DEBUG] Unchecky detected via library function" -ForegroundColor Green
     }
-
-    # Check registry
-    $RegPaths = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky",
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky"
-    )
-    foreach ($RegPath in $RegPaths) {
-        if (Test-Path $RegPath) {
-            if ($DebugScripts) { Write-Host "  [DEBUG] Found registry: $RegPath" -ForegroundColor Green }
-            return $true
-        }
-    }
-
-    return $false
-}
-
-function Get-UncheckyUninstallString {
-    $RegPaths = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky",
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Unchecky"
-    )
-    foreach ($RegPath in $RegPaths) {
-        if (Test-Path $RegPath) {
-            $Uninstall = Get-ItemProperty -Path $RegPath -ErrorAction SilentlyContinue
-            if ($Uninstall.UninstallString) {
-                return $Uninstall.UninstallString
-            }
-        }
-    }
-    return $null
+    return $result
 }
 
 function Install-Unchecky {

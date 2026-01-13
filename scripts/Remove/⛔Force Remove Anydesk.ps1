@@ -60,99 +60,24 @@ if (-not $Init.Success) {
 }
 
 # ============================================================
-# ANYDESK REMOVAL FUNCTIONS
+# ANYDESK DETECTION (uses library functions)
 # ============================================================
 
+$AnyDeskInstallPaths = @(
+    "$env:ProgramFiles\AnyDesk",
+    "${env:ProgramFiles(x86)}\AnyDesk",
+    "$env:LOCALAPPDATA\AnyDesk",
+    "$env:ProgramData\AnyDesk",
+    "$env:APPDATA\AnyDesk"
+)
+
 function Test-AnyDeskInstalled {
-    <#
-    .SYNOPSIS
-        Checks if AnyDesk is installed on the system.
-    .RETURNS
-        $true if AnyDesk is detected, $false otherwise.
-    #>
-
-    # Check for AnyDesk processes
-    $processes = Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue
-    if ($processes) { return $true }
-
-    # Check for AnyDesk services
-    $services = Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue
-    if ($services) { return $true }
-
-    # Check common installation paths
-    $paths = @(
-        "$env:ProgramFiles\AnyDesk",
-        "$env:ProgramFiles(x86)\AnyDesk",
-        "$env:LOCALAPPDATA\AnyDesk",
-        "$env:ProgramData\AnyDesk",
-        "$env:APPDATA\AnyDesk"
-    )
-    foreach ($path in $paths) {
-        if (Test-Path $path) { return $true }
-    }
-
-    # Check registry for uninstall entries
-    $regPaths = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
-        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
-    )
-    foreach ($regPath in $regPaths) {
-        $entries = Get-ItemProperty $regPath -ErrorAction SilentlyContinue |
-                   Where-Object { $_.DisplayName -like "*AnyDesk*" }
-        if ($entries) { return $true }
-    }
-
-    return $false
+    return Test-SoftwareInstalled -SoftwareName "AnyDesk" -InstallPaths $AnyDeskInstallPaths
 }
 
-function Stop-AnyDeskProcesses {
-    <#
-    .SYNOPSIS
-        Stops all AnyDesk processes.
-    .RETURNS
-        Number of processes stopped.
-    #>
-    $count = 0
-    $processes = Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue
-    foreach ($proc in $processes) {
-        try {
-            Stop-Process -Id $proc.Id -Force -ErrorAction Stop
-            $count++
-            Write-LevelLog "Stopped process: $($proc.Name) (PID: $($proc.Id))"
-        }
-        catch {
-            Write-LevelLog "Failed to stop process: $($proc.Name) - $($_.Exception.Message)" -Level "WARN"
-        }
-    }
-    return $count
-}
-
-function Stop-AnyDeskServices {
-    <#
-    .SYNOPSIS
-        Stops and disables AnyDesk services.
-    .RETURNS
-        Number of services stopped.
-    #>
-    $count = 0
-    $services = Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue
-    foreach ($svc in $services) {
-        try {
-            if ($svc.Status -eq 'Running') {
-                Stop-Service -Name $svc.Name -Force -ErrorAction Stop
-                Write-LevelLog "Stopped service: $($svc.Name)"
-            }
-            Set-Service -Name $svc.Name -StartupType Disabled -ErrorAction Stop
-            Write-LevelLog "Disabled service: $($svc.Name)"
-            $count++
-        }
-        catch {
-            Write-LevelLog "Failed to stop/disable service: $($svc.Name) - $($_.Exception.Message)" -Level "WARN"
-        }
-    }
-    return $count
-}
+# ============================================================
+# ANYDESK REMOVAL FUNCTIONS
+# ============================================================
 
 function Invoke-AnyDeskUninstall {
     <#
@@ -461,7 +386,7 @@ Invoke-LevelScript -ScriptBlock {
     Write-LevelLog "=== PHASE 1: Standard Uninstall ===" -Level "INFO"
 
     # Stop processes first to allow clean uninstall
-    $procsStopped = Stop-AnyDeskProcesses
+    $procsStopped = Stop-SoftwareProcesses -ProcessPattern "AnyDesk"
     if ($procsStopped -gt 0) {
         Write-LevelLog "Stopped $procsStopped AnyDesk process(es)"
         Start-Sleep -Seconds 2
@@ -484,8 +409,8 @@ Invoke-LevelScript -ScriptBlock {
     # --------------------------------------------------------
     Write-LevelLog "=== PHASE 2: Force Stop Services & Processes ===" -Level "INFO"
 
-    $svcsStopped = Stop-AnyDeskServices
-    $procsStopped = Stop-AnyDeskProcesses
+    $svcsStopped = Stop-SoftwareServices -ServicePattern "AnyDesk" -Disable
+    $procsStopped = Stop-SoftwareProcesses -ProcessPattern "AnyDesk"
 
     Write-LevelLog "Stopped $svcsStopped service(s) and $procsStopped process(es)"
     Start-Sleep -Seconds 3
