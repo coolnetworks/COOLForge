@@ -32,7 +32,7 @@ $cf_dns_filter_sitekey = "{{cf_dns_filter_sitekey}}"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.16.01
+    Launcher Version: 2026.01.16.02
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -63,7 +63,7 @@ $cf_dns_filter_sitekey = "{{cf_dns_filter_sitekey}}"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.16.01
+# Launcher Version: 2026.01.16.02
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -449,7 +449,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.16.01"
+Write-Host "[*] Script Launcher v2026.01.16.02"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
