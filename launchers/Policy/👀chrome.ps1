@@ -35,6 +35,7 @@ if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -like "{{*}}") { $Gi
 
 $PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
 $UsePinnedVersion = (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}")
+Write-Host "[DEBUG] PinnedVersion='$PinnedVersion' UsePinnedVersion=$UsePinnedVersion"
 
 $LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
@@ -43,6 +44,7 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 } elseif ($UsePinnedVersion) {
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
+Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
 $DebugScripts = "{{cf_debug_scripts}}"
 if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
