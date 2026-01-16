@@ -8,7 +8,7 @@ COOLForge uses an emoji-based tag system for software policy enforcement. Device
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         LEVEL.IO DEVICE                             │
 │                                                                     │
-│  Tags: 🪟Windows, 🌀AdelaideMRI, 🙏unchecky, ⛔bloatware, etc.      │
+│  Tags: 🪟Windows, 🌀AdelaideMRI, 🙏unchecky, 🚫bloatware, etc.      │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -16,7 +16,7 @@ COOLForge uses an emoji-based tag system for software policy enforcement. Device
 │                      LAUNCHER (👀software.ps1)                      │
 │  1. Downloads COOLForge-Common.psm1 module                          │
 │  2. Loads module into memory                                        │
-│  3. Downloads target script (scripts/Check/👀software.ps1)          │
+│  3. Downloads target script (scripts/Policy/👀software.ps1)         │
 │  4. Passes variables: $DeviceTags, $MspScratchFolder, etc.          │
 │  5. Sets $RunningFromLauncher = $true                               │
 │  6. Executes script, captures exit code                             │
@@ -46,56 +46,7 @@ COOLForge uses an emoji-based tag system for software policy enforcement. Device
 
 ## Policy Tags
 
-| Emoji | Action | Description |
-|-------|--------|-------------|
-| ❌ | Skip | Hands off (machine or software) |
-| 🙏 | Install | Install or reinstall |
-| ⛔ | Remove | Uninstall if present |
-| 🚫 | Block | Never install, leave existing |
-| 📌 | Pin | Lock state (no install, no remove) |
-| ✅ | Has | Verify installed + services + remediate |
-
-## Priority Resolution
-
-When multiple tags are present, they are resolved in this order:
-
-```
-1. ❌ Skip     → IsSkipped=true, ResolvedAction="Skip", exit
-2. 📌 Pin     → IsPinned=true, CanInstall=false, CanRemove=false
-3. 🚫 Block   → IsBlocked=true, CanInstall=false
-4. ⛔ Remove  → If CanRemove: ResolvedAction="Remove"
-5. 🙏 Install → If CanInstall: ResolvedAction="Install"
-6. ✅ Has     → ShouldVerify=true (runs if not removing)
-```
-
-**Key rules:**
-- Only ONE primary action runs (Install, Remove, or Skip)
-- Remove wins over Install when both present
-- Pin blocks both Install and Remove
-- Block only blocks Install (allows Remove)
-- Verify runs alongside actions (except Remove)
-
-## Tag Combination Examples
-
-**🚫SOFTWARE + ⛔SOFTWARE** (Block + Remove)
-- Block prevents Install, but allows Remove
-- **Result**: `ResolvedAction = "Remove"`, future installs blocked
-
-**📌SOFTWARE + 🙏SOFTWARE** (Pin + Install)
-- Pin blocks all changes
-- **Result**: `ResolvedAction = $null`, `IsPinned = true`
-
-**📌SOFTWARE + ⛔SOFTWARE** (Pin + Remove)
-- Pin blocks all changes
-- **Result**: `ResolvedAction = $null`, `IsPinned = true`
-
-**🙏SOFTWARE + ⛔SOFTWARE** (Install + Remove)
-- Remove wins over Install
-- **Result**: `ResolvedAction = "Remove"`
-
-**🙏SOFTWARE + ✅SOFTWARE** (Install + Has)
-- Install runs, then verify
-- **Result**: `ResolvedAction = "Install"`, `ShouldVerify = true`
+See [TAGS.md](TAGS.md) for the complete tag reference, priority resolution, and combination examples.
 
 ## Get-SoftwarePolicy Return Object
 
@@ -123,15 +74,15 @@ When multiple tags are present, they are resolved in this order:
 
 ### Step 1: Create the Launcher
 
-Copy an existing launcher (e.g., `launchers/👀unchecky.ps1`) and update the script URL:
+Copy an existing launcher (e.g., `launchers/Policy/👀unchecky.ps1`) and update the script URL:
 
 ```powershell
-$ScriptUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/scripts/Check/👀newsoftware.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/scripts/Policy/👀newsoftware.ps1"
 ```
 
-### Step 2: Create the Check Script
+### Step 2: Create the Policy Script
 
-Create `scripts/Check/👀newsoftware.ps1`:
+Create `scripts/Policy/👀newsoftware.ps1`:
 
 ```powershell
 # ============================================================
@@ -251,11 +202,11 @@ Example use cases:
 ### Step 3: Add Tags in Level.io
 
 Add the appropriate emoji tag to the device:
-- `🙏newsoftware` - Install/reinstall
-- `✅newsoftware` - Verify installed
-- `⛔newsoftware` - Remove
+- `🙏newsoftware` - Install
+- `🚫newsoftware` - Remove
 - `📌newsoftware` - Pin (lock state)
-- `🚫newsoftware` - Block installs
+- `🔄newsoftware` - Reinstall
+- `✅newsoftware` - Verify installed (status)
 - `❌newsoftware` - Skip (hands off)
 
 ## Verification Flow (✅ Has)
@@ -293,31 +244,4 @@ These tags are used for filtering, not software policy:
 
 ## Emoji Corruption Handling
 
-Level.io corrupts emoji characters when passing them through its variable system. COOLForge handles this automatically.
-
-### How It Works
-
-1. **Get-EmojiMap** contains both clean and corrupted patterns for all emojis
-2. **Get-SoftwarePolicy** matches tags against both patterns
-3. Unrecognized patterns are logged to `EmojiTags.log` for discovery
-
-### Adding New Emoji Patterns
-
-When you encounter a new emoji that isn't being matched:
-
-1. Check `$MspScratchFolder\Logs\EmojiTags.log` for the corrupted byte pattern
-2. Add the pattern to `Get-EmojiMap` in `COOLForge-Common.psm1`:
-
-```powershell
-# In the corrupted patterns section:
-$CorruptedNewEmoji = [System.Text.Encoding]::UTF8.GetString([byte[]](0xXX, 0xXX, ...))
-
-# In the return hashtable:
-$CorruptedNewEmoji = "ActionName"
-```
-
-### Code Guidelines
-
-- **Never hardcode emoji patterns** outside of Get-EmojiMap
-- **Use Unicode references in comments**: `# U+1F64F` not the actual emoji
-- **Test with debug launcher** before deploying new scripts
+See [EMOJI-HANDLING.md](EMOJI-HANDLING.md) for how COOLForge handles Level.io emoji corruption and how to add new emoji patterns.

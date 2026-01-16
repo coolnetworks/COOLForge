@@ -412,7 +412,7 @@ Override tags let you handle exceptions without changing the custom field policy
 
 **Result:** Consistent software management with simple custom fields, plus tag overrides for exceptions.
 
-See [Software Policy Flowchart](SOFTWARE-POLICY-FLOWCHART.md) for the complete technical flow.
+See [Software Policy Enforcement](policy/README.md) for the complete technical flow.
 
 ---
 

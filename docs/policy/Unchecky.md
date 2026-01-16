@@ -10,11 +10,13 @@ Automated installation and removal of [Unchecky](https://unchecky.com/) across y
 
 Create these custom fields in Level.io at the **Organization** level:
 
-| Field | Value | Example |
-|-------|-------|---------|
-| `coolforge_msp_scratch_folder` | Local folder for scripts/downloads | `C:\ProgramData\YourMSP` |
-| `policy_unchecky` | `install`, `remove`, or `pin` | `install` |
-| `policy_unchecky_url` | URL to your hosted installer | `https://your-bucket.s3.amazonaws.com/unchecky_setup.exe` |
+| Level.io Field | Script Variable | Value |
+|----------------|-----------------|-------|
+| `coolforge_msp_scratch_folder` | `{{cf_coolforge_msp_scratch_folder}}` | `C:\ProgramData\YourMSP` |
+| `policy_unchecky` | `{{cf_policy_unchecky}}` | `install`, `remove`, or `pin` |
+| `policy_unchecky_url` | `{{cf_policy_unchecky_url}}` | URL to your hosted installer |
+
+> **Note:** Level.io adds `cf_` prefix automatically when referencing in scripts.
 
 ### 2. Host the Unchecky Installer
 
@@ -69,8 +71,8 @@ Tags override custom field policy. Add these to individual devices:
 
 | File | Path | Purpose |
 |------|------|---------|
-| Launcher | `launchers/👀unchecky.ps1` | Deploy to Level.io |
-| Script | `scripts/SoftwarePolicy/👀unchecky.ps1` | Policy enforcement logic |
+| Launcher | `launchers/Policy/👀unchecky.ps1` | Deploy to Level.io |
+| Script | `scripts/Policy/👀unchecky.ps1` | Policy enforcement logic |
 | Module | `modules/COOLForge-Common.psm1` | Shared library |
 
 ---

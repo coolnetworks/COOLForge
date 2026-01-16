@@ -1,9 +1,9 @@
 # Debug Policy Script
 
-**Script:** `scripts/Check/👀debug.ps1`
-**Launcher:** `launchers/👀debug.ps1`
+**Script:** `scripts/Policy/👀debug.ps1`
+**Launcher:** `launchers/Policy/👀debug.ps1`
 **Version:** 2026.01.01.03
-**Category:** Check
+**Category:** Policy
 
 ## Purpose
 
@@ -20,12 +20,14 @@ Debug script for testing software policy enforcement logic. Demonstrates the COO
 
 | Tag | Action |
 |-----|--------|
-| 🙏DEBUG | Install/reinstall |
-| ⛔DEBUG | Remove if present |
-| 🚫DEBUG | Block install |
+| 🙏DEBUG | Install |
+| 🚫DEBUG | Remove if present |
 | 📌DEBUG | Pin (lock state) |
+| 🔄DEBUG | Reinstall |
 | ✅DEBUG | Has (verify installed) |
 | ❌DEBUG | Skip (hands off) |
+
+> **Note:** `⛔DEBUG` also works for Remove but is **deprecated**. Use `🚫DEBUG` instead.
 
 ## Exit Codes
 

@@ -38,17 +38,31 @@ This means you can use emojis in script names without worrying about encoding is
 
 ## Supported Emojis
 
+**Policy Tags** (used for software policy enforcement):
+| Emoji | Name | Unicode | Policy Action |
+|-------|------|---------|---------------|
+| 🙏 | Folded hands | U+1F64F | Install |
+| 🚫 | Prohibited | U+1F6AB | Remove |
+| 📌 | Pushpin | U+1F4CC | Pin |
+| 🔄 | Arrows | U+1F504 | Reinstall |
+| ✅ | Check mark | U+2705 | Has (status) |
+
+**Script Filename Prefixes** (visual identification):
+| Emoji | Name | Unicode | Used For |
+|-------|------|---------|----------|
+| 👀 | Eyes | U+1F440 | Check/Policy scripts |
+| ⛔ | No Entry | U+26D4 | Force Remove scripts |
+| 🔧 | Wrench | U+1F527 | Fix scripts |
+
+**Other Supported**:
 | Emoji | Name | Unicode |
 |-------|------|---------|
-| ⛔ | Stop sign | U+26D4 |
-| 👀 | Eyes | U+1F440 |
-| 🙏 | Folded hands | U+1F64F |
 | 🚨 | Police light | U+1F6A8 |
 | 🛑 | Stop sign octagon | U+1F6D1 |
-| ✅ | Check mark | U+2705 |
 | 🔚 | End arrow | U+1F51A |
 | 🆕 | New button | U+1F195 |
-| 🔧 | Wrench | U+1F527 |
+
+> **Note:** `⛔` (U+26D4) is used for force-remove script filenames. For the Remove **policy tag**, use `🚫` (U+1F6AB).
 
 ---
 

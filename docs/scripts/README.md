@@ -2,16 +2,25 @@
 
 Detailed documentation for each COOLForge script.
 
+## Policy Scripts
+
+See [Policy Documentation](../policy/README.md) for the complete policy enforcement system.
+
+| Script | Documentation | Description |
+|--------|---------------|-------------|
+| 👀chrome | [Chrome.md](../policy/Chrome.md) | Google Chrome Enterprise policy enforcement |
+| 👀dnsfilter | [DNSFilter.md](../policy/DNSFilter.md) | DNSFilter policy enforcement |
+| 👀huntress | [Huntress.md](../policy/Huntress.md) | Huntress agent policy enforcement |
+| 👀unchecky | [Unchecky.md](../policy/Unchecky.md) | Unchecky software policy enforcement |
+| 👀debug | [Debug.md](../policy/Debug.md) | Debug script for policy testing |
+
 ## Check Scripts
 
 | Script | Documentation | Description |
 |--------|---------------|-------------|
 | 👀Check for Unauthorized Remote Access Tools | [RAT-Detection.md](RAT-Detection.md) | Detects 60+ RATs with whitelisting support |
-| 👀huntress | [Huntress-Policy.md](Huntress-Policy.md) | Huntress agent policy enforcement |
-| 👀unchecky | [Unchecky-Policy.md](Unchecky-Policy.md) | Unchecky software policy check |
 | 👀Test Show Versions | [Test-Show-Versions.md](Test-Show-Versions.md) | Library test suite and version info |
 | 👀Test Variable Output | [Test-Variable-Output.md](Test-Variable-Output.md) | Level.io automation variable testing |
-| 👀debug | [Debug-Policy.md](Debug-Policy.md) | Debug script for policy testing |
 
 ## Configure Scripts
 

@@ -458,9 +458,12 @@ $ScriptName = Repair-LevelEmoji -Text $ScriptName
 
 | Emoji | Name | Unicode |
 |-------|------|---------|
-| ⛔ | Stop sign | U+26D4 |
+| ⛔ | No Entry | U+26D4 |
 | 👀 | Eyes | U+1F440 |
 | 🙏 | Folded hands | U+1F64F |
+| 🚫 | Prohibited | U+1F6AB |
+| 📌 | Pushpin | U+1F4CC |
+| 🔄 | Arrows | U+1F504 |
 | 🚨 | Police light | U+1F6A8 |
 | 🛑 | Stop sign octagon | U+1F6D1 |
 | ✅ | Check mark | U+2705 |

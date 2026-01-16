@@ -41,12 +41,12 @@ The Script Launcher lets you run any script from your GitHub repository **withou
 
 Go to **Settings → Custom Fields** and create these fields:
 
-| Field Name | Type | Value | Required |
-|------------|------|-------|----------|
-| `CoolForge_msp_scratch_folder` | Text | `C:\ProgramData\MSP` | **Yes** |
-| `CoolForge_ps_module_library_source` | Text | `https://raw.githubusercontent.com/...` | No (defaults to official repo) |
+| Level.io Field | Script Variable | Value | Required |
+|----------------|-----------------|-------|----------|
+| `coolforge_msp_scratch_folder` | `{{cf_coolforge_msp_scratch_folder}}` | `C:\ProgramData\MSP` | **Yes** |
+| `coolforge_ps_module_library_source` | `{{cf_coolforge_ps_module_library_source}}` | `https://raw.githubusercontent.com/...` | No |
 
-> **Note:** The `CoolForge_ps_module_library_source` field is optional - if not set, scripts use the official COOLForge_Lib repository. Set this field only if you're using a fork or private repository.
+> **Note:** Level.io adds `cf_` prefix automatically. The library source field is optional - if not set, scripts use the official COOLForge repository.
 
 ### Step 2: Create Scripts in Level.io
 

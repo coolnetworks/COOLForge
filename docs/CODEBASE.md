@@ -150,12 +150,13 @@ $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
 | Emoji | Action | Description |
 |-------|--------|-------------|
 | `🙏` | Install | Request/recommend installation |
-| `⛔` | Remove | Remove if present |
-| `🚫` | Block | Block install, leave existing |
+| `🚫` | Remove | Remove if present |
 | `📌` | Pin | Lock state (blocks install AND remove) |
+| `🔄` | Reinstall | Remove then install |
 | `✅` | Has | Installed/verified status |
 | `❌` | Skip | Hands off (managed elsewhere) |
-| `👀` | Verify | Check and report |
+
+> **Note:** `⛔` (U+26D4) also works for Remove but is **deprecated**. Use `🚫` (U+1F6AB) instead.
 
 **Priority Resolution** (highest to lowest):
 1. Skip → Exit immediately

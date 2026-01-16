@@ -5211,12 +5211,312 @@ function Initialize-LevelApi {
 Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Scope Script
 
 # ============================================================
+# LAUNCHER HELPERS
+# ============================================================
+# Functions to support slim launchers - script download/execution
+
+function Get-ContentMD5 {
+    <#
+    .SYNOPSIS
+        Computes MD5 hash of string content.
+    #>
+    param([string]$Content)
+    $md5 = [System.Security.Cryptography.MD5]::Create()
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($Content)
+    $hash = $md5.ComputeHash($bytes)
+    return ([BitConverter]::ToString($hash) -replace '-', '').ToLower()
+}
+
+function Get-ExpectedMD5 {
+    <#
+    .SYNOPSIS
+        Looks up expected MD5 hash from MD5SUMS content.
+    #>
+    param([string]$FileName, [string]$MD5Content)
+    $SearchName = Split-Path $FileName -Leaf
+    foreach ($line in $MD5Content -split "`n") {
+        $line = $line.Trim()
+        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
+            $FilePath = $Matches[2].Trim()
+            $FileLeaf = Split-Path $FilePath -Leaf
+            if ($FilePath -eq $FileName -or $FileLeaf -eq $SearchName -or $FileLeaf -like "*$SearchName") {
+                return $Matches[1].ToLower()
+            }
+        }
+    }
+    return $null
+}
+
+function Get-ScriptPathFromMD5 {
+    <#
+    .SYNOPSIS
+        Resolves full script path from MD5SUMS content.
+    #>
+    param([string]$ScriptName, [string]$MD5Content)
+    if ([string]::IsNullOrWhiteSpace($MD5Content)) { return $null }
+    foreach ($line in $MD5Content -split "`n") {
+        $line = $line.Trim()
+        if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
+            $FilePath = $Matches[2].Trim()
+            $FileName = Split-Path $FilePath -Leaf
+            if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
+                return $FilePath
+            }
+        }
+    }
+    return $null
+}
+
+function Get-ScriptVersion {
+    <#
+    .SYNOPSIS
+        Extracts version number from script content.
+    #>
+    param([string]$Content, [string]$Source = "unknown")
+    if ($Content -match 'Version:\s*([\d\.]+)') {
+        return $Matches[1]
+    }
+    return $null
+}
+
+function Invoke-ScriptLauncher {
+    <#
+    .SYNOPSIS
+        Downloads and executes a script from GitHub with caching and verification.
+    .DESCRIPTION
+        This function handles script download, MD5 verification, caching, and execution.
+        It's designed to be called from slim launchers after the library is loaded.
+    .PARAMETER ScriptName
+        Name of the script to run (e.g., "chrome.ps1")
+    .PARAMETER RepoBaseUrl
+        Base URL of the GitHub repo (e.g., "https://raw.githubusercontent.com/.../main")
+    .PARAMETER MD5SumsContent
+        Content of the MD5SUMS file for checksum verification
+    .PARAMETER MspScratchFolder
+        Path to MSP scratch folder for caching
+    .PARAMETER LauncherVariables
+        Hashtable of variables to pass to the executed script
+    .PARAMETER DebugMode
+        Enable debug output
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ScriptName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RepoBaseUrl,
+
+        [string]$MD5SumsContent,
+
+        [Parameter(Mandatory = $true)]
+        [string]$MspScratchFolder,
+
+        [hashtable]$LauncherVariables = @{},
+
+        [bool]$DebugMode = $false
+    )
+
+    # Fix emoji encoding
+    $ScriptName = Repair-LevelEmoji -Text $ScriptName
+
+    # Resolve script path from MD5SUMS
+    $ScriptRelativePath = $null
+    if ($MD5SumsContent) {
+        $ScriptRelativePath = Get-ScriptPathFromMD5 -ScriptName $ScriptName -MD5Content $MD5SumsContent
+        if ($ScriptRelativePath) {
+            Write-Host "[*] Resolved script path: $ScriptRelativePath"
+        }
+    }
+
+    Write-Host "[*] Preparing to run: $ScriptName"
+
+    # Define script storage location
+    $ScriptsFolder = Join-Path -Path $MspScratchFolder -ChildPath "Scripts"
+    if (!(Test-Path $ScriptsFolder)) {
+        New-Item -Path $ScriptsFolder -ItemType Directory -Force | Out-Null
+    }
+
+    # Sanitize script name for filesystem
+    $SafeScriptName = $ScriptName -replace '[<>:"/\\|?*]', '_'
+    $ScriptPath = Join-Path -Path $ScriptsFolder -ChildPath $SafeScriptName
+
+    # Build script URL
+    $ScriptRepoBaseUrl = "$RepoBaseUrl/scripts"
+    if ($ScriptRelativePath) {
+        $ScriptUrl = "$RepoBaseUrl/$(Get-LevelUrlEncoded $ScriptRelativePath)"
+    } else {
+        Write-Host "[!] Script not found in MD5SUMS - trying flat path"
+        $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptName)"
+    }
+
+    # Debug mode: cache-busting
+    if ($DebugMode) {
+        $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+        $ScriptUrl = "$ScriptUrl`?t=$CacheBuster"
+        Write-Host "[DEBUG] Cache-busting URL: $ScriptUrl"
+    }
+
+    # Check for local version
+    $ScriptNeedsUpdate = $false
+    $LocalScriptVersion = $null
+    $LocalScriptContent = $null
+    $ScriptBackupPath = "$ScriptPath.backup"
+
+    # Debug mode: force fresh download
+    if ($DebugMode -and (Test-Path $ScriptPath)) {
+        Write-Host "[DEBUG] Deleting cached script to force fresh download..."
+        Remove-Item -Path $ScriptPath -Force -ErrorAction SilentlyContinue
+    }
+
+    if (Test-Path $ScriptPath) {
+        try {
+            $LocalScriptContent = Get-Content -Path $ScriptPath -Raw -ErrorAction Stop
+            $LocalScriptVersion = Get-ScriptVersion -Content $LocalScriptContent -Source "local script"
+        }
+        catch {
+            Write-Host "[!] Local script corrupt or no version - will redownload"
+            $ScriptNeedsUpdate = $true
+        }
+    }
+    else {
+        $ScriptNeedsUpdate = $true
+        Write-Host "[*] Script not cached - downloading..."
+    }
+
+    # Download script from GitHub
+    try {
+        $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15).Content
+        $RemoteScriptVersion = Get-ScriptVersion -Content $RemoteScriptContent -Source "remote script"
+
+        if ($RemoteScriptVersion) {
+            if ($null -eq $LocalScriptVersion -or [version]$RemoteScriptVersion -gt [version]$LocalScriptVersion) {
+                $ScriptNeedsUpdate = $true
+                if ($LocalScriptVersion) {
+                    Write-Host "[*] Script update available: $LocalScriptVersion -> $RemoteScriptVersion"
+                }
+            }
+        } else {
+            # No version - always update
+            $ScriptNeedsUpdate = $true
+        }
+
+        if ($ScriptNeedsUpdate) {
+            # Backup working local copy
+            if ($LocalScriptVersion -and $LocalScriptContent) {
+                Set-Content -Path $ScriptBackupPath -Value $LocalScriptContent -Force -ErrorAction Stop
+            }
+
+            # Write new version
+            Set-Content -Path $ScriptPath -Value $RemoteScriptContent -Force -ErrorAction Stop
+
+            # Verify
+            try {
+                $VerifyScriptContent = Get-Content -Path $ScriptPath -Raw -ErrorAction Stop
+                if ($VerifyScriptContent.Length -lt 50) {
+                    throw "Downloaded script appears to be empty or truncated"
+                }
+
+                # MD5 verification (skip in debug mode)
+                if ($MD5SumsContent -and -not $DebugMode) {
+                    $ScriptMD5Key = if ($ScriptRelativePath) { $ScriptRelativePath } else { "scripts/$ScriptName" }
+                    $ExpectedScriptMD5 = Get-ExpectedMD5 -FileName $ScriptMD5Key -MD5Content $MD5SumsContent
+                    if ($ExpectedScriptMD5) {
+                        $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
+                        if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
+                            throw "MD5 checksum mismatch: expected $ExpectedScriptMD5, got $ActualScriptMD5"
+                        }
+                        Write-Host "[+] Script checksum verified"
+                    }
+                }
+                elseif ($DebugMode) {
+                    Write-Host "[*] Debug mode - skipping script checksum verification"
+                }
+
+                # Success - remove backup
+                if (Test-Path $ScriptBackupPath) {
+                    Remove-Item -Path $ScriptBackupPath -Force -ErrorAction SilentlyContinue
+                }
+                if ($RemoteScriptVersion) {
+                    Write-Host "[+] Script updated to v$RemoteScriptVersion"
+                } else {
+                    Write-Host "[+] Script downloaded successfully"
+                }
+            }
+            catch {
+                # Restore backup on failure
+                if (Test-Path $ScriptBackupPath) {
+                    Write-Host "[!] Downloaded script corrupt or checksum failed - restoring backup"
+                    Move-Item -Path $ScriptBackupPath -Destination $ScriptPath -Force
+                }
+                throw "Downloaded script failed verification: $($_.Exception.Message)"
+            }
+        }
+    }
+    catch {
+        # GitHub unreachable - try cached version
+        if (Test-Path $ScriptBackupPath) {
+            Move-Item -Path $ScriptBackupPath -Destination $ScriptPath -Force -ErrorAction SilentlyContinue
+        }
+
+        if (!(Test-Path $ScriptPath)) {
+            Write-Host "[X] FATAL: Cannot download script and no local copy exists"
+            Write-Host "[X] URL: $ScriptUrl"
+            Write-Host "[X] Error: $($_.Exception.Message)"
+            return 1
+        }
+        Write-Host "[!] Could not check for script updates (using cached version)"
+    }
+
+    # Execute the downloaded script
+    Write-Host "[*] Executing: $ScriptName"
+    Write-Host "============================================================"
+
+    $ScriptContent = Get-Content -Path $ScriptPath -Raw
+
+    # Build variable injection block
+    $VarsBlock = ""
+    foreach ($key in $LauncherVariables.Keys) {
+        $value = $LauncherVariables[$key]
+        if ($null -eq $value) {
+            $VarsBlock += "`n`$$key = `$null"
+        } elseif ($value -is [bool]) {
+            $VarsBlock += "`n`$$key = `$$value"
+        } else {
+            $EscapedValue = $value -replace "'", "''" -replace '\$', '`$'
+            $VarsBlock += "`n`$$key = '$EscapedValue'"
+        }
+    }
+
+    $ExecutionBlock = @"
+# Variables passed from launcher
+$VarsBlock
+
+# Script content:
+$ScriptContent
+"@
+
+    try {
+        $ScriptBlock = [scriptblock]::Create($ExecutionBlock)
+        & $ScriptBlock
+        $ScriptExitCode = $LASTEXITCODE
+        if ($null -eq $ScriptExitCode) { $ScriptExitCode = 0 }
+        return $ScriptExitCode
+    }
+    catch {
+        Write-Host "[X] Script execution failed: $($_.Exception.Message)"
+        return 1
+    }
+}
+
+# ============================================================
 # MODULE LOAD MESSAGE
 # ============================================================
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.13.12"
+$script:ModuleVersion = "2026.01.13.13"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -5249,6 +5549,13 @@ Export-ModuleMember -Function @(
     'Get-EmojiLiterals',
     'Get-SoftwarePolicy',
     'Invoke-SoftwarePolicyCheck',
+
+    # Launcher Helpers
+    'Get-ContentMD5',
+    'Get-ExpectedMD5',
+    'Get-ScriptPathFromMD5',
+    'Get-ScriptVersion',
+    'Invoke-ScriptLauncher',
 
     # API Helpers
     'Invoke-LevelApiCall',

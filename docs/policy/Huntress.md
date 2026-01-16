@@ -1,9 +1,9 @@
 # Huntress Policy Script
 
-**Script:** `scripts/Check/👀huntress.ps1`
-**Launcher:** `launchers/👀huntress.ps1`
+**Script:** `scripts/Policy/👀huntress.ps1`
+**Launcher:** `launchers/Policy/👀huntress.ps1`
 **Version:** 2026.01.08.03
-**Category:** Check
+**Category:** Policy
 
 ## Purpose
 
@@ -22,10 +22,12 @@ Tag-based policy enforcement script for Huntress agent management. Handles insta
 | Tag | Action |
 |-----|--------|
 | 🙏huntress | Install Huntress agent |
-| ⛔huntress | Remove Huntress agent (checks TP first) |
-| ✅huntress | Verify Huntress is installed and healthy |
+| 🚫huntress | Remove Huntress agent (checks TP first) |
 | 📌huntress | Pin state - no changes allowed |
-| 🚫huntress | Block installs (allow remove) |
+| 🔄huntress | Reinstall Huntress agent |
+| ✅huntress | Verify Huntress is installed and healthy |
+
+> **Note:** `⛔huntress` also works for Remove but is **deprecated**. Use `🚫huntress` instead.
 
 ## Exit Codes
 
@@ -36,12 +38,14 @@ Tag-based policy enforcement script for Huntress agent management. Handles insta
 
 ## Custom Fields
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `cf_huntress_account_key` | Yes | Huntress account key (32 characters) |
-| `cf_huntress_organization_key` | Yes | Organization name for Huntress |
-| `cf_huntress_tags` | No | Comma-separated tags to apply to agent |
-| `cf_apikey` | No | Level.io API key for tag auto-management |
+| Level.io Field | Script Variable | Required | Description |
+|----------------|-----------------|----------|-------------|
+| `huntress_account_key` | `{{cf_huntress_account_key}}` | Yes | Huntress account key (32 characters) |
+| `huntress_organization_key` | `{{cf_huntress_organization_key}}` | Yes | Organization name for Huntress |
+| `huntress_tags` | `{{cf_huntress_tags}}` | No | Comma-separated tags to apply to agent |
+| `apikey` | `{{cf_apikey}}` | No | Level.io API key for tag auto-management |
+
+> **Note:** Level.io adds `cf_` prefix automatically when referencing in scripts.
 
 ## Tamper Protection Handling
 
