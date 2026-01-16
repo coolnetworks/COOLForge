@@ -1,6 +1,6 @@
 ﻿# MD5SUMS - Checksums for COOLForge files
 # Format: MD5_HASH  FILENAME
-# Generated: 2026-01-13
+# Generated: 2026-01-16
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
@@ -24,6 +24,7 @@ d31ecec221d65522ca3cc89827474884  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
 96e12ec31a8b373a86fde3273b1d33fd  scripts/Fix/🔧Prevent Sleep.ps1
 0ce7b50eb958e7a4cbcb1b8848810f7a  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+84d7052bacc902b2fe8f00238eba1cbc  scripts/Policy/Software/👀dnsfilter.ps1
 0297158ed701fa6c0c4822a41f99781e  scripts/SoftwarePolicy/👀unchecky.ps1
-a37c8212b8e445fd377e41fc706c39f4  scripts/Utility/🔔Technician Alert Monitor.ps1
+2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 92cd52534025a471791185d586e090c9  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1

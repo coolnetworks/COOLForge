@@ -14,7 +14,7 @@
     4. Technician acknowledges or alerts auto-expire
 
 .NOTES
-    Version: 2026.01.08.02
+    Version: 2026.01.14.01
 
     Level.io Tags Required:
     - U+1F9D1 U+200D U+1F4BB technician : Tag workstation as technician (e.g., "technician" or "technicianJohn")
@@ -23,66 +23,36 @@
     - cf_coolforge_technician_alerts : Text - JSON array of pending alerts
     - cf_apikey                      : Level.io API key
 
-    Level.io Variables Used:
-    - level_device_hostname          : Device hostname
-    - level_tag_names                : Device tags (to detect technician tag)
+    Level.io Variables Used (passed from Script Launcher):
+    - $MspScratchFolder   : MSP-defined scratch folder for persistent storage
+    - $DeviceHostname     : Device hostname from Level.io
+    - $DeviceTags         : Comma-separated list of device tags
+    - $LevelApiKey        : Level.io API key for API calls
+
+    Copyright (c) COOLNETWORKS
+    https://github.com/coolnetworks/COOLForge
 
 .EXAMPLE
     # Deploy via Level.io automation to run every 30 seconds
     # Use tag filter to only run on devices with technician tag
 #>
 
-# ============================================================
-# LEVEL.IO VARIABLES
-# ============================================================
-$LevelApiKey = "{{cf_apikey}}"
-$DeviceHostname = "{{level_device_hostname}}"
-$DeviceTags = "{{level_tag_names}}"
-$MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
+# Technician Alert Monitor
+# Version: 2026.01.14.01
+# Target: Level.io (via Script Launcher)
+# Exit 0 = Success | Exit 1 = Alert (Failure)
+#
+# Copyright (c) COOLNETWORKS
+# https://github.com/coolnetworks/COOLForge
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
-$LevelApiBaseUrl = "https://api.level.io/v2"
 $AlertCacheFile = "$MspScratchFolder\TechAlerts\seen_alerts.json"
 
 # ============================================================
 # HELPER FUNCTIONS
 # ============================================================
-
-function Write-Log {
-    param(
-        [string]$Message,
-        [ValidateSet("INFO", "SUCCESS", "WARN", "ERROR", "DEBUG")]
-        [string]$Level = "INFO"
-    )
-
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $prefix = switch ($Level) {
-        "INFO"    { "[*]" }
-        "SUCCESS" { "[+]" }
-        "WARN"    { "[!]" }
-        "ERROR"   { "[X]" }
-        "DEBUG"   { "[D]" }
-    }
-
-    Write-Host "$timestamp $prefix $Message"
-}
-
-function Test-LevelVariable {
-    param([string]$Value, [string]$VariableName)
-    if ([string]::IsNullOrWhiteSpace($Value) -or $Value -match '^\{\{.*\}\}$') {
-        return $false
-    }
-    return $true
-}
-
-function Get-EmojiMap {
-    # Simplified emoji map for technician detection
-    return @{
-        "🧑‍💻" = "Technician"  # U+1F9D1 U+200D U+1F4BB - Technician workstation
-    }
-}
 
 function Test-TechnicianWorkstation {
     param([string]$Tags)
@@ -123,55 +93,6 @@ function Get-TechnicianName {
         }
     }
     return ""
-}
-
-function Invoke-LevelApiCall {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Endpoint,
-
-        [ValidateSet("GET", "POST", "PATCH", "DELETE")]
-        [string]$Method = "GET",
-
-        [hashtable]$Body = $null
-    )
-
-    $uri = "$LevelApiBaseUrl$Endpoint"
-
-    $headers = @{
-        "Authorization" = $LevelApiKey
-        "Content-Type" = "application/json"
-        "Accept" = "application/json"
-    }
-
-    try {
-        $params = @{
-            Uri = $uri
-            Method = $Method
-            Headers = $headers
-            UseBasicParsing = $true
-        }
-
-        if ($Body -and $Method -ne "GET") {
-            $jsonBody = $Body | ConvertTo-Json -Depth 10
-            $params.Body = $jsonBody
-        }
-
-        $response = Invoke-RestMethod @params
-
-        return @{
-            Success = $true
-            Data = $response
-            Error = $null
-        }
-    }
-    catch {
-        return @{
-            Success = $false
-            Data = $null
-            Error = $_.Exception.Message
-        }
-    }
 }
 
 function Get-SeenAlerts {
@@ -258,28 +179,28 @@ function Get-AllGroupAlerts {
     $allAlerts = @()
 
     # Get the alerts custom field definition
-    $fieldsResult = Invoke-LevelApiCall -Endpoint "/custom_fields"
+    $fieldsResult = Invoke-LevelApiCall -ApiKey $LevelApiKey -Endpoint "/custom_fields"
     if (-not $fieldsResult.Success) {
-        Write-Log "Failed to get custom fields: $($fieldsResult.Error)" -Level "ERROR"
+        Write-LevelLog "Failed to get custom fields: $($fieldsResult.Error)" -Level "ERROR"
         return @()
     }
 
     $alertsField = $fieldsResult.Data.data | Where-Object { $_.name -eq "cf_coolforge_technician_alerts" } | Select-Object -First 1
     if (-not $alertsField) {
-        Write-Log "cf_coolforge_technician_alerts custom field not found" -Level "DEBUG"
+        Write-LevelLog "cf_coolforge_technician_alerts custom field not found" -Level "DEBUG"
         return @()
     }
 
     # Get all groups
-    $groupsResult = Invoke-LevelApiCall -Endpoint "/groups?limit=100"
+    $groupsResult = Invoke-LevelApiCall -ApiKey $LevelApiKey -Endpoint "/groups?limit=100"
     if (-not $groupsResult.Success) {
-        Write-Log "Failed to get groups: $($groupsResult.Error)" -Level "ERROR"
+        Write-LevelLog "Failed to get groups: $($groupsResult.Error)" -Level "ERROR"
         return @()
     }
 
     # Check each group for alerts
     foreach ($group in $groupsResult.Data.data) {
-        $groupResult = Invoke-LevelApiCall -Endpoint "/groups/$($group.id)"
+        $groupResult = Invoke-LevelApiCall -ApiKey $LevelApiKey -Endpoint "/groups/$($group.id)"
         if (-not $groupResult.Success) {
             continue
         }
@@ -329,38 +250,38 @@ function Get-AllGroupAlerts {
 # MAIN SCRIPT
 # ============================================================
 
-Write-Log "Technician Alert Monitor starting..."
-Write-Log "Hostname: $DeviceHostname"
+Write-LevelLog "Technician Alert Monitor starting..."
+Write-LevelLog "Hostname: $DeviceHostname"
 
 # Validate this is a technician workstation
 if (-not (Test-TechnicianWorkstation -Tags $DeviceTags)) {
-    Write-Log "This device is not tagged as a technician workstation" -Level "WARN"
-    Write-Log "Add the technician tag (U+1F9D1 U+200D U+1F4BB) to enable alerts" -Level "INFO"
+    Write-LevelLog "This device is not tagged as a technician workstation" -Level "WARN"
+    Write-LevelLog "Add the technician tag (U+1F9D1 U+200D U+1F4BB) to enable alerts" -Level "INFO"
     exit 0
 }
 
 $TechnicianName = Get-TechnicianName -Tags $DeviceTags
 if ($TechnicianName) {
-    Write-Log "Technician: $TechnicianName" -Level "SUCCESS"
+    Write-LevelLog "Technician: $TechnicianName" -Level "SUCCESS"
 }
 else {
-    Write-Log "Technician: (all alerts)" -Level "INFO"
+    Write-LevelLog "Technician: (all alerts)" -Level "INFO"
 }
 
 # Validate configuration
-if (-not (Test-LevelVariable $LevelApiKey "cf_apikey")) {
-    Write-Log "Level API key not configured" -Level "ERROR"
+if (-not $LevelApiKey) {
+    Write-LevelLog "Level API key not configured" -Level "ERROR"
     exit 1
 }
 
-if (-not (Test-LevelVariable $MspScratchFolder "cf_coolforge_msp_scratch_folder")) {
+if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -match '^\{\{.*\}\}$') {
     $MspScratchFolder = "C:\ProgramData\COOLForge"
     $AlertCacheFile = "$MspScratchFolder\TechAlerts\seen_alerts.json"
 }
 
 # Get previously seen alerts
 $seenAlerts = Get-SeenAlerts
-Write-Log "Loaded $($seenAlerts.Count) previously seen alert IDs" -Level "DEBUG"
+Write-LevelLog "Loaded $($seenAlerts.Count) previously seen alert IDs" -Level "DEBUG"
 
 # Check for new alerts across all groups
 $pendingAlerts = Get-AllGroupAlerts -TechName $TechnicianName
@@ -373,15 +294,15 @@ foreach ($alert in $pendingAlerts) {
 }
 
 if ($newAlerts.Count -eq 0) {
-    Write-Log "No new alerts" -Level "DEBUG"
+    Write-LevelLog "No new alerts" -Level "DEBUG"
     exit 0
 }
 
-Write-Log "Found $($newAlerts.Count) new alert(s)" -Level "SUCCESS"
+Write-LevelLog "Found $($newAlerts.Count) new alert(s)" -Level "SUCCESS"
 
 # Display notifications for new alerts
 foreach ($alert in $newAlerts) {
-    Write-Log "Alert: $($alert.title) - $($alert.message)" -Level "INFO"
+    Write-LevelLog "Alert: $($alert.title) - $($alert.message)" -Level "INFO"
 
     Show-ToastNotification `
         -Title $alert.title `
@@ -397,5 +318,5 @@ foreach ($alert in $newAlerts) {
 # Save updated seen alerts
 Save-SeenAlerts -AlertIds $seenAlerts
 
-Write-Log "Alert monitor complete" -Level "SUCCESS"
+Write-LevelLog "Alert monitor complete" -Level "SUCCESS"
 exit 0
