@@ -198,17 +198,17 @@ function Install-Unchecky {
                     break  # Success
                 }
                 else {
-                    Write-LevelLog "Downloaded file too small ($FileSize bytes), expected >= $MinFileSize - retrying..." -Level "WARNING"
+                    Write-LevelLog "Downloaded file too small ($FileSize bytes), expected >= $MinFileSize - retrying..." -Level "WARN"
                     $RetryCount++
                 }
             }
             else {
-                Write-LevelLog "File not found after download - retrying..." -Level "WARNING"
+                Write-LevelLog "File not found after download - retrying..." -Level "WARN"
                 $RetryCount++
             }
         }
         catch {
-            Write-LevelLog "Download failed: $($_.Exception.Message)" -Level "WARNING"
+            Write-LevelLog "Download failed: $($_.Exception.Message)" -Level "WARN"
             $RetryCount++
         }
 
@@ -279,13 +279,13 @@ function Remove-Unchecky {
     }
 
     if (-not $InstallPath) {
-        Write-LevelLog "Unchecky install folder not found" -Level "WARNING"
+        Write-LevelLog "Unchecky install folder not found" -Level "WARN"
         return $true  # Not installed = success
     }
 
     $Uninstaller = Join-Path $InstallPath "uninstall.exe"
     if (-not (Test-Path $Uninstaller)) {
-        Write-LevelLog "Unchecky uninstaller not found at $Uninstaller" -Level "WARNING"
+        Write-LevelLog "Unchecky uninstaller not found at $Uninstaller" -Level "WARN"
         return $true  # Uninstaller missing = consider uninstalled
     }
 
@@ -373,55 +373,38 @@ $InvokeParams = @{ ScriptBlock = {
     Write-DebugTags -TagString $DeviceTags -SoftwareName $SoftwareName
 
     # ============================================================
-    # AUTO-BOOTSTRAP: Create policy infrastructure if needed
+    # AUTO-BOOTSTRAP: Ensure policy infrastructure exists
     # ============================================================
-    # On first run, create required tags and custom fields
-    # This allows deployment without manual setup
+    # Always check and create missing tags/custom fields
+    # Initialize-SoftwarePolicyInfrastructure is idempotent
     if ($LevelApiKey) {
-        # Quick check for override tags before bootstrapping
-        $QuickPolicy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
-        $NeedsBootstrap = $QuickPolicy.ShouldProcess -and $QuickPolicy.ResolvedAction -eq "None" -and $QuickPolicy.MatchedTags.Count -eq 0
+        # Debug: Show API key info (obfuscated - first 4 chars only)
+        $KeyLength = $LevelApiKey.Length
+        $KeyPreview = if ($KeyLength -gt 4) { $LevelApiKey.Substring(0, 4) + "****" } else { "(invalid)" }
+        Write-LevelLog "API key: $KeyPreview (length: $KeyLength)" -Level "DEBUG"
 
-        if ($NeedsBootstrap -or [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
-            Write-LevelLog "Checking policy infrastructure..." -Level "INFO"
+        $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
+            -SoftwareName $SoftwareName `
+            -RequireUrl $true
 
-            # Create tags and custom fields if they don't exist
-            $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
-                -SoftwareName $SoftwareName `
-                -RequireUrl $true
-
-            if ($InfraResult.Success) {
-                if ($InfraResult.TagsCreated -gt 0 -or $InfraResult.FieldsCreated -gt 0) {
-                    Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $($InfraResult.FieldsCreated) fields" -Level "SUCCESS"
-                    # Alert user to configure the new custom fields
-                    Write-Host ""
-                    Write-Host "Alert: Policy infrastructure created - please configure custom fields"
-                    Write-Host "  Set the following custom fields in Level.io:"
-                    Write-Host "  - policy_unchecky: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
-                    Write-Host "  - policy_unchecky_url: Set to your hosted Unchecky installer URL"
-                    Write-Host "    (Download from https://www.fosshub.com/Unchecky.html and host it yourself)"
-                    Write-Host ""
-                    Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
-                    $script:ExitCode = 1
-                    return 1
-                }
+        if ($InfraResult.Success) {
+            if ($InfraResult.TagsCreated -gt 0 -or $InfraResult.FieldsCreated -gt 0) {
+                Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $($InfraResult.FieldsCreated) fields" -Level "SUCCESS"
+                # Alert user to configure the new custom fields on first run
+                Write-Host ""
+                Write-Host "Alert: Policy infrastructure created - please configure custom fields"
+                Write-Host "  Set the following custom fields in Level.io:"
+                Write-Host "  - policy_unchecky: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
+                Write-Host "  - policy_unchecky_url: Set to your hosted Unchecky installer URL"
+                Write-Host "    (Download from https://www.fosshub.com/Unchecky.html and host it yourself)"
+                Write-Host ""
+                Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
+                $script:ExitCode = 1
+                return 1
             }
-            else {
-                Write-LevelLog "Infrastructure setup warning: $($InfraResult.Error)" -Level "WARNING"
-            }
-
-            # Set default policy on device if none exists
-            if ([string]::IsNullOrWhiteSpace($CustomFieldPolicy) -and $NeedsBootstrap) {
-                $Bootstrap = Initialize-LevelSoftwarePolicy -ApiKey $LevelApiKey `
-                    -SoftwareName $SoftwareName `
-                    -DeviceHostname $DeviceHostname `
-                    -DefaultAction "install"
-
-                if ($Bootstrap.Success) {
-                    Write-LevelLog "Set device policy to 'install'" -Level "SUCCESS"
-                    $CustomFieldPolicy = $Bootstrap.Action
-                }
-            }
+        }
+        else {
+            Write-LevelLog "Infrastructure setup warning: $($InfraResult.Error)" -Level "WARN"
         }
     }
 
@@ -547,7 +530,7 @@ $InvokeParams = @{ ScriptBlock = {
             "None" {
                 # Verify current state matches expected
                 if ($Policy.HasInstalled -and -not $IsInstalled) {
-                    Write-LevelLog "WARNING: Status tag says installed but software not found" -Level "WARNING"
+                    Write-LevelLog "WARNING: Status tag says installed but software not found" -Level "WARN"
                 }
                 elseif (-not $Policy.HasInstalled -and $IsInstalled) {
                     Write-LevelLog "INFO: Software is installed (no policy action)" -Level "INFO"
@@ -578,7 +561,7 @@ $InvokeParams = @{ ScriptBlock = {
                 $TagsBefore = Get-LevelDeviceTagNames -ApiKey $LevelApiKey -DeviceId $DeviceForTags.id
                 Write-LevelLog "Tags BEFORE: $($TagsBefore -join ', ')" -Level "DEBUG"
             } else {
-                Write-LevelLog "Could not find device for tag verification" -Level "WARNING"
+                Write-LevelLog "Could not find device for tag verification" -Level "WARN"
             }
         }
 
@@ -639,7 +622,7 @@ $InvokeParams = @{ ScriptBlock = {
             Write-LevelLog "Skipped - no tag updates needed" -Level "INFO"
         }
         else {
-            Write-LevelLog "Action failed - tags not updated" -Level "WARNING"
+            Write-LevelLog "Action failed - tags not updated" -Level "WARN"
         }
 
         # Debug: Get tags AFTER changes
