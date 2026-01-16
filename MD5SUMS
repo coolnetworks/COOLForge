@@ -11,6 +11,7 @@
 #
 e295f67f0a116f8b27e30278cc15ad7f  modules/COOLForge-Common.psm1
 7a8fb4ff7973b51ac709c93569b31d36  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+f2e95f1e156257fcacdff66a835cb64f  scripts/Check/👀Check DNS Server Compliance.ps1
 846879a9f4702f92fb75cbbb850a7599  scripts/Policy/👀chrome.ps1
 8af10c7767c4e0b0248edc53fd5599b8  scripts/Policy/👀huntress.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
