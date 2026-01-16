@@ -469,6 +469,13 @@ if ($ScriptRelativePath) {
     $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
 }
 
+# In debug mode, add cache-busting parameter to bypass GitHub CDN cache
+if ($DebugScripts) {
+    $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $ScriptUrl = "$ScriptUrl`?t=$CacheBuster"
+    Write-Host "[DEBUG] Cache-busting URL: $ScriptUrl"
+}
+
 # Check for local version
 $ScriptNeedsUpdate = $false
 $LocalScriptVersion = $null
