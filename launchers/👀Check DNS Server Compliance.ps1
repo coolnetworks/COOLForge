@@ -159,12 +159,21 @@ function Get-ExpectedMD5 {
     return $null
 }
 
+# Load MD5SUMS (with cache-busting in debug mode)
 $MD5SumsContent = $null
+$MD5FetchUrl = $MD5SumsUrl
+if ($DebugScripts) {
+    $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
+    Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl"
+}
 try {
-    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5SumsUrl -UseBasicParsing -TimeoutSec 5).Content
+    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
+    if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
 }
 catch {
     Write-Host "[!] Could not download MD5SUMS - checksum verification disabled"
+    if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS error: $_" }
 }
 
 $NeedsUpdate = $false
