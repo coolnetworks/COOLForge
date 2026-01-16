@@ -370,6 +370,7 @@ if ([string]::IsNullOrWhiteSpace(`$GitHubPAT) -or `$GitHubPAT -like "{{*}}") { `
 
 `$PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
 `$UsePinnedVersion = (-not [string]::IsNullOrWhiteSpace(`$PinnedVersion) -and `$PinnedVersion -notlike "{{*}}")
+Write-Host "[DEBUG] PinnedVersion='`$PinnedVersion' UsePinnedVersion=`$UsePinnedVersion"
 
 `$LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace(`$LibraryUrl) -or `$LibraryUrl -like "{{*}}") {
@@ -378,6 +379,7 @@ if ([string]::IsNullOrWhiteSpace(`$LibraryUrl) -or `$LibraryUrl -like "{{*}}") {
 } elseif (`$UsePinnedVersion) {
     `$LibraryUrl = `$LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/`$PinnedVersion/"
 }
+Write-Host "[DEBUG] LibraryUrl=`$LibraryUrl"
 
 `$DebugScripts = "{{cf_debug_scripts}}"
 if ([string]::IsNullOrWhiteSpace(`$DebugScripts) -or `$DebugScripts -like "{{*}}") {
@@ -472,8 +474,20 @@ try {
 `$ModuleContent = Get-Content -Path `$LibraryPath -Raw
 New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create(`$ModuleContent)) | Import-Module -Force
 
+# Load MD5SUMS (with cache-busting in debug mode)
 `$MD5SumsContent = `$null
-try { `$MD5SumsContent = (Invoke-WebRequest -Uri `$MD5SumsUrl -UseBasicParsing -TimeoutSec 5).Content } catch { }
+`$MD5FetchUrl = `$MD5SumsUrl
+if (`$DebugScripts) {
+    `$CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    `$MD5FetchUrl = "`$MD5SumsUrl``?t=`$CacheBuster"
+    Write-Host "[DEBUG] MD5SUMS URL: `$MD5FetchUrl"
+}
+try {
+    `$MD5SumsContent = (Invoke-WebRequest -Uri `$MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
+    if (`$DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: `$(`$MD5SumsContent.Length)" }
+} catch {
+    if (`$DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: `$_" }
+}
 
 # ============================================================
 # COLLECT POLICY VARIABLES & EXECUTE
