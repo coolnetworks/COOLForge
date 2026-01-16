@@ -107,7 +107,7 @@ $ServiceName = "DNS Agent"
 $LockFileName = "DNSFilter_Deployment.lock"
 
 # Site key from custom field (required for installation)
-$SiteKeyVar = "cf_dns_filter_sitekey"
+$SiteKeyVar = "policy_dnsfilter_sitekey"
 $SiteKey = Get-Variable -Name $SiteKeyVar -ValueOnly -ErrorAction SilentlyContinue
 if ([string]::IsNullOrWhiteSpace($SiteKey) -or $SiteKey -like "{{*}}") {
     $SiteKey = $null
@@ -407,14 +407,30 @@ $InvokeParams = @{ ScriptBlock = {
                 -SoftwareName $SoftwareName `
                 -RequireUrl $false
 
+            # Also create the site key custom field if it doesn't exist
+            $SiteKeyFieldName = "policy_dnsfilter_sitekey"
+            $SiteKeyFieldCreated = $false
+            $ExistingSiteKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldReference $SiteKeyFieldName
+            if (-not $ExistingSiteKeyField) {
+                $NewSiteKeyField = New-LevelCustomField -ApiKey $LevelApiKey -Name $SiteKeyFieldName -DefaultValue ""
+                if ($NewSiteKeyField) {
+                    Write-LevelLog "Created custom field: $SiteKeyFieldName (for DNSFilter NKEY)" -Level "SUCCESS"
+                    $SiteKeyFieldCreated = $true
+                }
+            } else {
+                Write-LevelLog "Custom field '$SiteKeyFieldName' already exists" -Level "DEBUG"
+            }
+
+            $TotalFieldsCreated = $InfraResult.FieldsCreated + $(if ($SiteKeyFieldCreated) { 1 } else { 0 })
+
             if ($InfraResult.Success) {
-                if ($InfraResult.TagsCreated -gt 0 -or $InfraResult.FieldsCreated -gt 0) {
-                    Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $($InfraResult.FieldsCreated) fields" -Level "SUCCESS"
+                if ($InfraResult.TagsCreated -gt 0 -or $TotalFieldsCreated -gt 0) {
+                    Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $TotalFieldsCreated fields" -Level "SUCCESS"
                     Write-Host ""
                     Write-Host "Alert: Policy infrastructure created - please configure custom fields"
                     Write-Host "  Set the following custom fields in Level.io:"
                     Write-Host "  - policy_dnsfilter: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
-                    Write-Host "  - cf_dns_filter_sitekey: Set your DNSFilter site key"
+                    Write-Host "  - policy_dnsfilter_sitekey: Set your DNSFilter site key (NKEY from DNSFilter portal)"
                     Write-Host ""
                     Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
                     Remove-Lock

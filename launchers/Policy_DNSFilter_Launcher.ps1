@@ -5,7 +5,7 @@
 $ScriptToRun = "dnsfilter.ps1"
 $ScriptCategory = "Policy/Software"
 $policy_dnsfilter = "{{cf_policy_dnsfilter}}"
-$cf_dns_filter_sitekey = "{{cf_dns_filter_sitekey}}"
+$policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 <#
 .SYNOPSIS
     Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
@@ -47,7 +47,7 @@ $cf_dns_filter_sitekey = "{{cf_dns_filter_sitekey}}"
     - {{level_device_hostname}}                : Device hostname from Level.io
     - {{level_tag_names}}                      : Comma-separated list of device tags
     - {{cf_policy_dnsfilter}}                  : Policy action (install/remove/pin)
-    - {{cf_dns_filter_sitekey}}                : DNSFilter site key (NKEY)
+    - {{cf_policy_dnsfilter_sitekey}}           : DNSFilter site key (NKEY)
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -59,7 +59,7 @@ $cf_dns_filter_sitekey = "{{cf_dns_filter_sitekey}}"
     # This launcher is pre-configured for DNSFilter policy enforcement
     # Deploy to Level.io and set custom fields:
     # - cf_policy_dnsfilter = "install" at the group level
-    # - cf_dns_filter_sitekey = your DNSFilter site key
+    # - policy_dnsfilter_sitekey = your DNSFilter site key (NKEY)
 #>
 
 # Script Launcher
@@ -605,7 +605,7 @@ Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
     }
 }
 
-# Also pass through cf_* variables (like cf_dns_filter_sitekey)
+# Also pass through cf_* variables (for any additional config fields)
 Get-Variable -Name "cf_*" -ErrorAction SilentlyContinue | ForEach-Object {
     $VarName = $_.Name
     $VarValue = $_.Value
