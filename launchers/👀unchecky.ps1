@@ -3,7 +3,6 @@
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
 $ScriptToRun = "👀unchecky.ps1"
-$ScriptCategory = "SoftwarePolicy"
 $policy_unchecky = "{{cf_policy_unchecky}}"
 $policy_unchecky_url = "{{cf_policy_unchecky_url}}"
 <#
@@ -456,7 +455,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.06"
+Write-Host "[*] Script Launcher v2026.01.12.05"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location

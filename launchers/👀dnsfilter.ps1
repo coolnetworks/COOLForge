@@ -3,7 +3,6 @@
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
 $ScriptToRun = "👀dnsfilter.ps1"
-$ScriptCategory = "Policy/Software"
 $policy_dnsfilter = "{{cf_policy_dnsfilter}}"
 $policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 <#
