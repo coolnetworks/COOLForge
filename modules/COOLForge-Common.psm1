@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.16.02
+    Version:    2026.01.16.03
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -3083,6 +3083,120 @@ function Initialize-LevelSoftwarePolicy {
 
 <#
 .SYNOPSIS
+    Ensures all required global COOLForge custom fields exist.
+
+.DESCRIPTION
+    Auto-creates the global custom fields needed for COOLForge scripts:
+    - coolforge_msp_scratch_folder: Persistent storage path (default: C:\ProgramData\MSP)
+    - coolforge_ps_module_library_source: Custom library URL (empty = use default repo)
+    - coolforge_pin_psmodule_to_version: Pin to specific version/branch
+    - coolforge_pat: GitHub PAT for private repositories
+    - coolforge_nosleep_duration_min: Duration for Prevent Sleep script
+
+    This function is idempotent - it only creates fields that don't exist.
+    Call it once during initial setup or from policy scripts.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER MspName
+    MSP name for the scratch folder path. Default: "MSP"
+    Results in C:\ProgramData\<MspName> as the default scratch folder.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Hashtable with:
+    - Success: $true if infrastructure is ready
+    - FieldsCreated: Number of custom fields created
+
+.EXAMPLE
+    $Result = Initialize-COOLForgeInfrastructure -ApiKey $ApiKey -MspName "COOLNETWORKS"
+    if ($Result.Success) {
+        Write-LevelLog "COOLForge infrastructure ready"
+    }
+#>
+function Initialize-COOLForgeInfrastructure {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$MspName = "MSP",
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $FieldsCreated = 0
+
+    Write-LevelLog "Initializing COOLForge global infrastructure..." -Level "INFO"
+
+    # Define global custom fields with their defaults
+    $GlobalFields = @(
+        @{
+            Name         = "coolforge_msp_scratch_folder"
+            DefaultValue = "C:\ProgramData\$MspName"
+            Description  = "Persistent storage path for COOLForge scripts"
+        }
+        @{
+            Name         = "coolforge_ps_module_library_source"
+            DefaultValue = ""
+            Description  = "Custom library URL (empty = use default repository)"
+        }
+        @{
+            Name         = "coolforge_pin_psmodule_to_version"
+            DefaultValue = ""
+            Description  = "Pin to specific version/branch (e.g., v2026.01.16 or dev2)"
+        }
+        @{
+            Name         = "coolforge_pat"
+            DefaultValue = ""
+            Description  = "GitHub PAT for private repositories (admin-only)"
+        }
+        @{
+            Name         = "coolforge_nosleep_duration_min"
+            DefaultValue = "60"
+            Description  = "Duration in minutes for Prevent Sleep script"
+        }
+        @{
+            Name         = "debug_scripts"
+            DefaultValue = "false"
+            Description  = "Enable verbose debug output (true/false)"
+        }
+    )
+
+    foreach ($Field in $GlobalFields) {
+        $ExistingField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $Field.Name -BaseUrl $BaseUrl
+
+        if (-not $ExistingField) {
+            Write-LevelLog "Creating custom field: $($Field.Name)" -Level "INFO"
+            $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $Field.Name -DefaultValue $Field.DefaultValue -BaseUrl $BaseUrl
+            if ($NewField) {
+                Write-LevelLog "Created custom field: $($Field.Name) (default: $($Field.DefaultValue))" -Level "SUCCESS"
+                $FieldsCreated++
+            }
+            else {
+                Write-LevelLog "Failed to create custom field: $($Field.Name)" -Level "WARN"
+            }
+        }
+        else {
+            Write-LevelLog "Custom field '$($Field.Name)' already exists" -Level "DEBUG"
+        }
+    }
+
+    Write-LevelLog "COOLForge infrastructure ready: $FieldsCreated fields created" -Level "SUCCESS"
+
+    return @{
+        Success       = $true
+        FieldsCreated = $FieldsCreated
+    }
+}
+
+<#
+.SYNOPSIS
     Ensures all required tags and custom fields exist for a software policy.
 
 .DESCRIPTION
@@ -3140,6 +3254,14 @@ function Initialize-SoftwarePolicyInfrastructure {
     $FieldsCreated = 0
 
     Write-LevelLog "Initializing policy infrastructure for '$SoftwareName'..." -Level "INFO"
+
+    # ================================================================
+    # STEP 0: Ensure global COOLForge infrastructure exists
+    # ================================================================
+    $GlobalResult = Initialize-COOLForgeInfrastructure -ApiKey $ApiKey -BaseUrl $BaseUrl
+    if ($GlobalResult.FieldsCreated -gt 0) {
+        $FieldsCreated += $GlobalResult.FieldsCreated
+    }
 
     # ================================================================
     # STEP 1: Create policy tags (5-tag model)
@@ -5589,6 +5711,7 @@ Export-ModuleMember -Function @(
     'Set-LevelCustomFieldDefaultValue',
     'Initialize-LevelSoftwarePolicy',
     'Initialize-SoftwarePolicyInfrastructure',
+    'Initialize-COOLForgeInfrastructure',
     'Get-LevelCustomFieldById',
     'Remove-LevelCustomField',
 
