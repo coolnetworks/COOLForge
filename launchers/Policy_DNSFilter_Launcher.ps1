@@ -32,7 +32,7 @@ $policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
     - Centralized script management in your repository
 
 .NOTES
-    Launcher Version: 2026.01.16.02
+    Launcher Version: 2026.01.16.03
     Target Platform:  Level.io RMM
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -63,7 +63,7 @@ $policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 #>
 
 # Script Launcher
-# Launcher Version: 2026.01.16.02
+# Launcher Version: 2026.01.16.03
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -128,7 +128,17 @@ if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
     $LevelApiKey = $null
 }
 
-# API key debug output is handled by the script itself - no need to duplicate here
+# DEBUG: Show what Level.io passed for cf_apikey (obfuscated)
+if ($DebugScripts) {
+    $RawLen = $LevelApiKey_Raw.Length
+    $RawPreview = if ($RawLen -gt 4) { $LevelApiKey_Raw.Substring(0, 4) + "****" } else { "(empty or short)" }
+    Write-Host "[DEBUG-LAUNCHER] cf_apikey raw value: '$RawPreview' (length: $RawLen)"
+    if ($LevelApiKey) {
+        Write-Host "[DEBUG-LAUNCHER] After processing: '$($LevelApiKey.Substring(0, 4))****' (length: $($LevelApiKey.Length))"
+    } else {
+        Write-Host "[DEBUG-LAUNCHER] After processing: (null)"
+    }
+}
 
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
@@ -449,7 +459,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.16.02"
+Write-Host "[*] Script Launcher v2026.01.16.03"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -472,11 +482,24 @@ if ($ScriptRelativePath) {
     $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptToRun)"
 }
 
+# In debug mode, add cache-busting parameter to bypass GitHub CDN cache
+if ($DebugScripts) {
+    $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $ScriptUrl = "$ScriptUrl`?t=$CacheBuster"
+    Write-Host "[DEBUG] Cache-busting URL: $ScriptUrl"
+}
+
 # Check for local version
 $ScriptNeedsUpdate = $false
 $LocalScriptVersion = $null
 $LocalScriptContent = $null
 $ScriptBackupPath = "$ScriptPath.backup"
+
+# In debug mode, delete cached script to force fresh download
+if ($DebugScripts -and (Test-Path $ScriptPath)) {
+    Write-Host "[DEBUG] Deleting cached script to force fresh download..."
+    Remove-Item -Path $ScriptPath -Force -ErrorAction SilentlyContinue
+}
 
 if (Test-Path $ScriptPath) {
     try {

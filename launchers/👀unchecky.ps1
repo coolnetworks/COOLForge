@@ -456,7 +456,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.05"
+Write-Host "[*] Script Launcher v2026.01.12.06"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
