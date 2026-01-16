@@ -5254,18 +5254,26 @@ function Get-ScriptPathFromMD5 {
         Resolves full script path from MD5SUMS content.
     #>
     param([string]$ScriptName, [string]$MD5Content)
-    if ([string]::IsNullOrWhiteSpace($MD5Content)) { return $null }
+    if ([string]::IsNullOrWhiteSpace($MD5Content)) {
+        Write-Host "[DEBUG MD5] No MD5Content provided"
+        return $null
+    }
+    Write-Host "[DEBUG MD5] Looking for: '$ScriptName'"
+    $MatchCount = 0
     foreach ($line in $MD5Content -split "`n") {
         $line = $line.Trim()
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
             $FilePath = $Matches[2].Trim()
             $FileName = Split-Path $FilePath -Leaf
+            $MatchCount++
             if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
+                Write-Host "[DEBUG MD5] MATCH: $FilePath"
                 return $FilePath
             }
         }
     }
+    Write-Host "[DEBUG MD5] Checked $MatchCount entries, no match"
     return $null
 }
 
