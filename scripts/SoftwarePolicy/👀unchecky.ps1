@@ -28,7 +28,7 @@
     - policy_unchecky = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.13.08
+    Version:          2026.01.16.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - Unchecky
-# Version: 2026.01.13.08
+# Version: 2026.01.16.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -330,7 +330,7 @@ function Remove-Unchecky {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.13.02"
+$ScriptVersion = "2026.01.16.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
