@@ -8,6 +8,7 @@ COOLForge organizes scripts into logical categories for easier management and di
 
 | Folder | Purpose | Examples |
 |--------|---------|----------|
+| `Policy/` | Software policy enforcement (install/remove/pin) | unchecky, huntress, dnsfilter, chrome |
 | `Deploy/` | Install software, deploy configurations | Install-Chrome, Deploy-PrinterDriver |
 | `Remove/` | Uninstall software, cleanup | Remove-Bloatware, Uninstall-OldSoftware |
 | `Update/` | Patch and upgrade existing software | Update-Office, Patch-Windows |
@@ -27,6 +28,7 @@ COOLForge organizes scripts into logical categories for easier management and di
 ```
 COOLForge/
 ├── scripts/
+│   ├── Policy/          # Software policy enforcement scripts
 │   ├── Deploy/
 │   ├── Remove/
 │   ├── Update/
@@ -38,11 +40,13 @@ COOLForge/
 │   ├── Provision/
 │   ├── Report/
 │   └── Utility/
-├── automations/
-│   └── (same structure as scripts/)
 ├── launchers/
+│   └── Policy/          # Slim launchers for policy scripts
 ├── modules/
+├── templates/
+│   └── Slim-Launcher.ps1  # Template for new launchers
 ├── tools/
+│   └── New-PolicyScript.ps1  # Scaffolding tool
 └── docs/
 ```
 

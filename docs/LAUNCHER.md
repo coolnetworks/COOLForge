@@ -2,6 +2,8 @@
 
 The Script Launcher lets you run any script from your GitHub repository **without deploying individual scripts to Level.io**. Deploy the launcher once, then run any script by simply changing which launcher you use.
 
+> **Slim Launcher Model (v2026.01.16+):** COOLForge now uses slim launchers (~200 lines) instead of full launchers (~660 lines). Slim launchers delegate script download/execution to `Invoke-ScriptLauncher` in the library, reducing code duplication by 70%.
+
 ---
 
 ## Table of Contents
@@ -56,18 +58,25 @@ Go to **Settings → Custom Fields** and create these fields:
 
 **Option B: Use the template for a new script**
 1. In Level.io, create a new PowerShell script
-2. Paste the contents of `templates/Launcher_Template.ps1` into it
-3. **Change line 4** at the very top of the script to your script name:
+2. Paste the contents of `templates/Slim-Launcher.ps1` into it
+3. **Change lines 4-5** at the very top of the script:
 
 ```powershell
 # ============================================================
-# SCRIPT TO RUN - CHANGE THIS VALUE
+# SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀Test Show Versions.ps1"   # <-- Change this to your script
-# ============================================================
+$ScriptToRun = "👀YourScript.ps1"              # <-- Your script name
+$policy_yourscript = "{{cf_policy_yourscript}}" # <-- Your policy variable (if needed)
 ```
 
 4. Save and deploy
+
+**Option C: Generate a new policy launcher**
+For software policy scripts, use the scaffolding tool:
+```powershell
+.\tools\New-PolicyScript.ps1 -Name "chrome" -DisplayName "Google Chrome"
+```
+This generates both the launcher and script template automatically.
 
 **Example flow:**
 ```

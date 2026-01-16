@@ -1,4 +1,15 @@
 # ============================================================
+# DEPRECATED - USE Slim-Launcher.ps1 INSTEAD
+# ============================================================
+# This full launcher template (~660 lines) has been replaced by the
+# slim launcher model (~200 lines). The slim launcher uses
+# Invoke-ScriptLauncher from the library to handle script download/execution.
+#
+# For new scripts, use: templates/Slim-Launcher.ps1
+# Or run: tools/New-PolicyScript.ps1 -Name <software>
+# ============================================================
+
+# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
@@ -7,7 +18,7 @@ $ScriptCategory = "Check"  # Check, Fix, Remove, Configure, or Utility
 # $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
+    [DEPRECATED] Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
 
 .DESCRIPTION
     This launcher script provides a single deployment point for running scripts from your
