@@ -475,6 +475,12 @@ $LocalScriptVersion = $null
 $LocalScriptContent = $null
 $ScriptBackupPath = "$ScriptPath.backup"
 
+# In debug mode, delete cached script to force fresh download
+if ($DebugScripts -and (Test-Path $ScriptPath)) {
+    Write-Host "[DEBUG] Deleting cached script to force fresh download..."
+    Remove-Item -Path $ScriptPath -Force -ErrorAction SilentlyContinue
+}
+
 if (Test-Path $ScriptPath) {
     try {
         $LocalScriptContent = Get-Content -Path $ScriptPath -Raw -ErrorAction Stop
