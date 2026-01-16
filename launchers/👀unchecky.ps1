@@ -125,7 +125,17 @@ if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
     $LevelApiKey = $null
 }
 
-# API key debug output is handled by the script itself - no need to duplicate here
+# DEBUG: Show what Level.io passed for cf_apikey (obfuscated)
+if ($DebugScripts) {
+    $RawLen = $LevelApiKey_Raw.Length
+    $RawPreview = if ($RawLen -gt 4) { $LevelApiKey_Raw.Substring(0, 4) + "****" } else { "(empty or short)" }
+    Write-Host "[DEBUG-LAUNCHER] cf_apikey raw value: '$RawPreview' (length: $RawLen)"
+    if ($LevelApiKey) {
+        Write-Host "[DEBUG-LAUNCHER] After processing: '$($LevelApiKey.Substring(0, 4))****' (length: $($LevelApiKey.Length))"
+    } else {
+        Write-Host "[DEBUG-LAUNCHER] After processing: (null)"
+    }
+}
 
 # ScreenConnect whitelisting - for RAT detection script
 $ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
