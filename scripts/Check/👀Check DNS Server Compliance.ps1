@@ -164,9 +164,9 @@ Invoke-LevelScript -ScriptBlock {
             }
         }
         else {
-            # No DNS servers configured - mark as needing attention
-            $AdapterResult.Compliant = $false
-            $AdapterResult.NonCompliantServers = @("(none configured)")
+            # No DNS servers configured - using DHCP, considered OK
+            $AdapterResult.Compliant = $true
+            $AdapterResult.DnsServers = @("(DHCP)")
         }
 
         $CheckedAdapters += $AdapterResult
