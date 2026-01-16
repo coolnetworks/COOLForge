@@ -177,8 +177,8 @@ function Install-DNSFilter {
 
     # Validate site key is configured
     if ([string]::IsNullOrWhiteSpace($SiteKey)) {
-        Write-Host "Alert: DNSFilter install failed - cf_dns_filter_sitekey custom field not configured"
-        Write-LevelLog "Site key not configured - set cf_dns_filter_sitekey custom field" -Level "ERROR"
+        Write-Host "Alert: DNSFilter install failed - policy_dnsfilter_sitekey custom field not configured"
+        Write-LevelLog "Site key not configured - set policy_dnsfilter_sitekey custom field" -Level "ERROR"
         return $false
     }
 
@@ -245,11 +245,11 @@ function Install-DNSFilter {
                     $downloadSuccess = $true
                     break
                 } else {
-                    Write-LevelLog "Downloaded file too small (${fileSize} bytes). Retrying..." -Level "WARNING"
+                    Write-LevelLog "Downloaded file too small (${fileSize} bytes). Retrying..." -Level "WARN"
                 }
             }
         } catch {
-            Write-LevelLog "Download attempt $i failed: $($_.Exception.Message)" -Level "WARNING"
+            Write-LevelLog "Download attempt $i failed: $($_.Exception.Message)" -Level "WARN"
         }
 
         if ($i -lt 3) {
@@ -335,7 +335,7 @@ function Remove-DNSFilter {
                 Write-LevelLog "Uninstalling: $($install.DisplayName) ($productCode)"
                 $uninstallProcess = Start-Process msiexec.exe -ArgumentList "/x $productCode /qn /norestart" -Wait -PassThru -WindowStyle Hidden
                 if ($uninstallProcess.ExitCode -ne 0) {
-                    Write-LevelLog "Uninstall returned code: $($uninstallProcess.ExitCode)" -Level "WARNING"
+                    Write-LevelLog "Uninstall returned code: $($uninstallProcess.ExitCode)" -Level "WARN"
                     $success = $false
                 } else {
                     Write-LevelLog "Successfully uninstalled $($install.DisplayName)" -Level "SUCCESS"
@@ -570,7 +570,7 @@ $InvokeParams = @{ ScriptBlock = {
             }
             "None" {
                 if ($Policy.HasInstalled -and -not $IsInstalled) {
-                    Write-LevelLog "WARNING: Status tag says installed but software not found" -Level "WARNING"
+                    Write-LevelLog "WARNING: Status tag says installed but software not found" -Level "WARN"
                 }
                 elseif (-not $Policy.HasInstalled -and $IsInstalled) {
                     Write-LevelLog "INFO: Software is installed (no policy action)" -Level "INFO"
@@ -649,7 +649,7 @@ $InvokeParams = @{ ScriptBlock = {
             Write-LevelLog "Skipped - no tag updates needed" -Level "INFO"
         }
         else {
-            Write-LevelLog "Action failed - tags not updated" -Level "WARNING"
+            Write-LevelLog "Action failed - tags not updated" -Level "WARN"
         }
 
         if ($DebugScripts -and $DeviceForTags) {
