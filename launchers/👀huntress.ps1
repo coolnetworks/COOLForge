@@ -3,8 +3,10 @@
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
 $ScriptToRun = "👀huntress.ps1"
-$ScriptCategory = "Check"  # Check, Fix, Remove, Configure, or Utility
 $policy_huntress = "{{cf_policy_huntress}}"
+$policy_huntress_account_key = "{{cf_policy_huntress_account_key}}"
+$policy_huntress_org_key = "{{cf_policy_huntress_org_key}}"
+$policy_huntress_tags = "{{cf_policy_huntress_tags}}"
 <#
 .SYNOPSIS
     Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
