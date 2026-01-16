@@ -24,7 +24,7 @@ d31ecec221d65522ca3cc89827474884  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
 96e12ec31a8b373a86fde3273b1d33fd  scripts/Fix/🔧Prevent Sleep.ps1
 0ce7b50eb958e7a4cbcb1b8848810f7a  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-1a2e98d22aecbfdcf4a549270ec56c03  scripts/Policy/Software/👀dnsfilter.ps1
+34ab38e48a5656f918b301a768d1afd3  scripts/Policy/Software/👀dnsfilter.ps1
 3d8ac39a607b18a54421deb246474619  scripts/SoftwarePolicy/👀unchecky.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 92cd52534025a471791185d586e090c9  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1

@@ -410,7 +410,7 @@ $InvokeParams = @{ ScriptBlock = {
             # Also create the site key custom field if it doesn't exist
             $SiteKeyFieldName = "policy_dnsfilter_sitekey"
             $SiteKeyFieldCreated = $false
-            $ExistingSiteKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldReference $SiteKeyFieldName
+            $ExistingSiteKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $SiteKeyFieldName
             if (-not $ExistingSiteKeyField) {
                 $NewSiteKeyField = New-LevelCustomField -ApiKey $LevelApiKey -Name $SiteKeyFieldName -DefaultValue ""
                 if ($NewSiteKeyField) {
