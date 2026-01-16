@@ -394,62 +394,52 @@ $InvokeParams = @{ ScriptBlock = {
     Write-DebugTags -TagString $DeviceTags -SoftwareName $SoftwareName
 
     # ============================================================
-    # AUTO-BOOTSTRAP: Create policy infrastructure if needed
+    # AUTO-BOOTSTRAP: Ensure policy infrastructure exists
     # ============================================================
+    # Always check and create missing tags/custom fields
+    # Initialize-SoftwarePolicyInfrastructure is idempotent
     if ($LevelApiKey) {
-        $QuickPolicy = Get-SoftwarePolicy -SoftwareName $SoftwareName -DeviceTags $DeviceTags
-        $NeedsBootstrap = $QuickPolicy.ShouldProcess -and $QuickPolicy.ResolvedAction -eq "None" -and $QuickPolicy.MatchedTags.Count -eq 0
+        # Debug: Show API key info (obfuscated - first 4 chars only)
+        $KeyLength = $LevelApiKey.Length
+        $KeyPreview = if ($KeyLength -gt 4) { $LevelApiKey.Substring(0, 4) + "****" } else { "(invalid)" }
+        Write-LevelLog "API key: $KeyPreview (length: $KeyLength)" -Level "DEBUG"
 
-        if ($NeedsBootstrap -or [string]::IsNullOrWhiteSpace($CustomFieldPolicy)) {
-            Write-LevelLog "Checking policy infrastructure..." -Level "INFO"
+        $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
+            -SoftwareName $SoftwareName `
+            -RequireUrl $false
 
-            $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
-                -SoftwareName $SoftwareName `
-                -RequireUrl $false
-
-            # Also create the site key custom field if it doesn't exist
-            $SiteKeyFieldName = "policy_dnsfilter_sitekey"
-            $SiteKeyFieldCreated = $false
-            $ExistingSiteKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $SiteKeyFieldName
-            if (-not $ExistingSiteKeyField) {
-                $NewSiteKeyField = New-LevelCustomField -ApiKey $LevelApiKey -Name $SiteKeyFieldName -DefaultValue ""
-                if ($NewSiteKeyField) {
-                    Write-LevelLog "Created custom field: $SiteKeyFieldName (for DNSFilter NKEY)" -Level "SUCCESS"
-                    $SiteKeyFieldCreated = $true
-                }
-            } else {
-                Write-LevelLog "Custom field '$SiteKeyFieldName' already exists" -Level "DEBUG"
+        # Also create the site key custom field if it doesn't exist
+        $SiteKeyFieldName = "policy_dnsfilter_sitekey"
+        $SiteKeyFieldCreated = $false
+        $ExistingSiteKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $SiteKeyFieldName
+        if (-not $ExistingSiteKeyField) {
+            $NewSiteKeyField = New-LevelCustomField -ApiKey $LevelApiKey -Name $SiteKeyFieldName -DefaultValue ""
+            if ($NewSiteKeyField) {
+                Write-LevelLog "Created custom field: $SiteKeyFieldName (for DNSFilter NKEY)" -Level "SUCCESS"
+                $SiteKeyFieldCreated = $true
             }
+        }
 
-            $TotalFieldsCreated = $InfraResult.FieldsCreated + $(if ($SiteKeyFieldCreated) { 1 } else { 0 })
+        $TotalFieldsCreated = $InfraResult.FieldsCreated + $(if ($SiteKeyFieldCreated) { 1 } else { 0 })
 
-            if ($InfraResult.Success) {
-                if ($InfraResult.TagsCreated -gt 0 -or $TotalFieldsCreated -gt 0) {
-                    Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $TotalFieldsCreated fields" -Level "SUCCESS"
-                    Write-Host ""
-                    Write-Host "Alert: Policy infrastructure created - please configure custom fields"
-                    Write-Host "  Set the following custom fields in Level.io:"
-                    Write-Host "  - policy_dnsfilter: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
-                    Write-Host "  - policy_dnsfilter_sitekey: Set your DNSFilter site key (NKEY from DNSFilter portal)"
-                    Write-Host ""
-                    Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
-                    Remove-Lock
-                    $script:ExitCode = 1
-                    return 1
-                }
+        if ($InfraResult.Success) {
+            if ($InfraResult.TagsCreated -gt 0 -or $TotalFieldsCreated -gt 0) {
+                Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $TotalFieldsCreated fields" -Level "SUCCESS"
+                # Alert user to configure the new custom fields on first run
+                Write-Host ""
+                Write-Host "Alert: Policy infrastructure created - please configure custom fields"
+                Write-Host "  Set the following custom fields in Level.io:"
+                Write-Host "  - policy_dnsfilter: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
+                Write-Host "  - policy_dnsfilter_sitekey: Set your DNSFilter site key (NKEY from DNSFilter portal)"
+                Write-Host ""
+                Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
+                Remove-Lock
+                $script:ExitCode = 1
+                return 1
             }
-
-            if ([string]::IsNullOrWhiteSpace($CustomFieldPolicy) -and $NeedsBootstrap) {
-                $Bootstrap = Initialize-LevelSoftwarePolicy -ApiKey $LevelApiKey `
-                    -SoftwareName $SoftwareName `
-                    -DeviceHostname $DeviceHostname `
-                    -DefaultAction "install"
-
-                if ($Bootstrap.Success) {
-                    Write-LevelLog "Set device policy to 'install'" -Level "SUCCESS"
-                    $CustomFieldPolicy = $Bootstrap.Action
-                }
-            }
+        }
+        else {
+            Write-LevelLog "Infrastructure setup warning: $($InfraResult.Error)" -Level "WARN"
         }
     }
 
@@ -598,6 +588,8 @@ $InvokeParams = @{ ScriptBlock = {
                 Write-LevelLog "Device ID: $($DeviceForTags.id)" -Level "DEBUG"
                 $TagsBefore = Get-LevelDeviceTagNames -ApiKey $LevelApiKey -DeviceId $DeviceForTags.id
                 Write-LevelLog "Tags BEFORE: $($TagsBefore -join ', ')" -Level "DEBUG"
+            } else {
+                Write-LevelLog "Could not find device for tag verification" -Level "WARN"
             }
         }
 
@@ -680,6 +672,8 @@ $InvokeParams = @{ ScriptBlock = {
         Write-Host "Alert: Policy enforcement failed for $SoftwareName"
         Write-Host "  Device: $DeviceHostname"
         Write-Host "  Action: $($Policy.ResolvedAction)"
+        Write-Host "  See details above for specific error"
+        Write-LevelLog "Policy enforcement completed with errors" -Level "ERROR"
     }
 
     # Debug footer
