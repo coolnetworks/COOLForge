@@ -416,7 +416,7 @@ You can fork COOLForge to your own repository. For private forks, see [Private F
 
 ## License
 
-MIT License with Attribution - Free to use with attribution to COOLNETWORKS.
+AGPL-3.0 with commercial exception - Free for MSP end-users. Platform vendors require commercial license.
 
 See [LICENSE](LICENSE) for details.
 

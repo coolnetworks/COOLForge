@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Standalone script to detect unauthorized remote access tools on the system.
 
@@ -22,8 +22,8 @@
     Version:          2025.01.07.01 (Standalone)
     Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected)
 
-    License:          MIT License with Attribution
-    Copyright (c) 2025 COOLNETWORKS
+    License:          AGPL-3.0 (see LICENSE)
+    Copyright (c) 2025-2026 COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
 
 .LINK

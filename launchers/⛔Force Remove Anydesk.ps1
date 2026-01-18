@@ -1,12 +1,24 @@
-﻿# ============================================================
+# ============================================================
+# DEPRECATED - USE Slim-Launcher.ps1 INSTEAD
+# ============================================================
+# This full launcher template (~660 lines) has been replaced by the
+# slim launcher model (~200 lines). The slim launcher uses
+# Invoke-ScriptLauncher from the library to handle script download/execution.
+#
+# For new scripts, use: templates/Slim-Launcher.ps1
+# Or run: tools/New-PolicyScript.ps1 -Name <software>
+# ============================================================
+
+# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 # Use plain text identifier to avoid emoji corruption by Level.io
-$ScriptToRun = "⛔Force Remove Anydesk.ps1"
-$ScriptCategory = "Remove"  # Check, Fix, Remove, Configure, or Utility
+$ScriptToRun = "?Force Remove Anydesk.ps1"
+$ScriptCategory = "Check"  # Check, Fix, Remove, Configure, or Utility
+# $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
+    [DEPRECATED] Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
 
 .DESCRIPTION
     This launcher script provides a single deployment point for running scripts from your
@@ -53,8 +65,8 @@ $ScriptCategory = "Remove"  # Check, Fix, Remove, Configure, or Utility
 
 .EXAMPLE
     # Change the script name at the top of the launcher:
-    $ScriptToRun = "unchecky.ps1"
-    # The launcher will find the full path (scripts/Check/👀unchecky.ps1) from MD5SUMS
+    $ScriptToRun = "?Force Remove Anydesk.ps1"
+    # The launcher will find the full path (scripts/Check/unchecky.ps1) from MD5SUMS
 #>
 
 # Script Launcher
@@ -385,6 +397,33 @@ catch {
     Write-Host "[!] Could not update scratch folder documentation"
 }
 
+# Copy LICENSE to scratch folder if it changed
+$LicenseUrl = "$RepoBaseUrl/LICENSE"
+$LicenseDestPath = Join-Path -Path $MspScratchFolder -ChildPath "LICENSE"
+
+try {
+    $LicenseRemoteContent = (Invoke-WebRequest -Uri $LicenseUrl -UseBasicParsing -TimeoutSec 5).Content
+    $NeedsLicenseUpdate = $false
+
+    if (Test-Path $LicenseDestPath) {
+        $LicenseLocalContent = Get-Content -Path $LicenseDestPath -Raw -ErrorAction SilentlyContinue
+        if ($LicenseLocalContent -ne $LicenseRemoteContent) {
+            $NeedsLicenseUpdate = $true
+        }
+    }
+    else {
+        $NeedsLicenseUpdate = $true
+    }
+
+    if ($NeedsLicenseUpdate) {
+        Set-Content -Path $LicenseDestPath -Value $LicenseRemoteContent -Force -ErrorAction Stop
+        Write-Host "[+] LICENSE file updated"
+    }
+}
+catch {
+    # Non-critical - don't fail if license can't be downloaded
+}
+
 # ============================================================
 # VALIDATE CONFIGURATION
 # ============================================================
@@ -417,7 +456,7 @@ function Get-ScriptPathFromMD5 {
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
             $FilePath = $Matches[2].Trim()
             # Check if filename matches (case-insensitive)
-            # Use wildcard to match emoji-prefixed scripts (e.g., "unchecky.ps1" matches "scripts/Check/👀unchecky.ps1")
+            # Use wildcard to match emoji-prefixed scripts (e.g., "unchecky.ps1" matches "scripts/Check/unchecky.ps1")
             $FileName = Split-Path $FilePath -Leaf
             if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
                 return $FilePath
@@ -441,7 +480,7 @@ if ($MD5SumsContent) {
 # ============================================================
 # Download the requested script from GitHub and execute it
 
-Write-Host "[*] Script Launcher v2026.01.12.05"
+Write-Host "[*] Script Launcher v2026.01.12.06"
 Write-Host "[*] Preparing to run: $ScriptToRun"
 
 # Define script storage location
@@ -630,3 +669,4 @@ catch {
 
 # Pass through the script's exit code
 exit $ScriptExitCode
+

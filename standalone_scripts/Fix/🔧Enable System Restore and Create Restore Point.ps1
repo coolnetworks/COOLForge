@@ -24,8 +24,8 @@
     Target Platform:  Windows 7/8/8.1/10/11
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
-    License:          MIT License with Attribution
-    Copyright (c) 2025 COOLNETWORKS
+    License:          AGPL-3.0 (see LICENSE)
+    Copyright (c) 2025-2026 COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
 
 .LINK

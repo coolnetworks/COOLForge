@@ -397,6 +397,33 @@ catch {
     Write-Host "[!] Could not update scratch folder documentation"
 }
 
+# Copy LICENSE to scratch folder if it changed
+$LicenseUrl = "$RepoBaseUrl/LICENSE"
+$LicenseDestPath = Join-Path -Path $MspScratchFolder -ChildPath "LICENSE"
+
+try {
+    $LicenseRemoteContent = (Invoke-WebRequest -Uri $LicenseUrl -UseBasicParsing -TimeoutSec 5).Content
+    $NeedsLicenseUpdate = $false
+
+    if (Test-Path $LicenseDestPath) {
+        $LicenseLocalContent = Get-Content -Path $LicenseDestPath -Raw -ErrorAction SilentlyContinue
+        if ($LicenseLocalContent -ne $LicenseRemoteContent) {
+            $NeedsLicenseUpdate = $true
+        }
+    }
+    else {
+        $NeedsLicenseUpdate = $true
+    }
+
+    if ($NeedsLicenseUpdate) {
+        Set-Content -Path $LicenseDestPath -Value $LicenseRemoteContent -Force -ErrorAction Stop
+        Write-Host "[+] LICENSE file updated"
+    }
+}
+catch {
+    # Non-critical - don't fail if license can't be downloaded
+}
+
 # ============================================================
 # VALIDATE CONFIGURATION
 # ============================================================

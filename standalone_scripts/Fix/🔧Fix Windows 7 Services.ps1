@@ -30,8 +30,8 @@
     Based on Windows 7 default service configuration.
     Original source: Fix Windows Services.cmd
 
-    License:          MIT License with Attribution
-    Copyright (c) 2025 COOLNETWORKS
+    License:          AGPL-3.0 (see LICENSE)
+    Copyright (c) 2025-2026 COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
 
 .LINK

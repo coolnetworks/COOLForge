@@ -506,7 +506,7 @@ Always know what's happening:
 - **Not a replacement for Level.io** - Works with Level.io, extends it
 - **Not a programming framework** - A shared library and conventions, not a new language
 - **Not complex** - Three lines to initialize, then write normal PowerShell
-- **Not vendor lock-in** - Scripts are portable, library is MIT licensed
+- **Not vendor lock-in** - Scripts are portable, library is open source (AGPL-3.0)
 
 ---
 

@@ -31,6 +31,15 @@ If you need to clear it:
 - Scripts will automatically recreate necessary files
 - Library will be re-downloaded (internet connection required)
 
+## License
+
+COOLForge is licensed under **AGPL-3.0 with commercial exception**.
+
+- **MSP end-users**: Free to use under AGPL-3.0
+- **Platform vendors**: Require commercial license
+
+See [LICENSE](LICENSE) in this folder or the full license at [github.com/coolnetworks/COOLForge/blob/main/LICENSE](https://github.com/coolnetworks/COOLForge/blob/main/LICENSE)
+
 ## Learn more
 
 **Repository:** [github.com/coolnetworks/COOLForge](https://github.com/coolnetworks/COOLForge)

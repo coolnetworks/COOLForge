@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Standalone Wake-on-LAN script for Level.io devices.
 
@@ -21,8 +21,8 @@
     Prerequisite: Level.io API key with device read permissions
     API Version:  Level.io API v2
 
-    License:          MIT License with Attribution
-    Copyright (c) 2025 COOLNETWORKS
+    License:          AGPL-3.0 (see LICENSE)
+    Copyright (c) 2025-2026 COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
 
 .LINK
