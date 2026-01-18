@@ -9,11 +9,11 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-e295f67f0a116f8b27e30278cc15ad7f  modules/COOLForge-Common.psm1
-7a8fb4ff7973b51ac709c93569b31d36  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+e2ade7d046d85f2b0d9151b6d91531e3  modules/COOLForge-Common.psm1
+191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.ps1
-047026b14452c245e9f2e29f69b090fc  scripts/Policy/👀chrome.ps1
-8af10c7767c4e0b0248edc53fd5599b8  scripts/Policy/👀huntress.ps1
+b4b0bc02e964eea4f9676b07894c380c  scripts/Policy/👀chrome.ps1
+c1b35bc245d2e2977a3d41ac5b47659a  scripts/Policy/👀huntress.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
@@ -24,9 +24,13 @@ a59778aa18ee3f6c38d66d3da27dca3e  scripts/Fix/🔧Fix Windows 11 Services.ps1
 4207a5b92853180ca0d49823c298362d  scripts/Fix/🔧Fix Windows 8 Services.ps1
 d31ecec221d65522ca3cc89827474884  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
 96e12ec31a8b373a86fde3273b1d33fd  scripts/Fix/🔧Prevent Sleep.ps1
+9e71bc81c1222cf9ede68b5f6f033d72  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
 0ce7b50eb958e7a4cbcb1b8848810f7a  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-13373296ff9c97399b732d7f5daa0421  scripts/Policy/👀dnsfilter.ps1
-3d8ac39a607b18a54421deb246474619  scripts/Policy/👀unchecky.ps1
+e7735d5106c5112ab01b6160f751dd03  scripts/Policy/👀dnsfilter.ps1
+195dc9e348d37ca7b1ef11e9456cc79c  scripts/Policy/👀unchecky.ps1
+d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
+34d1b0132f36e13e9e5a62ce96162352  scripts/Policy/👀meshcentral-linux.sh
+052f1f42966d486d22642b9a27d6249b  scripts/Policy/👀meshcentral-mac.sh
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 92cd52534025a471791185d586e090c9  scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1

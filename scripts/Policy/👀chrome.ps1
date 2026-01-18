@@ -335,17 +335,68 @@ function Install-ChromeEnterprise {
         return $false
     }
 
-    # Install Chrome Enterprise
-    Write-LevelLog "Installing Chrome Enterprise..."
-    $installArgs = "/i `"$tempMsi`" /qn /norestart"
-    $installProcess = Start-Process msiexec.exe -ArgumentList $installArgs -Wait -PassThru -WindowStyle Hidden
+    # Install Chrome Enterprise (with retry on 1603)
+    $maxAttempts = 2
+    $installSuccess = $false
+
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        Write-LevelLog "Installing Chrome Enterprise (attempt $attempt of $maxAttempts)..."
+        $installArgs = "/i `"$tempMsi`" /qn /norestart"
+        $installProcess = Start-Process msiexec.exe -ArgumentList $installArgs -Wait -PassThru -WindowStyle Hidden
+
+        if ($installProcess.ExitCode -eq 0 -or $installProcess.ExitCode -eq 3010) {
+            $installSuccess = $true
+            break
+        }
+
+        # MSI Error 1603: Fatal error during installation
+        if ($installProcess.ExitCode -eq 1603 -and $attempt -lt $maxAttempts) {
+            Write-LevelLog "MSI Error 1603 - attempting aggressive cleanup and retry..." -Level "WARN"
+
+            # Kill ALL Chrome-related processes
+            $chromeProcs = Get-Process -Name "chrome", "GoogleUpdate", "GoogleCrashHandler", "GoogleCrashHandler64", "setup" -ErrorAction SilentlyContinue
+            if ($chromeProcs) {
+                Write-LevelLog "Killing all Chrome processes..."
+                $chromeProcs | Stop-Process -Force -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 5
+            }
+
+            # Force remove all Chrome directories
+            $chromePaths = @(
+                "C:\Program Files\Google\Chrome",
+                "C:\Program Files (x86)\Google\Chrome",
+                "C:\Program Files\Google\Update",
+                "C:\Program Files (x86)\Google\Update"
+            )
+            foreach ($path in $chromePaths) {
+                if (Test-Path $path) {
+                    Write-LevelLog "Force removing: $path"
+                    Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
+                }
+            }
+
+            # Clear MSI temp files
+            Get-ChildItem "$env:TEMP\*chrome*" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+            Get-ChildItem "C:\Windows\Temp\*chrome*" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+            # Restart Windows Installer service
+            Write-LevelLog "Restarting Windows Installer service..."
+            Restart-Service msiserver -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 3
+
+            Write-LevelLog "Cleanup complete - retrying installation..."
+            continue
+        }
+
+        # Non-1603 error or final attempt
+        Write-Host "Alert: Chrome Enterprise installation failed with exit code: $($installProcess.ExitCode)"
+        Write-LevelLog "Installation failed with exit code: $($installProcess.ExitCode)" -Level "ERROR"
+    }
 
     # Clean up temp file
     Remove-Item $tempMsi -Force -ErrorAction SilentlyContinue
 
-    if ($installProcess.ExitCode -ne 0 -and $installProcess.ExitCode -ne 3010) {
-        Write-Host "Alert: Chrome Enterprise installation failed with exit code: $($installProcess.ExitCode)"
-        Write-LevelLog "Installation failed with exit code: $($installProcess.ExitCode)" -Level "ERROR"
+    if (-not $installSuccess) {
         return $false
     }
 

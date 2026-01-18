@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-    Software policy enforcement for Huntress Agent.
+    Software policy enforcement for MeshCentral Agent.
 
 .DESCRIPTION
-    Implements the COOLForge 5-tag policy model for Huntress Agent management.
+    Implements the COOLForge 5-tag policy model for MeshCentral Agent management.
     See docs/POLICY-TAGS.md for the complete policy specification.
 
     POLICY FLOW (per POLICY-TAGS.md):
     1. Check global control tags (device must have checkmark to be managed)
     2. Check software-specific override tags (highest priority)
-    3. Fall back to custom field policy (policy_huntress)
+    3. Fall back to custom field policy (policy_meshcentral)
     4. Execute resolved action (install/remove/reinstall)
 
     GLOBAL CONTROL TAGS (standalone):
@@ -17,23 +17,18 @@
     - U+274C = Device is excluded from management
     - Both = Device is globally pinned (no changes)
 
-    SOFTWARE-SPECIFIC OVERRIDE TAGS (with "huntress" suffix):
-    - U+1F64F huntress = Install if missing (transient)
-    - U+1F6AB huntress = Remove if present (transient)
-    - U+1F4CC huntress = Pin - no changes allowed (persistent)
-    - U+1F504 huntress = Reinstall - remove + install (transient)
-    - U+2705 huntress  = Status: software is installed (set by script)
+    SOFTWARE-SPECIFIC OVERRIDE TAGS (with "meshcentral" suffix):
+    - U+1F64F meshcentral = Install if missing (transient)
+    - U+1F6AB meshcentral = Remove if present (transient)
+    - U+1F4CC meshcentral = Pin - no changes allowed (persistent)
+    - U+1F504 meshcentral = Reinstall - remove + install (transient)
+    - U+2705 meshcentral  = Status: software is installed (set by script)
 
     CUSTOM FIELD POLICY (inherited Group->Folder->Device):
-    - policy_huntress = "install" | "remove" | "pin" | ""
-
-    TAMPER PROTECTION:
-    When removing, the script checks if tamper protection may be enabled.
-    If TP blocks removal, it outputs instructions and exits gracefully.
-    The policy will retry on the next cycle after TP is disabled.
+    - policy_meshcentral = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.16.01
+    Version:          2026.01.19.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -41,7 +36,13 @@
     - $MspScratchFolder   : MSP-defined scratch folder for persistent storage
     - $DeviceHostname     : Device hostname from Level.io
     - $DeviceTags         : Comma-separated list of device tags
-    - $policy_huntress    : Custom field policy value (inherited)
+
+    Custom Fields:
+    - $policy_meshcentral            : Policy action (install/remove/pin)
+    - $policy_meshcentral_server_url : Expected server URL (e.g., mc.cool.net.au)
+    - $policy_meshcentral_download_url : Windows installer download URL
+    - $policy_meshcentral_linux_install  : Linux install command (one-liner)
+    - $policy_meshcentral_mac_download_url : Mac installer download URL
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -50,8 +51,8 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# Software Policy - Huntress
-# Version: 2026.01.16.01
+# Software Policy - MeshCentral
+# Version: 2026.01.19.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -71,15 +72,19 @@ function Write-DebugInstallCheck {
     Write-Host " DEBUG: Installation Check" -ForegroundColor Cyan
     Write-Host "============================================================" -ForegroundColor Cyan
 
-    $HuntressPath = Get-HuntressPath
-    $AgentExe = Join-Path $HuntressPath "HuntressAgent.exe"
+    $MeshAgentPaths = @(
+        "$env:ProgramFiles\Mesh Agent\MeshAgent.exe",
+        "${env:ProgramFiles(x86)}\Mesh Agent\MeshAgent.exe"
+    )
 
     Write-Host "  --- File Paths ---"
-    Write-Host "  $(if (Test-Path $AgentExe) { '[FOUND]' } else { '[    ]' }) $AgentExe" -ForegroundColor $(if (Test-Path $AgentExe) { 'Green' } else { 'DarkGray' })
+    foreach ($Path in $MeshAgentPaths) {
+        Write-Host "  $(if (Test-Path $Path) { '[FOUND]' } else { '[    ]' }) $Path" -ForegroundColor $(if (Test-Path $Path) { 'Green' } else { 'DarkGray' })
+    }
 
     Write-Host ""
     Write-Host "  --- Services ---"
-    $Services = @("HuntressAgent", "HuntressUpdater", "HuntressRio")
+    $Services = @("Mesh Agent", "MeshAgent")
     foreach ($Svc in $Services) {
         $Service = Get-Service -Name $Svc -ErrorAction SilentlyContinue
         if ($Service) {
@@ -97,33 +102,24 @@ function Write-DebugInstallCheck {
 # ============================================================
 # CONFIGURATION
 # ============================================================
-$SoftwareName = "huntress"
-$LockFileName = "Huntress_Deployment.lock"
+$SoftwareName = "meshcentral"
+$LockFileName = "MeshCentral_Deployment.lock"
 
-# Huntress paths and service names
-$HuntressAgentServiceName   = "HuntressAgent"
-$HuntressUpdaterServiceName = "HuntressUpdater"
-$HuntressEDRServiceName     = "HuntressRio"
-$HuntressRegKey             = "HKLM:\SOFTWARE\Huntress Labs"
-$InstallerName              = "HuntressInstaller.exe"
+# MeshCentral paths and service names
+$MeshAgentServiceNames = @("Mesh Agent", "MeshAgent")
+$InstallerName = "meshagent.msh"
 
-# Huntress credentials from custom fields
-$AccountKeyVar = "policy_huntress_account_key"
-$AccountKey = Get-Variable -Name $AccountKeyVar -ValueOnly -ErrorAction SilentlyContinue
-if ([string]::IsNullOrWhiteSpace($AccountKey) -or $AccountKey -like "{{*}}") {
-    $AccountKey = $null
+# MeshCentral configuration from custom fields
+$ServerUrlVar = "policy_meshcentral_server_url"
+$ServerUrl = Get-Variable -Name $ServerUrlVar -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($ServerUrl) -or $ServerUrl -like "{{*}}") {
+    $ServerUrl = $null
 }
 
-$OrgKeyVar = "policy_huntress_org_key"
-$OrgKey = Get-Variable -Name $OrgKeyVar -ValueOnly -ErrorAction SilentlyContinue
-if ([string]::IsNullOrWhiteSpace($OrgKey) -or $OrgKey -like "{{*}}") {
-    $OrgKey = $null
-}
-
-$HuntressTagsVar = "policy_huntress_tags"
-$HuntressTags = Get-Variable -Name $HuntressTagsVar -ValueOnly -ErrorAction SilentlyContinue
-if ([string]::IsNullOrWhiteSpace($HuntressTags) -or $HuntressTags -like "{{*}}") {
-    $HuntressTags = $null
+$DownloadUrlVar = "policy_meshcentral_download_url"
+$DownloadUrl = Get-Variable -Name $DownloadUrlVar -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($DownloadUrl) -or $DownloadUrl -like "{{*}}") {
+    $DownloadUrl = $null
 }
 
 # ============================================================
@@ -172,131 +168,166 @@ function Remove-Lock {
 }
 
 # ============================================================
-# HUNTRESS-SPECIFIC FUNCTIONS
+# MESHCENTRAL-SPECIFIC FUNCTIONS
 # ============================================================
 
-function Get-HuntressPath {
-    if ($env:ProgramW6432) {
-        return Join-Path $Env:ProgramW6432 "Huntress"
-    } else {
-        return Join-Path $Env:ProgramFiles "Huntress"
+function Get-MeshAgentPath {
+    # Check both Program Files locations
+    $Paths = @(
+        "$env:ProgramFiles\Mesh Agent",
+        "${env:ProgramFiles(x86)}\Mesh Agent"
+    )
+    foreach ($Path in $Paths) {
+        if (Test-Path (Join-Path $Path "MeshAgent.exe")) {
+            return $Path
+        }
     }
+    # Default to Program Files
+    return "$env:ProgramFiles\Mesh Agent"
 }
 
-function Test-HuntressInstalled {
-    $path = Get-HuntressPath
-    $agentExe = Join-Path $path "HuntressAgent.exe"
-    $result = Test-Path $agentExe
-    if ($DebugScripts -and $result) {
-        Write-Host "  [DEBUG] Huntress detected - agent executable found" -ForegroundColor Green
+function Test-MeshcentralInstalled {
+    $Paths = @(
+        "$env:ProgramFiles\Mesh Agent\MeshAgent.exe",
+        "${env:ProgramFiles(x86)}\Mesh Agent\MeshAgent.exe"
+    )
+    foreach ($Path in $Paths) {
+        if (Test-Path $Path) {
+            if ($DebugScripts) {
+                Write-Host "  [DEBUG] MeshCentral detected - agent executable found at $Path" -ForegroundColor Green
+            }
+            return $true
+        }
     }
-    return $result
+    return $false
 }
 
-function Test-TamperProtectionEnabled {
-    $result = @{
-        MayBeEnabled = $false
-        Reason = ""
+function Get-MeshcentralServerUrl {
+    <#
+    .SYNOPSIS
+        Extracts the Meshcentral server URL from the Mesh Agent configuration.
+    .RETURNS
+        The server URL string, or $null if not found.
+    #>
+
+    # Check common Mesh Agent locations for config
+    $MeshAgentPaths = @(
+        "$env:ProgramFiles\Mesh Agent",
+        "${env:ProgramFiles(x86)}\Mesh Agent",
+        "$env:ProgramData\Mesh Agent"
+    )
+
+    foreach ($BasePath in $MeshAgentPaths) {
+        # Check for MeshAgent.msh config file
+        $ConfigFile = Join-Path $BasePath "MeshAgent.msh"
+        if (Test-Path $ConfigFile) {
+            $Content = Get-Content $ConfigFile -Raw -ErrorAction SilentlyContinue
+            # Look for MeshServer setting (wss:// format)
+            if ($Content -match 'MeshServer\s*=\s*wss?://([^/\s]+)') {
+                return $Matches[1]
+            }
+            if ($Content -match 'ServerUrl\s*=\s*https?://([^/\s]+)') {
+                return $Matches[1]
+            }
+        }
+
+        # Check MeshAgent.db for server info
+        $DbFile = Join-Path $BasePath "MeshAgent.db"
+        if (Test-Path $DbFile) {
+            $Content = Get-Content $DbFile -Raw -ErrorAction SilentlyContinue
+            if ($Content -match 'wss?://([^/\s"]+)') {
+                return $Matches[1]
+            }
+        }
     }
 
-    $huntressPath = Get-HuntressPath
-
-    if (-not (Test-Path $huntressPath)) {
-        $result.Reason = "Huntress not installed"
-        return $result
+    # Check registry for Mesh Agent server
+    $RegPaths = @(
+        "HKLM:\SOFTWARE\Mesh Agent",
+        "HKLM:\SOFTWARE\WOW6432Node\Mesh Agent"
+    )
+    foreach ($RegPath in $RegPaths) {
+        if (Test-Path $RegPath) {
+            $ServerUrlReg = Get-ItemProperty -Path $RegPath -Name "MeshServer" -ErrorAction SilentlyContinue
+            if ($ServerUrlReg -and $ServerUrlReg.MeshServer -match 'wss?://([^/\s]+)') {
+                return $Matches[1]
+            }
+        }
     }
 
-    # Check if EDR (Rio) service is running - TP requires Rio
-    $rioService = Get-Service -Name $HuntressEDRServiceName -ErrorAction SilentlyContinue
-    $rioRunning = $rioService -and $rioService.Status -eq 'Running'
-
-    if (-not $rioRunning) {
-        $result.Reason = "HuntressRio not running - TP not active"
-        return $result
-    }
-
-    $result.MayBeEnabled = $true
-    $result.Reason = "HuntressRio running - TP may be enabled"
-    return $result
+    return $null
 }
 
-function Stop-HuntressProcesses {
-    $processes = @("HuntressAgent", "HuntressUpdater", "HuntressRio", "hUpdate")
-    foreach ($proc in $processes) {
-        Get-Process -Name $proc -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-    }
-}
-
-function Test-HuntressHealthy {
+function Test-MeshcentralHealthy {
     $healthy = $true
 
-    $agentService = Get-Service -Name $HuntressAgentServiceName -ErrorAction SilentlyContinue
-    if (-not $agentService -or $agentService.Status -ne 'Running') {
-        Write-LevelLog "HuntressAgent service not running" -Level "WARN"
+    # Check if any Mesh Agent service is running
+    $serviceRunning = $false
+    foreach ($ServiceName in $MeshAgentServiceNames) {
+        $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+        if ($service -and $service.Status -eq 'Running') {
+            $serviceRunning = $true
+            break
+        }
+    }
+
+    if (-not $serviceRunning) {
+        Write-LevelLog "Mesh Agent service not running" -Level "WARN"
         $healthy = $false
     }
 
-    $updaterService = Get-Service -Name $HuntressUpdaterServiceName -ErrorAction SilentlyContinue
-    if (-not $updaterService -or $updaterService.Status -ne 'Running') {
-        Write-LevelLog "HuntressUpdater service not running" -Level "WARN"
+    # Check if process is running
+    $process = Get-Process -Name "MeshAgent*" -ErrorAction SilentlyContinue
+    if (-not $process) {
+        Write-LevelLog "Mesh Agent process not running" -Level "WARN"
         $healthy = $false
     }
 
     return $healthy
 }
 
-function Repair-HuntressServices {
-    $services = @($HuntressAgentServiceName, $HuntressUpdaterServiceName, $HuntressEDRServiceName)
-
-    foreach ($svc in $services) {
-        $service = Get-Service -Name $svc -ErrorAction SilentlyContinue
+function Repair-MeshcentralServices {
+    foreach ($ServiceName in $MeshAgentServiceNames) {
+        $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
         if ($service -and $service.Status -ne 'Running') {
-            Write-LevelLog "Starting service: $svc"
+            Write-LevelLog "Starting service: $ServiceName"
             try {
-                Start-Service $svc -ErrorAction Stop
+                Start-Service $ServiceName -ErrorAction Stop
                 Start-Sleep -Seconds 2
                 $service.Refresh()
                 if ($service.Status -eq 'Running') {
-                    Write-LevelLog "Service started: $svc" -Level "SUCCESS"
+                    Write-LevelLog "Service started: $ServiceName" -Level "SUCCESS"
                 } else {
-                    Write-LevelLog "Service failed to start: $svc" -Level "ERROR"
+                    Write-LevelLog "Service failed to start: $ServiceName" -Level "ERROR"
                 }
             }
             catch {
-                Write-LevelLog "Error starting $svc : $($_.Exception.Message)" -Level "ERROR"
+                Write-LevelLog "Error starting $ServiceName : $($_.Exception.Message)" -Level "ERROR"
             }
         }
     }
 }
 
-function Install-Huntress {
+function Stop-MeshcentralProcesses {
+    Get-Process -Name "MeshAgent*", "meshagent*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+}
+
+function Install-Meshcentral {
     param([string]$ScratchFolder)
 
-    # Validate credentials
-    if ([string]::IsNullOrWhiteSpace($AccountKey)) {
-        Write-Host "Alert: Huntress install failed - policy_huntress_account_key custom field not configured"
-        Write-LevelLog "Account key not configured - set policy_huntress_account_key custom field" -Level "ERROR"
+    # Validate download URL
+    if ([string]::IsNullOrWhiteSpace($DownloadUrl)) {
+        Write-Host "Alert: MeshCentral install failed - policy_meshcentral_download_url custom field not configured"
+        Write-LevelLog "Download URL not configured - set policy_meshcentral_download_url custom field" -Level "ERROR"
         return $false
     }
 
-    if ($AccountKey.Length -ne 32) {
-        Write-Host "Alert: Huntress install failed - account key must be 32 characters"
-        Write-LevelLog "Invalid account key length (expected 32 chars, got $($AccountKey.Length))" -Level "ERROR"
-        return $false
+    Write-LevelLog "Download URL: $DownloadUrl"
+    if ($ServerUrl) {
+        Write-LevelLog "Expected Server: $ServerUrl"
     }
 
-    if ([string]::IsNullOrWhiteSpace($OrgKey)) {
-        Write-Host "Alert: Huntress install failed - policy_huntress_org_key custom field not configured"
-        Write-LevelLog "Organization key not configured - set policy_huntress_org_key custom field" -Level "ERROR"
-        return $false
-    }
-
-    $maskedKey = $AccountKey.Substring(0,4) + "************************" + $AccountKey.Substring(28,4)
-    Write-LevelLog "Account Key: $maskedKey"
-    Write-LevelLog "Organization: $OrgKey"
-
-    # Build download URL
-    $DownloadURL = "https://update.huntress.io/download/$AccountKey/$InstallerName"
+    # Determine installer path
     $InstallerPath = Join-Path $Env:TMP $InstallerName
 
     # Ensure TLS 1.2+
@@ -309,17 +340,17 @@ function Install-Huntress {
     }
 
     # Download installer
-    Write-LevelLog "Downloading Huntress installer..."
+    Write-LevelLog "Downloading MeshCentral installer..."
     if (Test-Path $InstallerPath) {
         Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
     }
 
     try {
         $webClient = New-Object System.Net.WebClient
-        $webClient.DownloadFile($DownloadURL, $InstallerPath)
+        $webClient.DownloadFile($DownloadUrl, $InstallerPath)
     }
     catch {
-        Write-Host "Alert: Failed to download Huntress installer"
+        Write-Host "Alert: Failed to download MeshCentral installer"
         Write-Host "  Error: $($_.Exception.Message)"
         Write-LevelLog "Download failed: $($_.Exception.Message)" -Level "ERROR"
         return $false
@@ -331,80 +362,50 @@ function Install-Huntress {
         return $false
     }
 
-    # Verify digital signature
-    Write-LevelLog "Verifying installer signature..."
-    try {
-        $sig = Get-AuthenticodeSignature -FilePath $InstallerPath
-        if ($sig.Status -ne 'Valid') {
-            Write-Host "Alert: Invalid installer signature: $($sig.Status)"
-            Write-LevelLog "Invalid installer signature: $($sig.Status)" -Level "ERROR"
-            return $false
-        }
-    }
-    catch {
-        Write-LevelLog "Signature verification failed: $($_.Exception.Message)" -Level "ERROR"
-        return $false
-    }
+    $FileSize = (Get-Item $InstallerPath).Length
+    Write-LevelLog "Downloaded installer: $FileSize bytes"
 
-    # Build install arguments
-    $installArgs = "/ACCT_KEY=`"$AccountKey`" /ORG_KEY=`"$OrgKey`" /S"
-    if (-not [string]::IsNullOrWhiteSpace($HuntressTags)) {
-        $installArgs = "/ACCT_KEY=`"$AccountKey`" /ORG_KEY=`"$OrgKey`" /TAGS=`"$HuntressTags`" /S"
-        Write-LevelLog "Tags: $HuntressTags"
-    }
-
-    # Run installer (with retry on failure)
+    # Run installer (MSH file is self-installing)
     $maxAttempts = 2
     $installSuccess = $false
 
     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-        Write-LevelLog "Installing Huntress (attempt $attempt of $maxAttempts)..."
+        Write-LevelLog "Installing MeshCentral (attempt $attempt of $maxAttempts)..."
         try {
-            $proc = Start-Process $InstallerPath -ArgumentList $installArgs -PassThru
-            $proc | Wait-Process -Timeout 120 -ErrorAction Stop
+            # MSH files are run directly - they contain the agent and config
+            $proc = Start-Process $InstallerPath -ArgumentList "-fullinstall" -PassThru -Wait -WindowStyle Hidden
 
-            # Check if process exited successfully (exit code 0)
-            if ($proc.ExitCode -eq 0) {
-                # Verify installation
-                Write-LevelLog "Verifying installation..."
-                Start-Sleep -Seconds 5
+            # Check if process exited
+            Write-LevelLog "Installer exit code: $($proc.ExitCode)"
 
-                if (Test-HuntressInstalled) {
-                    $installSuccess = $true
-                    break
-                }
+            # Verify installation
+            Write-LevelLog "Verifying installation..."
+            Start-Sleep -Seconds 5
+
+            if (Test-MeshcentralInstalled) {
+                $installSuccess = $true
+                break
             }
 
-            # Installation failed - attempt cleanup and retry
+            # Installation may have failed - retry
             if ($attempt -lt $maxAttempts) {
-                Write-LevelLog "Installation failed (exit code: $($proc.ExitCode)) - attempting cleanup and retry..." -Level "WARN"
+                Write-LevelLog "Installation not verified - attempting cleanup and retry..." -Level "WARN"
 
-                # Kill all Huntress processes
-                Stop-HuntressProcesses
+                # Kill processes
+                Stop-MeshcentralProcesses
                 Start-Sleep -Seconds 3
 
-                # Force remove Huntress directory
-                $huntressPath = Get-HuntressPath
-                if (Test-Path $huntressPath) {
-                    Write-LevelLog "Force removing: $huntressPath"
-                    Remove-Item -LiteralPath $huntressPath -Force -Recurse -ErrorAction SilentlyContinue
-                }
-
-                # Clear registry keys
-                if (Test-Path $HuntressRegKey) {
-                    Write-LevelLog "Cleaning up registry keys..."
-                    Remove-Item -Path $HuntressRegKey -Recurse -Force -ErrorAction SilentlyContinue
-                }
-
-                # Re-download installer in case it was corrupted
-                Write-LevelLog "Re-downloading installer..."
-                Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
-                try {
-                    $webClient = New-Object System.Net.WebClient
-                    $webClient.DownloadFile($DownloadURL, $InstallerPath)
-                }
-                catch {
-                    Write-LevelLog "Re-download failed: $($_.Exception.Message)" -Level "WARN"
+                # Force remove directories
+                $RemovePaths = @(
+                    "$env:ProgramFiles\Mesh Agent",
+                    "${env:ProgramFiles(x86)}\Mesh Agent",
+                    "$env:ProgramData\Mesh Agent"
+                )
+                foreach ($Path in $RemovePaths) {
+                    if (Test-Path $Path) {
+                        Write-LevelLog "Force removing: $Path"
+                        Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+                    }
                 }
 
                 Write-LevelLog "Cleanup complete - retrying installation..."
@@ -417,15 +418,14 @@ function Install-Huntress {
 
             if ($attempt -lt $maxAttempts) {
                 Write-LevelLog "Attempting cleanup and retry..." -Level "WARN"
-                Stop-HuntressProcesses
+                Stop-MeshcentralProcesses
                 Start-Sleep -Seconds 3
                 continue
             }
         }
 
         # Final attempt failed
-        Write-Host "Alert: Huntress installation failed after $maxAttempts attempts"
-        Write-Host "  Exit code: $($proc.ExitCode)"
+        Write-Host "Alert: MeshCentral installation failed after $maxAttempts attempts"
         Write-LevelLog "Installation failed after retries" -Level "ERROR"
     }
 
@@ -433,100 +433,95 @@ function Install-Huntress {
     Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
 
     if (-not $installSuccess) {
-        Write-Host "Alert: Huntress installation verification failed"
+        Write-Host "Alert: MeshCentral installation verification failed"
         Write-LevelLog "Installation verification failed - agent not found" -Level "ERROR"
         return $false
     }
 
-    Write-LevelLog "Huntress installed successfully" -Level "SUCCESS"
-    return $true
-}
+    # Verify server URL if configured
+    if ($ServerUrl) {
+        $DetectedServer = Get-MeshcentralServerUrl
+        if ($DetectedServer) {
+            $NormalizedExpected = $ServerUrl -replace '^https?://', '' -replace '/$', ''
+            $NormalizedDetected = $DetectedServer -replace '^https?://', '' -replace '/$', ''
 
-function Remove-Huntress {
-    Write-LevelLog "Starting Huntress removal..."
-
-    $agentPath = Get-HuntressPath
-    $uninstallerPath = Join-Path $agentPath "Uninstall.exe"
-    $agentExePath = Join-Path $agentPath "HuntressAgent.exe"
-    $updaterPath = Join-Path $agentPath "HuntressUpdater.exe"
-
-    # Stop services first
-    Write-LevelLog "Stopping Huntress services..."
-    Stop-Service $HuntressEDRServiceName -Force -ErrorAction SilentlyContinue
-    Stop-Service $HuntressUpdaterServiceName -Force -ErrorAction SilentlyContinue
-    Stop-Service $HuntressAgentServiceName -Force -ErrorAction SilentlyContinue
-
-    Stop-HuntressProcesses
-
-    # Run uninstaller
-    $uninstallSuccess = $false
-    if (Test-Path $uninstallerPath) {
-        Write-LevelLog "Running Uninstall.exe..."
-        $proc = Start-Process $uninstallerPath -ArgumentList "/S" -PassThru -Wait
-        $uninstallSuccess = $true
-    }
-    elseif (Test-Path $agentExePath) {
-        Write-LevelLog "Running HuntressAgent.exe uninstaller..."
-        $proc = Start-Process $agentExePath -ArgumentList "/S" -PassThru -Wait
-        $uninstallSuccess = $true
-    }
-    elseif (Test-Path $updaterPath) {
-        Write-LevelLog "Running HuntressUpdater.exe uninstaller..."
-        $proc = Start-Process $updaterPath -ArgumentList "/S" -PassThru -Wait
-        $uninstallSuccess = $true
-    }
-
-    # Wait for uninstall to complete
-    if ($uninstallSuccess) {
-        for ($i = 0; $i -le 15; $i++) {
-            if ((Test-Path $agentExePath) -or (Test-Path $HuntressRegKey)) {
-                Start-Sleep -Seconds 1
-            }
-            else {
-                Write-LevelLog "Uninstaller completed in $i seconds"
-                break
+            if ($NormalizedDetected -like "*$NormalizedExpected*" -or $NormalizedExpected -like "*$NormalizedDetected*") {
+                Write-LevelLog "Server URL verified: $DetectedServer" -Level "SUCCESS"
+            } else {
+                Write-LevelLog "WARNING: Installed agent points to '$DetectedServer' but expected '$ServerUrl'" -Level "WARN"
             }
         }
     }
 
-    # Manual cleanup - folder
-    if (Test-Path $agentPath) {
-        Write-LevelLog "Cleaning up Huntress folder..."
-        Remove-Item -LiteralPath $agentPath -Force -Recurse -ErrorAction SilentlyContinue
+    Write-LevelLog "MeshCentral installed successfully" -Level "SUCCESS"
+    return $true
+}
+
+function Remove-Meshcentral {
+    Write-LevelLog "Starting MeshCentral removal..."
+
+    # Stop processes first
+    Write-LevelLog "Stopping MeshCentral processes..."
+    Stop-MeshcentralProcesses
+    Start-Sleep -Seconds 2
+
+    # Stop and remove services
+    foreach ($ServiceName in $MeshAgentServiceNames) {
+        $Service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+        if ($Service) {
+            Write-LevelLog "Stopping service: $ServiceName"
+            Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
+            & sc.exe delete $ServiceName 2>$null
+        }
     }
 
-    # Manual cleanup - registry
-    if (Test-Path $HuntressRegKey) {
-        Write-LevelLog "Cleaning up registry keys..."
-        Remove-Item -Path $HuntressRegKey -Recurse -Force -ErrorAction SilentlyContinue
+    # Run uninstaller
+    $UninstallPaths = @(
+        "$env:ProgramFiles\Mesh Agent\MeshAgent.exe",
+        "${env:ProgramFiles(x86)}\Mesh Agent\MeshAgent.exe"
+    )
+    foreach ($Path in $UninstallPaths) {
+        if (Test-Path $Path) {
+            Write-LevelLog "Running MeshCentral uninstaller at $Path..."
+            try {
+                $proc = Start-Process $Path -ArgumentList "-uninstall" -PassThru -Wait -WindowStyle Hidden
+                Write-LevelLog "Uninstaller exit code: $($proc.ExitCode)"
+            }
+            catch {
+                Write-LevelLog "Uninstaller error: $($_.Exception.Message)" -Level "WARN"
+            }
+            Start-Sleep -Seconds 3
+        }
     }
 
-    # Remove leftover services
-    $services = @("HuntressRio", "HuntressAgent", "HuntressUpdater", "Huntmon")
-    foreach ($svc in $services) {
-        $service = Get-Service -Name $svc -ErrorAction SilentlyContinue
-        if ($service) {
-            Write-LevelLog "Removing leftover service: $svc"
-            & sc.exe stop $svc 2>$null
-            & sc.exe delete $svc 2>$null
+    # Force remove directories
+    $RemovePaths = @(
+        "$env:ProgramFiles\Mesh Agent",
+        "${env:ProgramFiles(x86)}\Mesh Agent",
+        "$env:ProgramData\Mesh Agent"
+    )
+    foreach ($Path in $RemovePaths) {
+        if (Test-Path $Path) {
+            Write-LevelLog "Removing directory: $Path"
+            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 
     # Verify removal
     Start-Sleep -Seconds 2
-    if (Test-HuntressInstalled) {
-        Write-LevelLog "Removal verification failed - Huntress still present" -Level "ERROR"
+    if (Test-MeshcentralInstalled) {
+        Write-LevelLog "Removal verification failed - MeshCentral still present" -Level "ERROR"
         return $false
     }
 
-    Write-LevelLog "Huntress removed successfully" -Level "SUCCESS"
+    Write-LevelLog "MeshCentral removed successfully" -Level "SUCCESS"
     return $true
 }
 
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.16.01"
+$ScriptVersion = "2026.01.19.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -549,8 +544,8 @@ $InvokeParams = @{ ScriptBlock = {
         'DeviceHostname' = $DeviceHostname
         'DeviceTags' = $DeviceTags
         'LevelApiKey' = $LevelApiKey
-        'AccountKey' = if ($AccountKey) { '(configured)' } else { '(not set)' }
-        'OrgKey' = if ($OrgKey) { $OrgKey } else { '(not set)' }
+        'ServerUrl' = if ($ServerUrl) { $ServerUrl } else { '(not set)' }
+        'DownloadUrl' = if ($DownloadUrl) { '(configured)' } else { '(not set)' }
     } -MaskApiKey
 
     Write-Host ""
@@ -583,40 +578,50 @@ $InvokeParams = @{ ScriptBlock = {
             -SoftwareName $SoftwareName `
             -RequireUrl $false
 
-        # Also create the Huntress-specific custom fields if they don't exist
-        $HuntressFieldsCreated = 0
+        # Also create the MeshCentral-specific custom fields if they don't exist
+        $MeshFieldsCreated = 0
 
-        $AccountKeyFieldName = "policy_huntress_account_key"
-        $ExistingAccountKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $AccountKeyFieldName
-        if (-not $ExistingAccountKeyField) {
-            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $AccountKeyFieldName -DefaultValue ""
+        $ServerUrlFieldName = "policy_meshcentral_server_url"
+        $ExistingServerUrlField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $ServerUrlFieldName
+        if (-not $ExistingServerUrlField) {
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $ServerUrlFieldName -DefaultValue ""
             if ($NewField) {
-                Write-LevelLog "Created custom field: $AccountKeyFieldName" -Level "SUCCESS"
-                $HuntressFieldsCreated++
+                Write-LevelLog "Created custom field: $ServerUrlFieldName" -Level "SUCCESS"
+                $MeshFieldsCreated++
             }
         }
 
-        $OrgKeyFieldName = "policy_huntress_org_key"
-        $ExistingOrgKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $OrgKeyFieldName
-        if (-not $ExistingOrgKeyField) {
-            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $OrgKeyFieldName -DefaultValue ""
+        $DownloadUrlFieldName = "policy_meshcentral_download_url"
+        $ExistingDownloadUrlField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $DownloadUrlFieldName
+        if (-not $ExistingDownloadUrlField) {
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $DownloadUrlFieldName -DefaultValue ""
             if ($NewField) {
-                Write-LevelLog "Created custom field: $OrgKeyFieldName" -Level "SUCCESS"
-                $HuntressFieldsCreated++
+                Write-LevelLog "Created custom field: $DownloadUrlFieldName" -Level "SUCCESS"
+                $MeshFieldsCreated++
             }
         }
 
-        $TagsFieldName = "policy_huntress_tags"
-        $ExistingTagsField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $TagsFieldName
-        if (-not $ExistingTagsField) {
-            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $TagsFieldName -DefaultValue ""
+        $LinuxInstallFieldName = "policy_meshcentral_linux_install"
+        $ExistingLinuxField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $LinuxInstallFieldName
+        if (-not $ExistingLinuxField) {
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $LinuxInstallFieldName -DefaultValue ""
             if ($NewField) {
-                Write-LevelLog "Created custom field: $TagsFieldName (optional)" -Level "SUCCESS"
-                $HuntressFieldsCreated++
+                Write-LevelLog "Created custom field: $LinuxInstallFieldName" -Level "SUCCESS"
+                $MeshFieldsCreated++
             }
         }
 
-        $TotalFieldsCreated = $InfraResult.FieldsCreated + $HuntressFieldsCreated
+        $MacDownloadUrlFieldName = "policy_meshcentral_mac_download_url"
+        $ExistingMacField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $MacDownloadUrlFieldName
+        if (-not $ExistingMacField) {
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $MacDownloadUrlFieldName -DefaultValue ""
+            if ($NewField) {
+                Write-LevelLog "Created custom field: $MacDownloadUrlFieldName" -Level "SUCCESS"
+                $MeshFieldsCreated++
+            }
+        }
+
+        $TotalFieldsCreated = $InfraResult.FieldsCreated + $MeshFieldsCreated
 
         if ($InfraResult.Success) {
             if ($InfraResult.TagsCreated -gt 0 -or $TotalFieldsCreated -gt 0) {
@@ -624,10 +629,11 @@ $InvokeParams = @{ ScriptBlock = {
                 Write-Host ""
                 Write-Host "Alert: Policy infrastructure created - please configure custom fields"
                 Write-Host "  Set the following custom fields in Level.io:"
-                Write-Host "  - policy_huntress: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
-                Write-Host "  - policy_huntress_account_key: Your 32-character Huntress account key"
-                Write-Host "  - policy_huntress_org_key: Organization name for this device"
-                Write-Host "  - policy_huntress_tags: (Optional) Tags for Huntress agent"
+                Write-Host "  - policy_meshcentral: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
+                Write-Host "  - policy_meshcentral_server_url: Your MeshCentral server (e.g., mc.cool.net.au)"
+                Write-Host "  - policy_meshcentral_download_url: Windows installer download URL from MeshCentral"
+                Write-Host "  - policy_meshcentral_linux_install: (Optional) Linux install command (one-liner)"
+                Write-Host "  - policy_meshcentral_mac_download_url: (Optional) Mac installer download URL"
                 Write-Host ""
                 Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
                 Remove-Lock
@@ -641,8 +647,16 @@ $InvokeParams = @{ ScriptBlock = {
     }
 
     # Check current installation state
-    $IsInstalled = Test-HuntressInstalled
+    $IsInstalled = Test-MeshcentralInstalled
     Write-LevelLog "Current state: $(if ($IsInstalled) { 'Installed' } else { 'Not installed' })"
+
+    # If installed, show detected server
+    if ($IsInstalled) {
+        $DetectedServer = Get-MeshcentralServerUrl
+        if ($DetectedServer) {
+            Write-LevelLog "Detected server: $DetectedServer"
+        }
+    }
 
     # Debug: Show installation check details
     Write-DebugInstallCheck -IsInstalled $IsInstalled
@@ -687,18 +701,18 @@ $InvokeParams = @{ ScriptBlock = {
                 }
                 if ($IsInstalled) {
                     # Already installed - check health
-                    if (Test-HuntressHealthy) {
+                    if (Test-MeshcentralHealthy) {
                         Write-LevelLog "Already installed and healthy - no action needed" -Level "SUCCESS"
                         $ActionSuccess = $true
                     } else {
                         Write-LevelLog "Installed but unhealthy - attempting repair" -Level "WARN"
-                        Repair-HuntressServices
+                        Repair-MeshcentralServices
                         Start-Sleep -Seconds 3
-                        if (Test-HuntressHealthy) {
+                        if (Test-MeshcentralHealthy) {
                             Write-LevelLog "Services repaired successfully" -Level "SUCCESS"
                             $ActionSuccess = $true
                         } else {
-                            Write-Host "Alert: Huntress services unhealthy after repair attempt"
+                            Write-Host "Alert: MeshCentral services unhealthy after repair attempt"
                             Write-Host "  Device may need a restart to restore services"
                             Write-LevelLog "Services still unhealthy after repair" -Level "ERROR"
                             $script:ExitCode = 1
@@ -708,7 +722,7 @@ $InvokeParams = @{ ScriptBlock = {
                 }
                 else {
                     Write-LevelLog "ACTION: Installing $SoftwareName" -Level "INFO"
-                    $ActionSuccess = Install-Huntress -ScratchFolder $MspScratchFolder
+                    $ActionSuccess = Install-Meshcentral -ScratchFolder $MspScratchFolder
                     if (-not $ActionSuccess) {
                         Write-LevelLog "FAILED: Installation unsuccessful" -Level "ERROR"
                         $script:ExitCode = 1
@@ -733,37 +747,16 @@ $InvokeParams = @{ ScriptBlock = {
                     $ActionSuccess = $true
                 }
                 else {
-                    # Check if TP might be active
-                    $tpStatus = Test-TamperProtectionEnabled
-                    if ($tpStatus.MayBeEnabled) {
-                        Write-LevelLog "Note: $($tpStatus.Reason)" -Level "WARN"
-                    }
-
                     Write-LevelLog "ACTION: Removing $SoftwareName" -Level "INFO"
-                    $RemoveResult = Remove-Huntress
+                    $RemoveResult = Remove-Meshcentral
 
                     # Verify removal
                     Start-Sleep -Seconds 3
-                    $StillInstalled = Test-HuntressInstalled
+                    $StillInstalled = Test-MeshcentralInstalled
 
                     if (-not $StillInstalled) {
-                        Write-LevelLog "Huntress removed successfully" -Level "SUCCESS"
+                        Write-LevelLog "MeshCentral removed successfully" -Level "SUCCESS"
                         $ActionSuccess = $true
-                    }
-                    elseif ($tpStatus.MayBeEnabled) {
-                        # TP likely blocked it
-                        Write-Host ""
-                        Write-Host "Alert: Tamper Protection is blocking uninstall"
-                        Write-Host "  ACTION REQUIRED:"
-                        Write-Host "  1. Go to Huntress Dashboard"
-                        Write-Host "  2. Settings -> Tamper Protection -> Exclusions"
-                        Write-Host "  3. Add this device: $env:COMPUTERNAME"
-                        Write-Host "  4. Wait ~30 minutes for settings to sync"
-                        Write-Host "  5. Policy will retry automatically on next run"
-                        Write-Host ""
-                        Write-LevelLog "Removal blocked by Tamper Protection - waiting for TP disable" -Level "WARN"
-                        # Don't set exit code 1 - this is expected, will retry
-                        $ActionSuccess = $true  # Consider it "handled" - will retry next cycle
                     }
                     else {
                         Write-LevelLog "FAILED: Removal unsuccessful" -Level "ERROR"
@@ -775,21 +768,14 @@ $InvokeParams = @{ ScriptBlock = {
             "Reinstall" {
                 Write-LevelLog "ACTION: Reinstalling $SoftwareName" -Level "INFO"
                 if ($IsInstalled) {
-                    $RemoveSuccess = Remove-Huntress
+                    $RemoveSuccess = Remove-Meshcentral
                     if (-not $RemoveSuccess) {
-                        # Check if TP blocked it
-                        $tpStatus = Test-TamperProtectionEnabled
-                        if ($tpStatus.MayBeEnabled -and (Test-HuntressInstalled)) {
-                            Write-Host "Alert: Tamper Protection blocking reinstall - disable TP first"
-                            Write-LevelLog "Reinstall blocked by Tamper Protection" -Level "WARN"
-                        } else {
-                            Write-LevelLog "FAILED: Could not remove for reinstall" -Level "ERROR"
-                        }
+                        Write-LevelLog "FAILED: Could not remove for reinstall" -Level "ERROR"
                         $script:ExitCode = 1
                         break
                     }
                 }
-                $ActionSuccess = Install-Huntress -ScratchFolder $MspScratchFolder
+                $ActionSuccess = Install-Meshcentral -ScratchFolder $MspScratchFolder
                 if (-not $ActionSuccess) {
                     Write-LevelLog "FAILED: Reinstallation unsuccessful" -Level "ERROR"
                     $script:ExitCode = 1
@@ -845,7 +831,7 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
-        $FinalInstallState = Test-HuntressInstalled
+        $FinalInstallState = Test-MeshcentralInstalled
 
         if ($ActionSuccess -and $Policy.ShouldProcess) {
             $SoftwareNameUpper = $SoftwareName.ToUpper()

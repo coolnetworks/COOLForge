@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Detects unauthorized remote access tools on the system.
+    Detects and optionally removes unauthorized remote access tools on the system.
 
 .DESCRIPTION
     This script scans for remote access tools (RATs) that may be installed without
@@ -11,16 +11,20 @@
     - Registry entries
     - Common installation directories
 
-    The script supports whitelisting for authorized tools like ScreenConnect when
-    the instance ID matches the organization's approved installation.
+    The script supports whitelisting for authorized tools:
+    - ScreenConnect: Whitelist by instance ID
+    - Meshcentral: Whitelist by server URL (e.g., mc.cool.net.au)
+
+    When auto-remove is enabled, the script will attempt to uninstall detected
+    unauthorized RATs using their native uninstallers or force removal.
 
     When run via Script Launcher, this script inherits all Level.io variables
     and the library is already loaded.
 
 .NOTES
-    Version:          2026.01.10.01
+    Version:          2026.01.19.01
     Target Platform:  Level.io RMM (via Script Launcher)
-    Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected)
+    Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected/removed)
 
     Level.io Variables Used (passed from Script Launcher):
     - $MspScratchFolder  : MSP-defined scratch folder for persistent storage
@@ -31,6 +35,8 @@
     Additional Custom Fields (define in launcher):
     - $ScreenConnectInstanceId : Whitelisted ScreenConnect instance ID
     - $IsScreenConnectServer   : Set to "true" if device is a ScreenConnect server
+    - $MeshcentralServerUrl    : Whitelisted Meshcentral server URL (e.g., mc.cool.net.au)
+    - $AutoRemoveRATs          : Set to "true" to auto-remove detected RATs
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -40,7 +46,7 @@
 #>
 
 # 👀Check for Unauthorized Remote Access Tools
-# Version: 2026.01.10.01
+# Version: 2026.01.19.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success (No unauthorized RATs) | Exit 1 = Alert (RATs detected)
 #
@@ -48,38 +54,65 @@
 # https://github.com/coolnetworks/COOLForge
 
 # ============================================================
+# LAUNCHER VARIABLE DETECTION
+# ============================================================
+$RunningFromLauncher = $null -ne (Get-Variable -Name "LauncherVariables" -ValueOnly -ErrorAction SilentlyContinue)
+
+if ($RunningFromLauncher) {
+    $MspScratchFolder = $LauncherVariables.MspScratchFolder
+    $DeviceHostname = $LauncherVariables.DeviceHostname
+    $DeviceTags = $LauncherVariables.DeviceTags
+    $DebugScripts = $LauncherVariables.DebugScripts
+    $LevelApiKey = $LauncherVariables.LevelApiKey
+    $PolicyBlockDevice = $LauncherVariables.PolicyBlockDevice
+    $PolicyRatRemoval = $LauncherVariables.PolicyRatRemoval
+    $ScreenConnectInstanceId = $LauncherVariables.ScreenConnectInstanceId
+    $IsScreenConnectServer = $LauncherVariables.IsScreenConnectServer
+    $MeshcentralServerUrl = $LauncherVariables.MeshcentralServerUrl
+    $AutoRemoveRATs = $LauncherVariables.AutoRemoveRATs
+} else {
+    # Standalone mode defaults
+    $MspScratchFolder = if ($env:CF_SCRATCH) { $env:CF_SCRATCH } else { "C:\ProgramData\MSP" }
+    $DeviceHostname = $env:COMPUTERNAME
+    $DeviceTags = ""
+    $DebugScripts = $false
+    $LevelApiKey = $null
+    $PolicyBlockDevice = ""
+    $PolicyRatRemoval = "detect"
+    $ScreenConnectInstanceId = ""
+    $IsScreenConnectServer = ""
+    $MeshcentralServerUrl = ""
+    $AutoRemoveRATs = ""
+}
+
+# Normalize policy values
+if ([string]::IsNullOrWhiteSpace($PolicyRatRemoval) -or $PolicyRatRemoval -like "{{*}}") {
+    $PolicyRatRemoval = "detect"
+}
+$PolicyRatRemoval = $PolicyRatRemoval.ToLower().Trim()
+
+# Normalize auto-remove setting (set by launcher based on policy)
+$EnableAutoRemove = ($AutoRemoveRATs -eq "true" -or $PolicyRatRemoval -eq "remove")
+
+# ============================================================
 # INITIALIZE
 # ============================================================
-# Script Launcher has already loaded the library and passed variables
-# We just need to initialize with the passed-through variables
-
 $Init = Initialize-LevelScript -ScriptName "RATDetection" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
                                -DeviceTags $DeviceTags `
-                               -BlockingTags @("❌")
+                               -BlockingTags @("❌") `
+                               -PolicyBlockDevice $PolicyBlockDevice
 
 if (-not $Init.Success) {
     exit 0
 }
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-# ScreenConnect whitelisting variables are passed from the launcher:
-#   $ScreenConnectInstanceId - Your MSP's ScreenConnect instance ID
-#   $IsScreenConnectServer   - Set to "true" on ScreenConnect server devices
-#
-# These are read from Level.io custom fields:
-#   cf_coolforge_screenconnect_instance_id (or cf_screenconnect_instance_id)
-#   cf_coolforge_is_screenconnect_server (or cf_is_screenconnect_server)
-
-# Ensure variables exist with defaults if not passed from launcher
-if (-not (Get-Variable -Name 'ScreenConnectInstanceId' -ErrorAction SilentlyContinue)) {
-    $ScreenConnectInstanceId = ""
-}
-if (-not (Get-Variable -Name 'IsScreenConnectServer' -ErrorAction SilentlyContinue)) {
-    $IsScreenConnectServer = ""
+# Check if policy says to skip
+if ($PolicyRatRemoval -eq "skip") {
+    Write-LevelLog "Policy is 'skip' - RAT detection disabled for this device" -Level "INFO"
+    Write-Host "OK: RAT detection skipped (policy=skip)"
+    exit 0
 }
 
 # ============================================================
@@ -99,6 +132,62 @@ $AuthorizedRMMTools = @(
 # ============================================================
 # RAT DETECTION FUNCTIONS
 # ============================================================
+
+function Get-MeshcentralServerUrl {
+    <#
+    .SYNOPSIS
+        Extracts the Meshcentral server URL from the Mesh Agent configuration.
+    .RETURNS
+        The server URL string, or $null if not found.
+    #>
+
+    # Check common Mesh Agent locations for config
+    $MeshAgentPaths = @(
+        "$env:ProgramFiles\Mesh Agent",
+        "${env:ProgramFiles(x86)}\Mesh Agent",
+        "$env:ProgramData\Mesh Agent"
+    )
+
+    foreach ($BasePath in $MeshAgentPaths) {
+        # Check for MeshAgent.msh config file
+        $ConfigFile = Join-Path $BasePath "MeshAgent.msh"
+        if (Test-Path $ConfigFile) {
+            $Content = Get-Content $ConfigFile -Raw -ErrorAction SilentlyContinue
+            # Look for ServerUrl or MeshServer setting
+            if ($Content -match 'MeshServer\s*=\s*wss?://([^/\s]+)') {
+                return $Matches[1]
+            }
+            if ($Content -match 'ServerUrl\s*=\s*https?://([^/\s]+)') {
+                return $Matches[1]
+            }
+        }
+
+        # Check MeshAgent.db for server info
+        $DbFile = Join-Path $BasePath "MeshAgent.db"
+        if (Test-Path $DbFile) {
+            $Content = Get-Content $DbFile -Raw -ErrorAction SilentlyContinue
+            if ($Content -match 'wss?://([^/\s"]+)') {
+                return $Matches[1]
+            }
+        }
+    }
+
+    # Check registry for Mesh Agent server
+    $RegPaths = @(
+        "HKLM:\SOFTWARE\Mesh Agent",
+        "HKLM:\SOFTWARE\WOW6432Node\Mesh Agent"
+    )
+    foreach ($RegPath in $RegPaths) {
+        if (Test-Path $RegPath) {
+            $ServerUrl = Get-ItemProperty -Path $RegPath -Name "MeshServer" -ErrorAction SilentlyContinue
+            if ($ServerUrl -and $ServerUrl.MeshServer -match 'wss?://([^/\s]+)') {
+                return $Matches[1]
+            }
+        }
+    }
+
+    return $null
+}
 
 function Get-ScreenConnectInstanceID {
     <#
@@ -317,6 +406,393 @@ function Test-ToolPresence {
 }
 
 # ============================================================
+# RAT REMOVAL FUNCTIONS
+# ============================================================
+
+function Remove-RATool {
+    <#
+    .SYNOPSIS
+        Attempts to remove a detected remote access tool.
+    .PARAMETER ToolName
+        Name of the tool to remove.
+    .RETURNS
+        Hashtable with Success (bool) and Message (string).
+    #>
+    param([string]$ToolName)
+
+    $Result = @{ Success = $false; Message = "" }
+
+    Write-LevelLog "Attempting to remove: $ToolName" -Level "INFO"
+
+    # Tool-specific removal logic
+    switch ($ToolName) {
+        "AnyDesk" {
+            $Result = Remove-AnyDesk
+        }
+        "TeamViewer" {
+            $Result = Remove-TeamViewer
+        }
+        "RustDesk" {
+            $Result = Remove-RustDesk
+        }
+        "Meshcentral" {
+            $Result = Remove-Meshcentral
+        }
+        "Splashtop" {
+            $Result = Remove-GenericRAT -Name "Splashtop" -ProcessPatterns @("Splashtop*", "strwinclt*") -ServicePatterns @("Splashtop*")
+        }
+        "LogMeIn" {
+            $Result = Remove-GenericRAT -Name "LogMeIn" -ProcessPatterns @("LogMeIn*", "LMI*") -ServicePatterns @("LogMeIn*", "LMI*")
+        }
+        "RealVNC" {
+            $Result = Remove-GenericRAT -Name "RealVNC" -ProcessPatterns @("vncserver*", "winvnc*") -ServicePatterns @("vncserver", "RealVNC*")
+        }
+        "TightVNC" {
+            $Result = Remove-GenericRAT -Name "TightVNC" -ProcessPatterns @("tvnserver*") -ServicePatterns @("tvnserver", "TightVNC*")
+        }
+        "UltraVNC" {
+            $Result = Remove-GenericRAT -Name "UltraVNC" -ProcessPatterns @("winvnc*", "ultravnc*") -ServicePatterns @("uvnc*", "UltraVNC*")
+        }
+        "DWService" {
+            $Result = Remove-GenericRAT -Name "DWService" -ProcessPatterns @("dwagent*", "dwagsvc*") -ServicePatterns @("dwagent*", "DWAgent*")
+        }
+        "Supremo" {
+            $Result = Remove-GenericRAT -Name "Supremo" -ProcessPatterns @("Supremo*") -ServicePatterns @("Supremo*")
+        }
+        "Ammyy Admin" {
+            $Result = Remove-GenericRAT -Name "Ammyy" -ProcessPatterns @("AA_v*", "Ammyy*") -ServicePatterns @("Ammyy*")
+        }
+        "Remote Utilities" {
+            $Result = Remove-GenericRAT -Name "Remote Utilities" -ProcessPatterns @("rutserv*", "rfusclient*") -ServicePatterns @("rutserv*")
+        }
+        "Radmin" {
+            $Result = Remove-GenericRAT -Name "Radmin" -ProcessPatterns @("radmin*", "rserver*") -ServicePatterns @("radmin*", "rserver*")
+        }
+        default {
+            # Try generic removal for unknown tools
+            $Result = Remove-GenericRAT -Name $ToolName -ProcessPatterns @("$ToolName*") -ServicePatterns @("$ToolName*")
+        }
+    }
+
+    return $Result
+}
+
+function Remove-AnyDesk {
+    $Result = @{ Success = $false; Message = "" }
+
+    # Stop processes
+    Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+
+    # Stop and remove service
+    $Service = Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue
+    if ($Service) {
+        Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
+        & sc.exe delete $Service.Name 2>$null
+    }
+
+    # Run uninstaller if exists
+    $UninstallPaths = @(
+        "$env:ProgramFiles\AnyDesk\AnyDesk.exe",
+        "${env:ProgramFiles(x86)}\AnyDesk\AnyDesk.exe",
+        "$env:APPDATA\AnyDesk\AnyDesk.exe"
+    )
+    foreach ($Path in $UninstallPaths) {
+        if (Test-Path $Path) {
+            Write-LevelLog "Running AnyDesk uninstaller..."
+            Start-Process $Path -ArgumentList "--remove" -Wait -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 3
+        }
+    }
+
+    # Force remove directories
+    $RemovePaths = @(
+        "$env:ProgramFiles\AnyDesk",
+        "${env:ProgramFiles(x86)}\AnyDesk",
+        "$env:APPDATA\AnyDesk",
+        "$env:ProgramData\AnyDesk"
+    )
+    foreach ($Path in $RemovePaths) {
+        if (Test-Path $Path) {
+            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # Verify removal
+    $StillPresent = Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue
+    if (-not $StillPresent) {
+        $Result.Success = $true
+        $Result.Message = "AnyDesk removed successfully"
+    } else {
+        $Result.Message = "AnyDesk removal incomplete - processes still running"
+    }
+
+    return $Result
+}
+
+function Remove-TeamViewer {
+    $Result = @{ Success = $false; Message = "" }
+
+    # Stop processes
+    Get-Process -Name "TeamViewer*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+
+    # Stop and remove service
+    $Service = Get-Service -Name "TeamViewer*" -ErrorAction SilentlyContinue
+    if ($Service) {
+        Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
+        & sc.exe delete $Service.Name 2>$null
+    }
+
+    # Find and run uninstaller from registry
+    $UninstallString = Get-SoftwareUninstallString -SoftwareName "TeamViewer"
+    if ($UninstallString) {
+        Write-LevelLog "Running TeamViewer uninstaller..."
+        if ($UninstallString -match 'msiexec') {
+            Start-Process msiexec.exe -ArgumentList ($UninstallString -replace 'msiexec.exe\s*', '') + " /qn" -Wait -ErrorAction SilentlyContinue
+        } else {
+            Start-Process cmd.exe -ArgumentList "/c `"$UninstallString`" /S" -Wait -ErrorAction SilentlyContinue
+        }
+        Start-Sleep -Seconds 5
+    }
+
+    # Force remove directories
+    $RemovePaths = @(
+        "$env:ProgramFiles\TeamViewer",
+        "${env:ProgramFiles(x86)}\TeamViewer",
+        "$env:APPDATA\TeamViewer"
+    )
+    foreach ($Path in $RemovePaths) {
+        if (Test-Path $Path) {
+            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    $StillPresent = Get-Process -Name "TeamViewer*" -ErrorAction SilentlyContinue
+    if (-not $StillPresent) {
+        $Result.Success = $true
+        $Result.Message = "TeamViewer removed successfully"
+    } else {
+        $Result.Message = "TeamViewer removal incomplete"
+    }
+
+    return $Result
+}
+
+function Remove-RustDesk {
+    $Result = @{ Success = $false; Message = "" }
+
+    # Stop processes
+    Get-Process -Name "rustdesk*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+
+    # Stop and remove service
+    $Service = Get-Service -Name "rustdesk*" -ErrorAction SilentlyContinue
+    if ($Service) {
+        Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
+        & sc.exe delete $Service.Name 2>$null
+    }
+
+    # Run uninstaller
+    $UninstallPaths = @(
+        "$env:ProgramFiles\RustDesk\rustdesk.exe",
+        "${env:ProgramFiles(x86)}\RustDesk\rustdesk.exe"
+    )
+    foreach ($Path in $UninstallPaths) {
+        if (Test-Path $Path) {
+            Write-LevelLog "Running RustDesk uninstaller..."
+            Start-Process $Path -ArgumentList "--uninstall" -Wait -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 3
+        }
+    }
+
+    # Force remove
+    $RemovePaths = @(
+        "$env:ProgramFiles\RustDesk",
+        "${env:ProgramFiles(x86)}\RustDesk",
+        "$env:APPDATA\RustDesk"
+    )
+    foreach ($Path in $RemovePaths) {
+        if (Test-Path $Path) {
+            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    $StillPresent = Get-Process -Name "rustdesk*" -ErrorAction SilentlyContinue
+    if (-not $StillPresent) {
+        $Result.Success = $true
+        $Result.Message = "RustDesk removed successfully"
+    } else {
+        $Result.Message = "RustDesk removal incomplete"
+    }
+
+    return $Result
+}
+
+function Remove-Meshcentral {
+    $Result = @{ Success = $false; Message = "" }
+
+    # Stop processes
+    Get-Process -Name "MeshAgent*", "meshagent*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+
+    # Stop and remove service
+    $Services = Get-Service -Name "Mesh Agent*", "MeshAgent*" -ErrorAction SilentlyContinue
+    foreach ($Service in $Services) {
+        Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
+        & sc.exe delete $Service.Name 2>$null
+    }
+
+    # Run uninstaller
+    $UninstallPaths = @(
+        "$env:ProgramFiles\Mesh Agent\MeshAgent.exe",
+        "${env:ProgramFiles(x86)}\Mesh Agent\MeshAgent.exe"
+    )
+    foreach ($Path in $UninstallPaths) {
+        if (Test-Path $Path) {
+            Write-LevelLog "Running Meshcentral uninstaller..."
+            Start-Process $Path -ArgumentList "-uninstall" -Wait -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 3
+        }
+    }
+
+    # Force remove directories
+    $RemovePaths = @(
+        "$env:ProgramFiles\Mesh Agent",
+        "${env:ProgramFiles(x86)}\Mesh Agent",
+        "$env:ProgramData\Mesh Agent"
+    )
+    foreach ($Path in $RemovePaths) {
+        if (Test-Path $Path) {
+            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    $StillPresent = Get-Process -Name "MeshAgent*", "meshagent*" -ErrorAction SilentlyContinue
+    if (-not $StillPresent) {
+        $Result.Success = $true
+        $Result.Message = "Meshcentral agent removed successfully"
+    } else {
+        $Result.Message = "Meshcentral removal incomplete"
+    }
+
+    return $Result
+}
+
+function Get-SoftwareUninstallString {
+    <#
+    .SYNOPSIS
+        Gets the uninstall string for a software product from the registry.
+    .PARAMETER SoftwareName
+        Name or pattern to match against DisplayName.
+    .PARAMETER Quiet
+        If true, don't log when not found.
+    .RETURNS
+        The uninstall string, or $null if not found.
+    #>
+    param(
+        [string]$SoftwareName,
+        [switch]$Quiet
+    )
+
+    $RegistryPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    )
+
+    foreach ($Path in $RegistryPaths) {
+        $Software = Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like "*$SoftwareName*" }
+        if ($Software) {
+            if ($Software.UninstallString) {
+                return $Software.UninstallString
+            }
+            if ($Software.QuietUninstallString) {
+                return $Software.QuietUninstallString
+            }
+        }
+    }
+
+    if (-not $Quiet) {
+        Write-LevelLog "No uninstall string found for $SoftwareName" -Level "DEBUG"
+    }
+    return $null
+}
+
+function Remove-GenericRAT {
+    param(
+        [string]$Name,
+        [string[]]$ProcessPatterns,
+        [string[]]$ServicePatterns
+    )
+
+    $Result = @{ Success = $false; Message = "" }
+
+    # Stop processes
+    foreach ($Pattern in $ProcessPatterns) {
+        Get-Process -Name $Pattern -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    }
+    Start-Sleep -Seconds 2
+
+    # Stop and remove services
+    foreach ($Pattern in $ServicePatterns) {
+        $Services = Get-Service -Name $Pattern -ErrorAction SilentlyContinue
+        foreach ($Service in $Services) {
+            Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
+            & sc.exe delete $Service.Name 2>$null
+        }
+    }
+
+    # Try to find and run uninstaller from registry
+    $UninstallString = Get-SoftwareUninstallString -SoftwareName $Name -Quiet
+    if ($UninstallString) {
+        Write-LevelLog "Running $Name uninstaller..."
+        if ($UninstallString -match 'msiexec') {
+            if ($UninstallString -match '\{[A-Fa-f0-9\-]+\}') {
+                $ProductCode = $matches[0]
+                Start-Process msiexec.exe -ArgumentList "/x $ProductCode /qn /norestart" -Wait -ErrorAction SilentlyContinue
+            }
+        } else {
+            Start-Process cmd.exe -ArgumentList "/c `"$UninstallString`" /S /silent /quiet" -Wait -ErrorAction SilentlyContinue
+        }
+        Start-Sleep -Seconds 3
+    }
+
+    # Force remove common paths
+    $CommonPaths = @(
+        "$env:ProgramFiles\$Name",
+        "${env:ProgramFiles(x86)}\$Name",
+        "$env:APPDATA\$Name",
+        "$env:ProgramData\$Name",
+        "$env:LOCALAPPDATA\$Name"
+    )
+    foreach ($Path in $CommonPaths) {
+        if (Test-Path $Path) {
+            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # Check if any processes still running
+    $StillRunning = $false
+    foreach ($Pattern in $ProcessPatterns) {
+        if (Get-Process -Name $Pattern -ErrorAction SilentlyContinue) {
+            $StillRunning = $true
+            break
+        }
+    }
+
+    if (-not $StillRunning) {
+        $Result.Success = $true
+        $Result.Message = "$Name removed successfully"
+    } else {
+        $Result.Message = "$Name removal incomplete - some processes still running"
+    }
+
+    return $Result
+}
+
+# ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
 Invoke-LevelScript -ScriptBlock {
@@ -355,9 +831,15 @@ Invoke-LevelScript -ScriptBlock {
     # Track detections
     $DetectedTools = @()
 
-    # Check if this is a ScreenConnect Server
+    # Log whitelisting settings
     if ($IsScreenConnectServer -eq "true") {
         Write-LevelLog "This device is marked as a ScreenConnect Server - ScreenConnect excluded" -Level "INFO"
+    }
+    if ($MeshcentralServerUrl -and $MeshcentralServerUrl -ne "" -and $MeshcentralServerUrl -notlike "{{*}}") {
+        Write-LevelLog "Meshcentral whitelist URL: $MeshcentralServerUrl" -Level "INFO"
+    }
+    if ($EnableAutoRemove) {
+        Write-LevelLog "Auto-remove mode ENABLED - will attempt to remove detected RATs" -Level "WARN"
     }
 
     # Scan for each tool
@@ -385,6 +867,26 @@ Invoke-LevelScript -ScriptBlock {
                 }
                 elseif ($DetectedInstanceID) {
                     Write-LevelLog "ScreenConnect instance '$DetectedInstanceID' does NOT match whitelist '$ScreenConnectInstanceId'" -Level "WARN"
+                }
+            }
+        }
+
+        # Handle Meshcentral whitelisting
+        if ($Tool.Name -eq "Meshcentral") {
+            if ($MeshcentralServerUrl -and $MeshcentralServerUrl -ne "" -and $MeshcentralServerUrl -notlike "{{*}}") {
+                $DetectedMeshUrl = Get-MeshcentralServerUrl
+                if ($DetectedMeshUrl) {
+                    # Normalize URLs for comparison (remove protocol, trailing slashes)
+                    $WhitelistUrl = $MeshcentralServerUrl -replace '^https?://', '' -replace '/$', ''
+                    $DetectedUrl = $DetectedMeshUrl -replace '^https?://', '' -replace '/$', ''
+
+                    if ($DetectedUrl -like "*$WhitelistUrl*" -or $WhitelistUrl -like "*$DetectedUrl*") {
+                        Write-LevelLog "Meshcentral server '$DetectedMeshUrl' matches whitelist '$MeshcentralServerUrl' - skipping" -Level "INFO"
+                        continue
+                    }
+                    else {
+                        Write-LevelLog "Meshcentral server '$DetectedMeshUrl' does NOT match whitelist '$MeshcentralServerUrl'" -Level "WARN"
+                    }
                 }
             }
         }
@@ -423,7 +925,59 @@ Invoke-LevelScript -ScriptBlock {
             Write-Host ""
         }
 
-        Write-LevelLog "ACTION REQUIRED: Review and remediate detected tools" -Level "WARN"
-        Complete-LevelScript -ExitCode 1 -Message "Detected $($DetectedTools.Count) unauthorized remote access tool(s)"
+        # Auto-removal if enabled
+        if ($EnableAutoRemove) {
+            Write-Host ""
+            Write-LevelLog "========================================" -Level "WARN"
+            Write-LevelLog "AUTO-REMOVE MODE - Attempting Removal" -Level "WARN"
+            Write-LevelLog "========================================" -Level "WARN"
+            Write-Host ""
+
+            $RemovalResults = @()
+            foreach ($Detection in $DetectedTools) {
+                Write-LevelLog "Removing $($Detection.Name)..." -Level "INFO"
+                $RemovalResult = Remove-RATool -ToolName $Detection.Name
+                $RemovalResults += @{
+                    Name = $Detection.Name
+                    Success = $RemovalResult.Success
+                    Message = $RemovalResult.Message
+                }
+
+                if ($RemovalResult.Success) {
+                    Write-LevelLog "  SUCCESS: $($RemovalResult.Message)" -Level "SUCCESS"
+                } else {
+                    Write-LevelLog "  FAILED: $($RemovalResult.Message)" -Level "ERROR"
+                }
+            }
+
+            # Summary
+            Write-Host ""
+            Write-LevelLog "========================================" -Level "INFO"
+            Write-LevelLog "REMOVAL SUMMARY" -Level "INFO"
+            Write-LevelLog "========================================" -Level "INFO"
+
+            $SuccessCount = ($RemovalResults | Where-Object { $_.Success }).Count
+            $FailCount = ($RemovalResults | Where-Object { -not $_.Success }).Count
+
+            Write-LevelLog "Successfully removed: $SuccessCount" -Level $(if ($SuccessCount -gt 0) { "SUCCESS" } else { "INFO" })
+            Write-LevelLog "Failed to remove: $FailCount" -Level $(if ($FailCount -gt 0) { "ERROR" } else { "INFO" })
+
+            if ($FailCount -gt 0) {
+                Write-Host ""
+                Write-LevelLog "Failed removals require manual intervention:" -Level "WARN"
+                foreach ($Result in ($RemovalResults | Where-Object { -not $_.Success })) {
+                    Write-Host "  - $($Result.Name): $($Result.Message)"
+                }
+            }
+
+            # Exit code: 1 if any removals failed or any tools detected (even if removed)
+            # This ensures the script alerts on detection even when auto-remove succeeds
+            Complete-LevelScript -ExitCode 1 -Message "Detected $($DetectedTools.Count) RAT(s). Removed: $SuccessCount, Failed: $FailCount"
+        }
+        else {
+            Write-LevelLog "ACTION REQUIRED: Review and remediate detected tools" -Level "WARN"
+            Write-LevelLog "TIP: Set AutoRemoveRATs=true to enable automatic removal" -Level "INFO"
+            Complete-LevelScript -ExitCode 1 -Message "Detected $($DetectedTools.Count) unauthorized remote access tool(s)"
+        }
     }
 }

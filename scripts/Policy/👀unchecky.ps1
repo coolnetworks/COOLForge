@@ -230,37 +230,88 @@ function Install-Unchecky {
         return $false
     }
 
-    # Run silent install (uses -install -no_desktop_icon syntax)
-    Write-LevelLog "Installing Unchecky..."
-    try {
-        $InstallArgs = "-install -no_desktop_icon"
-        $Process = Start-Process -FilePath $InstallerPath -ArgumentList $InstallArgs -Wait -PassThru -ErrorAction Stop
-        if ($Process.ExitCode -eq 0) {
-            Write-LevelLog "Unchecky installed successfully" -Level "SUCCESS"
-            return $true
-        }
-        else {
-            Write-Host "Alert: Unchecky installer failed"
+    # Run silent install (with retry on failure)
+    $InstallArgs = "-install -no_desktop_icon"
+    $maxAttempts = 2
+    $installSuccess = $false
+
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        Write-LevelLog "Installing Unchecky (attempt $attempt of $maxAttempts)..."
+        try {
+            $Process = Start-Process -FilePath $InstallerPath -ArgumentList $InstallArgs -Wait -PassThru -ErrorAction Stop
+
+            if ($Process.ExitCode -eq 0) {
+                $installSuccess = $true
+                break
+            }
+
+            # Installation failed - attempt cleanup and retry
+            if ($attempt -lt $maxAttempts) {
+                Write-LevelLog "Installation failed (exit code: $($Process.ExitCode)) - attempting cleanup and retry..." -Level "WARN"
+
+                # Kill Unchecky processes
+                $uncheckyProcs = Get-Process -Name "unchecky*", "unchecky_bg*", "unchecky_svc*" -ErrorAction SilentlyContinue
+                if ($uncheckyProcs) {
+                    Write-LevelLog "Killing Unchecky processes..."
+                    $uncheckyProcs | Stop-Process -Force -ErrorAction SilentlyContinue
+                    Start-Sleep -Seconds 3
+                }
+
+                # Force remove Unchecky directories
+                $uncheckyPaths = @(
+                    "$env:ProgramFiles\Unchecky",
+                    "${env:ProgramFiles(x86)}\Unchecky"
+                )
+                foreach ($path in $uncheckyPaths) {
+                    if (Test-Path $path) {
+                        Write-LevelLog "Force removing: $path"
+                        Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
+                    }
+                }
+
+                # Clear temp files
+                Get-ChildItem "$env:TEMP\*unchecky*" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+                Write-LevelLog "Cleanup complete - retrying installation..."
+                continue
+            }
+
+            # Final attempt failed
+            Write-Host "Alert: Unchecky installer failed after $maxAttempts attempts"
             Write-Host "  Installer: $InstallerPath"
             Write-Host "  Arguments: $InstallArgs"
             Write-Host "  Exit code: $($Process.ExitCode)"
             Write-LevelLog "Installer exited with code: $($Process.ExitCode)" -Level "ERROR"
-            return $false
+        }
+        catch {
+            Write-LevelLog "Installation error: $($_.Exception.Message)" -Level "WARN"
+
+            if ($attempt -lt $maxAttempts) {
+                Write-LevelLog "Attempting cleanup and retry..." -Level "WARN"
+                # Kill processes and retry
+                Get-Process -Name "unchecky*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 2
+                continue
+            }
+
+            Write-Host "Alert: Unchecky installation exception"
+            Write-Host "  Installer: $InstallerPath"
+            Write-Host "  Error: $($_.Exception.Message)"
+            Write-LevelLog "Installation failed: $($_.Exception.Message)" -Level "ERROR"
         }
     }
-    catch {
-        Write-Host "Alert: Unchecky installation exception"
-        Write-Host "  Installer: $InstallerPath"
-        Write-Host "  Error: $($_.Exception.Message)"
-        Write-LevelLog "Installation failed: $($_.Exception.Message)" -Level "ERROR"
-        return $false
+
+    # Cleanup installer
+    if (Test-Path $InstallerPath) {
+        Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
     }
-    finally {
-        # Cleanup installer
-        if (Test-Path $InstallerPath) {
-            Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
-        }
+
+    if ($installSuccess) {
+        Write-LevelLog "Unchecky installed successfully" -Level "SUCCESS"
+        return $true
     }
+
+    return $false
 }
 
 function Remove-Unchecky {
