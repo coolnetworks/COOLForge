@@ -28,7 +28,7 @@
     - policy_dnsfilter = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.16.01
+    Version:          2026.01.18.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -46,7 +46,7 @@
 #>
 
 # Software Policy - DNSFilter
-# Version: 2026.01.16.01
+# Version: 2026.01.18.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -182,6 +182,22 @@ function Install-DNSFilter {
         return $false
     }
 
+    # FIRST: Stop existing service and kill processes before any uninstall/install
+    $dnsService = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if ($dnsService) {
+        Write-LevelLog "Stopping DNS Agent service..."
+        Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 3
+    }
+
+    # Kill any DNSFilter-related processes
+    $dnsProcesses = Get-Process -Name "DNS_Agent*", "dnsfilter*", "dnscrypt*" -ErrorAction SilentlyContinue
+    if ($dnsProcesses) {
+        Write-LevelLog "Killing DNSFilter processes..."
+        $dnsProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+    }
+
     # Check for existing installation via registry
     $uninstallPaths = @(
         "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
@@ -203,17 +219,24 @@ function Install-DNSFilter {
                     $uninstallProcess = Start-Process msiexec.exe -ArgumentList "/x $productCode /qn /norestart" -Wait -PassThru -WindowStyle Hidden
                     if ($uninstallProcess.ExitCode -eq 0) {
                         Write-LevelLog "Successfully uninstalled existing installation" -Level "SUCCESS"
+                    } else {
+                        Write-LevelLog "Uninstall returned exit code: $($uninstallProcess.ExitCode)" -Level "WARN"
                     }
                 }
             }
         }
-        Start-Sleep -Seconds 3
-    }
 
-    # Stop existing service if present
-    if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) {
-        Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 2
+        # Wait for uninstall to complete
+        Write-LevelLog "Waiting for uninstall to complete..."
+        Start-Sleep -Seconds 10
+
+        # Kill any lingering processes after uninstall
+        $dnsProcesses = Get-Process -Name "DNS_Agent*", "dnsfilter*", "dnscrypt*" -ErrorAction SilentlyContinue
+        if ($dnsProcesses) {
+            Write-LevelLog "Killing lingering DNSFilter processes..."
+            $dnsProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+        }
     }
 
     # Download MSI
@@ -350,7 +373,7 @@ function Remove-DNSFilter {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.16.01"
+$ScriptVersion = "2026.01.18.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {

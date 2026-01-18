@@ -31,7 +31,7 @@
     - policy_chrome = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.16.01
+    Version:          2026.01.18.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -48,7 +48,7 @@
 #>
 
 # Software Policy - Chrome Enterprise
-# Version: 2026.01.16.01
+# Version: 2026.01.18.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -216,6 +216,14 @@ function Test-ChromeInstalled {
 function Install-ChromeEnterprise {
     param([string]$ScratchFolder)
 
+    # FIRST: Kill all Chrome processes before doing anything else
+    $chromeProcesses = Get-Process -Name "chrome", "GoogleUpdate", "GoogleCrashHandler", "GoogleCrashHandler64" -ErrorAction SilentlyContinue
+    if ($chromeProcesses) {
+        Write-LevelLog "Closing Chrome and related processes..."
+        $chromeProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 3
+    }
+
     # Check for existing non-enterprise installation
     $existingNonEnterprise = $false
     $consumerPath = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
@@ -246,6 +254,8 @@ function Install-ChromeEnterprise {
                     $uninstallProcess = Start-Process msiexec.exe -ArgumentList "/x $productCode /qn /norestart" -Wait -PassThru -WindowStyle Hidden
                     if ($uninstallProcess.ExitCode -eq 0) {
                         Write-LevelLog "Successfully uninstalled existing installation" -Level "SUCCESS"
+                    } else {
+                        Write-LevelLog "Uninstall returned exit code: $($uninstallProcess.ExitCode)" -Level "WARN"
                     }
                 }
             } elseif ($uninstallString) {
@@ -258,15 +268,25 @@ function Install-ChromeEnterprise {
                 }
             }
         }
-        Start-Sleep -Seconds 5
-    }
 
-    # Close Chrome if running
-    $chromeProcesses = Get-Process -Name "chrome" -ErrorAction SilentlyContinue
-    if ($chromeProcesses) {
-        Write-LevelLog "Closing Chrome processes..."
-        $chromeProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 2
+        # Wait for uninstall to complete and verify
+        Write-LevelLog "Waiting for uninstall to complete..."
+        Start-Sleep -Seconds 10
+
+        # Kill any lingering processes after uninstall
+        $chromeProcesses = Get-Process -Name "chrome", "GoogleUpdate", "GoogleCrashHandler", "GoogleCrashHandler64" -ErrorAction SilentlyContinue
+        if ($chromeProcesses) {
+            Write-LevelLog "Killing lingering Chrome processes..."
+            $chromeProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 3
+        }
+
+        # Verify uninstall completed
+        if (Test-Path $consumerPath) {
+            Write-LevelLog "Consumer Chrome still present after uninstall - attempting forced removal" -Level "WARN"
+            Remove-Item "C:\Program Files (x86)\Google\Chrome" -Recurse -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+        }
     }
 
     # Download Enterprise MSI
@@ -410,7 +430,7 @@ function Remove-Chrome {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.16.01"
+$ScriptVersion = "2026.01.18.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
