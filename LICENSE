@@ -1,26 +1,60 @@
-MIT License with Attribution
+# COOLForge Licensing
 
-Copyright (c) 2025 COOLNETWORKS
+## Open Source License: AGPL-3.0
+
+Copyright (c) 2025-2026 COOLNETWORKS
 https://github.com/coolnetworks/COOLForge
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+COOLForge is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
 
-1. The above copyright notice and this permission notice shall be included in
-   all copies or substantial portions of the Software.
+You may obtain a copy of the license at: https://www.gnu.org/licenses/agpl-3.0.en.html
 
-2. Attribution must be given to COOLNETWORKS in any derivative works or
-   distributions, including a link to the original repository:
-   https://github.com/coolnetworks/COOLForge
+### Summary of AGPL-3.0
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+- You may use, modify, and distribute this software freely
+- If you modify the software, you must release your modifications under AGPL-3.0
+- If you run a modified version on a server and let others interact with it, you must make your source code available to them
+- You must preserve copyright notices and license information
+
+---
+
+## Commercial License Exception
+
+### When AGPL-3.0 Applies (Free Use)
+
+You may use COOLForge under AGPL-3.0 at no cost if:
+
+1. **MSP End-User Operations** - You are a managed service provider using COOLForge to manage your own clients' devices, running on an RMM platform you subscribe to
+2. **Personal/Educational Use** - You use COOLForge for learning, testing, or personal projects
+3. **Open Source Projects** - You incorporate COOLForge into other AGPL-3.0 or compatible open source projects
+
+### When a Commercial License is Required
+
+You must obtain a commercial license from COOLNETWORKS if:
+
+1. **Platform Integration** - You are an RMM, endpoint management, or IT automation platform vendor and wish to incorporate COOLForge code, patterns, or functionality into your platform or product offerings
+2. **Multi-Tenant Offering** - You offer COOLForge or derivative functionality as a feature available to multiple customers/tenants of your platform
+3. **SaaS/Hosted Offering** - You offer COOLForge functionality as a hosted service to third parties
+4. **Proprietary Distribution** - You distribute COOLForge or derivatives as part of proprietary/closed-source software
+5. **OEM/Resale** - You bundle COOLForge with hardware or software products for resale
+6. **Avoiding Copyleft** - You wish to modify COOLForge without releasing your modifications under AGPL-3.0
+
+### Obtaining a Commercial License
+
+Contact COOLNETWORKS for commercial licensing inquiries:
+- Email: licensing@coolnetworks.au
+- Website: https://coolnetworks.au/COOLForge/licensing
+
+---
+
+## Previous Versions
+
+Code released prior to 2026-01-19 was made available under the MIT License with Attribution. Users who obtained the software before this date retain their rights under that license for those versions.
+
+This license change applies to version v2026.01.19.01 and all subsequent releases.
+
+---
+
+## Third-Party Components
+
+This software may include third-party components with their own licenses. See [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md) if applicable.
