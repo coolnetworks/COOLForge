@@ -56,8 +56,6 @@ $LevelApiKey_Raw = @'
 {{cf_apikey}}
 '@
 $LevelApiKey = $LevelApiKey_Raw.Trim()
-if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") { $LevelApiKey = $null }
-
 # ============================================================
 # GITHUB PAT INJECTION
 # ============================================================

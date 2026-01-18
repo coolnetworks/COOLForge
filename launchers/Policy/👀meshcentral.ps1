@@ -1,45 +1,34 @@
 # ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀Check for Unauthorized Remote Access Tools.ps1"
-$PolicyRatRemoval = "{{policy_rat_removal}}"
-$PolicyBlockDevice = "{{policy_block_device}}"
-$ScreenConnectInstanceId = "{{policy_screenconnect_instance_id}}"
-$IsScreenConnectServer = "{{policy_screenconnect_server}}"
-$MeshcentralServerUrl = "{{policy_meshcentral_server_url}}"
+$ScriptToRun = "👀meshcentral.ps1"
+$policy_meshcentral = "{{cf_policy_meshcentral}}"
+$policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
+$policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
+$policy_meshcentral_linux_install = "{{cf_policy_meshcentral_linux_install}}"
+$policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for RAT Detection and Removal
+    Slim Level.io Launcher for MeshCentral Policy Script
 
 .DESCRIPTION
-    Detects and optionally removes unauthorized remote access tools (RATs) from devices.
-    Supports whitelisting for authorized tools like your MSP's ScreenConnect and Meshcentral.
+    Deploys and manages MeshCentral Agent on Windows devices.
 
-    POLICY FIELD (inherited Group->Folder->Device):
-    - policy_rat_removal = "detect" (default) | "remove" | "skip"
-    - policy_block_device = "true" to block ALL COOLForge scripts on this device
+    Custom Fields Required:
+    - cf_policy_meshcentral: Policy action (install/remove/pin)
+    - cf_policy_meshcentral_server_url: Your MeshCentral server (e.g., mc.cool.net.au)
+    - cf_policy_meshcentral_download_url: Windows installer download URL from MeshCentral
 
-    WHITELISTING:
-    - policy_screenconnect_instance_id = Your MSP's ScreenConnect instance ID
-    - policy_screenconnect_server = "true" if device hosts ScreenConnect server
-    - policy_meshcentral_server_url = Your authorized Meshcentral server (e.g., mc.cool.net.au)
+    Optional Custom Fields:
+    - cf_policy_meshcentral_linux_install: Linux install command (one-liner)
+    - cf_policy_meshcentral_mac_download_url: Mac installer download URL
 
 .NOTES
     Launcher Version: 2026.01.19.01
     Target Platform:  Level.io RMM
 
-    Level.io Variables Used:
-    - {{cf_coolforge_msp_scratch_folder}}      : MSP-defined scratch folder
-    - {{cf_coolforge_ps_module_library_source}}: URL to download COOLForge-Common.psm1
-    - {{cf_coolforge_pin_psmodule_to_version}} : (Optional) Pin to specific version tag
-    - {{cf_coolforge_pat}}                     : (Optional) GitHub PAT for private repos
-    - {{level_device_hostname}}                : Device hostname from Level.io
-    - {{level_tag_names}}                      : Comma-separated list of device tags
-    - {{policy_rat_removal}}                   : Policy setting (default: detect)
-    - {{policy_block_device}}                  : Global device block (true to skip all scripts)
-    - {{policy_screenconnect_instance_id}}     : Whitelisted ScreenConnect instance ID
-    - {{policy_screenconnect_server}}          : Set to "true" for SC server devices
-    - {{policy_meshcentral_server_url}}        : Whitelisted Meshcentral server URL
+    This slim launcher (~200 lines) replaces the full launcher (~660 lines).
+    Script download/execution is handled by Invoke-ScriptLauncher in the library.
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -62,6 +51,7 @@ if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -like "{{*}}") { $Gi
 
 $PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
 $UsePinnedVersion = (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}")
+Write-Host "[DEBUG] PinnedVersion='$PinnedVersion' UsePinnedVersion=$UsePinnedVersion"
 
 $LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
 if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
@@ -70,6 +60,7 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 } elseif ($UsePinnedVersion) {
     $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
 }
+Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
 $DebugScripts = "{{cf_debug_scripts}}"
 if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
@@ -104,7 +95,7 @@ if ($GitHubPAT) {
 }
 
 # ============================================================
-# LIBRARY BOOTSTRAP
+# LIBRARY BOOTSTRAP (required - can't use library to download itself)
 # ============================================================
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
 $LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "COOLForge-Common.psm1"
@@ -164,59 +155,49 @@ try {
 $ModuleContent = Get-Content -Path $LibraryPath -Raw
 New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
-# Load MD5SUMS
+# Load MD5SUMS (with cache-busting in debug mode)
 $MD5SumsContent = $null
 $MD5FetchUrl = $MD5SumsUrl
 if ($DebugScripts) {
     $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
+    Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl"
 }
 try {
     $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
-} catch { }
+    if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
+} catch {
+    if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: $_" }
+}
 
 # ============================================================
-# COLLECT LAUNCHER VARIABLES
+# COLLECT POLICY VARIABLES
 # ============================================================
-# Clean up policy variables
-if ([string]::IsNullOrWhiteSpace($PolicyRatRemoval) -or $PolicyRatRemoval -like "{{*}}") {
-    $PolicyRatRemoval = "detect"
-}
-if ([string]::IsNullOrWhiteSpace($PolicyBlockDevice) -or $PolicyBlockDevice -like "{{*}}") {
-    $PolicyBlockDevice = ""
-}
-if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
-    $ScreenConnectInstanceId = ""
-}
-if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
-    $IsScreenConnectServer = ""
-}
-if ([string]::IsNullOrWhiteSpace($MeshcentralServerUrl) -or $MeshcentralServerUrl -like "{{*}}") {
-    $MeshcentralServerUrl = ""
-}
-
-# Translate policy to auto-remove setting
-$AutoRemoveRATs = if ($PolicyRatRemoval.ToLower() -eq "remove") { "true" } else { "" }
-
-$LauncherVars = @{
-    MspScratchFolder        = $MspScratchFolder
-    DeviceHostname          = $DeviceHostname
-    DeviceTags              = $DeviceTags
-    LevelApiKey             = $LevelApiKey
-    DebugScripts            = $DebugScripts
-    LibraryUrl              = $LibraryUrl
-    PolicyBlockDevice       = $PolicyBlockDevice
-    PolicyRatRemoval        = $PolicyRatRemoval
-    ScreenConnectInstanceId = $ScreenConnectInstanceId
-    IsScreenConnectServer   = $IsScreenConnectServer
-    MeshcentralServerUrl    = $MeshcentralServerUrl
-    AutoRemoveRATs          = $AutoRemoveRATs
+$PolicyVars = @{}
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
+        $PolicyVars[$_.Name] = $_.Value
+    }
 }
 
 # ============================================================
 # EXECUTE SCRIPT
 # ============================================================
 Write-Host "[*] Slim Launcher v2026.01.19.01"
+
+$LauncherVars = @{
+    MspScratchFolder = $MspScratchFolder
+    DeviceHostname   = $DeviceHostname
+    DeviceTags       = $DeviceTags
+    LevelApiKey      = $LevelApiKey
+    DebugScripts     = $DebugScripts
+    LibraryUrl       = $LibraryUrl
+}
+
+# Add policy variables
+foreach ($key in $PolicyVars.Keys) {
+    $LauncherVars[$key] = $PolicyVars[$key]
+}
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -RepoBaseUrl $RepoBaseUrl `

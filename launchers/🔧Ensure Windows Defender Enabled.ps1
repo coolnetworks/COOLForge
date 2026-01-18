@@ -1,31 +1,23 @@
 # ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀Check for Unauthorized Remote Access Tools.ps1"
-$PolicyRatRemoval = "{{policy_rat_removal}}"
-$PolicyBlockDevice = "{{policy_block_device}}"
-$ScreenConnectInstanceId = "{{policy_screenconnect_instance_id}}"
-$IsScreenConnectServer = "{{policy_screenconnect_server}}"
-$MeshcentralServerUrl = "{{policy_meshcentral_server_url}}"
+$ScriptToRun = "🔧Ensure Windows Defender Enabled.ps1"
+$PolicyDefender = "{{policy_defender}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for RAT Detection and Removal
+    Slim Level.io Launcher for Windows Defender Enforcement
 
 .DESCRIPTION
-    Detects and optionally removes unauthorized remote access tools (RATs) from devices.
-    Supports whitelisting for authorized tools like your MSP's ScreenConnect and Meshcentral.
+    Ensures Windows Defender is enabled and running on all Windows variants.
+    Includes self-healing capabilities to repair corrupted Defender installations.
 
     POLICY FIELD (inherited Group->Folder->Device):
-    - policy_rat_removal = "detect" (default) | "remove" | "skip"
-    - policy_block_device = "true" to block ALL COOLForge scripts on this device
+    - policy_defender = "enforce" (default) | "skip" | ""
 
-    WHITELISTING:
-    - policy_screenconnect_instance_id = Your MSP's ScreenConnect instance ID
-    - policy_screenconnect_server = "true" if device hosts ScreenConnect server
-    - policy_meshcentral_server_url = Your authorized Meshcentral server (e.g., mc.cool.net.au)
+    Default behavior is ENFORCE - Defender will be enabled unless explicitly skipped.
 
 .NOTES
-    Launcher Version: 2026.01.19.01
+    Launcher Version: 2026.01.18.01
     Target Platform:  Level.io RMM
 
     Level.io Variables Used:
@@ -35,11 +27,7 @@ $MeshcentralServerUrl = "{{policy_meshcentral_server_url}}"
     - {{cf_coolforge_pat}}                     : (Optional) GitHub PAT for private repos
     - {{level_device_hostname}}                : Device hostname from Level.io
     - {{level_tag_names}}                      : Comma-separated list of device tags
-    - {{policy_rat_removal}}                   : Policy setting (default: detect)
-    - {{policy_block_device}}                  : Global device block (true to skip all scripts)
-    - {{policy_screenconnect_instance_id}}     : Whitelisted ScreenConnect instance ID
-    - {{policy_screenconnect_server}}          : Set to "true" for SC server devices
-    - {{policy_meshcentral_server_url}}        : Whitelisted Meshcentral server URL
+    - {{policy_defender}}                      : Policy setting (default: enforce)
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -178,45 +166,25 @@ try {
 # ============================================================
 # COLLECT LAUNCHER VARIABLES
 # ============================================================
-# Clean up policy variables
-if ([string]::IsNullOrWhiteSpace($PolicyRatRemoval) -or $PolicyRatRemoval -like "{{*}}") {
-    $PolicyRatRemoval = "detect"
+# Clean up policy variable
+if ([string]::IsNullOrWhiteSpace($PolicyDefender) -or $PolicyDefender -like "{{*}}") {
+    $PolicyDefender = "enforce"
 }
-if ([string]::IsNullOrWhiteSpace($PolicyBlockDevice) -or $PolicyBlockDevice -like "{{*}}") {
-    $PolicyBlockDevice = ""
-}
-if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
-    $ScreenConnectInstanceId = ""
-}
-if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
-    $IsScreenConnectServer = ""
-}
-if ([string]::IsNullOrWhiteSpace($MeshcentralServerUrl) -or $MeshcentralServerUrl -like "{{*}}") {
-    $MeshcentralServerUrl = ""
-}
-
-# Translate policy to auto-remove setting
-$AutoRemoveRATs = if ($PolicyRatRemoval.ToLower() -eq "remove") { "true" } else { "" }
 
 $LauncherVars = @{
-    MspScratchFolder        = $MspScratchFolder
-    DeviceHostname          = $DeviceHostname
-    DeviceTags              = $DeviceTags
-    LevelApiKey             = $LevelApiKey
-    DebugScripts            = $DebugScripts
-    LibraryUrl              = $LibraryUrl
-    PolicyBlockDevice       = $PolicyBlockDevice
-    PolicyRatRemoval        = $PolicyRatRemoval
-    ScreenConnectInstanceId = $ScreenConnectInstanceId
-    IsScreenConnectServer   = $IsScreenConnectServer
-    MeshcentralServerUrl    = $MeshcentralServerUrl
-    AutoRemoveRATs          = $AutoRemoveRATs
+    MspScratchFolder = $MspScratchFolder
+    DeviceHostname   = $DeviceHostname
+    DeviceTags       = $DeviceTags
+    LevelApiKey      = $LevelApiKey
+    DebugScripts     = $DebugScripts
+    LibraryUrl       = $LibraryUrl
+    PolicyDefender   = $PolicyDefender
 }
 
 # ============================================================
 # EXECUTE SCRIPT
 # ============================================================
-Write-Host "[*] Slim Launcher v2026.01.19.01"
+Write-Host "[*] Slim Launcher v2026.01.18.01"
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -RepoBaseUrl $RepoBaseUrl `

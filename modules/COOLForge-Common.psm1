@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.16.03
+    Version:    2026.01.18.01
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -59,9 +59,10 @@ $script:Initialized = $false        # Flag to ensure initialization
 .DESCRIPTION
     Must be called before using other library functions. Performs:
     1. Sets up module variables for the script session
-    2. Checks device tags against blocking tags (tag gate)
-    3. Creates a lockfile to prevent concurrent execution
-    4. Handles stale lockfiles from crashed previous runs
+    2. Checks policy_block_device custom field (global device block)
+    3. Checks device tags against blocking tags (tag gate)
+    4. Creates a lockfile to prevent concurrent execution
+    5. Handles stale lockfiles from crashed previous runs
 
 .PARAMETER ScriptName
     Unique identifier for the script. Used for lockfile naming.
@@ -83,6 +84,11 @@ $script:Initialized = $false        # Flag to ensure initialization
     Array of tags that block script execution. Default: @() (empty - set your own)
     If any blocking tag is present in DeviceTags, script exits gracefully.
 
+.PARAMETER PolicyBlockDevice
+    Value of {{policy_block_device}} custom field. When set to "true", "block",
+    "yes", or "1", ALL COOLForge scripts skip execution on this device.
+    This provides a global kill switch for problematic devices.
+
 .PARAMETER SkipTagCheck
     Switch to bypass tag gate checking. Use cautiously.
 
@@ -92,6 +98,7 @@ $script:Initialized = $false        # Flag to ensure initialization
 .OUTPUTS
     Hashtable with Success, Reason, and additional properties:
     - Success: @{ Success = $true; Reason = "Initialized" }
+    - Policy blocked: @{ Success = $false; Reason = "PolicyBlocked"; Policy = "policy_block_device" }
     - Tag blocked: @{ Success = $false; Reason = "TagBlocked"; Tag = "BlockedTag" }
     - Already running: @{ Success = $false; Reason = "AlreadyRunning"; PID = 1234 }
 
@@ -133,6 +140,9 @@ function Initialize-LevelScript {
         [string[]]$BlockingTags = @(),
 
         [Parameter(Mandatory = $false)]
+        [string]$PolicyBlockDevice = "",
+
+        [Parameter(Mandatory = $false)]
         [switch]$SkipTagCheck,
 
         [Parameter(Mandatory = $false)]
@@ -147,6 +157,17 @@ function Initialize-LevelScript {
     $script:LockFile = Join-Path -Path $script:LockFilePath -ChildPath "$ScriptName.lock"
 
     Write-LevelLog "Initializing: $ScriptName on $DeviceHostname"
+
+    # --- Policy Block Check ---
+    # If policy_block_device is set to "true" or "block", skip all operations
+    if ($PolicyBlockDevice -and $PolicyBlockDevice -notlike "{{*}}") {
+        $BlockValue = $PolicyBlockDevice.ToLower().Trim()
+        if ($BlockValue -eq "true" -or $BlockValue -eq "block" -or $BlockValue -eq "yes" -or $BlockValue -eq "1") {
+            Write-LevelLog "Device blocked via policy_block_device='$PolicyBlockDevice'" -Level "SKIP"
+            Write-LevelLog "All COOLForge scripts will skip this device until policy_block_device is cleared" -Level "SKIP"
+            return @{ Success = $false; Reason = "PolicyBlocked"; Policy = "policy_block_device" }
+        }
+    }
 
     # --- Tag Gate Check ---
     # If device has a blocking tag, exit gracefully without running
@@ -797,6 +818,264 @@ function Get-SoftwareUninstallString {
     }
 
     return $null
+}
+
+<#
+.SYNOPSIS
+    Installs software via MSI with automatic retry on error 1603.
+
+.DESCRIPTION
+    Wraps msiexec.exe installation with robust error handling:
+    - Automatic retry on MSI error 1603 (fatal error during installation)
+    - Calls cleanup scriptblock between retries
+    - Restarts Windows Installer service before retry
+    - Supports custom install arguments
+
+.PARAMETER MsiPath
+    Full path to the MSI file to install.
+
+.PARAMETER Arguments
+    Additional msiexec arguments (default: "/qn /norestart").
+
+.PARAMETER CleanupBlock
+    ScriptBlock to execute before retry (e.g., kill processes, remove dirs).
+
+.PARAMETER MaxAttempts
+    Maximum installation attempts (default: 2).
+
+.PARAMETER SoftwareName
+    Name for logging purposes (default: derived from MSI filename).
+
+.OUTPUTS
+    Hashtable with Success (bool), ExitCode (int), and Message (string).
+
+.EXAMPLE
+    $result = Install-MsiWithRetry -MsiPath "C:\temp\software.msi" -CleanupBlock {
+        Get-Process -Name "software*" -EA 0 | Stop-Process -Force -EA 0
+        Remove-Item "C:\Program Files\Software" -Recurse -Force -EA 0
+    }
+    if ($result.Success) { Write-Host "Installed!" }
+
+.EXAMPLE
+    # With custom arguments
+    $result = Install-MsiWithRetry -MsiPath $msiPath -Arguments "/qn /norestart PROPERTY=VALUE"
+#>
+function Install-MsiWithRetry {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$MsiPath,
+
+        [string]$Arguments = "/qn /norestart",
+
+        [scriptblock]$CleanupBlock,
+
+        [int]$MaxAttempts = 2,
+
+        [string]$SoftwareName
+    )
+
+    if (-not $SoftwareName) {
+        $SoftwareName = [System.IO.Path]::GetFileNameWithoutExtension($MsiPath)
+    }
+
+    $result = @{
+        Success  = $false
+        ExitCode = -1
+        Message  = ""
+    }
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        Write-LevelLog "Installing $SoftwareName via MSI (attempt $attempt of $MaxAttempts)..."
+
+        $installArgs = "/i `"$MsiPath`" $Arguments"
+        $process = Start-Process msiexec.exe -ArgumentList $installArgs -Wait -PassThru -WindowStyle Hidden
+
+        $result.ExitCode = $process.ExitCode
+
+        # Success codes: 0 = OK, 3010 = OK but reboot required
+        if ($process.ExitCode -eq 0 -or $process.ExitCode -eq 3010) {
+            $result.Success = $true
+            $result.Message = if ($process.ExitCode -eq 3010) { "Installed (reboot required)" } else { "Installed successfully" }
+            Write-LevelLog "$SoftwareName $($result.Message)" -Level "SUCCESS"
+            return $result
+        }
+
+        # MSI Error 1603: Fatal error during installation - attempt cleanup and retry
+        if ($process.ExitCode -eq 1603 -and $attempt -lt $MaxAttempts) {
+            Write-LevelLog "MSI Error 1603 - attempting cleanup and retry..." -Level "WARN"
+
+            # Run custom cleanup if provided
+            if ($CleanupBlock) {
+                try {
+                    & $CleanupBlock
+                }
+                catch {
+                    Write-LevelLog "Cleanup error: $($_.Exception.Message)" -Level "WARN"
+                }
+            }
+
+            # Clear MSI temp files
+            Get-ChildItem "$env:TEMP\*" -Include "*.msi", "*.msp", "*.tmp" -ErrorAction SilentlyContinue |
+                Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-1) } |
+                Remove-Item -Force -ErrorAction SilentlyContinue
+
+            # Restart Windows Installer service
+            Write-LevelLog "Restarting Windows Installer service..."
+            Restart-Service msiserver -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 3
+
+            Write-LevelLog "Cleanup complete - retrying installation..."
+            continue
+        }
+
+        # Non-retryable error or final attempt
+        $result.Message = "Installation failed with exit code: $($process.ExitCode)"
+        Write-LevelLog $result.Message -Level "ERROR"
+    }
+
+    return $result
+}
+
+<#
+.SYNOPSIS
+    Installs software via EXE with automatic retry on failure.
+
+.DESCRIPTION
+    Wraps EXE installer execution with robust error handling:
+    - Automatic retry on non-zero exit codes
+    - Calls cleanup scriptblock between retries
+    - Configurable timeout
+    - Supports custom install arguments
+
+.PARAMETER ExePath
+    Full path to the EXE installer.
+
+.PARAMETER Arguments
+    Command-line arguments for the installer.
+
+.PARAMETER CleanupBlock
+    ScriptBlock to execute before retry (e.g., kill processes, remove dirs).
+
+.PARAMETER MaxAttempts
+    Maximum installation attempts (default: 2).
+
+.PARAMETER TimeoutSeconds
+    Maximum time to wait for installer (default: 300 = 5 minutes).
+
+.PARAMETER SuccessExitCodes
+    Array of exit codes considered successful (default: @(0)).
+
+.PARAMETER SoftwareName
+    Name for logging purposes (default: derived from EXE filename).
+
+.OUTPUTS
+    Hashtable with Success (bool), ExitCode (int), and Message (string).
+
+.EXAMPLE
+    $result = Install-ExeWithRetry -ExePath "C:\temp\installer.exe" -Arguments "/S" -CleanupBlock {
+        Get-Process -Name "software*" -EA 0 | Stop-Process -Force -EA 0
+        Remove-Item "C:\Program Files\Software" -Recurse -Force -EA 0
+    }
+
+.EXAMPLE
+    # Huntress-style installer with download URL re-fetch on retry
+    $result = Install-ExeWithRetry -ExePath $installerPath `
+        -Arguments "/ACCT_KEY=`"$key`" /ORG_KEY=`"$org`" /S" `
+        -CleanupBlock {
+            Stop-Process -Name "Huntress*" -Force -EA 0
+            Remove-Item "$env:ProgramFiles\Huntress" -Recurse -Force -EA 0
+        }
+#>
+function Install-ExeWithRetry {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ExePath,
+
+        [string]$Arguments = "",
+
+        [scriptblock]$CleanupBlock,
+
+        [int]$MaxAttempts = 2,
+
+        [int]$TimeoutSeconds = 300,
+
+        [int[]]$SuccessExitCodes = @(0),
+
+        [string]$SoftwareName
+    )
+
+    if (-not $SoftwareName) {
+        $SoftwareName = [System.IO.Path]::GetFileNameWithoutExtension($ExePath)
+    }
+
+    $result = @{
+        Success  = $false
+        ExitCode = -1
+        Message  = ""
+    }
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        Write-LevelLog "Installing $SoftwareName (attempt $attempt of $MaxAttempts)..."
+
+        try {
+            $process = Start-Process -FilePath $ExePath -ArgumentList $Arguments -PassThru -ErrorAction Stop
+            $completed = $process | Wait-Process -Timeout $TimeoutSeconds -ErrorAction SilentlyContinue
+
+            if (-not $process.HasExited) {
+                Write-LevelLog "Installation timed out after $TimeoutSeconds seconds" -Level "WARN"
+                Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+                $result.ExitCode = -1
+                $result.Message = "Installation timed out"
+            }
+            else {
+                $result.ExitCode = $process.ExitCode
+            }
+
+            # Check if exit code is in success list
+            if ($result.ExitCode -in $SuccessExitCodes) {
+                $result.Success = $true
+                $result.Message = "Installed successfully"
+                Write-LevelLog "$SoftwareName installed successfully" -Level "SUCCESS"
+                return $result
+            }
+
+            # Failed - attempt cleanup and retry
+            if ($attempt -lt $MaxAttempts) {
+                Write-LevelLog "Installation failed (exit code: $($result.ExitCode)) - attempting cleanup and retry..." -Level "WARN"
+
+                if ($CleanupBlock) {
+                    try {
+                        & $CleanupBlock
+                        Start-Sleep -Seconds 3
+                    }
+                    catch {
+                        Write-LevelLog "Cleanup error: $($_.Exception.Message)" -Level "WARN"
+                    }
+                }
+
+                Write-LevelLog "Cleanup complete - retrying installation..."
+                continue
+            }
+        }
+        catch {
+            Write-LevelLog "Installation error: $($_.Exception.Message)" -Level "WARN"
+
+            if ($attempt -lt $MaxAttempts -and $CleanupBlock) {
+                try {
+                    & $CleanupBlock
+                    Start-Sleep -Seconds 2
+                }
+                catch { }
+                continue
+            }
+        }
+
+        # Final attempt failed
+        $result.Message = "Installation failed with exit code: $($result.ExitCode)"
+        Write-LevelLog $result.Message -Level "ERROR"
+    }
+
+    return $result
 }
 
 <#
@@ -3092,6 +3371,13 @@ function Initialize-LevelSoftwarePolicy {
     - coolforge_pin_psmodule_to_version: Pin to specific version/branch
     - coolforge_pat: GitHub PAT for private repositories
     - coolforge_nosleep_duration_min: Duration for Prevent Sleep script
+    - policy_screenconnect_baseurl: ScreenConnect server base URL
+    - policy_screenconnect_instance_id: MSP's ScreenConnect instance ID
+    - policy_screenconnect_server: Whether device hosts ScreenConnect server
+    - policy_defender: Windows Defender enforcement policy (default: enforce)
+
+    Fields with legacy mappings (e.g., policy_screenconnect_*) will automatically
+    migrate values from legacy custom fields when first created.
 
     This function is idempotent - it only creates fields that don't exist.
     Call it once during initial setup or from policy scripts.
@@ -3166,16 +3452,79 @@ function Initialize-COOLForgeInfrastructure {
             DefaultValue = "false"
             Description  = "Enable verbose debug output (true/false)"
         }
+        # ScreenConnect fields with legacy field migration
+        @{
+            Name         = "policy_screenconnect_baseurl"
+            DefaultValue = ""
+            LegacyNames  = @("screenconnect_baseurl")
+            Description  = "ScreenConnect server base URL"
+        }
+        @{
+            Name         = "policy_screenconnect_instance_id"
+            DefaultValue = ""
+            LegacyNames  = @("coolforge_screenconnect_instance_id")
+            Description  = "MSP's ScreenConnect instance ID to whitelist"
+        }
+        @{
+            Name         = "policy_screenconnect_server"
+            DefaultValue = ""
+            LegacyNames  = @("coolforge_is_screenconnect_server")
+            Description  = "Set to 'true' if device hosts ScreenConnect server"
+        }
+        @{
+            Name         = "policy_defender"
+            DefaultValue = "enforce"
+            Description  = "Windows Defender policy: enforce (default) | skip"
+        }
+        @{
+            Name         = "policy_block_device"
+            DefaultValue = ""
+            Description  = "Set to 'true' to block ALL COOLForge scripts on this device"
+        }
+        @{
+            Name         = "policy_rat_removal"
+            DefaultValue = "detect"
+            Description  = "RAT removal policy: detect (default) | remove | skip"
+        }
+        @{
+            Name         = "policy_meshcentral_server_url"
+            DefaultValue = ""
+            Description  = "Whitelisted Meshcentral server URL (e.g., mc.example.com)"
+        }
     )
 
     foreach ($Field in $GlobalFields) {
         $ExistingField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $Field.Name -BaseUrl $BaseUrl
 
         if (-not $ExistingField) {
+            # Determine the default value - check legacy fields for migration
+            $DefaultToUse = $Field.DefaultValue
+            $MigratedFrom = $null
+
+            if ($Field.LegacyNames -and $Field.LegacyNames.Count -gt 0) {
+                foreach ($LegacyName in $Field.LegacyNames) {
+                    $LegacyField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $LegacyName -BaseUrl $BaseUrl
+                    if ($LegacyField) {
+                        # Get the legacy field's default value
+                        $LegacyWithValue = Get-LevelCustomFieldById -ApiKey $ApiKey -FieldId $LegacyField.id -BaseUrl $BaseUrl
+                        if ($LegacyWithValue -and -not [string]::IsNullOrWhiteSpace($LegacyWithValue.default_value)) {
+                            $DefaultToUse = $LegacyWithValue.default_value
+                            $MigratedFrom = $LegacyName
+                            break
+                        }
+                    }
+                }
+            }
+
             Write-LevelLog "Creating custom field: $($Field.Name)" -Level "INFO"
-            $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $Field.Name -DefaultValue $Field.DefaultValue -BaseUrl $BaseUrl
+            $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $Field.Name -DefaultValue $DefaultToUse -BaseUrl $BaseUrl
             if ($NewField) {
-                Write-LevelLog "Created custom field: $($Field.Name) (default: $($Field.DefaultValue))" -Level "SUCCESS"
+                if ($MigratedFrom) {
+                    Write-LevelLog "Created custom field: $($Field.Name) (migrated from $MigratedFrom = '$DefaultToUse')" -Level "SUCCESS"
+                }
+                else {
+                    Write-LevelLog "Created custom field: $($Field.Name) (default: $DefaultToUse)" -Level "SUCCESS"
+                }
                 $FieldsCreated++
             }
             else {
@@ -5448,6 +5797,14 @@ function Invoke-ScriptLauncher {
         [bool]$DebugMode = $false
     )
 
+    # Sanitize and check API key
+    $ApiKey = $LauncherVariables['LevelApiKey']
+    if ([string]::IsNullOrWhiteSpace($ApiKey) -or $ApiKey -like "{{*}}") {
+        $LauncherVariables['LevelApiKey'] = $null
+        Write-Host "[WARN] cf_apikey is not set - Level API features disabled."
+        Write-Host "Alert: COOLForge scripts use the Level API to automatically create required custom fields and update device tags to reflect policy state (e.g. adding a 'has' tag after successful install, removing 'install' tags after completion). Without a valid API key in cf_apikey, these features are disabled and tags must be managed manually."
+    }
+
     # Fix emoji encoding
     $ScriptName = Repair-LevelEmoji -Text $ScriptName
 
@@ -5723,6 +6080,10 @@ Export-ModuleMember -Function @(
 
     # Wake-on-LAN
     'Send-LevelWakeOnLan',
+
+    # Installer Helpers (with retry logic)
+    'Install-MsiWithRetry',
+    'Install-ExeWithRetry',
 
     # Text Processing
     'Repair-LevelEmoji',

@@ -119,9 +119,6 @@ $LevelApiKey_Raw = @'
 {{cf_apikey}}
 '@
 $LevelApiKey = $LevelApiKey_Raw.Trim()
-if ([string]::IsNullOrWhiteSpace($LevelApiKey) -or $LevelApiKey -like "{{*}}") {
-    $LevelApiKey = $null
-}
 
 # API key debug output is handled by the script itself - no need to duplicate here
 

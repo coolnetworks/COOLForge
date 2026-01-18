@@ -66,6 +66,12 @@ if [ -n "$MISSING_FIELDS" ]; then
     exit 1
 fi
 
+# Warn if API key is missing (many features disabled)
+if [ -z "$LEVEL_API_KEY" ] || [[ "$LEVEL_API_KEY" == "{{cf_"* ]]; then
+    echo "[WARN] cf_apikey is not set - Level API features disabled."
+    echo "Alert: COOLForge scripts use the Level API to automatically create required custom fields and update device tags to reflect policy state (e.g. adding a 'has' tag after successful install, removing 'install' tags after completion). Without a valid API key in cf_apikey, these features are disabled and tags must be managed manually."
+fi
+
 # Determine branch
 if [ -n "$PINNED_VERSION" ] && [[ "$PINNED_VERSION" != "{{cf_"* ]]; then
     BRANCH="$PINNED_VERSION"
