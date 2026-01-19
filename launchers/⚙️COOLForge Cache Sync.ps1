@@ -198,12 +198,10 @@ if ($DebugScripts -and (Test-Path $LibraryPath)) {
     Write-Host "[*] Library not found - downloading..."
 }
 
-# STEP 4: Download library if needed
+# STEP 4: Download library if needed (always use cache-busting)
 if ($NeedsUpdate) {
-    $LibFetchUrl = $LibraryUrl
-    if ($DebugScripts) {
-        $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
-    }
+    $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
+    if ($DebugScripts) { Write-Host "[DEBUG] Library URL: $LibFetchUrl" }
 
     try {
         $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
