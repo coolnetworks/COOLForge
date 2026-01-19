@@ -9,7 +9,7 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-8459a65318b122860c1d674a910660b3  modules/COOLForge-Common.psm1
+1b1d7ac6a53dd38cb0141a01b31409b9  modules/COOLForge-Common.psm1
 fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.ps1
 191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 3940425d5ebc2db1f052a9d85affd944  scripts/Check/👀debug.ps1
@@ -31,8 +31,8 @@ c1b35bc245d2e2977a3d41ac5b47659a  scripts/Policy/👀huntress.ps1
 d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
 394e295d3065c5d503585fe0b6ca7dbf  scripts/Policy/👀screenconnect.ps1
 195dc9e348d37ca7b1ef11e9456cc79c  scripts/Policy/👀unchecky.ps1
-5cfb87b92852f5aad30fa6fd4539fb96  scripts/Policy/Chrome/👀locationservices.ps1
-f659ad14ce8e41a331423edd5b63ba53  scripts/Policy/Windows/👀locationservices.ps1
+5cfb87b92852f5aad30fa6fd4539fb96  scripts/👀chromelocationservices.ps1
+f659ad14ce8e41a331423edd5b63ba53  scripts/👀windowslocationservices.ps1
 4400b053017fb7374230e6b3690dbdca  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 2354ae26195e7ce19c52cdeb76407d24  scripts/Utility/⚙️COOLForge Cache Sync.ps1
