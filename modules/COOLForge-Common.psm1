@@ -3445,7 +3445,7 @@ function Initialize-COOLForgeInfrastructure {
     $GlobalFields = @(
         @{
             Name         = "policy_0_readme"
-            DefaultValue = "COOLForge Policies - Format: value - docs. Values: pin/install/remove. Tags override. See: github.com/COOLNetworksAU/COOLForge/blob/main/docs/POLICY-FIELDS.md"
+            DefaultValue = "COOLForge Policies | Format: value | docs. Values: pin/install/remove. Tags override. See: github.com/COOLNetworksAU/COOLForge/blob/main/docs/POLICY-FIELDS.md"
             Description  = "Documentation for COOLForge policy system (read-only)"
         }
         @{
@@ -3504,7 +3504,7 @@ function Initialize-COOLForgeInfrastructure {
         }
         @{
             Name         = "policy_block_device"
-            DefaultValue = "block - uses block/unblock (change to enable/disable policies)"
+            DefaultValue = "block | uses block/unblock (change to enable/disable policies)"
             Description  = "Block all policy changes on this device (default: block)"
         }
         @{
@@ -3637,7 +3637,7 @@ function Initialize-SoftwarePolicyInfrastructure {
         [bool]$RequireUrl = $false,
 
         [Parameter(Mandatory = $false)]
-        [string]$DefaultPolicyValue = "pin - uses pin/install/remove (change to activate policy)",
+        [string]$DefaultPolicyValue = "pin | uses pin/install/remove (change to activate policy)",
 
         [Parameter(Mandatory = $false)]
         [string]$CustomFieldName = "",
