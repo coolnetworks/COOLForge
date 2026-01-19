@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Policy/Windows/👀locationservices.ps1"
+$ScriptToRun = "Windows/👀locationservices.ps1"
 $policy_device_locationservices = "{{cf_policy_device_locationservices}}"
 <#
 .SYNOPSIS

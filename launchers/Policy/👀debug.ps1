@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Check/👀debug.ps1"
+$ScriptToRun = "👀debug.ps1"
 <#
 .SYNOPSIS
     Slim Level.io Launcher for Debug Script

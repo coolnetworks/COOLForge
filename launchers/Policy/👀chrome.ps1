@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Policy/👀chrome.ps1"
+$ScriptToRun = "👀chrome.ps1"
 $policy_chrome = "{{cf_policy_chrome}}"
 <#
 .SYNOPSIS

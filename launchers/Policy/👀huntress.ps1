@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Policy/👀huntress.ps1"
+$ScriptToRun = "👀huntress.ps1"
 $policy_huntress = "{{cf_policy_huntress}}"
 $policy_huntress_account_key = "{{cf_policy_huntress_account_key}}"
 $policy_huntress_org_key = "{{cf_policy_huntress_org_key}}"
