@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Chrome/👀locationservices.ps1"
+$ScriptToRun = "Policy/Chrome/👀locationservices.ps1"
 $policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
 <#
 .SYNOPSIS

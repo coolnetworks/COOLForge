@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀unchecky.ps1"
+$ScriptToRun = "Policy/👀unchecky.ps1"
 $policy_unchecky = "{{cf_policy_unchecky}}"
 $policy_unchecky_url = "{{cf_policy_unchecky_url}}"
 <#

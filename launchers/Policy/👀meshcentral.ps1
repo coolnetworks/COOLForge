@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀meshcentral.ps1"
+$ScriptToRun = "Policy/👀meshcentral.ps1"
 $policy_meshcentral = "{{cf_policy_meshcentral}}"
 $policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
 $policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"

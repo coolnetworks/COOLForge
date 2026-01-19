@@ -1,7 +1,7 @@
 # ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀screenconnect.ps1"
+$ScriptToRun = "Policy/👀screenconnect.ps1"
 $policy_screenconnect = "{{cf_policy_screenconnect}}"
 $policy_screenconnect_instance = "{{cf_policy_screenconnect_instance}}"
 $policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"

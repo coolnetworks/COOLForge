@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀dnsfilter.ps1"
+$ScriptToRun = "Policy/👀dnsfilter.ps1"
 $policy_dnsfilter = "{{cf_policy_dnsfilter}}"
 $policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 <#
