@@ -1,18 +1,20 @@
 <#
 .SYNOPSIS
-    Configuration policy enforcement for Chrome Location Services.
+    Configuration policy enforcement for Chrome & Edge Location Services.
 
 .DESCRIPTION
-    Implements the COOLForge 5-tag policy model for Chrome geolocation policy management.
+    Implements the COOLForge 5-tag policy model for browser geolocation policy management.
     See docs/POLICY-TAGS.md for the complete policy specification.
 
-    This script manages Chrome's DefaultGeolocationSetting policy:
+    This script manages Chrome AND Edge DefaultGeolocationSetting policy:
     - 1 = Allow sites to ask for location
     - 2 = Block all sites from requesting location
 
-    IMPORTANT: When enabling Chrome location (install), this script will also
-    enable Windows Location Services if they are disabled, since Chrome requires
-    OS-level location access to function.
+    IMPORTANT: When enabling location (install), this script will:
+    - Enable Windows Location Services if disabled (required for browsers)
+    - Set CloudPolicyOverridesPlatformPolicy = 0 (local registry wins over cloud)
+    - Remove any GeolocationBlockedForUrls entries that may override the setting
+    - Apply settings to BOTH Chrome and Edge browsers
 
     POLICY FLOW (per POLICY-TAGS.md):
     1. Check global control tags (device must have checkmark to be managed)
@@ -37,7 +39,7 @@
       (install = allow/ask, remove = block)
 
 .NOTES
-    Version:          2026.01.19.01
+    Version:          2026.01.20.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -53,8 +55,8 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# Configuration Policy - Chrome Location Services
-# Version: 2026.01.19.01
+# Configuration Policy - Chrome & Edge Location Services
+# Version: 2026.01.20.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -71,42 +73,74 @@ function Write-DebugChromeLocationCheck {
 
     Write-Host ""
     Write-Host "============================================================" -ForegroundColor Cyan
-    Write-Host " DEBUG: Chrome Location Policy Check" -ForegroundColor Cyan
+    Write-Host " DEBUG: Browser Location Policy Check (Chrome & Edge)" -ForegroundColor Cyan
     Write-Host "============================================================" -ForegroundColor Cyan
 
-    $chromePolicyKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome'
-    $setting = (Get-ItemProperty -Path $chromePolicyKey -Name 'DefaultGeolocationSetting' -ErrorAction SilentlyContinue).DefaultGeolocationSetting
+    # Check both browsers
+    foreach ($browser in $BrowserPolicies) {
+        $name = $browser.Name
+        $key = $browser.Key
 
-    Write-Host "  --- Chrome Policy ---"
-    Write-Host "  Registry Path: $chromePolicyKey"
-    $settingText = switch ($setting) {
-        1 { 'Allow (1) - Sites can ask for location' }
-        2 { 'Block (2) - Sites cannot request location' }
-        3 { 'Ask (3) - Default browser behavior' }
-        default { 'Not Set - Using browser default' }
+        Write-Host ""
+        Write-Host "  --- $name Policy ---" -ForegroundColor Yellow
+        Write-Host "  Registry Path: $key"
+
+        $setting = (Get-ItemProperty -Path $key -Name 'DefaultGeolocationSetting' -ErrorAction SilentlyContinue).DefaultGeolocationSetting
+        $settingText = switch ($setting) {
+            1 { 'Allow (1) - Sites can ask for location' }
+            2 { 'Block (2) - Sites cannot request location' }
+            3 { 'Ask (3) - Default browser behavior' }
+            default { 'Not Set - Using browser default' }
+        }
+        Write-Host "  DefaultGeolocationSetting: $settingText" -ForegroundColor $(if ($setting -eq 1) { 'Green' } elseif ($setting -eq 2) { 'Yellow' } else { 'DarkGray' })
+
+        $cloudOverride = (Get-ItemProperty -Path $key -Name 'CloudPolicyOverridesPlatformPolicy' -ErrorAction SilentlyContinue).CloudPolicyOverridesPlatformPolicy
+        $cloudText = switch ($cloudOverride) {
+            0 { 'Local wins (0) - Good' }
+            1 { 'Cloud wins (1) - May override local!' }
+            default { 'Not Set - Cloud may override' }
+        }
+        Write-Host "  CloudPolicyOverridesPlatformPolicy: $cloudText" -ForegroundColor $(if ($cloudOverride -eq 0) { 'Green' } else { 'Yellow' })
+
+        # Check for blocked URLs
+        $blockKey = "$key\GeolocationBlockedForUrls"
+        if (Test-Path $blockKey) {
+            $blocked = Get-ItemProperty -Path $blockKey -ErrorAction SilentlyContinue
+            $blockedUrls = $blocked.PSObject.Properties | Where-Object { $_.Name -match '^\d+$' } | ForEach-Object { $_.Value }
+            if ($blockedUrls) {
+                Write-Host "  GeolocationBlockedForUrls: $($blockedUrls.Count) entries (BLOCKING!)" -ForegroundColor Red
+                $blockedUrls | ForEach-Object { Write-Host "    - $_" -ForegroundColor Red }
+            }
+        }
     }
-    Write-Host "  DefaultGeolocationSetting: $settingText" -ForegroundColor $(if ($setting -eq 1) { 'Green' } elseif ($setting -eq 2) { 'Yellow' } else { 'DarkGray' })
 
-    # Also check device location status
+    # Device location status
     Write-Host ""
-    Write-Host "  --- Device Location Status ---"
+    Write-Host "  --- Windows Location Status ---" -ForegroundColor Yellow
     $winPolicyKey = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors'
     $disableLocation = (Get-ItemProperty -Path $winPolicyKey -Name 'DisableLocation' -ErrorAction SilentlyContinue).DisableLocation
     $deviceEnabled = ($disableLocation -ne 1)
     Write-Host "  Windows Location: $(if ($deviceEnabled) { 'Enabled' } else { 'Disabled' })" -ForegroundColor $(if ($deviceEnabled) { 'Green' } else { 'Yellow' })
 
     Write-Host ""
-    Write-Host "  CHROME LOCATION ENABLED: $(if ($CurrentSetting -eq 1) { 'YES (Allow)' } elseif ($CurrentSetting -eq 2) { 'NO (Block)' } else { 'DEFAULT' })" -ForegroundColor $(if ($CurrentSetting -eq 1) { 'Green' } else { 'Yellow' })
+    Write-Host "  BROWSER LOCATION ENABLED: $(if ($CurrentSetting -eq 1) { 'YES (Allow)' } elseif ($CurrentSetting -eq 2) { 'NO (Block)' } else { 'DEFAULT' })" -ForegroundColor $(if ($CurrentSetting -eq 1) { 'Green' } else { 'Yellow' })
 }
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
 $SoftwareName = "CHROME_LOCATIONSERVICES"
-$DisplayName = "Chrome Location Services"
+$DisplayName = "Chrome & Edge Location Services"
 $CustomFieldName = "policy_chrome_locationservices"
 
-# Chrome policy registry
+# Browser policy registry keys
+$BrowserPolicies = @(
+    @{ Name = "Chrome"; Key = 'HKLM:\SOFTWARE\Policies\Google\Chrome' },
+    @{ Name = "Edge";   Key = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge' }
+)
+$GeolocationSettingName = 'DefaultGeolocationSetting'
+
+# Legacy compatibility
 $ChromePolicyKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome'
 $ChromePolicyName = 'DefaultGeolocationSetting'
 
@@ -162,7 +196,7 @@ function Test-DeviceLocationEnabled {
 }
 
 function Enable-DeviceLocationServices {
-    Write-LevelLog "Enabling Windows Location Services (required for Chrome)..."
+    Write-LevelLog "Enabling Windows Location Services (required for browsers)..."
 
     # Windows OS policy keys
     $winPolicyKeys = @(
@@ -171,17 +205,19 @@ function Enable-DeviceLocationServices {
     )
 
     foreach ($key in $winPolicyKeys) {
-        $changed = Set-RegistryValue -Path $key -Name 'DisableLocation' -Type DWord -Value 0
-        Write-LevelLog "  Windows Policy [$key]: $(if ($changed) { 'Enabled' } else { 'Already enabled' })"
+        $changed1 = Set-RegistryValue -Path $key -Name 'DisableLocation' -Type DWord -Value 0
+        $changed2 = Set-RegistryValue -Path $key -Name 'DisableLocationScripting' -Type DWord -Value 0
+        Write-LevelLog "  Windows Policy [$key]: $(if ($changed1 -or $changed2) { 'Enabled' } else { 'Already enabled' })"
     }
 
     # ConsentStore
     $capabilityKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location'
     try {
-        if (Test-Path $capabilityKey) {
-            $changed = Set-RegistryValue -Path $capabilityKey -Name 'Value' -Type String -Value 'Allow'
-            Write-LevelLog "  ConsentStore: $(if ($changed) { 'Set to Allow' } else { 'Already Allow' })"
+        if (-not (Test-Path $capabilityKey)) {
+            New-Item -Path $capabilityKey -Force | Out-Null
         }
+        $changed = Set-RegistryValue -Path $capabilityKey -Name 'Value' -Type String -Value 'Allow'
+        Write-LevelLog "  ConsentStore: $(if ($changed) { 'Set to Allow' } else { 'Already Allow' })"
     } catch {
         Write-LevelLog "  ConsentStore: $($_.Exception.Message)" -Level "WARN"
     }
@@ -221,7 +257,7 @@ function Test-ChromeLocationEnabled {
 # ============================================================
 
 function Enable-ChromeLocation {
-    Write-LevelLog "Enabling Chrome geolocation policy..."
+    Write-LevelLog "Enabling browser geolocation policies (Chrome & Edge)..."
 
     # First, ensure device location is enabled
     if (-not (Test-DeviceLocationEnabled)) {
@@ -229,24 +265,66 @@ function Enable-ChromeLocation {
         Enable-DeviceLocationServices
     }
 
-    # Set Chrome policy: DefaultGeolocationSetting = 1 (Allow/Ask)
-    $changed = Set-RegistryValue -Path $ChromePolicyKey -Name $ChromePolicyName -Type DWord -Value 1
-    Write-LevelLog "  Chrome DefaultGeolocationSetting: $(if ($changed) { 'Set to 1 (Allow)' } else { 'Already 1 (Allow)' })"
+    # Apply to both Chrome and Edge
+    foreach ($browser in $BrowserPolicies) {
+        $name = $browser.Name
+        $key = $browser.Key
 
-    Write-LevelLog "Chrome Location Services ENABLED" -Level "SUCCESS"
-    Write-LevelLog "Note: Users may need to restart Chrome to pick up policy changes"
+        Write-LevelLog "  --- $name ---"
+
+        # Create policy key if needed
+        if (-not (Test-Path $key)) {
+            New-Item -Path $key -Force | Out-Null
+            Write-LevelLog "    Created policy key"
+        }
+
+        # CRITICAL: Make local registry win over cloud policies
+        $cloudChanged = Set-RegistryValue -Path $key -Name 'CloudPolicyOverridesPlatformPolicy' -Type DWord -Value 0
+        Write-LevelLog "    CloudPolicyOverridesPlatformPolicy: $(if ($cloudChanged) { 'Set to 0 (local wins)' } else { 'Already 0' })"
+
+        # Set geolocation to Allow (1)
+        $geoChanged = Set-RegistryValue -Path $key -Name $GeolocationSettingName -Type DWord -Value 1
+        Write-LevelLog "    $GeolocationSettingName : $(if ($geoChanged) { 'Set to 1 (Allow)' } else { 'Already 1 (Allow)' })"
+
+        # Remove any GeolocationBlockedForUrls that might override
+        $blockKey = "$key\GeolocationBlockedForUrls"
+        if (Test-Path $blockKey) {
+            Remove-Item -Path $blockKey -Recurse -Force -ErrorAction SilentlyContinue
+            Write-LevelLog "    GeolocationBlockedForUrls: Removed" -Level "SUCCESS"
+        }
+    }
+
+    Write-LevelLog "Browser Location Services ENABLED (Chrome & Edge)" -Level "SUCCESS"
+    Write-LevelLog "Note: Users may need to restart browsers to pick up policy changes"
     return $true
 }
 
 function Disable-ChromeLocation {
-    Write-LevelLog "Disabling Chrome geolocation policy..."
+    Write-LevelLog "Disabling browser geolocation policies (Chrome & Edge)..."
 
-    # Set Chrome policy: DefaultGeolocationSetting = 2 (Block)
-    $changed = Set-RegistryValue -Path $ChromePolicyKey -Name $ChromePolicyName -Type DWord -Value 2
-    Write-LevelLog "  Chrome DefaultGeolocationSetting: $(if ($changed) { 'Set to 2 (Block)' } else { 'Already 2 (Block)' })"
+    # Apply to both Chrome and Edge
+    foreach ($browser in $BrowserPolicies) {
+        $name = $browser.Name
+        $key = $browser.Key
+
+        Write-LevelLog "  --- $name ---"
+
+        # Create policy key if needed
+        if (-not (Test-Path $key)) {
+            New-Item -Path $key -Force | Out-Null
+        }
+
+        # Make local registry win over cloud policies
+        $cloudChanged = Set-RegistryValue -Path $key -Name 'CloudPolicyOverridesPlatformPolicy' -Type DWord -Value 0
+        Write-LevelLog "    CloudPolicyOverridesPlatformPolicy: $(if ($cloudChanged) { 'Set to 0 (local wins)' } else { 'Already 0' })"
+
+        # Set geolocation to Block (2)
+        $geoChanged = Set-RegistryValue -Path $key -Name $GeolocationSettingName -Type DWord -Value 2
+        Write-LevelLog "    $GeolocationSettingName : $(if ($geoChanged) { 'Set to 2 (Block)' } else { 'Already 2 (Block)' })"
+    }
 
     # Note: We do NOT disable device location here, as other apps may need it
-    Write-LevelLog "Chrome Location Services DISABLED" -Level "SUCCESS"
+    Write-LevelLog "Browser Location Services DISABLED (Chrome & Edge)" -Level "SUCCESS"
     Write-LevelLog "Note: Device location services left unchanged (other apps may need it)"
     return $true
 }
@@ -254,7 +332,7 @@ function Disable-ChromeLocation {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.19.01"
+$ScriptVersion = "2026.01.20.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {

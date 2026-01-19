@@ -31,6 +31,8 @@ c1b35bc245d2e2977a3d41ac5b47659a  scripts/Policy/👀huntress.ps1
 d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
 394e295d3065c5d503585fe0b6ca7dbf  scripts/Policy/👀screenconnect.ps1
 195dc9e348d37ca7b1ef11e9456cc79c  scripts/Policy/👀unchecky.ps1
+5cfb87b92852f5aad30fa6fd4539fb96  scripts/Policy/Chrome/👀locationservices.ps1
+f659ad14ce8e41a331423edd5b63ba53  scripts/Policy/Windows/👀locationservices.ps1
 4400b053017fb7374230e6b3690dbdca  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
