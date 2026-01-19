@@ -3546,12 +3546,8 @@ function Initialize-COOLForgeInfrastructure {
             $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $Field.Name -DefaultValue $DefaultToUse -BaseUrl $BaseUrl
             if ($NewField) {
                 # Set the org-level default value (API default_value only defines it, doesn't apply it)
-                if (-not [string]::IsNullOrWhiteSpace($DefaultToUse)) {
-                    # Find the field to get its ID (POST response may not include it)
-                    $CreatedField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $Field.Name -BaseUrl $BaseUrl
-                    if ($CreatedField -and $CreatedField.id) {
-                        $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $CreatedField.id -Value $DefaultToUse -BaseUrl $BaseUrl
-                    }
+                if (-not [string]::IsNullOrWhiteSpace($DefaultToUse) -and $NewField.id) {
+                    $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $NewField.id -Value $DefaultToUse -BaseUrl $BaseUrl
                 }
                 if ($MigratedFrom) {
                     Write-LevelLog "Created custom field: $($Field.Name) (migrated from $MigratedFrom = '$DefaultToUse')" -Level "SUCCESS"
@@ -3566,7 +3562,20 @@ function Initialize-COOLForgeInfrastructure {
             }
         }
         else {
-            Write-LevelLog "Custom field '$($Field.Name)' already exists" -Level "DEBUG"
+            # Field exists - check if value is empty and set default if so (handles race conditions)
+            if (-not [string]::IsNullOrWhiteSpace($Field.DefaultValue)) {
+                $ExistingWithValue = Get-LevelCustomFieldById -ApiKey $ApiKey -FieldId $ExistingField.id -BaseUrl $BaseUrl
+                if ($ExistingWithValue -and [string]::IsNullOrWhiteSpace($ExistingWithValue.default_value)) {
+                    Write-LevelLog "Custom field '$($Field.Name)' exists but has no value - setting default" -Level "INFO"
+                    $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $ExistingField.id -Value $Field.DefaultValue -BaseUrl $BaseUrl
+                }
+                else {
+                    Write-LevelLog "Custom field '$($Field.Name)' already exists with value" -Level "DEBUG"
+                }
+            }
+            else {
+                Write-LevelLog "Custom field '$($Field.Name)' already exists" -Level "DEBUG"
+            }
         }
     }
 
@@ -3727,12 +3736,8 @@ function Initialize-SoftwarePolicyInfrastructure {
         $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $PolicyFieldName -DefaultValue $DefaultPolicyValue -BaseUrl $BaseUrl
         if ($NewField) {
             # Set the org-level default value (API default_value only defines it, doesn't apply it)
-            if (-not [string]::IsNullOrWhiteSpace($DefaultPolicyValue)) {
-                # Find the field to get its ID (POST response may not include it)
-                $CreatedField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $PolicyFieldName -BaseUrl $BaseUrl
-                if ($CreatedField -and $CreatedField.id) {
-                    $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $CreatedField.id -Value $DefaultPolicyValue -BaseUrl $BaseUrl
-                }
+            if (-not [string]::IsNullOrWhiteSpace($DefaultPolicyValue) -and $NewField.id) {
+                $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $NewField.id -Value $DefaultPolicyValue -BaseUrl $BaseUrl
             }
             Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
             $FieldsCreated++
@@ -3743,7 +3748,20 @@ function Initialize-SoftwarePolicyInfrastructure {
         }
     }
     else {
-        Write-LevelLog "Custom field '$PolicyFieldName' already exists" -Level "DEBUG"
+        # Field exists - check if value is empty and set default if so (handles race conditions)
+        if (-not [string]::IsNullOrWhiteSpace($DefaultPolicyValue)) {
+            $ExistingWithValue = Get-LevelCustomFieldById -ApiKey $ApiKey -FieldId $ExistingPolicyField.id -BaseUrl $BaseUrl
+            if ($ExistingWithValue -and [string]::IsNullOrWhiteSpace($ExistingWithValue.default_value)) {
+                Write-LevelLog "Custom field '$PolicyFieldName' exists but has no value - setting default" -Level "INFO"
+                $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $ExistingPolicyField.id -Value $DefaultPolicyValue -BaseUrl $BaseUrl
+            }
+            else {
+                Write-LevelLog "Custom field '$PolicyFieldName' already exists with value" -Level "DEBUG"
+            }
+        }
+        else {
+            Write-LevelLog "Custom field '$PolicyFieldName' already exists" -Level "DEBUG"
+        }
     }
 
     # URL field (e.g., policy_unchecky_url) - only if required
