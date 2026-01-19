@@ -343,6 +343,35 @@
         "required": false
       }
     ],
+    "screenconnect": [
+      {
+        "name": "policy_screenconnect",
+        "description": "ScreenConnect client policy: install, remove, pin. Uses 5-tag model with SC prefix.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "ScreenConnect policy (install/remove/pin)"
+      },
+      {
+        "name": "policy_screenconnect_instance",
+        "description": "ScreenConnect service display name to match/install",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "ScreenConnect service display name"
+      },
+      {
+        "name": "policy_screenconnect_baseurl",
+        "description": "ScreenConnect server base URL (e.g., support.company.com)",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "ScreenConnect server URL"
+      }
+    ],
     "windows_config": [
       {
         "name": "policy_device_locationservices",

@@ -8,6 +8,7 @@
     "Policy/👀dnsfilter.ps1": "2026.01.16.01",
     "Policy/👀huntress.ps1": "2026.01.16.01",
     "Policy/👀meshcentral.ps1": "2026.01.19.01",
+    "Policy/👀screenconnect.ps1": "2026.01.19.01",
     "Policy/👀unchecky.ps1": "2026.01.16.01",
     "Policy/Chrome/👀locationservices.ps1": "2026.01.19.01",
     "Policy/Windows/👀locationservices.ps1": "2026.01.19.01",

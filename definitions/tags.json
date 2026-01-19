@@ -138,6 +138,13 @@
       "tags": ["🙏MESHCENTRAL", "🚫MESHCENTRAL", "📌MESHCENTRAL", "🔄MESHCENTRAL", "✅MESHCENTRAL"],
       "customFields": ["policy_meshcentral", "policy_meshcentral_server_url", "policy_meshcentral_download_url", "policy_meshcentral_linux_install", "policy_meshcentral_mac_download_url"]
     },
+    "sc": {
+      "displayName": "ScreenConnect (ConnectWise Control)",
+      "category": "software",
+      "description": "ScreenConnect/ConnectWise Control remote access client",
+      "tags": ["🙏SC", "🚫SC", "📌SC", "🔄SC", "✅SC"],
+      "customFields": ["policy_screenconnect", "policy_screenconnect_instance", "policy_screenconnect_baseurl"]
+    },
     "locationservices": {
       "displayName": "Windows Location Services",
       "category": "config",
