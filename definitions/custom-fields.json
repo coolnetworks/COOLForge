@@ -231,7 +231,7 @@
         "required": false,
         "default": "pin",
         "valueOptions": ["pin", "install", "remove"],
-        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "valueFormat": "{value} - uses pin/install/remove (change to activate policy)",
         "prompt": "Default Unchecky policy (install/remove/pin/empty)"
       },
       {
@@ -271,7 +271,7 @@
         "adminOnly": false,
         "required": false,
         "readOnly": true,
-        "default": "COOLForge Policies | Format: value | docs. Values: pin/install/remove. Tags override. See: github.com/COOLNetworksAU/COOLForge/blob/main/docs/POLICY-FIELDS.md"
+        "default": "COOLForge Policies - Format: value - docs. Values: pin/install/remove. Tags override. See: github.com/COOLNetworksAU/COOLForge/blob/main/docs/POLICY-FIELDS.md"
       }
     ],
     "device_blocking": [
@@ -283,7 +283,7 @@
         "required": false,
         "default": "block",
         "valueOptions": ["block", "unblock"],
-        "valueFormat": "{value} | uses block/unblock (change to enable/disable policies)",
+        "valueFormat": "{value} - uses block/unblock (change to enable/disable policies)",
         "prompt": "Block policy changes on this device? (block/unblock)"
       }
     ],
@@ -296,7 +296,7 @@
         "required": false,
         "default": "pin",
         "valueOptions": ["pin", "install", "remove"],
-        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "valueFormat": "{value} - uses pin/install/remove (change to activate policy)",
         "prompt": "Chrome software policy (install/remove/pin)"
       }
     ],
@@ -309,7 +309,7 @@
         "required": false,
         "default": "pin",
         "valueOptions": ["pin", "install", "remove"],
-        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "valueFormat": "{value} - uses pin/install/remove (change to activate policy)",
         "prompt": "MeshCentral policy (install/remove/pin)"
       },
       {
@@ -352,7 +352,7 @@
         "required": false,
         "default": "pin",
         "valueOptions": ["pin", "install", "remove"],
-        "valueFormat": "{value} | uses pin/install/remove (install=enable, remove=disable)",
+        "valueFormat": "{value} - uses pin/install/remove (install=enable, remove=disable)",
         "prompt": "Windows Location Services policy (install=enable/remove=disable/pin)"
       }
     ],
@@ -365,7 +365,7 @@
         "required": false,
         "default": "pin",
         "valueOptions": ["pin", "install", "remove"],
-        "valueFormat": "{value} | uses pin/install/remove (install=allow, remove=block)",
+        "valueFormat": "{value} - uses pin/install/remove (install=allow, remove=block)",
         "prompt": "Chrome location policy (install=allow/remove=block/pin)"
       }
     ]
