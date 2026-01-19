@@ -44,8 +44,7 @@ $ScriptVersion = "2026.01.20.01"
 $Init = Initialize-LevelScript -ScriptName "COOLForge-CacheSync" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
-                               -DeviceTags $DeviceTags `
-                               -DebugScripts $DebugScripts
+                               -DeviceTags $DeviceTags
 
 # ============================================================
 # MAIN SCRIPT LOGIC

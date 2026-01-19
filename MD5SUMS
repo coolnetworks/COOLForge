@@ -35,7 +35,7 @@ d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
 f659ad14ce8e41a331423edd5b63ba53  scripts/Policy/Windows/👀locationservices.ps1
 4400b053017fb7374230e6b3690dbdca  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-d97585d863cc808e145d329a8b53cc10  scripts/Utility/⚙️COOLForge Cache Sync.ps1
+2354ae26195e7ce19c52cdeb76407d24  scripts/Utility/⚙️COOLForge Cache Sync.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
 331c29e1bc72f7bc759cbab1dc9a06b2  scripts/Utility/🙏Wake all devices in Level group.ps1
