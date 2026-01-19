@@ -159,14 +159,24 @@ function Initialize-LevelScript {
     Write-LevelLog "Initializing: $ScriptName on $DeviceHostname"
 
     # --- Policy Block Check ---
-    # If policy_block_device is set to "true" or "block", skip all operations
+    # If policy_block_device starts with "block" (e.g., "block | set to unblock to enable"), skip all operations
+    # This provides safe-by-default behavior - new devices are blocked until explicitly unblocked
     if ($PolicyBlockDevice -and $PolicyBlockDevice -notlike "{{*}}") {
-        $BlockValue = $PolicyBlockDevice.ToLower().Trim()
-        if ($BlockValue -eq "true" -or $BlockValue -eq "block" -or $BlockValue -eq "yes" -or $BlockValue -eq "1") {
-            Write-LevelLog "Device blocked via policy_block_device='$PolicyBlockDevice'" -Level "SKIP"
-            Write-LevelLog "All COOLForge scripts will skip this device until policy_block_device is cleared" -Level "SKIP"
+        # Extract policy value: split on | delimiter, or fall back to first word
+        # Format: "block | documentation" or just "block"
+        if ($PolicyBlockDevice -match '\|') {
+            $BlockWord = ($PolicyBlockDevice -split '\|')[0].Trim().ToLower()
+        } else {
+            $BlockWord = ($PolicyBlockDevice.Trim() -split '\s+')[0].ToLower()
+        }
+        # Block if value indicates blocking
+        if ($BlockWord -in @("block", "blocked", "true", "yes", "1", "disable", "disabled")) {
+            Write-LevelLog "Device blocked via policy_block_device='$BlockWord'" -Level "SKIP"
+            Write-LevelLog "Set policy_block_device to 'unblock' or 'allow' to enable policy enforcement" -Level "SKIP"
             return @{ Success = $false; Reason = "PolicyBlocked"; Policy = "policy_block_device" }
         }
+        # Explicitly allowed values continue processing
+        # ("unblock", "allow", "enable", "false", "no", "0", etc.)
     }
 
     # --- Tag Gate Check ---
@@ -1633,16 +1643,27 @@ function Get-SoftwarePolicy {
         # ============================================================
         # STEP 4: FALL BACK TO CUSTOM FIELD POLICY
         # ============================================================
-        switch ($CustomFieldPolicy.ToLower()) {
-            "install" {
+        # Extract policy value: split on | delimiter, or fall back to first word
+        # Format: "pin | documentation" or just "pin"
+        if ($CustomFieldPolicy -match '\|') {
+            $PolicyWord = ($CustomFieldPolicy -split '\|')[0].Trim().ToLower()
+        } else {
+            $PolicyWord = ($CustomFieldPolicy.Trim() -split '\s+')[0].ToLower()
+        }
+        if ($ShowDebug) {
+            Write-Host "[DEBUG] Custom field raw: '$CustomFieldPolicy' -> parsed: '$PolicyWord'"
+        }
+        # Accept common synonyms for each action
+        switch ($PolicyWord) {
+            { $_ -in @("install", "enable", "on", "yes", "true", "allow") } {
                 $ResolvedAction = "Install"
                 $ActionSource = "CustomField"
             }
-            "remove" {
+            { $_ -in @("remove", "disable", "off", "no", "false", "block", "deny", "uninstall") } {
                 $ResolvedAction = "Remove"
                 $ActionSource = "CustomField"
             }
-            "pin" {
+            { $_ -in @("pin", "lock", "freeze", "hold") } {
                 $ResolvedAction = "Pin"
                 $ActionSource = "CustomField"
             }
@@ -3423,6 +3444,11 @@ function Initialize-COOLForgeInfrastructure {
     # Define global custom fields with their defaults
     $GlobalFields = @(
         @{
+            Name         = "policy_0_readme"
+            DefaultValue = "COOLForge Policies | Format: value | docs. Values: pin/install/remove. Tags override. See: github.com/COOLNetworksAU/COOLForge/blob/main/docs/POLICY-FIELDS.md"
+            Description  = "Documentation for COOLForge policy system (read-only)"
+        }
+        @{
             Name         = "coolforge_msp_scratch_folder"
             DefaultValue = "C:\ProgramData\$MspName"
             Description  = "Persistent storage path for COOLForge scripts"
@@ -3478,8 +3504,8 @@ function Initialize-COOLForgeInfrastructure {
         }
         @{
             Name         = "policy_block_device"
-            DefaultValue = ""
-            Description  = "Set to 'true' to block ALL COOLForge scripts on this device"
+            DefaultValue = "block | uses block/unblock (change to enable/disable policies)"
+            Description  = "Block all policy changes on this device (default: block)"
         }
         @{
             Name         = "policy_rat_removal"
@@ -3594,6 +3620,12 @@ function Initialize-SoftwarePolicyInfrastructure {
         [bool]$RequireUrl = $false,
 
         [Parameter(Mandatory = $false)]
+        [string]$DefaultPolicyValue = "pin | uses pin/install/remove (change to activate policy)",
+
+        [Parameter(Mandatory = $false)]
+        [string]$CustomFieldName = "",
+
+        [Parameter(Mandatory = $false)]
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
@@ -3678,13 +3710,13 @@ function Initialize-SoftwarePolicyInfrastructure {
     # ================================================================
     # STEP 3: Create custom fields
     # ================================================================
-    # Policy field (e.g., policy_unchecky)
-    $PolicyFieldName = "policy_$SoftwareName"
+    # Policy field (e.g., policy_unchecky or custom name)
+    $PolicyFieldName = if ([string]::IsNullOrWhiteSpace($CustomFieldName)) { "policy_$SoftwareName" } else { $CustomFieldName }
     $ExistingPolicyField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $PolicyFieldName -BaseUrl $BaseUrl
 
     if (-not $ExistingPolicyField) {
-        Write-LevelLog "Creating custom field: $PolicyFieldName" -Level "INFO"
-        $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $PolicyFieldName -DefaultValue "" -BaseUrl $BaseUrl
+        Write-LevelLog "Creating custom field: $PolicyFieldName (default: '$DefaultPolicyValue')" -Level "INFO"
+        $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $PolicyFieldName -DefaultValue $DefaultPolicyValue -BaseUrl $BaseUrl
         if ($NewField) {
             Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
             $FieldsCreated++

@@ -502,3 +502,32 @@ Set `cf_debug_scripts = true` at the device or group level to get verbose output
 | Emoji tags not matching | Level.io corruption | Already handled by `Repair-LevelEmoji` |
 | "Infrastructure created" alert | First run | Configure the custom fields as instructed |
 | Install fails silently | Missing URL custom field | Set `policy_<software>_url` |
+
+---
+
+## Configuration Policies
+
+In addition to software enforcement (install/remove/pin), COOLForge supports **configuration policies** for managing OS and application settings.
+
+Configuration policies use the same 5-tag model as software policies:
+- **Use emoji tags** - Same tag system for consistency
+- **Are idempotent** - Safe to run repeatedly, only make changes if needed
+- **Use install/remove/pin values** - `install` = enable, `remove` = disable
+
+### Available Configuration Policies
+
+| Category | Folder | Policies |
+|----------|--------|----------|
+| Windows | `scripts/Policy/Windows/` | [Location Services](Windows.md) |
+| Chrome | `scripts/Policy/Chrome/` | [Location Services](Chrome.md#chrome-configuration-policies) |
+
+### Naming Convention
+
+Configuration policy custom fields follow this pattern:
+```
+policy_<category>_<setting> = "install" | "remove" | "pin" | ""
+```
+
+Examples:
+- `policy_device_locationservices = "install"` (enable Windows location)
+- `policy_chrome_locationservices = "install"` (enable Chrome geolocation)

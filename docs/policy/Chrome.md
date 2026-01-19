@@ -106,3 +106,27 @@ Set `debug_scripts = true` on the device for verbose output.
 | Consumer not upgrading | Ensure `install` policy is set; consumer is detected and replaced |
 | Tags not updating | Set `apikey` custom field |
 | Chrome processes blocking | Script will close Chrome before install/uninstall |
+
+## Chrome Configuration Policies
+
+In addition to software enforcement (install/remove/pin), Chrome has configuration policies for managing browser settings.
+
+These are located in: `scripts/Policy/Chrome/`
+
+### Location Services
+
+| Script | Custom Field | Values | Description |
+|--------|--------------|--------|-------------|
+| `👀locationservices.ps1` | `policy_chrome_locationservices` | `install` / `remove` / `pin` | Chrome geolocation policy |
+
+**Tags:** 🙏CHROME_LOCATIONSERVICES, 🚫CHROME_LOCATIONSERVICES, 📌CHROME_LOCATIONSERVICES
+
+**Behavior:**
+- `install` = Allow sites to ask for location (DefaultGeolocationSetting = 1)
+- `remove` = Block all sites from requesting location (DefaultGeolocationSetting = 2)
+
+**Note:** When enabling Chrome location, the script will also enable Windows Location Services if they are disabled.
+
+For device-level location control, see: [Windows Location Services](Windows.md)
+
+See [scripts/Policy/Chrome/README.md](../../scripts/Policy/Chrome/README.md) for details.

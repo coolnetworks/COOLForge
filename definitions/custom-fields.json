@@ -1,6 +1,6 @@
 {
   "$schema": "./custom-fields.schema.json",
-  "version": "2026.01.13",
+  "version": "2026.01.19",
   "description": "COOLForge custom field definitions for Level.io",
   "setup": {
     "prerequisites": [
@@ -56,6 +56,39 @@
     "debugging": {
       "displayName": "Debugging",
       "description": "These fields enable verbose debug output for troubleshooting COOLForge scripts.",
+      "prerequisites": []
+    },
+    "policy_readme": {
+      "displayName": "Policy Documentation",
+      "description": "Read-only field explaining how COOLForge policies work. Always appears first in policy_ field list.",
+      "prerequisites": []
+    },
+    "device_blocking": {
+      "displayName": "Device Blocking",
+      "description": "Control whether policies can make changes on a device. Defaults to 'block' for safety.",
+      "prerequisites": []
+    },
+    "chrome": {
+      "displayName": "Google Chrome",
+      "description": "Chrome Enterprise software deployment and browser configuration policies.",
+      "prerequisites": []
+    },
+    "meshcentral": {
+      "displayName": "MeshCentral",
+      "description": "MeshCentral agent deployment and management.",
+      "prerequisites": [
+        "MeshCentral server URL",
+        "MeshCentral agent installer URLs for Windows, Linux, Mac"
+      ]
+    },
+    "windows_config": {
+      "displayName": "Windows Configuration",
+      "description": "Windows OS-level configuration policies (location services, etc).",
+      "prerequisites": []
+    },
+    "chrome_config": {
+      "displayName": "Chrome Configuration",
+      "description": "Chrome browser configuration policies (location, extensions, etc).",
       "prerequisites": []
     }
   },
@@ -196,6 +229,9 @@
         "legacyNames": [],
         "adminOnly": false,
         "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
         "prompt": "Default Unchecky policy (install/remove/pin/empty)"
       },
       {
@@ -225,6 +261,112 @@
         "adminOnly": false,
         "required": false,
         "prompt": "Enable debug output in scripts? (true/false)"
+      }
+    ],
+    "policy_readme": [
+      {
+        "name": "policy_0_readme",
+        "description": "Documentation for COOLForge policy system. This field explains how policy_ fields work.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "readOnly": true,
+        "default": "COOLForge Policies | Format: value | docs. Values: pin/install/remove. Tags override. See: github.com/COOLNetworksAU/COOLForge/blob/main/docs/POLICY-FIELDS.md"
+      }
+    ],
+    "device_blocking": [
+      {
+        "name": "policy_block_device",
+        "description": "Block all policy changes on this device. Default 'block' prevents changes until explicitly unblocked. Set to 'unblock' or 'allow' to enable policy enforcement.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "block",
+        "valueOptions": ["block", "unblock"],
+        "valueFormat": "{value} | uses block/unblock (change to enable/disable policies)",
+        "prompt": "Block policy changes on this device? (block/unblock)"
+      }
+    ],
+    "chrome": [
+      {
+        "name": "policy_chrome",
+        "description": "Chrome Enterprise software policy: install, remove, pin. Uses 5-tag model.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "Chrome software policy (install/remove/pin)"
+      }
+    ],
+    "meshcentral": [
+      {
+        "name": "policy_meshcentral",
+        "description": "MeshCentral agent policy: install, remove, pin. Uses 5-tag model.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "MeshCentral policy (install/remove/pin)"
+      },
+      {
+        "name": "policy_meshcentral_server_url",
+        "description": "MeshCentral server URL (e.g., mc.yourcompany.com)",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "MeshCentral server URL"
+      },
+      {
+        "name": "policy_meshcentral_download_url",
+        "description": "URL to MeshCentral Windows agent installer",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "MeshCentral Windows installer URL"
+      },
+      {
+        "name": "policy_meshcentral_linux_install",
+        "description": "MeshCentral Linux install command",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false
+      },
+      {
+        "name": "policy_meshcentral_mac_download_url",
+        "description": "URL to MeshCentral Mac agent installer",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false
+      }
+    ],
+    "windows_config": [
+      {
+        "name": "policy_device_locationservices",
+        "description": "Windows Location Services policy: install (enable), remove (disable), pin. Uses 5-tag model.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (install=enable, remove=disable)",
+        "prompt": "Windows Location Services policy (install=enable/remove=disable/pin)"
+      }
+    ],
+    "chrome_config": [
+      {
+        "name": "policy_chrome_locationservices",
+        "description": "Chrome geolocation policy: install (allow prompts), remove (block), pin. Auto-enables Windows location if needed. Uses 5-tag model.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (install=allow, remove=block)",
+        "prompt": "Chrome location policy (install=allow/remove=block/pin)"
       }
     ]
   }
