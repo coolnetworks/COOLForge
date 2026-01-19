@@ -69,10 +69,44 @@ $Pol_DisableSensors           = GetRegVal 'HKLM:\SOFTWARE\Policies\Microsoft\Win
 $Pol_DisableLocationScripting = GetRegVal 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors' 'DisableLocationScripting'
 $Pol_AppPrivacy               = GetRegVal 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy' 'LetAppsAccessLocation'
 
-if ($Pol_DisableLocation -eq 1)          { LogStep "Policy: DisableLocation=1 (admin enforced) - blocks device location" 'FAIL'; $blockers += 'Admin policy DisableLocation=1' } else { LogStep ("Policy: DisableLocation={0}" -f (IfNull $Pol_DisableLocation 'NotConfigured')) 'OK' }
-if ($Pol_DisableSensors -eq 1)           { LogStep "Policy: DisableSensors=1 - blocks sensors/location stack" 'FAIL';       $blockers += 'Admin policy DisableSensors=1' } else { LogStep ("Policy: DisableSensors={0}" -f (IfNull $Pol_DisableSensors 'NotConfigured')) 'OK' }
-if ($Pol_DisableLocationScripting -eq 1) { LogStep "Policy: DisableLocationScripting=1 - location scripting off" 'FAIL';    $blockers += 'Admin policy DisableLocationScripting=1' } else { LogStep ("Policy: DisableLocationScripting={0}" -f (IfNull $Pol_DisableLocationScripting 'NotConfigured')) 'OK' }
-if ($Pol_AppPrivacy -eq 2)               { LogStep "Policy: LetAppsAccessLocation=2 (ForceDeny) - all apps blocked" 'FAIL'; $blockers += 'AppPrivacy LetAppsAccessLocation=2 (ForceDeny)' } else { LogStep ("Policy: LetAppsAccessLocation={0}" -f (IfNull $Pol_AppPrivacy 'NotConfigured')) 'OK' }
+# Note: When a policy KEY EXISTS (even set to 0), Windows shows "managed by admin" in Settings UI
+# The key must be ABSENT (not just 0) for user to have full control
+if ($Pol_DisableLocation -eq 1) {
+    LogStep "Policy: DisableLocation=1 (admin enforced) - BLOCKS location" 'FAIL'
+    $blockers += 'Admin policy DisableLocation=1'
+} elseif ($null -ne $Pol_DisableLocation) {
+    LogStep "Policy: DisableLocation=$Pol_DisableLocation (policy EXISTS - Settings shows 'managed by admin')" 'WARN'
+    $blockers += 'Admin policy DisableLocation exists (shows managed message)'
+} else {
+    LogStep "Policy: DisableLocation=NotConfigured" 'OK'
+}
+
+if ($Pol_DisableSensors -eq 1) {
+    LogStep "Policy: DisableSensors=1 - BLOCKS sensors/location stack" 'FAIL'
+    $blockers += 'Admin policy DisableSensors=1'
+} elseif ($null -ne $Pol_DisableSensors) {
+    LogStep "Policy: DisableSensors=$Pol_DisableSensors (policy EXISTS)" 'WARN'
+} else {
+    LogStep "Policy: DisableSensors=NotConfigured" 'OK'
+}
+
+if ($Pol_DisableLocationScripting -eq 1) {
+    LogStep "Policy: DisableLocationScripting=1 - location scripting off" 'FAIL'
+    $blockers += 'Admin policy DisableLocationScripting=1'
+} elseif ($null -ne $Pol_DisableLocationScripting) {
+    LogStep "Policy: DisableLocationScripting=$Pol_DisableLocationScripting (policy EXISTS)" 'WARN'
+} else {
+    LogStep "Policy: DisableLocationScripting=NotConfigured" 'OK'
+}
+
+if ($Pol_AppPrivacy -eq 2) {
+    LogStep "Policy: LetAppsAccessLocation=2 (ForceDeny) - all apps blocked" 'FAIL'
+    $blockers += 'AppPrivacy LetAppsAccessLocation=2 (ForceDeny)'
+} elseif ($null -ne $Pol_AppPrivacy) {
+    LogStep "Policy: LetAppsAccessLocation=$Pol_AppPrivacy (policy EXISTS)" 'WARN'
+} else {
+    LogStep "Policy: LetAppsAccessLocation=NotConfigured" 'OK'
+}
 
 # ----------------------------------
 # STEP 2: Device Master Switch (OS)
@@ -169,6 +203,7 @@ $priority = @(
     'lfsvc missing or Disabled',
     'User HKCU Consent=Deny',
     'User HKCU Consent NotSet',
+    'Admin policy DisableLocation exists (shows managed message)',
     'Per-app Deny overrides present'
 )
 foreach ($reason in $priority) {
@@ -189,6 +224,7 @@ $recommend = switch -Regex ($primary) {
     'lfsvc missing or Disabled'     { 'Ensure lfsvc exists; Set-Service lfsvc -StartupType Manual; Start-Service lfsvc.' }
     'User HKCU Consent=Deny'        { 'Set HKCU:\...\ConsentStore\location\Value=Allow (run as the logged-in user).' }
     'User HKCU Consent NotSet'      { 'Create HKCU key and set Value=Allow (run as the logged-in user).' }
+    'shows managed message'         { 'DELETE the policy key from GPO/Intune (setting to 0 still shows "managed by admin"). Remove: HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors\DisableLocation' }
     'Per-app Deny overrides present'{ 'Set affected per-app ConsentStore entries to Allow or remove the entries (HKCU).' }
     default                         { 'No action needed; if an app still fails, inspect its per-app ConsentStore entry.' }
 }
