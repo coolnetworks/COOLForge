@@ -163,11 +163,10 @@ $Master_Status = GetRegVal 'HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Servic
 if ($Master_Status -eq 1) { LogStep "Master switch: ON (Status=1)" 'OK' } else { LogStep ("Master switch: Off/NotSet (Status={0})" -f (IfNull $Master_Status 'NotSet')) 'FAIL'; $blockers += 'Master switch Off/NotSet' }
 
 # ---------------------------------------------------
-# STEP 3: Device-level ConsentStore (HKLM) & HKCU
+# STEP 3: Device-level ConsentStore (HKLM) & All Users
 # ---------------------------------------------------
-LogStep "Step 3: Checking ConsentStore (device HKLM + user HKCU)..." 'HEADER'
+LogStep "Step 3: Checking ConsentStore (device HKLM + all users)..." 'HEADER'
 $HKLM_DeviceConsent = GetRegVal 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location' 'Value'
-$HKCU_UserConsent   = GetRegVal 'HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location' 'Value'
 
 if ($HKLM_DeviceConsent) {
     if ($HKLM_DeviceConsent -eq 'Deny') { LogStep "Device Consent (HKLM): Deny - Settings may show 'turned off by admin'" 'FAIL'; $blockers += 'Device HKLM Consent=Deny' }
@@ -176,14 +175,66 @@ if ($HKLM_DeviceConsent) {
     LogStep "Device Consent (HKLM): NotSet" 'INFO'
 }
 
-if ($HKCU_UserConsent) {
-    if ($HKCU_UserConsent -eq 'Deny') { LogStep "User Consent (HKCU): Deny - user has denied location" 'FAIL'; $blockers += 'User HKCU Consent=Deny' }
-    elseif ($HKCU_UserConsent -ne 'Allow') { LogStep "User Consent (HKCU): $HKCU_UserConsent - not 'Allow'" 'WARN' }
-    else { LogStep "User Consent (HKCU): Allow" 'OK' }
-} else {
-    LogStep "User Consent (HKCU): NotSet - user toggle not established" 'WARN'
-    $blockers += 'User HKCU Consent NotSet'
+# Check all user profiles via HKU
+$UserConsentResults = @()
+$AnyUserDeny = $false
+$AnyUserNotSet = $false
+
+# Get all loaded user hives (SIDs that look like user accounts, not system)
+$userSIDs = @()
+try {
+    $userSIDs = Get-ChildItem -Path 'Registry::HKU' -ErrorAction SilentlyContinue |
+        Where-Object { $_.PSChildName -match '^S-1-5-21-' -and $_.PSChildName -notmatch '_Classes$' } |
+        Select-Object -ExpandProperty PSChildName
+} catch {}
+
+# Also check if any profiles exist that aren't loaded
+$profileListPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
+$allProfileSIDs = @()
+try {
+    $allProfileSIDs = Get-ChildItem -Path $profileListPath -ErrorAction SilentlyContinue |
+        Where-Object { $_.PSChildName -match '^S-1-5-21-' } |
+        Select-Object -ExpandProperty PSChildName
+} catch {}
+
+LogStep ("Found {0} loaded user hives, {1} total profiles" -f $userSIDs.Count, $allProfileSIDs.Count) 'INFO'
+
+foreach ($sid in $userSIDs) {
+    $hkuPath = "Registry::HKU\$sid\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location"
+    $userConsent = GetRegVal $hkuPath 'Value'
+
+    # Try to resolve SID to username
+    $userName = $sid
+    try {
+        $sidObj = New-Object System.Security.Principal.SecurityIdentifier($sid)
+        $account = $sidObj.Translate([System.Security.Principal.NTAccount])
+        $userName = $account.Value
+    } catch {}
+
+    if ($userConsent -eq 'Deny') {
+        LogStep ("  User {0}: Deny" -f $userName) 'FAIL'
+        $AnyUserDeny = $true
+        $UserConsentResults += @{ User = $userName; Value = 'Deny' }
+    } elseif ($userConsent -eq 'Allow') {
+        LogStep ("  User {0}: Allow" -f $userName) 'OK'
+        $UserConsentResults += @{ User = $userName; Value = 'Allow' }
+    } elseif ($null -eq $userConsent) {
+        LogStep ("  User {0}: NotSet" -f $userName) 'WARN'
+        $AnyUserNotSet = $true
+        $UserConsentResults += @{ User = $userName; Value = 'NotSet' }
+    } else {
+        LogStep ("  User {0}: {1}" -f $userName, $userConsent) 'WARN'
+        $UserConsentResults += @{ User = $userName; Value = $userConsent }
+    }
 }
+
+if ($userSIDs.Count -eq 0) {
+    LogStep "No user hives loaded (no users logged in)" 'WARN'
+    $AnyUserNotSet = $true
+}
+
+if ($AnyUserDeny) { $blockers += 'User HKCU Consent=Deny' }
+if ($AnyUserNotSet) { $blockers += 'User HKCU Consent NotSet' }
 
 # -------------------------------------
 # STEP 4: Geolocation Service (lfsvc)
