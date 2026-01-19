@@ -9,7 +9,7 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-5e5cb24824d3026922ac4440eb7764d0  modules/COOLForge-Common.psm1
+29a66fb3b00e84e9c5f24441e410886a  modules/COOLForge-Common.psm1
 fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.ps1
 191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 3940425d5ebc2db1f052a9d85affd944  scripts/Check/👀debug.ps1
@@ -35,6 +35,7 @@ d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
 f659ad14ce8e41a331423edd5b63ba53  scripts/Policy/Windows/👀locationservices.ps1
 4400b053017fb7374230e6b3690dbdca  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+3259987997806d080687e4d6e7d5243c  scripts/Utility/⚙️COOLForge Cache Sync.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
 331c29e1bc72f7bc759cbab1dc9a06b2  scripts/Utility/🙏Wake all devices in Level group.ps1

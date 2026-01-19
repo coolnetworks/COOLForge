@@ -49,6 +49,334 @@ $script:DeviceHostname = $null      # Device hostname for logging
 $script:Initialized = $false        # Flag to ensure initialization
 
 # ============================================================
+# REGISTRY CACHE
+# Caches Level.io data locally to reduce API calls
+# ============================================================
+
+$script:CacheBasePath = "HKLM:\SOFTWARE\COOLForge\Cache"
+$script:CacheVersion = "1.0"
+
+<#
+.SYNOPSIS
+    Gets the base registry path for the COOLForge cache.
+
+.OUTPUTS
+    String. The registry path.
+#>
+function Get-LevelCachePath {
+    return $script:CacheBasePath
+}
+
+<#
+.SYNOPSIS
+    Ensures the cache registry key exists.
+
+.DESCRIPTION
+    Creates the cache registry key if it doesn't exist and sets the version.
+#>
+function Initialize-LevelCache {
+    $path = Get-LevelCachePath
+    if (-not (Test-Path $path)) {
+        New-Item -Path $path -Force | Out-Null
+        Set-ItemProperty -Path $path -Name "Version" -Value $script:CacheVersion
+    }
+}
+
+<#
+.SYNOPSIS
+    Reads a value from the cache.
+
+.PARAMETER Name
+    The name of the cache entry to read.
+
+.OUTPUTS
+    The cached value, or $null if not found.
+#>
+function Get-LevelCacheValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    $path = Get-LevelCachePath
+    if (-not (Test-Path $path)) { return $null }
+
+    try {
+        $value = (Get-ItemProperty -Path $path -Name $Name -ErrorAction SilentlyContinue).$Name
+        return $value
+    } catch {
+        return $null
+    }
+}
+
+<#
+.SYNOPSIS
+    Writes a value to the cache.
+
+.PARAMETER Name
+    The name of the cache entry.
+
+.PARAMETER Value
+    The value to cache.
+#>
+function Set-LevelCacheValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Value
+    )
+
+    Initialize-LevelCache
+    $path = Get-LevelCachePath
+    Set-ItemProperty -Path $path -Name $Name -Value $Value
+}
+
+<#
+.SYNOPSIS
+    Updates the cache with Level.io-provided device data.
+
+.DESCRIPTION
+    Called at script start to cache data provided by Level.io variables.
+    This makes zero API calls - just stores what Level.io already gave us.
+
+.PARAMETER DeviceId
+    Device ID from Level.io.
+
+.PARAMETER DeviceHostname
+    Device hostname from Level.io.
+
+.PARAMETER DeviceTags
+    Comma-separated device tags from Level.io.
+
+.PARAMETER CustomFieldValues
+    Hashtable of custom field values (non-sensitive only).
+#>
+function Update-LevelCache {
+    param(
+        [string]$DeviceId,
+        [string]$DeviceHostname,
+        [string]$DeviceTags,
+        [hashtable]$CustomFieldValues
+    )
+
+    Initialize-LevelCache
+    $path = Get-LevelCachePath
+    $now = (Get-Date).ToString("o")
+
+    Set-ItemProperty -Path $path -Name "LastUpdated" -Value $now
+
+    if (-not [string]::IsNullOrWhiteSpace($DeviceId)) {
+        Set-ItemProperty -Path $path -Name "DeviceId" -Value $DeviceId
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($DeviceHostname)) {
+        Set-ItemProperty -Path $path -Name "DeviceHostname" -Value $DeviceHostname
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($DeviceTags)) {
+        # Store as JSON array
+        $tagArray = $DeviceTags -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+        $tagJson = $tagArray | ConvertTo-Json -Compress
+        if (-not $tagJson) { $tagJson = "[]" }
+        Set-ItemProperty -Path $path -Name "DeviceTags" -Value $tagJson
+    }
+
+    if ($CustomFieldValues -and $CustomFieldValues.Count -gt 0) {
+        $cfJson = $CustomFieldValues | ConvertTo-Json -Compress
+        Set-ItemProperty -Path $path -Name "CustomFieldValues" -Value $cfJson
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets cached device tags as an array.
+
+.OUTPUTS
+    Array of tag names, or empty array if not cached.
+#>
+function Get-CachedDeviceTags {
+    $json = Get-LevelCacheValue -Name "DeviceTags"
+    if ([string]::IsNullOrWhiteSpace($json)) { return @() }
+
+    try {
+        $tags = $json | ConvertFrom-Json
+        if ($tags -is [array]) { return $tags }
+        return @($tags)
+    } catch {
+        return @()
+    }
+}
+
+<#
+.SYNOPSIS
+    Updates the cached device tags after add/remove operations.
+
+.PARAMETER TagName
+    The tag name to add or remove.
+
+.PARAMETER Action
+    "Add" or "Remove".
+#>
+function Update-CachedDeviceTags {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Add", "Remove")]
+        [string]$Action
+    )
+
+    $currentTags = Get-CachedDeviceTags
+
+    if ($Action -eq "Add") {
+        if ($TagName -notin $currentTags) {
+            $currentTags = @($currentTags) + $TagName
+        }
+    } else {
+        $currentTags = $currentTags | Where-Object { $_ -ne $TagName }
+    }
+
+    $tagJson = $currentTags | ConvertTo-Json -Compress
+    if (-not $tagJson -or $tagJson -eq "null") { $tagJson = "[]" }
+    Set-LevelCacheValue -Name "DeviceTags" -Value $tagJson
+}
+
+<#
+.SYNOPSIS
+    Gets a cached tag ID, or looks it up and caches it.
+
+.DESCRIPTION
+    Tag IDs are cached forever since they don't change.
+    First lookup requires API call, subsequent calls use cache.
+
+.PARAMETER ApiKey
+    Level.io API key for lookup if not cached.
+
+.PARAMETER TagName
+    The full tag name (with emoji prefix).
+
+.PARAMETER BaseUrl
+    Base URL for Level.io API.
+
+.OUTPUTS
+    The tag ID, or $null if not found.
+#>
+function Get-CachedTagId {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TagName,
+
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    # Check cache first
+    $cacheJson = Get-LevelCacheValue -Name "TagIds"
+    $tagCache = @{}
+
+    if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
+        try {
+            $tagCache = $cacheJson | ConvertFrom-Json -AsHashtable
+        } catch {
+            $tagCache = @{}
+        }
+    }
+
+    if ($tagCache.ContainsKey($TagName)) {
+        return $tagCache[$TagName]
+    }
+
+    # Not cached - lookup via API
+    $tag = Find-LevelTag -ApiKey $ApiKey -TagName $TagName -BaseUrl $BaseUrl
+    if (-not $tag) { return $null }
+
+    # Cache it forever
+    $tagCache[$TagName] = $tag.id
+    $cacheJson = $tagCache | ConvertTo-Json -Compress
+    Set-LevelCacheValue -Name "TagIds" -Value $cacheJson
+
+    return $tag.id
+}
+
+<#
+.SYNOPSIS
+    Gets a cached custom field ID, or looks it up and caches it.
+
+.DESCRIPTION
+    Custom field IDs are cached forever since they don't change.
+
+.PARAMETER ApiKey
+    Level.io API key for lookup if not cached.
+
+.PARAMETER FieldName
+    The custom field name (reference name like "policy_unchecky").
+
+.PARAMETER BaseUrl
+    Base URL for Level.io API.
+
+.OUTPUTS
+    The field ID, or $null if not found.
+#>
+function Get-CachedCustomFieldId {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FieldName,
+
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    # Check cache first
+    $cacheJson = Get-LevelCacheValue -Name "CustomFieldIds"
+    $fieldCache = @{}
+
+    if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
+        try {
+            $fieldCache = $cacheJson | ConvertFrom-Json -AsHashtable
+        } catch {
+            $fieldCache = @{}
+        }
+    }
+
+    if ($fieldCache.ContainsKey($FieldName)) {
+        return $fieldCache[$FieldName]
+    }
+
+    # Not cached - lookup via API
+    $field = Find-LevelCustomField -ApiKey $ApiKey -FieldName $FieldName -BaseUrl $BaseUrl
+    if (-not $field) { return $null }
+
+    # Cache it forever
+    $fieldCache[$FieldName] = $field.id
+    $cacheJson = $fieldCache | ConvertTo-Json -Compress
+    Set-LevelCacheValue -Name "CustomFieldIds" -Value $cacheJson
+
+    return $field.id
+}
+
+<#
+.SYNOPSIS
+    Clears all cached data.
+
+.DESCRIPTION
+    Removes all cache entries. Useful for troubleshooting.
+#>
+function Clear-LevelCache {
+    $path = Get-LevelCachePath
+    if (Test-Path $path) {
+        Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# ============================================================
 # INITIALIZATION
 # ============================================================
 
@@ -2888,10 +3216,23 @@ function Add-LevelPolicyTag {
         Write-LevelLog "Found existing tag with ID: $($Tag.id)" -Level "DEBUG"
     }
 
+    # Cache the tag ID for future use
+    $cacheJson = Get-LevelCacheValue -Name "TagIds"
+    $tagCache = @{}
+    if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
+        try { $tagCache = $cacheJson | ConvertFrom-Json -AsHashtable } catch { $tagCache = @{} }
+    }
+    if (-not $tagCache.ContainsKey($FullTagName)) {
+        $tagCache[$FullTagName] = $Tag.id
+        Set-LevelCacheValue -Name "TagIds" -Value ($tagCache | ConvertTo-Json -Compress)
+    }
+
     # Add the tag
     $Success = Add-LevelTagToDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id -BaseUrl $BaseUrl
     if ($Success) {
         Write-LevelLog "Added tag '$FullTagName' to device" -Level "SUCCESS"
+        # Update cached device tags
+        Update-CachedDeviceTags -TagName $FullTagName -Action "Add"
     }
 
     return $Success
@@ -3004,10 +3345,23 @@ function Remove-LevelPolicyTag {
     }
     Write-LevelLog "Found tag with ID: $($Tag.id)" -Level "DEBUG"
 
+    # Cache the tag ID for future use
+    $cacheJson = Get-LevelCacheValue -Name "TagIds"
+    $tagCache = @{}
+    if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
+        try { $tagCache = $cacheJson | ConvertFrom-Json -AsHashtable } catch { $tagCache = @{} }
+    }
+    if (-not $tagCache.ContainsKey($FullTagName)) {
+        $tagCache[$FullTagName] = $Tag.id
+        Set-LevelCacheValue -Name "TagIds" -Value ($tagCache | ConvertTo-Json -Compress)
+    }
+
     # Remove the tag
     $Success = Remove-LevelTagFromDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id -BaseUrl $BaseUrl
     if ($Success) {
         Write-LevelLog "Removed tag '$FullTagName' from device" -Level "SUCCESS"
+        # Update cached device tags
+        Update-CachedDeviceTags -TagName $FullTagName -Action "Remove"
     }
 
     return $Success
