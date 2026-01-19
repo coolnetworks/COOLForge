@@ -2832,7 +2832,15 @@ function Add-LevelPolicyTag {
         [string]$DeviceHostname,
 
         [Parameter(Mandatory = $false)]
-        [string]$BaseUrl = "https://api.level.io/v2"
+        [string]$BaseUrl = "https://api.level.io/v2",
+
+        # Optional: Pass device object to avoid re-fetching
+        [Parameter(Mandatory = $false)]
+        $Device = $null,
+
+        # Optional: Pass tag list to avoid re-fetching
+        [Parameter(Mandatory = $false)]
+        $TagList = $null
     )
 
     # Get emoji characters from centralized source (5-tag model per POLICY-TAGS.md)
@@ -2851,15 +2859,23 @@ function Add-LevelPolicyTag {
     $TagBytesHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
     Write-LevelLog "Adding tag '$FullTagName' (bytes: $TagBytesHex) to device..." -Level "DEBUG"
 
-    # Find the device
-    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    # Use provided device or fetch it
+    if (-not $Device) {
+        $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    }
     if (-not $Device) {
         Write-LevelLog "Could not find device '$DeviceHostname' in Level.io" -Level "WARN"
         return $false
     }
 
-    # Find the tag, create if doesn't exist
-    $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+    # Find the tag from provided list or fetch
+    $Tag = $null
+    if ($TagList) {
+        $Tag = $TagList | Where-Object { $_.name -ieq $FullTagName } | Select-Object -First 1
+    } else {
+        $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+    }
+
     if (-not $Tag) {
         Write-LevelLog "Tag '$FullTagName' not found in Level.io - creating..." -Level "DEBUG"
         $Tag = New-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
@@ -2939,7 +2955,15 @@ function Remove-LevelPolicyTag {
         [string]$DeviceHostname,
 
         [Parameter(Mandatory = $false)]
-        [string]$BaseUrl = "https://api.level.io/v2"
+        [string]$BaseUrl = "https://api.level.io/v2",
+
+        # Optional: Pass device object to avoid re-fetching
+        [Parameter(Mandatory = $false)]
+        $Device = $null,
+
+        # Optional: Pass tag list to avoid re-fetching
+        [Parameter(Mandatory = $false)]
+        $TagList = $null
     )
 
     # Get emoji characters from centralized source (5-tag model per POLICY-TAGS.md)
@@ -2958,15 +2982,22 @@ function Remove-LevelPolicyTag {
     $TagBytesHex = ($TagBytes | ForEach-Object { "{0:X2}" -f $_ }) -join " "
     Write-LevelLog "Removing tag '$FullTagName' (bytes: $TagBytesHex) from device..." -Level "DEBUG"
 
-    # Find the device
-    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    # Use provided device or fetch it
+    if (-not $Device) {
+        $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    }
     if (-not $Device) {
         Write-LevelLog "Could not find device '$DeviceHostname' in Level.io" -Level "WARN"
         return $false
     }
 
-    # Find the tag
-    $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+    # Find the tag from provided list or fetch
+    $Tag = $null
+    if ($TagList) {
+        $Tag = $TagList | Where-Object { $_.name -ieq $FullTagName } | Select-Object -First 1
+    } else {
+        $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $FullTagName -BaseUrl $BaseUrl
+    }
     if (-not $Tag) {
         Write-LevelLog "Tag '$FullTagName' not found in Level.io (may not exist)" -Level "DEBUG"
         return $true  # Not an error - tag may not exist
