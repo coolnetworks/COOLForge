@@ -108,6 +108,53 @@ if ($Pol_AppPrivacy -eq 2) {
     LogStep "Policy: LetAppsAccessLocation=NotConfigured" 'OK'
 }
 
+# ---------------------------------------------
+# STEP 1b: MDM/Intune Policies (PolicyManager)
+# ---------------------------------------------
+LogStep "Step 1b: Checking MDM/Intune policies under HKLM:\SOFTWARE\Microsoft\PolicyManager..." 'HEADER'
+
+# MDM System\AllowLocation: 0=Off, 1=On, 2=ForceOn
+$MDM_AllowLocation = GetRegVal 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\System' 'AllowLocation'
+# MDM Privacy\LetAppsAccessLocation: 0=User, 1=ForceAllow, 2=ForceDeny
+$MDM_LetAppsAccessLocation = GetRegVal 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Privacy' 'LetAppsAccessLocation'
+
+# Check for MDM enrollment (indicates device is MDM-managed)
+$MDM_Providers = @()
+$provPath = 'HKLM:\SOFTWARE\Microsoft\PolicyManager\Providers'
+if (Test-Path $provPath) {
+    $MDM_Providers = @(Get-ChildItem -Path $provPath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PSChildName)
+}
+$enrollPath = 'HKLM:\SOFTWARE\Microsoft\Enrollments'
+$MDM_Enrollments = @()
+if (Test-Path $enrollPath) {
+    $MDM_Enrollments = @(Get-ChildItem -Path $enrollPath -ErrorAction SilentlyContinue | Where-Object {
+        $_.PSChildName -match '^[0-9a-f]{8}-' # GUID-like enrollment IDs
+    } | Select-Object -ExpandProperty PSChildName)
+}
+
+if ($MDM_Providers.Count -gt 0 -or $MDM_Enrollments.Count -gt 0) {
+    LogStep ("MDM: Device is MDM-managed (Providers={0}, Enrollments={1})" -f $MDM_Providers.Count, $MDM_Enrollments.Count) 'INFO'
+}
+
+if ($MDM_AllowLocation -eq 0) {
+    LogStep "MDM: System\AllowLocation=0 - MDM BLOCKS location" 'FAIL'
+    $blockers += 'MDM System AllowLocation=0 (blocked)'
+} elseif ($null -ne $MDM_AllowLocation) {
+    LogStep "MDM: System\AllowLocation=$MDM_AllowLocation (policy EXISTS)" 'WARN'
+    $blockers += 'MDM System AllowLocation exists (shows managed message)'
+} else {
+    LogStep "MDM: System\AllowLocation=NotConfigured" 'OK'
+}
+
+if ($MDM_LetAppsAccessLocation -eq 2) {
+    LogStep "MDM: Privacy\LetAppsAccessLocation=2 (ForceDeny) - MDM blocks all apps" 'FAIL'
+    $blockers += 'MDM Privacy LetAppsAccessLocation=2 (ForceDeny)'
+} elseif ($null -ne $MDM_LetAppsAccessLocation) {
+    LogStep "MDM: Privacy\LetAppsAccessLocation=$MDM_LetAppsAccessLocation (policy EXISTS)" 'WARN'
+} else {
+    LogStep "MDM: Privacy\LetAppsAccessLocation=NotConfigured" 'OK'
+}
+
 # ----------------------------------
 # STEP 2: Device Master Switch (OS)
 # ----------------------------------
@@ -198,12 +245,15 @@ $priority = @(
     'Admin policy DisableSensors=1',
     'Admin policy DisableLocationScripting=1',
     'AppPrivacy LetAppsAccessLocation=2 (ForceDeny)',
+    'MDM System AllowLocation=0 (blocked)',
+    'MDM Privacy LetAppsAccessLocation=2 (ForceDeny)',
     'Device HKLM Consent=Deny',
     'Master switch Off/NotSet',
     'lfsvc missing or Disabled',
     'User HKCU Consent=Deny',
     'User HKCU Consent NotSet',
     'Admin policy DisableLocation exists (shows managed message)',
+    'MDM System AllowLocation exists (shows managed message)',
     'Per-app Deny overrides present'
 )
 foreach ($reason in $priority) {
@@ -218,21 +268,26 @@ $recommend = switch -Regex ($primary) {
     'DisableLocation=1'             { 'Fix at policy source (GPO/Intune): set DisableLocation to Not configured/0, then gpupdate or Intune Sync.' }
     'DisableSensors=1'              { 'Fix at policy source (GPO/Intune): set DisableSensors to Not configured/0, refresh policy.' }
     'DisableLocationScripting=1'    { 'Fix at policy source (GPO/Intune): set DisableLocationScripting to Not configured/0, refresh policy.' }
-    'ForceDeny'                     { 'Fix at policy source (GPO/Intune): set AppPrivacy LetAppsAccessLocation to 0 (User) or 1 (ForceAllow).' }
+    'AppPrivacy.*ForceDeny'         { 'Fix at policy source (GPO/Intune): set AppPrivacy LetAppsAccessLocation to 0 (User) or 1 (ForceAllow).' }
+    'MDM System AllowLocation=0'    { 'Fix in MDM/Intune console: System > Allow Location = 1 (On) or Not configured. Then sync device.' }
+    'MDM Privacy.*ForceDeny'        { 'Fix in MDM/Intune console: Privacy > Let Apps Access Location = User In Control or Force Allow. Then sync device.' }
+    'MDM.*shows managed'            { 'Remove MDM policy from Intune console (set to Not configured). Local deletion will be re-applied on sync.' }
     'Device HKLM Consent=Deny'      { 'Set HKLM:\...\ConsentStore\location\Value=Allow (admin), then close/reopen Settings or sign out/in.' }
     'Master switch Off/NotSet'      { 'Set HKLM:\SYSTEM\CCS\Services\lfsvc\Service\Configuration\Status=1 (admin), then close/reopen Settings.' }
     'lfsvc missing or Disabled'     { 'Ensure lfsvc exists; Set-Service lfsvc -StartupType Manual; Start-Service lfsvc.' }
     'User HKCU Consent=Deny'        { 'Set HKCU:\...\ConsentStore\location\Value=Allow (run as the logged-in user).' }
     'User HKCU Consent NotSet'      { 'Create HKCU key and set Value=Allow (run as the logged-in user).' }
-    'shows managed message'         { 'DELETE the policy key from GPO/Intune (setting to 0 still shows "managed by admin"). Remove: HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors\DisableLocation' }
+    'Admin.*shows managed'          { 'DELETE the policy key from GPO/Intune (setting to 0 still shows "managed by admin"). Remove: HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors' }
     'Per-app Deny overrides present'{ 'Set affected per-app ConsentStore entries to Allow or remove the entries (HKCU).' }
     default                         { 'No action needed; if an app still fails, inspect its per-app ConsentStore entry.' }
 }
 
 # Print collected values for quick view
 $elapsed = (Get-Date) - $start
-LogStep ("Admin: DisableLocation={0}; DisableSensors={1}; DisableLocationScripting={2}; AppPrivacy={3}" -f `
+LogStep ("GPO: DisableLocation={0}; DisableSensors={1}; DisableLocationScripting={2}; AppPrivacy={3}" -f `
     (IfNull $Pol_DisableLocation 'NotConfigured'), (IfNull $Pol_DisableSensors 'NotConfigured'), (IfNull $Pol_DisableLocationScripting 'NotConfigured'), (IfNull $Pol_AppPrivacy 'NotConfigured'))
+LogStep ("MDM: AllowLocation={0}; LetAppsAccessLocation={1}; Managed={2}" -f `
+    (IfNull $MDM_AllowLocation 'NotConfigured'), (IfNull $MDM_LetAppsAccessLocation 'NotConfigured'), ($MDM_Providers.Count -gt 0 -or $MDM_Enrollments.Count -gt 0))
 LogStep ("Device: MasterStatus={0}; HKLM_Consent={1}; lfsvc(StartType={2},Status={3})" -f `
     (IfNull $Master_Status 'NotSet'), (IfNull $HKLM_DeviceConsent 'NotSet'), $SvcStart, $SvcStatus)
 LogStep ("User: HKCU_Consent={0}; PerAppDenies={1}" -f (IfNull $HKCU_UserConsent 'NotSet'), ($PerAppDenies.Count))
