@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀chromelocationservices.ps1"
+$ScriptToRun = "Policy/Chrome/👀locationservices.ps1"
 $policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
 <#
 .SYNOPSIS
@@ -19,7 +19,7 @@ $policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
 #>
 
 $LauncherVersion = "2026.01.20.02"
-$LauncherName = "Policy/👀chromelocationservices.ps1"
+$LauncherName = "Policy/Chrome/👀locationservices.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

@@ -6339,12 +6339,6 @@ function Get-ScriptPathFromMD5 {
     <#
     .SYNOPSIS
         Resolves full script path from MD5SUMS content.
-    .DESCRIPTION
-        Searches MD5SUMS for a path ending with the given ScriptName.
-        Supports both simple filenames and partial paths for disambiguation.
-        Examples:
-          - "unchecky.ps1" matches "scripts/unchecky.ps1"
-          - "Chrome/locationservices.ps1" matches "scripts/Policy/Chrome/locationservices.ps1"
     #>
     param([string]$ScriptName, [string]$MD5Content)
     if ([string]::IsNullOrWhiteSpace($MD5Content)) {
@@ -6352,25 +6346,21 @@ function Get-ScriptPathFromMD5 {
         return $null
     }
     Write-Host "[DEBUG MD5] Looking for: '$ScriptName'"
-
-    # Normalize to forward slashes for matching
-    $SearchPattern = $ScriptName -replace '\\', '/'
-
     $MatchCount = 0
     foreach ($line in $MD5Content -split "`n") {
         $line = $line.Trim()
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
             $FilePath = $Matches[2].Trim()
+            $FileName = Split-Path $FilePath -Leaf
             $MatchCount++
-            # Check if path ends with the search pattern (supports partial paths)
-            if ($FilePath -like "*/$SearchPattern" -or $FilePath -eq $SearchPattern) {
+            if ($FileName -eq $ScriptName -or $FileName -like "*$ScriptName") {
                 Write-Host "[DEBUG MD5] MATCH: $FilePath"
                 return $FilePath
             }
         }
     }
-    Write-Host "[DEBUG MD5] Checked $MatchCount entries, no match for '*/$SearchPattern'"
+    Write-Host "[DEBUG MD5] Checked $MatchCount entries, no match"
     return $null
 }
 

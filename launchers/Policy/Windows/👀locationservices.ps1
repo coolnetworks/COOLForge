@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀windowslocationservices.ps1"
+$ScriptToRun = "Policy/Windows/👀locationservices.ps1"
 $policy_device_locationservices = "{{cf_policy_device_locationservices}}"
 <#
 .SYNOPSIS
@@ -19,7 +19,7 @@ $policy_device_locationservices = "{{cf_policy_device_locationservices}}"
 #>
 
 $LauncherVersion = "2026.01.20.02"
-$LauncherName = "Policy/👀windowslocationservices.ps1"
+$LauncherName = "Policy/Windows/👀locationservices.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
