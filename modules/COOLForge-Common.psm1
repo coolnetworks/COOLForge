@@ -56,6 +56,28 @@ $script:Initialized = $false        # Flag to ensure initialization
 $script:CacheBasePath = "HKLM:\SOFTWARE\COOLForge\Cache"
 $script:CacheVersion = "1.0"
 
+# API call counter for debugging
+$script:ApiCallCount = 0
+
+<#
+.SYNOPSIS
+    Gets the current API call count for this session.
+
+.OUTPUTS
+    Int. The number of API calls made.
+#>
+function Get-ApiCallCount {
+    return $script:ApiCallCount
+}
+
+<#
+.SYNOPSIS
+    Resets the API call counter to zero.
+#>
+function Reset-ApiCallCount {
+    $script:ApiCallCount = 0
+}
+
 <#
 .SYNOPSIS
     Gets the base registry path for the COOLForge cache.
@@ -136,6 +158,119 @@ function Set-LevelCacheValue {
 
 <#
 .SYNOPSIS
+    Encrypts a string using Windows DPAPI (machine-bound).
+
+.DESCRIPTION
+    Uses ConvertTo-SecureString and ConvertFrom-SecureString to encrypt data.
+    The encrypted value can only be decrypted on the same machine by SYSTEM.
+
+.PARAMETER Value
+    The plaintext string to encrypt.
+
+.OUTPUTS
+    String. The DPAPI-encrypted string, or $null if encryption fails.
+#>
+function Protect-CacheValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) { return $null }
+
+    try {
+        $secureString = ConvertTo-SecureString -String $Value -AsPlainText -Force
+        $encrypted = ConvertFrom-SecureString -SecureString $secureString
+        return $encrypted
+    } catch {
+        Write-LevelLog "Failed to encrypt cache value: $_" -Level "WARN"
+        return $null
+    }
+}
+
+<#
+.SYNOPSIS
+    Decrypts a DPAPI-protected string.
+
+.DESCRIPTION
+    Reverses the encryption done by Protect-CacheValue.
+
+.PARAMETER EncryptedValue
+    The DPAPI-encrypted string.
+
+.OUTPUTS
+    String. The decrypted plaintext, or $null if decryption fails.
+#>
+function Unprotect-CacheValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$EncryptedValue
+    )
+
+    if ([string]::IsNullOrWhiteSpace($EncryptedValue)) { return $null }
+
+    try {
+        $secureString = ConvertTo-SecureString -String $EncryptedValue
+        $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString)
+        $plaintext = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+        return $plaintext
+    } catch {
+        Write-LevelLog "Failed to decrypt cache value: $_" -Level "WARN"
+        return $null
+    }
+}
+
+<#
+.SYNOPSIS
+    Stores an encrypted value in the cache.
+
+.PARAMETER Name
+    The name of the cache entry (will be prefixed with "Protected_").
+
+.PARAMETER Value
+    The plaintext value to encrypt and store.
+#>
+function Set-ProtectedCacheValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    $encrypted = Protect-CacheValue -Value $Value
+    if ($encrypted) {
+        Set-LevelCacheValue -Name "Protected_$Name" -Value $encrypted
+    }
+}
+
+<#
+.SYNOPSIS
+    Retrieves and decrypts a protected value from the cache.
+
+.PARAMETER Name
+    The name of the cache entry (without "Protected_" prefix).
+
+.OUTPUTS
+    String. The decrypted value, or $null if not found or decryption fails.
+#>
+function Get-ProtectedCacheValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    $encrypted = Get-LevelCacheValue -Name "Protected_$Name"
+    if ($encrypted) {
+        return Unprotect-CacheValue -EncryptedValue $encrypted
+    }
+    return $null
+}
+
+<#
+.SYNOPSIS
     Updates the cache with Level.io-provided device data.
 
 .DESCRIPTION
@@ -153,13 +288,17 @@ function Set-LevelCacheValue {
 
 .PARAMETER CustomFieldValues
     Hashtable of custom field values (non-sensitive only).
+
+.PARAMETER ProtectedFieldValues
+    Hashtable of sensitive field values to encrypt with DPAPI.
 #>
 function Update-LevelCache {
     param(
         [string]$DeviceId,
         [string]$DeviceHostname,
         [string]$DeviceTags,
-        [hashtable]$CustomFieldValues
+        [hashtable]$CustomFieldValues,
+        [hashtable]$ProtectedFieldValues
     )
 
     Initialize-LevelCache
@@ -187,6 +326,16 @@ function Update-LevelCache {
     if ($CustomFieldValues -and $CustomFieldValues.Count -gt 0) {
         $cfJson = $CustomFieldValues | ConvertTo-Json -Compress
         Set-ItemProperty -Path $path -Name "CustomFieldValues" -Value $cfJson
+    }
+
+    # Store encrypted sensitive values
+    if ($ProtectedFieldValues -and $ProtectedFieldValues.Count -gt 0) {
+        foreach ($key in $ProtectedFieldValues.Keys) {
+            $value = $ProtectedFieldValues[$key]
+            if (-not [string]::IsNullOrWhiteSpace($value)) {
+                Set-ProtectedCacheValue -Name $key -Value $value
+            }
+        }
     }
 }
 
@@ -484,6 +633,9 @@ function Initialize-LevelScript {
     $script:LockFilePath = Join-Path -Path $MspScratchFolder -ChildPath "lockfiles"
     $script:LockFile = Join-Path -Path $script:LockFilePath -ChildPath "$ScriptName.lock"
 
+    # Reset API call counter for this script run
+    Reset-ApiCallCount
+
     Write-LevelLog "Initializing: $ScriptName on $DeviceHostname"
 
     # --- Policy Block Check ---
@@ -715,6 +867,12 @@ function Invoke-LevelScript {
             Write-LevelLog "Script completed with exit code: $FinalExitCode" -Level "WARN"
         }
 
+        # Show API call summary in DEBUG mode
+        $apiCalls = Get-ApiCallCount
+        if ($apiCalls -gt 0) {
+            Write-LevelLog "Total Level.io API calls: $apiCalls" -Level "DEBUG"
+        }
+
         if (-not $NoCleanup) {
             Remove-LevelLockFile
         }
@@ -723,6 +881,12 @@ function Invoke-LevelScript {
     catch {
         Write-LevelLog "FATAL: $($_.Exception.Message)" -Level "ERROR"
         Write-LevelLog "Stack: $($_.ScriptStackTrace)" -Level "DEBUG"
+
+        # Show API call summary even on error
+        $apiCalls = Get-ApiCallCount
+        if ($apiCalls -gt 0) {
+            Write-LevelLog "Total Level.io API calls: $apiCalls" -Level "DEBUG"
+        }
 
         if (-not $NoCleanup) {
             Remove-LevelLockFile
@@ -2244,6 +2408,11 @@ function Invoke-LevelApiCall {
         [Parameter(Mandatory = $false)]
         [int]$TimeoutSec = 30
     )
+
+    # Increment API call counter
+    $script:ApiCallCount++
+    $endpoint = $Uri -replace '^https://[^/]+', ''
+    Write-LevelLog "[API #$($script:ApiCallCount)] $Method $endpoint" -Level "DEBUG"
 
     # Set up headers with API key authentication
     # Note: Level.io v2 API does NOT use "Bearer" prefix - just the API key directly

@@ -105,11 +105,23 @@ $InvokeParams = @{ ScriptBlock = {
         }
     }
 
+    # Collect sensitive fields (will be encrypted with DPAPI)
+    $sensitiveValues = @{}
+    if ($LauncherVars) {
+        $LauncherVars.Keys | Where-Object { $_ -like "sensitive_*" } | ForEach-Object {
+            $val = $LauncherVars[$_]
+            if (-not [string]::IsNullOrWhiteSpace($val) -and $val -notlike "{{*}}") {
+                $sensitiveValues[$_] = $val
+            }
+        }
+    }
+
     # Update the cache
     Update-LevelCache -DeviceId $deviceId `
                       -DeviceHostname $hostname `
                       -DeviceTags $tags `
-                      -CustomFieldValues $customFieldValues
+                      -CustomFieldValues $customFieldValues `
+                      -ProtectedFieldValues $sensitiveValues
 
     # Log what we cached
     Write-LevelLog "Cache updated:"
@@ -125,6 +137,9 @@ $InvokeParams = @{ ScriptBlock = {
     }
     if ($customFieldValues.Count -gt 0) {
         Write-LevelLog "  CustomFields: $($customFieldValues.Count) values"
+    }
+    if ($sensitiveValues.Count -gt 0) {
+        Write-LevelLog "  ProtectedFields: $($sensitiveValues.Count) values (DPAPI encrypted)"
     }
 
     # Debug output

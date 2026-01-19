@@ -76,6 +76,7 @@ $LevelApiKey = $LevelApiKey_Raw.Trim()
 # ============================================================
 # POLICY CUSTOM FIELDS (for caching)
 # ============================================================
+# Main policy toggles (install/remove/pin)
 $policy_unchecky = "{{cf_policy_unchecky}}"
 $policy_huntress = "{{cf_policy_huntress}}"
 $policy_dnsfilter = "{{cf_policy_dnsfilter}}"
@@ -83,6 +84,20 @@ $policy_meshcentral = "{{cf_policy_meshcentral}}"
 $policy_chrome = "{{cf_policy_chrome}}"
 $policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
 $policy_screenconnect = "{{cf_policy_screenconnect}}"
+$policy_device_locationservices = "{{cf_policy_device_locationservices}}"
+
+# Non-sensitive config fields (URLs, identifiers)
+$policy_unchecky_url = "{{cf_policy_unchecky_url}}"
+$policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
+$policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
+$policy_screenconnect_instance = "{{cf_policy_screenconnect_instance}}"
+$policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"
+$policy_huntress_org_key = "{{cf_policy_huntress_org_key}}"
+$policy_huntress_tags = "{{cf_policy_huntress_tags}}"
+
+# Sensitive fields (will be encrypted with DPAPI)
+$sensitive_huntress_account_key = "{{cf_policy_huntress_account_key}}"
+$sensitive_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 
 # ============================================================
 # GITHUB PAT INJECTION
@@ -206,6 +221,14 @@ Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
     }
 }
 
+# Collect sensitive variables (will be encrypted)
+$SensitiveVars = @{}
+Get-Variable -Name "sensitive_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
+        $SensitiveVars[$_.Name] = $_.Value
+    }
+}
+
 # ============================================================
 # EXECUTE SCRIPT
 # ============================================================
@@ -225,6 +248,11 @@ $LauncherVars = @{
 # Add policy variables
 foreach ($key in $PolicyVars.Keys) {
     $LauncherVars[$key] = $PolicyVars[$key]
+}
+
+# Add sensitive variables (script will encrypt these)
+foreach ($key in $SensitiveVars.Keys) {
+    $LauncherVars[$key] = $SensitiveVars[$key]
 }
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
