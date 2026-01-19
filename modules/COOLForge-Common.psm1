@@ -3545,6 +3545,14 @@ function Initialize-COOLForgeInfrastructure {
             Write-LevelLog "Creating custom field: $($Field.Name)" -Level "INFO"
             $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $Field.Name -DefaultValue $DefaultToUse -BaseUrl $BaseUrl
             if ($NewField) {
+                # Set the org-level default value (API default_value only defines it, doesn't apply it)
+                if (-not [string]::IsNullOrWhiteSpace($DefaultToUse)) {
+                    # Find the field to get its ID (POST response may not include it)
+                    $CreatedField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $Field.Name -BaseUrl $BaseUrl
+                    if ($CreatedField -and $CreatedField.id) {
+                        $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $CreatedField.id -Value $DefaultToUse -BaseUrl $BaseUrl
+                    }
+                }
                 if ($MigratedFrom) {
                     Write-LevelLog "Created custom field: $($Field.Name) (migrated from $MigratedFrom = '$DefaultToUse')" -Level "SUCCESS"
                 }
@@ -3718,6 +3726,14 @@ function Initialize-SoftwarePolicyInfrastructure {
         Write-LevelLog "Creating custom field: $PolicyFieldName (default: '$DefaultPolicyValue')" -Level "INFO"
         $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $PolicyFieldName -DefaultValue $DefaultPolicyValue -BaseUrl $BaseUrl
         if ($NewField) {
+            # Set the org-level default value (API default_value only defines it, doesn't apply it)
+            if (-not [string]::IsNullOrWhiteSpace($DefaultPolicyValue)) {
+                # Find the field to get its ID (POST response may not include it)
+                $CreatedField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $PolicyFieldName -BaseUrl $BaseUrl
+                if ($CreatedField -and $CreatedField.id) {
+                    $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $CreatedField.id -Value $DefaultPolicyValue -BaseUrl $BaseUrl
+                }
+            }
             Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
             $FieldsCreated++
         }
