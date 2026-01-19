@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Checks that all DNSFilter users named "SYSTEM" are assigned to the correct policy.
 
@@ -169,7 +169,7 @@ Write-Host "[*] Retrieving policies from DNSFilter..."
 $Policies = Get-AllPaginatedResults -Endpoint "policies"
 
 if ($null -eq $Policies -or $Policies.Count -eq 0) {
-    Write-Host "[X] FATAL: Could not retrieve policies from DNSFilter API" -ForegroundColor Red
+    Write-Host "[Alert] Could not retrieve policies from DNSFilter API" -ForegroundColor Red
     exit 1
 }
 
@@ -179,7 +179,7 @@ Write-Host "[+] Found $($Policies.Count) policies" -ForegroundColor Green
 $RequiredPolicy = $Policies | Where-Object { $_.name -eq $PolicyName }
 
 if ($null -eq $RequiredPolicy) {
-    Write-Host "[X] FATAL: Required policy '$PolicyName' not found in DNSFilter" -ForegroundColor Red
+    Write-Host "[Alert] Required policy '$PolicyName' not found in DNSFilter" -ForegroundColor Red
     Write-Host ""
     Write-Host "Available policies:" -ForegroundColor Yellow
     $Policies | ForEach-Object { Write-Host "  - $($_.name)" }
@@ -195,7 +195,7 @@ Write-Host "[*] Retrieving users from DNSFilter..."
 $Users = Get-AllPaginatedResults -Endpoint "users"
 
 if ($null -eq $Users) {
-    Write-Host "[X] FATAL: Could not retrieve users from DNSFilter API" -ForegroundColor Red
+    Write-Host "[Alert] Could not retrieve users from DNSFilter API" -ForegroundColor Red
     exit 1
 }
 

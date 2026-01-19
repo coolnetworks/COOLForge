@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Restores Windows 11 services to their default startup types.
 
@@ -53,7 +53,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # Check for Administrator privileges
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $IsAdmin) {
-    Write-Host "[X] FATAL: This script requires Administrator privileges"
+    Write-Host "[Alert] This script requires Administrator privileges"
     exit 1
 }
 
@@ -62,7 +62,7 @@ $OSInfo = Get-CimInstance -ClassName Win32_OperatingSystem
 $BuildNumber = [int]$OSInfo.BuildNumber
 
 if ($BuildNumber -lt 22000) {
-    Write-Host "[X] FATAL: This script is for Windows 11 only (Build 22000+)"
+    Write-Host "[Alert] This script is for Windows 11 only (Build 22000+)"
     Write-Host "[*] Current OS: $($OSInfo.Caption) (Build $BuildNumber)"
     Write-Host "[*] Use the appropriate script for your Windows version"
     exit 1

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Temporarily prevents the device from sleeping for a configurable duration.
 
@@ -100,7 +100,7 @@ $RegistryBasePath = "HKLM:\SOFTWARE\$MspName\COOLForge\NoSleep"
 # Check for Administrator privileges
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $IsAdmin) {
-    Write-Host "[X] FATAL: This script requires Administrator privileges"
+    Write-Host "[Alert] This script requires Administrator privileges"
     exit 1
 }
 
@@ -251,7 +251,7 @@ $schemeOutput = & powercfg /getactivescheme 2>&1
 if ($schemeOutput -match "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})") {
     $ActiveSchemeGuid = $Matches[1]
 } else {
-    Write-Host "[X] FATAL: Could not determine active power scheme"
+    Write-Host "[Alert] Could not determine active power scheme"
     exit 1
 }
 
@@ -322,7 +322,7 @@ if ($AlreadyActive) {
     if ($VerifyBackup.HibernateTimeoutDC -ne $Backup.HibernateTimeoutDC) { $BackupValid = $false; Write-Host "[!] HibernateTimeoutDC mismatch" }
 
     if (-not $BackupValid) {
-        Write-Host "[X] FATAL: Backup verification failed - aborting to protect current settings"
+        Write-Host "[Alert] Backup verification failed - aborting to protect current settings"
         exit 1
     }
 
@@ -353,7 +353,7 @@ try {
 
     Write-Host "[+] Sleep and hibernate disabled"
 } catch {
-    Write-Host "[X] FATAL: Failed to disable sleep: $($_.Exception.Message)"
+    Write-Host "[Alert] Failed to disable sleep: $($_.Exception.Message)"
     Write-Host "[*] Attempting to restore backup..."
     # Try to restore
     try {

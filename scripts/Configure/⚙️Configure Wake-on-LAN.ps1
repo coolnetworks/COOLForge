@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Configures Windows workstations for Wake-on-LAN and disables power-saving features.
 
@@ -126,7 +126,7 @@ begin {
 
 process {
     if (-not (Test-IsElevated)) {
-        Write-Host "[X] FATAL: This script requires Administrator privileges"
+        Write-Host "[Alert] This script requires Administrator privileges"
         exit 1
     }
 
@@ -307,7 +307,7 @@ process {
         $results.PowerSettings['WakeTimers'] = 'Enabled'
     }
     catch {
-        Write-Host "  [WARN] Could not configure power plans"
+        Write-Host "  [Alert] Could not configure power plans"
     }
 
     # ============================================
@@ -318,7 +318,7 @@ process {
     Write-Host "[CONFIGURING NETWORK ADAPTERS]"
 
     if (-not $adapters -or $adapters.Count -eq 0) {
-        Write-Host "  [WARN] No network adapters found"
+        Write-Host "  [Alert] No network adapters found"
         $results.Errors += "No network adapters found"
     }
     else {
@@ -459,7 +459,7 @@ process {
                 }
             }
             catch {
-                Write-Host "    [WARN] Registry config failed"
+                Write-Host "    [Alert] Registry config failed"
             }
 
             if ($adapterResult.Settings.Count -eq 0) {

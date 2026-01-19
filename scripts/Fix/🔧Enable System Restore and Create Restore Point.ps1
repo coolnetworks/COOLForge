@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Enables System Restore, creates a restore point, and schedules daily restore points.
 
@@ -55,7 +55,7 @@ $ScheduledTaskName = "COOLForge_Lib Daily System Restore Point"
 # Check for Administrator privileges
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $IsAdmin) {
-    Write-Host "[X] FATAL: This script requires Administrator privileges"
+    Write-Host "[Alert] This script requires Administrator privileges"
     exit 1
 }
 
@@ -73,7 +73,7 @@ Write-Host "[*] Operating System: $OSCaption (Build $BuildNumber)"
 # Windows 7: 7600-7601, Windows 8: 9200, Windows 8.1: 9600
 # Windows 10: 10240-19045, Windows 11: 22000+
 if ($BuildNumber -lt 7600) {
-    Write-Host "[X] FATAL: This script requires Windows 7 or later"
+    Write-Host "[Alert] This script requires Windows 7 or later"
     exit 1
 }
 

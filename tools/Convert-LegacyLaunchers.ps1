@@ -1,0 +1,266 @@
+﻿<#
+.SYNOPSIS
+    Converts legacy launchers (~660 lines) to slim format (~200 lines)
+
+.DESCRIPTION
+    Scans the launchers/ folder for legacy launchers (those containing "DEPRECATED")
+    and converts them to slim format using the template.
+
+.NOTES
+    Run from the COOLForge root folder:
+    .\tools\Convert-LegacyLaunchers.ps1
+#>
+
+$ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+# Get paths
+$ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$RepoRoot = Split-Path -Parent $ScriptRoot
+$LaunchersPath = Join-Path $RepoRoot "launchers"
+
+Write-Host "Scanning for legacy launchers in: $LaunchersPath" -ForegroundColor Cyan
+Write-Host ""
+
+# Find all .ps1 files in root launchers folder (not Policy subfolder)
+$AllLaunchers = Get-ChildItem -Path $LaunchersPath -Filter "*.ps1" -File
+
+$Converted = 0
+$Skipped = 0
+$AlreadySlim = 0
+
+foreach ($LauncherFile in $AllLaunchers) {
+    $FilePath = $LauncherFile.FullName
+    $FileName = $LauncherFile.Name
+
+    # Read file content
+    $Content = Get-Content -Path $FilePath -Raw -Encoding UTF8
+
+    # Skip if not a legacy launcher (doesn't have DEPRECATED marker)
+    if ($Content -notmatch "DEPRECATED") {
+        Write-Host "  [SLIM] $FileName" -ForegroundColor Gray
+        $AlreadySlim++
+        continue
+    }
+
+    # Extract synopsis from legacy launcher if possible
+    $Synopsis = $FileName -replace '\.ps1$', '' -replace '^[^\w]+', ''
+    if ($Content -match '\.SYNOPSIS\s*\r?\n\s*(.+?)(?:\r?\n|$)') {
+        $Synopsis = $Matches[1].Trim()
+    }
+
+    # Generate slim launcher content
+    $NewContent = @"
+# ============================================================
+# SCRIPT TO RUN - PRE-CONFIGURED
+# ============================================================
+`$ScriptToRun = "$FileName"
+<#
+.SYNOPSIS
+    Slim Level.io Launcher for $Synopsis
+
+.NOTES
+    Launcher Version: 2026.01.19.01
+    Target Platform:  Level.io RMM
+
+    This slim launcher (~200 lines) replaces the full launcher (~660 lines).
+    Script download/execution is handled by Invoke-ScriptLauncher in the library.
+
+    Copyright (c) COOLNETWORKS
+    https://github.com/coolnetworks/COOLForge
+#>
+
+`$LauncherVersion = "2026.01.19.01"
+`$LauncherName = "$FileName"
+
+`$ErrorActionPreference = "SilentlyContinue"
+
+# ============================================================
+# LEVEL.IO VARIABLES
+# ============================================================
+`$MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
+`$DeviceHostname = "{{level_device_hostname}}"
+`$DeviceTags = "{{level_tag_names}}"
+
+`$GitHubPAT = @'
+{{cf_coolforge_pat}}
+'@
+`$GitHubPAT = `$GitHubPAT.Trim()
+if ([string]::IsNullOrWhiteSpace(`$GitHubPAT) -or `$GitHubPAT -like "{{*}}") { `$GitHubPAT = `$null }
+
+`$PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
+`$UsePinnedVersion = (-not [string]::IsNullOrWhiteSpace(`$PinnedVersion) -and `$PinnedVersion -notlike "{{*}}")
+Write-Host "[DEBUG] PinnedVersion='`$PinnedVersion' UsePinnedVersion=`$UsePinnedVersion"
+
+`$LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
+if ([string]::IsNullOrWhiteSpace(`$LibraryUrl) -or `$LibraryUrl -like "{{*}}") {
+    `$Branch = if (`$UsePinnedVersion) { `$PinnedVersion } else { "main" }
+    `$LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/`$Branch/modules/COOLForge-Common.psm1"
+} elseif (`$UsePinnedVersion) {
+    `$LibraryUrl = `$LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/`$PinnedVersion/"
+}
+Write-Host "[DEBUG] LibraryUrl=`$LibraryUrl"
+
+`$DebugScripts = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace(`$DebugScripts) -or `$DebugScripts -like "{{*}}") {
+    `$DebugScripts = `$false
+} else {
+    `$DebugScripts = `$DebugScripts -eq "true"
+}
+
+`$LevelApiKey_Raw = @'
+{{cf_apikey}}
+'@
+`$LevelApiKey = `$LevelApiKey_Raw.Trim()
+
+# ============================================================
+# GITHUB PAT INJECTION
+# ============================================================
+function Add-GitHubToken {
+    param([string]`$Url, [string]`$Token)
+    if ([string]::IsNullOrWhiteSpace(`$Token)) { return `$Url }
+    if (`$Url -notmatch 'raw\.githubusercontent\.com') { return `$Url }
+    if (`$Url -match '@raw\.githubusercontent\.com') { return `$Url }
+    return `$Url -replace '(https://)raw\.githubusercontent\.com', "`$1`$Token@raw.githubusercontent.com"
+}
+
+`$RepoBaseUrl = `$LibraryUrl -replace '/modules/[^/]+$', ''
+`$MD5SumsUrl = "`$RepoBaseUrl/MD5SUMS"
+
+if (`$GitHubPAT) {
+    `$LibraryUrl = Add-GitHubToken -Url `$LibraryUrl -Token `$GitHubPAT
+    `$MD5SumsUrl = Add-GitHubToken -Url `$MD5SumsUrl -Token `$GitHubPAT
+    `$RepoBaseUrl = Add-GitHubToken -Url `$RepoBaseUrl -Token `$GitHubPAT
+}
+
+# ============================================================
+# LIBRARY BOOTSTRAP (required - can't use library to download itself)
+# ============================================================
+`$LibraryFolder = Join-Path -Path `$MspScratchFolder -ChildPath "Libraries"
+`$LibraryPath = Join-Path -Path `$LibraryFolder -ChildPath "COOLForge-Common.psm1"
+
+if (`$DebugScripts -and (Test-Path `$LibraryPath)) {
+    Remove-Item -Path `$LibraryPath -Force -ErrorAction SilentlyContinue
+}
+
+if (!(Test-Path `$LibraryFolder)) {
+    New-Item -Path `$LibraryFolder -ItemType Directory -Force | Out-Null
+}
+
+function Get-ModuleVersion {
+    param([string]`$Content)
+    if (`$Content -match 'Version:\s*([\d\.]+)') { return `$Matches[1] }
+    throw "Could not parse version"
+}
+
+`$NeedsUpdate = `$false
+`$LocalVersion = `$null
+`$LocalContent = `$null
+
+if (Test-Path `$LibraryPath) {
+    try {
+        `$LocalContent = Get-Content -Path `$LibraryPath -Raw -ErrorAction Stop
+        `$LocalVersion = Get-ModuleVersion -Content `$LocalContent
+    } catch {
+        `$NeedsUpdate = `$true
+    }
+} else {
+    `$NeedsUpdate = `$true
+    Write-Host "[*] Library not found - downloading..."
+}
+
+try {
+    `$RemoteContent = (Invoke-WebRequest -Uri `$LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
+    `$RemoteVersion = Get-ModuleVersion -Content `$RemoteContent
+
+    if (`$null -eq `$LocalVersion -or [version]`$RemoteVersion -gt [version]`$LocalVersion) {
+        `$NeedsUpdate = `$true
+        if (`$LocalVersion) { Write-Host "[*] Library update: `$LocalVersion -> `$RemoteVersion" }
+    }
+
+    if (`$NeedsUpdate) {
+        Set-Content -Path `$LibraryPath -Value `$RemoteContent -Force -ErrorAction Stop
+        Write-Host "[+] Library updated to v`$RemoteVersion"
+    }
+} catch {
+    if (!(Test-Path `$LibraryPath)) {
+        Write-Host "[Alert] Cannot download library"
+        exit 1
+    }
+    Write-Host "[!] Using cached library v`$LocalVersion"
+}
+
+# Import library
+`$ModuleContent = Get-Content -Path `$LibraryPath -Raw
+New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create(`$ModuleContent)) | Import-Module -Force
+
+# Load MD5SUMS (with cache-busting in debug mode)
+`$MD5SumsContent = `$null
+`$MD5FetchUrl = `$MD5SumsUrl
+if (`$DebugScripts) {
+    `$CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    `$MD5FetchUrl = "`$MD5SumsUrl``?t=`$CacheBuster"
+    Write-Host "[DEBUG] MD5SUMS URL: `$MD5FetchUrl"
+}
+try {
+    `$MD5SumsContent = (Invoke-WebRequest -Uri `$MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
+    if (`$DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: `$(`$MD5SumsContent.Length)" }
+} catch {
+    if (`$DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: `$_" }
+}
+
+# Check launcher version
+try {
+    `$VersionsUrl = "`$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    if (`$GitHubPAT) { `$VersionsUrl = Add-GitHubToken -Url `$VersionsUrl -Token `$GitHubPAT }
+    `$VersionsJson = (Invoke-WebRequest -Uri `$VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
+    `$RepoVersion = `$VersionsJson.launchers.`$LauncherName
+    if (`$RepoVersion -and ([version]`$RepoVersion -gt [version]`$LauncherVersion)) {
+        Write-Host ""
+        Write-Host "[Alert] LAUNCHER OUTDATED: v`$LauncherVersion -> v`$RepoVersion"
+        Write-Host "[Alert] Update this script in Level.io from: launchers/`$LauncherName"
+        Write-Host ""
+    }
+} catch {
+    if (`$DebugScripts) { Write-Host "[DEBUG] Version check failed: `$_" }
+}
+
+# ============================================================
+# EXECUTE SCRIPT
+# ============================================================
+Write-Host "[*] Slim Launcher v`$LauncherVersion"
+
+`$LauncherVars = @{
+    MspScratchFolder = `$MspScratchFolder
+    DeviceHostname   = `$DeviceHostname
+    DeviceTags       = `$DeviceTags
+    LevelApiKey      = `$LevelApiKey
+    DebugScripts     = `$DebugScripts
+    LibraryUrl       = `$LibraryUrl
+}
+
+`$ExitCode = Invoke-ScriptLauncher -ScriptName `$ScriptToRun ``
+                                   -RepoBaseUrl `$RepoBaseUrl ``
+                                   -MD5SumsContent `$MD5SumsContent ``
+                                   -MspScratchFolder `$MspScratchFolder ``
+                                   -LauncherVariables `$LauncherVars ``
+                                   -DebugMode `$DebugScripts
+
+exit `$ExitCode
+"@
+
+    # Write the new content with UTF8 encoding (with BOM for PowerShell compatibility)
+    [System.IO.File]::WriteAllText($FilePath, $NewContent, [System.Text.UTF8Encoding]::new($true))
+    Write-Host "  [OK] $FileName" -ForegroundColor Green
+    $Converted++
+}
+
+Write-Host ""
+Write-Host "Done! Converted: $Converted, Already slim: $AlreadySlim, Skipped: $Skipped" -ForegroundColor Cyan
+Write-Host ""
+if ($Converted -gt 0) {
+    Write-Host "Next steps:" -ForegroundColor Yellow
+    Write-Host "  1. Update LAUNCHER-VERSIONS.json with new version for converted launchers"
+    Write-Host "  2. Commit the changes"
+    Write-Host "  3. Update launchers in Level.io"
+}

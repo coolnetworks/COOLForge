@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀meshcentral.ps1"
@@ -33,6 +33,9 @@ $policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
 #>
+
+$LauncherVersion = "2026.01.19.01"
+$LauncherName = "Policy/👀meshcentral.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -145,7 +148,7 @@ try {
     }
 } catch {
     if (!(Test-Path $LibraryPath)) {
-        Write-Host "[X] FATAL: Cannot download library"
+        Write-Host "[Alert] Cannot download library"
         exit 1
     }
     Write-Host "[!] Using cached library v$LocalVersion"
@@ -170,6 +173,22 @@ try {
     if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: $_" }
 }
 
+# Check launcher version
+try {
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
+    $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
+    $RepoVersion = $VersionsJson.launchers.$LauncherName
+    if ($RepoVersion -and ([version]$RepoVersion -gt [version]$LauncherVersion)) {
+        Write-Host ""
+        Write-Host "[Alert] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion"
+        Write-Host "[Alert] Update this script in Level.io from: launchers/$LauncherName"
+        Write-Host ""
+    }
+} catch {
+    if ($DebugScripts) { Write-Host "[DEBUG] Version check failed: $_" }
+}
+
 # ============================================================
 # COLLECT POLICY VARIABLES
 # ============================================================
@@ -183,7 +202,7 @@ Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
 # ============================================================
 # EXECUTE SCRIPT
 # ============================================================
-Write-Host "[*] Slim Launcher v2026.01.19.01"
+Write-Host "[*] Slim Launcher v$LauncherVersion"
 
 $LauncherVars = @{
     MspScratchFolder = $MspScratchFolder

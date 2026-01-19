@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Local development test script for COOLForge-Common library.
 
@@ -106,7 +106,7 @@ $LibraryPath = Join-Path -Path $PSScriptRoot -ChildPath "COOLForge-Common.psm1"
 
 # Verify library exists
 if (!(Test-Path $LibraryPath)) {
-    Write-Host "[X] FATAL: Shared library not found at $LibraryPath" -ForegroundColor Red
+    Write-Host "[Alert] Shared library not found at $LibraryPath" -ForegroundColor Red
     exit 1
 }
 

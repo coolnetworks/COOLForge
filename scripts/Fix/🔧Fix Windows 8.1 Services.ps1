@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Restores Windows 8.1 services to their default startup types.
 
@@ -51,7 +51,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # Check for Administrator privileges
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $IsAdmin) {
-    Write-Host "[X] FATAL: This script requires Administrator privileges"
+    Write-Host "[Alert] This script requires Administrator privileges"
     exit 1
 }
 
@@ -62,7 +62,7 @@ $Caption = $OSInfo.Caption
 
 # Windows 8.1 is build 9600
 if ($BuildNumber -ne 9600) {
-    Write-Host "[X] FATAL: This script is for Windows 8.1 only (Build 9600)"
+    Write-Host "[Alert] This script is for Windows 8.1 only (Build 9600)"
     Write-Host "[*] Current OS: $Caption (Build $BuildNumber)"
     Write-Host "[*] Use the appropriate script for your Windows version"
     exit 1

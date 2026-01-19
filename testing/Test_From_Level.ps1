@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Comprehensive test script for COOLForge-Common library deployed via Level.io.
 
@@ -164,7 +164,7 @@ catch {
 
     if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
         # No valid local copy and can't download - fatal error
-        Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
+        Write-Host "[Alert] Cannot download library and no valid local copy exists"
         Write-Host "[X] Error: $($_.Exception.Message)"
         exit 1
     }

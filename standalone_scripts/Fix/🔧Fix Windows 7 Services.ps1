@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Restores Windows 7 services to their default startup types.
 
@@ -55,7 +55,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # Check for Administrator privileges
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $IsAdmin) {
-    Write-Host "[X] FATAL: This script requires Administrator privileges"
+    Write-Host "[Alert] This script requires Administrator privileges"
     exit 1
 }
 
@@ -66,7 +66,7 @@ $Caption = $OSInfo.Caption
 
 # Windows 7 is build 7600 (RTM) or 7601 (SP1)
 if ($BuildNumber -lt 7600 -or $BuildNumber -ge 9200) {
-    Write-Host "[X] FATAL: This script is for Windows 7 only (Build 7600-7601)"
+    Write-Host "[Alert] This script is for Windows 7 only (Build 7600-7601)"
     Write-Host "[*] Current OS: $Caption (Build $BuildNumber)"
     Write-Host "[*] Use the appropriate script for your Windows version"
     exit 1

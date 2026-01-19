@@ -5833,8 +5833,8 @@ function Invoke-ScriptLauncher {
     $ApiKey = $LauncherVariables['LevelApiKey']
     if ([string]::IsNullOrWhiteSpace($ApiKey) -or $ApiKey -like "{{*}}") {
         $LauncherVariables['LevelApiKey'] = $null
-        Write-Host "[WARN] cf_apikey is not set - Level API features disabled."
-        Write-Host "Alert: COOLForge scripts use the Level API to automatically create required custom fields and update device tags to reflect policy state (e.g. adding a 'has' tag after successful install, removing 'install' tags after completion). Without a valid API key in cf_apikey, these features are disabled and tags must be managed manually."
+        Write-Host "[Alert] cf_apikey is not set - Level API features disabled."
+        Write-Host "[Alert] COOLForge scripts use the Level API to automatically create required custom fields and update device tags to reflect policy state (e.g. adding a 'has' tag after successful install, removing 'install' tags after completion). Without a valid API key in cf_apikey, these features are disabled and tags must be managed manually."
     }
 
     # Fix emoji encoding
@@ -5980,9 +5980,9 @@ function Invoke-ScriptLauncher {
         }
 
         if (!(Test-Path $ScriptPath)) {
-            Write-Host "[X] FATAL: Cannot download script and no local copy exists"
-            Write-Host "[X] URL: $ScriptUrl"
-            Write-Host "[X] Error: $($_.Exception.Message)"
+            Write-Host "[Alert] Cannot download script and no local copy exists"
+            Write-Host "[Alert] URL: $ScriptUrl"
+            Write-Host "[Alert] Error: $($_.Exception.Message)"
             return 1
         }
         Write-Host "[!] Could not check for script updates (using cached version)"
@@ -6024,7 +6024,7 @@ $ScriptContent
         return $ScriptExitCode
     }
     catch {
-        Write-Host "[X] Script execution failed: $($_.Exception.Message)"
+        Write-Host "[Alert] Script execution failed: $($_.Exception.Message)"
         return 1
     }
 }

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Restores Windows 10 services to their default startup types.
 
@@ -53,7 +53,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # Check for Administrator privileges
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $IsAdmin) {
-    Write-Host "[X] FATAL: This script requires Administrator privileges"
+    Write-Host "[Alert] This script requires Administrator privileges"
     exit 1
 }
 
@@ -63,7 +63,7 @@ $BuildNumber = [int]$OSInfo.BuildNumber
 
 # Windows 10 builds are 10240-19045, Windows 11 starts at 22000
 if ($BuildNumber -lt 10240 -or $BuildNumber -ge 22000) {
-    Write-Host "[X] FATAL: This script is for Windows 10 only (Build 10240-19045)"
+    Write-Host "[Alert] This script is for Windows 10 only (Build 10240-19045)"
     Write-Host "[*] Current OS: $($OSInfo.Caption) (Build $BuildNumber)"
     Write-Host "[*] Use the appropriate script for your Windows version"
     exit 1

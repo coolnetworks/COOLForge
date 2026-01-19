@@ -1,0 +1,33 @@
+{
+  "$schema": "./definitions/launcher-versions.schema.json",
+  "version": "2026.01.19",
+  "description": "Current launcher versions - launchers check this to detect when they need updating in Level.io",
+  "launchers": {
+    "Policy/👀chrome.ps1": "2026.01.16.01",
+    "Policy/👀debug.ps1": "2026.01.16.01",
+    "Policy/👀dnsfilter.ps1": "2026.01.16.01",
+    "Policy/👀huntress.ps1": "2026.01.16.01",
+    "Policy/👀meshcentral.ps1": "2026.01.19.01",
+    "Policy/👀unchecky.ps1": "2026.01.16.01",
+    "Policy/Chrome/👀locationservices.ps1": "2026.01.19.01",
+    "Policy/Windows/👀locationservices.ps1": "2026.01.19.01",
+    "⚙️Extract and Set ScreenConnect Device URL.ps1": "2026.01.19.01",
+    "⛔Force Remove Anydesk.ps1": "2026.01.19.01",
+    "⛔Force Remove Non MSP ScreenConnect.ps1": "2026.01.19.01",
+    "👀Check DNS Server Compliance.ps1": "2026.01.19.01",
+    "👀Check for Unauthorized Remote Access Tools.ps1": "2026.01.19.01",
+    "👀Test Show Versions.ps1": "2026.01.19.01",
+    "👀Test Variable Output.ps1": "2026.01.19.01",
+    "🔔Technician Alert Monitor.ps1": "2026.01.19.01",
+    "🔔Wake tagged devices.ps1": "2026.01.19.01",
+    "🔧Enable System Restore and Create Restore Point.ps1": "2026.01.19.01",
+    "🔧Ensure Windows Defender Enabled.ps1": "2026.01.19.01",
+    "🔧Fix Windows 10 Services.ps1": "2026.01.19.01",
+    "🔧Fix Windows 11 Services.ps1": "2026.01.19.01",
+    "🔧Fix Windows 7 Services.ps1": "2026.01.19.01",
+    "🔧Fix Windows 8 Services.ps1": "2026.01.19.01",
+    "🔧Fix Windows 8.1 Services.ps1": "2026.01.19.01",
+    "🔧Prevent Sleep.ps1": "2026.01.19.01",
+    "🙏Wake all devices in parent to level.io folder.ps1": "2026.01.19.01"
+  }
+}

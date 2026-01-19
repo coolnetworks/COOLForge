@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # DEPRECATED - USE Slim-Launcher.ps1 INSTEAD
 # ============================================================
 # This full launcher template (~660 lines) has been replaced by the
@@ -327,8 +327,8 @@ catch {
     }
 
     if (!(Test-Path $LibraryPath) -or $null -eq $LocalVersion) {
-        Write-Host "[X] FATAL: Cannot download library and no valid local copy exists"
-        Write-Host "[X] Error: $($_.Exception.Message)"
+        Write-Host "[Alert] Cannot download library and no valid local copy exists"
+        Write-Host "[Alert] Error: $($_.Exception.Message)"
         exit 1
     }
     Write-Host "[!] Could not check for library updates (using local v$LocalVersion)"
@@ -351,7 +351,7 @@ if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) 
         Write-Host "[+] Library redownloaded successfully"
     }
     catch {
-        Write-Host "[X] FATAL: Failed to redownload library: $($_.Exception.Message)"
+        Write-Host "[Alert] Failed to redownload library: $($_.Exception.Message)"
         exit 1
     }
 }
@@ -428,7 +428,7 @@ catch {
 # VALIDATE CONFIGURATION
 # ============================================================
 if ([string]::IsNullOrWhiteSpace($ScriptToRun)) {
-    Write-Host "[X] FATAL: No script specified. Set `$ScriptToRun at the top of this script."
+    Write-Host "[Alert] No script specified. Set `$ScriptToRun at the top of this script."
     exit 1
 }
 
@@ -604,9 +604,9 @@ catch {
     }
 
     if (!(Test-Path $ScriptPath)) {
-        Write-Host "[X] FATAL: Cannot download script and no local copy exists"
-        Write-Host "[X] URL: $ScriptUrl"
-        Write-Host "[X] Error: $($_.Exception.Message)"
+        Write-Host "[Alert] Cannot download script and no local copy exists"
+        Write-Host "[Alert] URL: $ScriptUrl"
+        Write-Host "[Alert] Error: $($_.Exception.Message)"
         exit 1
     }
     Write-Host "[!] Could not check for script updates (using cached version)"
@@ -663,7 +663,7 @@ try {
     if ($null -eq $ScriptExitCode) { $ScriptExitCode = 0 }
 }
 catch {
-    Write-Host "[X] Script execution failed: $($_.Exception.Message)"
+    Write-Host "[Alert] Script execution failed: $($_.Exception.Message)"
     exit 1
 }
 

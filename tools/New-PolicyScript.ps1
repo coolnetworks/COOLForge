@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Scaffolds a new software policy script, launcher, and documentation.
 
@@ -464,7 +464,7 @@ try {
     }
 } catch {
     if (!(Test-Path `$LibraryPath)) {
-        Write-Host "[X] FATAL: Cannot download library"
+        Write-Host "[Alert] Cannot download library"
         exit 1
     }
     Write-Host "[!] Using cached library v`$LocalVersion"
