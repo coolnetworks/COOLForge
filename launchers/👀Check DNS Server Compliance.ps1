@@ -17,7 +17,7 @@ $ScriptToRun = "👀Check DNS Server Compliance.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.19.01"
+$LauncherVersion = "2026.01.20.02"
 $LauncherName = "👀Check DNS Server Compliance.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -86,28 +86,71 @@ if ($GitHubPAT) {
 $LibraryFolder = Join-Path -Path $MspScratchFolder -ChildPath "Libraries"
 $LibraryPath = Join-Path -Path $LibraryFolder -ChildPath "COOLForge-Common.psm1"
 
-if ($DebugScripts -and (Test-Path $LibraryPath)) {
-    Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
-}
-
 if (!(Test-Path $LibraryFolder)) {
     New-Item -Path $LibraryFolder -ItemType Directory -Force | Out-Null
 }
 
+# Helper to parse version from content
 function Get-ModuleVersion {
     param([string]$Content)
     if ($Content -match 'Version:\s*([\d\.]+)') { return $Matches[1] }
-    throw "Could not parse version"
+    return "unknown"
 }
 
-$NeedsUpdate = $false
-$LocalVersion = $null
-$LocalContent = $null
+# Helper to compute MD5 hash of string content
+function Get-StringMD5 {
+    param([string]$Content)
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($Content)
+    $md5 = [System.Security.Cryptography.MD5]::Create()
+    $hash = $md5.ComputeHash($bytes)
+    return [BitConverter]::ToString($hash).Replace("-", "").ToLower()
+}
 
-if (Test-Path $LibraryPath) {
+# STEP 1: Download MD5SUMS first (with cache-busting)
+$MD5SumsContent = $null
+$CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+$MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
+if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl" }
+
+try {
+    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
+    if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
+} catch {
+    if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: $_" }
+}
+
+# STEP 2: Parse expected library hash from MD5SUMS
+$ExpectedLibraryHash = $null
+if ($MD5SumsContent) {
+    $MD5SumsContent -split "`n" | ForEach-Object {
+        if ($_ -match '^([a-f0-9]{32})\s+modules/COOLForge-Common\.psm1') {
+            $ExpectedLibraryHash = $Matches[1]
+        }
+    }
+    if ($DebugScripts) { Write-Host "[DEBUG] Expected library hash: $ExpectedLibraryHash" }
+}
+
+# STEP 3: Check local library hash
+$NeedsUpdate = $false
+$LocalHash = $null
+$LocalVersion = $null
+
+if ($DebugScripts -and (Test-Path $LibraryPath)) {
+    # In debug mode, always re-download
+    Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
+    $NeedsUpdate = $true
+    Write-Host "[DEBUG] Forcing library re-download"
+} elseif (Test-Path $LibraryPath) {
     try {
         $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
         $LocalVersion = Get-ModuleVersion -Content $LocalContent
+        $LocalHash = Get-StringMD5 -Content $LocalContent
+        if ($DebugScripts) { Write-Host "[DEBUG] Local library hash: $LocalHash" }
+
+        if ($ExpectedLibraryHash -and $LocalHash -ne $ExpectedLibraryHash) {
+            $NeedsUpdate = $true
+            Write-Host "[*] Library hash mismatch - updating..."
+        }
     } catch {
         $NeedsUpdate = $true
     }
@@ -116,45 +159,39 @@ if (Test-Path $LibraryPath) {
     Write-Host "[*] Library not found - downloading..."
 }
 
-try {
-    $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
-    $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
+# STEP 4: Download library if needed (always use cache-busting)
+if ($NeedsUpdate) {
+    $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
+    if ($DebugScripts) { Write-Host "[DEBUG] Library URL: $LibFetchUrl" }
 
-    if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
-        $NeedsUpdate = $true
-        if ($LocalVersion) { Write-Host "[*] Library update: $LocalVersion -> $RemoteVersion" }
-    }
+    try {
+        $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
+        $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
+        $RemoteHash = Get-StringMD5 -Content $RemoteContent
 
-    if ($NeedsUpdate) {
+        if ($DebugScripts) { Write-Host "[DEBUG] Remote library hash: $RemoteHash" }
+
+        # Verify downloaded content matches expected hash
+        if ($ExpectedLibraryHash -and $RemoteHash -ne $ExpectedLibraryHash) {
+            Write-Host "[!] WARNING: Downloaded library hash doesn't match MD5SUMS!"
+            Write-Host "[!] Expected: $ExpectedLibraryHash"
+            Write-Host "[!] Got: $RemoteHash"
+        }
+
         Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
         Write-Host "[+] Library updated to v$RemoteVersion"
+    } catch {
+        if (!(Test-Path $LibraryPath)) {
+            Write-Host "[Alert] Cannot download library: $_"
+            exit 1
+        }
+        Write-Host "[!] Using cached library v$LocalVersion"
     }
-} catch {
-    if (!(Test-Path $LibraryPath)) {
-        Write-Host "[Alert] Cannot download library"
-        exit 1
-    }
-    Write-Host "[!] Using cached library v$LocalVersion"
 }
 
 # Import library
 $ModuleContent = Get-Content -Path $LibraryPath -Raw
 New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
-
-# Load MD5SUMS (with cache-busting in debug mode)
-$MD5SumsContent = $null
-$MD5FetchUrl = $MD5SumsUrl
-if ($DebugScripts) {
-    $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
-    Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl"
-}
-try {
-    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
-    if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
-} catch {
-    if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: $_" }
-}
 
 # Check launcher version
 try {
