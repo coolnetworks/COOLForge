@@ -869,9 +869,7 @@ function Invoke-LevelScript {
 
         # Show API call summary in DEBUG mode
         $apiCalls = Get-ApiCallCount
-        if ($apiCalls -gt 0) {
-            Write-LevelLog "Total Level.io API calls: $apiCalls" -Level "DEBUG"
-        }
+        Write-LevelLog "Total Level.io API calls: $apiCalls" -Level "DEBUG"
 
         if (-not $NoCleanup) {
             Remove-LevelLockFile
@@ -884,9 +882,7 @@ function Invoke-LevelScript {
 
         # Show API call summary even on error
         $apiCalls = Get-ApiCallCount
-        if ($apiCalls -gt 0) {
-            Write-LevelLog "Total Level.io API calls: $apiCalls" -Level "DEBUG"
-        }
+        Write-LevelLog "Total Level.io API calls: $apiCalls" -Level "DEBUG"
 
         if (-not $NoCleanup) {
             Remove-LevelLockFile
