@@ -50,6 +50,11 @@ function GetRegVal {
     try { (Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop).$Name } catch { $null }
 }
 
+function IfNull {
+    param($Value, $Default)
+    if ($null -eq $Value) { $Default } else { $Value }
+}
+
 Write-Host ""
 LogStep "=== Location Services Verbose Diagnostic (Windows 10/11) ===" 'HEADER'
 LogStep ("Context: User={0}, Elevation={1}" -f $env:USERNAME, ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
@@ -64,17 +69,17 @@ $Pol_DisableSensors           = GetRegVal 'HKLM:\SOFTWARE\Policies\Microsoft\Win
 $Pol_DisableLocationScripting = GetRegVal 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors' 'DisableLocationScripting'
 $Pol_AppPrivacy               = GetRegVal 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy' 'LetAppsAccessLocation'
 
-if ($Pol_DisableLocation -eq 1)          { LogStep "Policy: DisableLocation=1 (admin enforced) - blocks device location" 'FAIL'; $blockers += 'Admin policy DisableLocation=1' } else { LogStep ("Policy: DisableLocation={0}" -f ($Pol_DisableLocation ?? 'NotConfigured')) 'OK' }
-if ($Pol_DisableSensors -eq 1)           { LogStep "Policy: DisableSensors=1 - blocks sensors/location stack" 'FAIL';       $blockers += 'Admin policy DisableSensors=1' } else { LogStep ("Policy: DisableSensors={0}" -f ($Pol_DisableSensors ?? 'NotConfigured')) 'OK' }
-if ($Pol_DisableLocationScripting -eq 1) { LogStep "Policy: DisableLocationScripting=1 - location scripting off" 'FAIL';    $blockers += 'Admin policy DisableLocationScripting=1' } else { LogStep ("Policy: DisableLocationScripting={0}" -f ($Pol_DisableLocationScripting ?? 'NotConfigured')) 'OK' }
-if ($Pol_AppPrivacy -eq 2)               { LogStep "Policy: LetAppsAccessLocation=2 (ForceDeny) - all apps blocked" 'FAIL'; $blockers += 'AppPrivacy LetAppsAccessLocation=2 (ForceDeny)' } else { LogStep ("Policy: LetAppsAccessLocation={0}" -f ($Pol_AppPrivacy ?? 'NotConfigured')) 'OK' }
+if ($Pol_DisableLocation -eq 1)          { LogStep "Policy: DisableLocation=1 (admin enforced) - blocks device location" 'FAIL'; $blockers += 'Admin policy DisableLocation=1' } else { LogStep ("Policy: DisableLocation={0}" -f (IfNull $Pol_DisableLocation 'NotConfigured')) 'OK' }
+if ($Pol_DisableSensors -eq 1)           { LogStep "Policy: DisableSensors=1 - blocks sensors/location stack" 'FAIL';       $blockers += 'Admin policy DisableSensors=1' } else { LogStep ("Policy: DisableSensors={0}" -f (IfNull $Pol_DisableSensors 'NotConfigured')) 'OK' }
+if ($Pol_DisableLocationScripting -eq 1) { LogStep "Policy: DisableLocationScripting=1 - location scripting off" 'FAIL';    $blockers += 'Admin policy DisableLocationScripting=1' } else { LogStep ("Policy: DisableLocationScripting={0}" -f (IfNull $Pol_DisableLocationScripting 'NotConfigured')) 'OK' }
+if ($Pol_AppPrivacy -eq 2)               { LogStep "Policy: LetAppsAccessLocation=2 (ForceDeny) - all apps blocked" 'FAIL'; $blockers += 'AppPrivacy LetAppsAccessLocation=2 (ForceDeny)' } else { LogStep ("Policy: LetAppsAccessLocation={0}" -f (IfNull $Pol_AppPrivacy 'NotConfigured')) 'OK' }
 
 # ----------------------------------
 # STEP 2: Device Master Switch (OS)
 # ----------------------------------
 LogStep "Step 2: Checking device master switch (lfsvc\Service\Configuration\Status)..." 'HEADER'
 $Master_Status = GetRegVal 'HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration' 'Status' # 1=On, 0/NotSet=Off
-if ($Master_Status -eq 1) { LogStep "Master switch: ON (Status=1)" 'OK' } else { LogStep ("Master switch: Off/NotSet (Status={0})" -f ($Master_Status ?? 'NotSet')) 'FAIL'; $blockers += 'Master switch Off/NotSet' }
+if ($Master_Status -eq 1) { LogStep "Master switch: ON (Status=1)" 'OK' } else { LogStep ("Master switch: Off/NotSet (Status={0})" -f (IfNull $Master_Status 'NotSet')) 'FAIL'; $blockers += 'Master switch Off/NotSet' }
 
 # ---------------------------------------------------
 # STEP 3: Device-level ConsentStore (HKLM) & HKCU
@@ -191,10 +196,10 @@ $recommend = switch -Regex ($primary) {
 # Print collected values for quick view
 $elapsed = (Get-Date) - $start
 LogStep ("Admin: DisableLocation={0}; DisableSensors={1}; DisableLocationScripting={2}; AppPrivacy={3}" -f `
-    ($Pol_DisableLocation ?? 'NotConfigured'), ($Pol_DisableSensors ?? 'NotConfigured'), ($Pol_DisableLocationScripting ?? 'NotConfigured'), ($Pol_AppPrivacy ?? 'NotConfigured'))
+    (IfNull $Pol_DisableLocation 'NotConfigured'), (IfNull $Pol_DisableSensors 'NotConfigured'), (IfNull $Pol_DisableLocationScripting 'NotConfigured'), (IfNull $Pol_AppPrivacy 'NotConfigured'))
 LogStep ("Device: MasterStatus={0}; HKLM_Consent={1}; lfsvc(StartType={2},Status={3})" -f `
-    ($Master_Status ?? 'NotSet'), ($HKLM_DeviceConsent ?? 'NotSet'), $SvcStart, $SvcStatus)
-LogStep ("User: HKCU_Consent={0}; PerAppDenies={1}" -f ($HKCU_UserConsent ?? 'NotSet'), ($PerAppDenies.Count))
+    (IfNull $Master_Status 'NotSet'), (IfNull $HKLM_DeviceConsent 'NotSet'), $SvcStart, $SvcStatus)
+LogStep ("User: HKCU_Consent={0}; PerAppDenies={1}" -f (IfNull $HKCU_UserConsent 'NotSet'), ($PerAppDenies.Count))
 
 Write-Host ""
 LogStep ("PrimaryReason: {0}" -f $primary) 'HEADER'
