@@ -626,7 +626,7 @@ d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 2354ae26195e7ce19c52cdeb76407d24  scripts/Utility/⚙️COOLForge Cache Sync.ps1
-41f72fe19acd6d14c5627a4c9794b72c  scripts/Utility/⚙️Universal Disk Cleaner.ps1
+83caf93fbbb7060d66389e64a97f0805  scripts/Utility/⚙️Universal Disk Cleaner.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
 331c29e1bc72f7bc759cbab1dc9a06b2  scripts/Utility/🙏Wake all devices in Level group.ps1

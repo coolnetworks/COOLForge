@@ -22,7 +22,7 @@ if ($MspScratchFolder -and (Get-Command Initialize-LevelScript -ErrorAction Sile
     $Init = Initialize-LevelScript -ScriptName "Utility-UniversalDiskCleaner" `
                                    -MspScratchFolder $MspScratchFolder `
                                    -DeviceHostname $DeviceHostname `
-                                   -SkipTagGate
+                                   -SkipTagCheck
 
     if (-not $Init.Success) {
         if ($Init.Reason -eq "AlreadyRunning") {
