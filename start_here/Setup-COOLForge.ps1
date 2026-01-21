@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Interactive setup script for COOLForge custom fields in Level.io.
 
@@ -1206,32 +1206,32 @@ foreach ($GroupName in $Script:FieldGroups.Keys) {
                 }
             }
 
-            # is_screenconnect_server - create with default of false
+            # policy_screenconnect_machine_hosts_screenconnect_server - create with default of false
             Write-Host ""
-            Write-Host "  is_screenconnect_server" -ForegroundColor Cyan
-            Write-Host "  Adding 'is_screenconnect_server' field - setting to 'false'" -ForegroundColor DarkGray
+            Write-Host "  policy_screenconnect_machine_hosts_screenconnect_server" -ForegroundColor Cyan
+            Write-Host "  Adding 'policy_screenconnect_machine_hosts_screenconnect_server' field - setting to 'false'" -ForegroundColor DarkGray
             Write-Host "  If you have a ScreenConnect server, set this to 'true' at device level" -ForegroundColor DarkGray
-            $IsServerField = Find-CustomField -Name "is_screenconnect_server" -ExistingFields $ExistingFields
+            $IsServerField = Find-CustomField -Name "policy_screenconnect_machine_hosts_screenconnect_server" -ExistingFields $ExistingFields
             if ($IsServerField) {
-                Write-LevelInfo "Field 'is_screenconnect_server' already exists"
+                Write-LevelInfo "Field 'policy_screenconnect_machine_hosts_screenconnect_server' already exists"
             }
             else {
-                $Created = New-CustomField -Name "is_screenconnect_server" -DefaultValue "false" -AdminOnly $false
+                $Created = New-CustomField -Name "policy_screenconnect_machine_hosts_screenconnect_server" -DefaultValue "false" -AdminOnly $false
                 if ($Created) {
                     if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
                         Update-CustomFieldValue -FieldId $Created.id -Value "false" | Out-Null
                     }
-                    Write-LevelSuccess "Created: is_screenconnect_server = false"
+                    Write-LevelSuccess "Created: policy_screenconnect_machine_hosts_screenconnect_server = false"
                     $ExistingFields += $Created
                 }
             }
 
-            # screenconnect_device_url - auto-create (populated by scripts)
-            $DeviceUrlField = Find-CustomField -Name "screenconnect_device_url" -ExistingFields $ExistingFields
+            # policy_screenconnect_device_url - auto-create (populated by scripts)
+            $DeviceUrlField = Find-CustomField -Name "policy_screenconnect_device_url" -ExistingFields $ExistingFields
             if (-not $DeviceUrlField) {
-                $Created = New-CustomField -Name "screenconnect_device_url" -DefaultValue "" -AdminOnly $false
+                $Created = New-CustomField -Name "policy_screenconnect_device_url" -DefaultValue "" -AdminOnly $false
                 if ($Created) {
-                    Write-LevelInfo "Created: screenconnect_device_url (auto-populated by scripts)"
+                    Write-LevelInfo "Created: policy_screenconnect_device_url (auto-populated by scripts)"
                     $ExistingFields += $Created
                 }
             }

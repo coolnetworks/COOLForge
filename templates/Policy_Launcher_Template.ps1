@@ -135,12 +135,12 @@ $LevelApiKey = $LevelApiKey_Raw.Trim()
 # API key debug output is handled by the script itself - no need to duplicate here
 
 # ScreenConnect whitelisting - for RAT detection script
-$ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
+$ScreenConnectInstanceId = "{{cf_policy_screenconnect_instance_id}}"
 if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") {
     $ScreenConnectInstanceId = ""
 }
 
-$IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
+$IsScreenConnectServer = "{{cf_policy_screenconnect_machine_hosts_screenconnect_server}}"
 if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
     $IsScreenConnectServer = ""
 }

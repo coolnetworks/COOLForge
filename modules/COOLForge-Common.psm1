@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     COOLForge-Common - Shared PowerShell module for Level.io automation scripts.
 
@@ -2006,11 +2006,11 @@ function Get-EmojiLiterals {
     Parses device tags to identify policy requirements for a specific software package.
     Supports tag-based policy enforcement using emoji prefixes:
 
-    - 🙏 (pray)       = Request/Recommend installation
-    - ⛔ (no entry)   = Block/Must not be installed
-    - 🛑 (stop sign)  = Stop/Remove if present
-    - 📌 (pin)        = Pin/Must be installed (enforce presence)
-    - ✅ (check mark) = Approved/Verified (compliant state)
+    - ðŸ™ (pray)       = Request/Recommend installation
+    - â›” (no entry)   = Block/Must not be installed
+    - ðŸ›‘ (stop sign)  = Stop/Remove if present
+    - ðŸ“Œ (pin)        = Pin/Must be installed (enforce presence)
+    - âœ… (check mark) = Approved/Verified (compliant state)
 
     This enables a single "multilaunch" script pattern where one script can handle
     any software package by simply changing the software name parameter.
@@ -2021,7 +2021,7 @@ function Get-EmojiLiterals {
 
 .PARAMETER DeviceTags
     Comma-separated list of device tags. Typically "{{level_tag_names}}".
-    Example: "🙏unchecky,📌7zip,✅chrome,production,windows"
+    Example: "ðŸ™unchecky,ðŸ“Œ7zip,âœ…chrome,production,windows"
 
 .OUTPUTS
     Hashtable with policy information:
@@ -2063,7 +2063,7 @@ function Get-EmojiLiterals {
     }
 
 .NOTES
-    Tag format is case-insensitive: "📌Unchecky", "📌unchecky", "📌UNCHECKY" all match.
+    Tag format is case-insensitive: "ðŸ“ŒUnchecky", "ðŸ“Œunchecky", "ðŸ“ŒUNCHECKY" all match.
     Multiple policy tags for the same software are supported and all will be returned.
 #>
 function Get-SoftwarePolicy {
@@ -2693,14 +2693,14 @@ function Invoke-LevelApiCall {
     patterns and repairs them to the correct Unicode characters.
 
     Supports:
-    - ⛔ Stop sign (U+26D4)
-    - 👀 Eyes (U+1F440)
-    - 🙏 Folded hands (U+1F64F)
-    - 🚨 Police light (U+1F6A8)
-    - 🛑 Stop sign octagon (U+1F6D1)
-    - ✅ Check mark (U+2705)
-    - 🔚 End arrow (U+1F51A)
-    - 🆕 New button (U+1F195)
+    - â›” Stop sign (U+26D4)
+    - ðŸ‘€ Eyes (U+1F440)
+    - ðŸ™ Folded hands (U+1F64F)
+    - ðŸš¨ Police light (U+1F6A8)
+    - ðŸ›‘ Stop sign octagon (U+1F6D1)
+    - âœ… Check mark (U+2705)
+    - ðŸ”š End arrow (U+1F51A)
+    - ðŸ†• New button (U+1F195)
 
 .PARAMETER Text
     The text string that may contain corrupted emojis.
@@ -2713,7 +2713,7 @@ function Invoke-LevelApiCall {
 
 .EXAMPLE
     # Repair a filename before using it
-    $FileName = Repair-LevelEmoji "⛔Force Remove Anydesk.ps1"
+    $FileName = Repair-LevelEmoji "â›”Force Remove Anydesk.ps1"
 #>
 function Repair-LevelEmoji {
     [CmdletBinding()]
@@ -2726,58 +2726,58 @@ function Repair-LevelEmoji {
     # These patterns occur when UTF-8 bytes are interpreted as Windows-1252
     # or double-encoded through different code pages
     # Level.io corruption patterns: UTF-8 bytes interpreted as Windows-1252, then re-encoded as UTF-8
-    # Pattern: F0 9F xx yy -> ð Ÿ (CP1252) -> C3 B0 C5 B8 (UTF-8 of those chars)
-    # But observed: 👀 F0 9F 91 80 -> ≡ƒæÇ (2261 0192 00E6 00C7)
+    # Pattern: F0 9F xx yy -> Ã° Å¸ (CP1252) -> C3 B0 C5 B8 (UTF-8 of those chars)
+    # But observed: ðŸ‘€ F0 9F 91 80 -> â‰¡Æ’Ã¦Ã‡ (2261 0192 00E6 00C7)
     # This suggests bytes are interpreted through a complex encoding chain
 
     $EmojiRepairs = @{
         # ========== BMP Characters (3-byte UTF-8) ==========
 
-        # ⛔ Stop sign (U+26D4) - UTF-8: E2 9B 94
+        # â›” Stop sign (U+26D4) - UTF-8: E2 9B 94
         "$([char]0xE2)$([char]0x9B)$([char]0x94)" = [char]0x26D4
-        # ⛔ Stop sign - Alt corruption: Γ¢ö (observed from Level.io)
+        # â›” Stop sign - Alt corruption: Î“Â¢Ã¶ (observed from Level.io)
         "$([char]0x0393)$([char]0x00A2)$([char]0x00F6)" = [char]0x26D4
 
-        # ✅ Check mark (U+2705) - UTF-8: E2 9C 85
+        # âœ… Check mark (U+2705) - UTF-8: E2 9C 85
         "$([char]0xE2)$([char]0x9C)$([char]0x85)" = [char]0x2705
-        # ✅ Check mark - Alt corruption: Γ£à (predicted pattern)
+        # âœ… Check mark - Alt corruption: Î“Â£Ã  (predicted pattern)
         "$([char]0x0393)$([char]0x00A3)$([char]0x00E0)" = [char]0x2705
 
         # ========== Supplementary Characters (4-byte UTF-8) ==========
 
-        # 👀 Eyes (U+1F440) - UTF-8: F0 9F 91 80
+        # ðŸ‘€ Eyes (U+1F440) - UTF-8: F0 9F 91 80
         "$([char]0xF0)$([char]0x9F)$([char]0x91)$([char]0x80)" = [char]::ConvertFromUtf32(0x1F440)
-        # 👀 Eyes - Alt corruption: ≡ƒæÇ (observed from Level.io)
+        # ðŸ‘€ Eyes - Alt corruption: â‰¡Æ’Ã¦Ã‡ (observed from Level.io)
         "$([char]0x2261)$([char]0x0192)$([char]0x00E6)$([char]0x00C7)" = [char]::ConvertFromUtf32(0x1F440)
 
-        # 🙏 Folded hands (U+1F64F) - UTF-8: F0 9F 99 8F
+        # ðŸ™ Folded hands (U+1F64F) - UTF-8: F0 9F 99 8F
         "$([char]0xF0)$([char]0x9F)$([char]0x99)$([char]0x8F)" = [char]::ConvertFromUtf32(0x1F64F)
-        # 🙏 Folded hands - Alt corruption: ≡ƒÖÅ (predicted pattern based on 👀)
+        # ðŸ™ Folded hands - Alt corruption: â‰¡Æ’Ã–Ã… (predicted pattern based on ðŸ‘€)
         "$([char]0x2261)$([char]0x0192)$([char]0x00D6)$([char]0x00C5)" = [char]::ConvertFromUtf32(0x1F64F)
 
-        # 🚨 Police light (U+1F6A8) - UTF-8: F0 9F 9A A8
+        # ðŸš¨ Police light (U+1F6A8) - UTF-8: F0 9F 9A A8
         "$([char]0xF0)$([char]0x9F)$([char]0x9A)$([char]0xA8)" = [char]::ConvertFromUtf32(0x1F6A8)
-        # 🚨 Police light - Alt corruption: ≡ƒÜ¿ (predicted pattern)
+        # ðŸš¨ Police light - Alt corruption: â‰¡Æ’ÃœÂ¿ (predicted pattern)
         "$([char]0x2261)$([char]0x0192)$([char]0x00DC)$([char]0x00BF)" = [char]::ConvertFromUtf32(0x1F6A8)
 
-        # 🛑 Stop sign octagon (U+1F6D1) - UTF-8: F0 9F 9B 91
+        # ðŸ›‘ Stop sign octagon (U+1F6D1) - UTF-8: F0 9F 9B 91
         "$([char]0xF0)$([char]0x9F)$([char]0x9B)$([char]0x91)" = [char]::ConvertFromUtf32(0x1F6D1)
-        # 🛑 Stop sign octagon - Alt corruption: ≡ƒÜæ (predicted pattern)
+        # ðŸ›‘ Stop sign octagon - Alt corruption: â‰¡Æ’ÃœÃ¦ (predicted pattern)
         "$([char]0x2261)$([char]0x0192)$([char]0x00DC)$([char]0x00E6)" = [char]::ConvertFromUtf32(0x1F6D1)
 
-        # 🔚 End arrow (U+1F51A) - UTF-8: F0 9F 94 9A
+        # ðŸ”š End arrow (U+1F51A) - UTF-8: F0 9F 94 9A
         "$([char]0xF0)$([char]0x9F)$([char]0x94)$([char]0x9A)" = [char]::ConvertFromUtf32(0x1F51A)
-        # 🔚 End arrow - Alt corruption: ≡ƒöÜ (predicted pattern)
+        # ðŸ”š End arrow - Alt corruption: â‰¡Æ’Ã¶Ãœ (predicted pattern)
         "$([char]0x2261)$([char]0x0192)$([char]0x00F6)$([char]0x00DC)" = [char]::ConvertFromUtf32(0x1F51A)
 
-        # 🆕 New button (U+1F195) - UTF-8: F0 9F 86 95
+        # ðŸ†• New button (U+1F195) - UTF-8: F0 9F 86 95
         "$([char]0xF0)$([char]0x9F)$([char]0x86)$([char]0x95)" = [char]::ConvertFromUtf32(0x1F195)
-        # 🆕 New button - Alt corruption: ≡ƒåò (predicted pattern)
+        # ðŸ†• New button - Alt corruption: â‰¡Æ’Ã¥Ã² (predicted pattern)
         "$([char]0x2261)$([char]0x0192)$([char]0x00E5)$([char]0x00F2)" = [char]::ConvertFromUtf32(0x1F195)
 
-        # 🔧 Wrench (U+1F527) - UTF-8: F0 9F 94 A7
+        # ðŸ”§ Wrench (U+1F527) - UTF-8: F0 9F 94 A7
         "$([char]0xF0)$([char]0x9F)$([char]0x94)$([char]0xA7)" = [char]::ConvertFromUtf32(0x1F527)
-        # 🔧 Wrench - Alt corruption: ≡ƒöº (predicted pattern)
+        # ðŸ”§ Wrench - Alt corruption: â‰¡Æ’Ã¶Âº (predicted pattern)
         "$([char]0x2261)$([char]0x0192)$([char]0x00F6)$([char]0x00BA)" = [char]::ConvertFromUtf32(0x1F527)
     }
 
@@ -2806,7 +2806,7 @@ function Repair-LevelEmoji {
     URL-encoded string safe for use in HTTP requests.
 
 .EXAMPLE
-    $EncodedName = Get-LevelUrlEncoded -Text "👀Test Show Versions.ps1"
+    $EncodedName = Get-LevelUrlEncoded -Text "ðŸ‘€Test Show Versions.ps1"
     # Returns: %F0%9F%91%80Test%20Show%20Versions.ps1
 
 .EXAMPLE
@@ -3396,7 +3396,7 @@ function Find-LevelTag {
     The created tag object on success, $null on failure.
 
 .EXAMPLE
-    $Tag = New-LevelTag -ApiKey $ApiKey -TagName "✅UNCHECKY"
+    $Tag = New-LevelTag -ApiKey $ApiKey -TagName "âœ…UNCHECKY"
 #>
 function New-LevelTag {
     [CmdletBinding()]
@@ -4291,7 +4291,7 @@ function Initialize-LevelSoftwarePolicy {
     - coolforge_nosleep_duration_min: Duration for Prevent Sleep script
     - policy_screenconnect_baseurl: ScreenConnect server base URL
     - policy_screenconnect_instance_id: MSP's ScreenConnect instance ID
-    - policy_screenconnect_server: Whether device hosts ScreenConnect server
+    - policy_screenconnect_machine_hosts_screenconnect_server: Whether device hosts ScreenConnect server
     - policy_defender: Windows Defender enforcement policy (default: enforce)
 
     Fields with legacy mappings (e.g., policy_screenconnect_*) will automatically
@@ -4389,9 +4389,9 @@ function Initialize-COOLForgeInfrastructure {
             Description  = "MSP's ScreenConnect instance ID to whitelist"
         }
         @{
-            Name         = "policy_screenconnect_server"
-            DefaultValue = ""
-            LegacyNames  = @("coolforge_is_screenconnect_server")
+            Name         = "policy_screenconnect_machine_hosts_screenconnect_server"
+            DefaultValue = "false"
+            LegacyNames  = @("is_screenconnect_server", "coolforge_is_screenconnect_server", "policy_screenconnect_is_server")
             Description  = "Set to 'true' if device hosts ScreenConnect server"
         }
         @{

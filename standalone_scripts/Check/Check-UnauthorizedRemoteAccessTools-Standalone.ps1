@@ -39,10 +39,10 @@
 # ============================================================
 # These values are populated via Level.io custom field variable substitution.
 # Set these custom fields in Level.io:
-#   - cf_coolforge_screenconnect_instance_id : Your MSP's ScreenConnect instance ID
-#   - cf_coolforge_is_screenconnect_server   : Set to "true" if device hosts ScreenConnect server
-$ScreenConnectInstanceId = "{{cf_coolforge_screenconnect_instance_id}}"
-$IsScreenConnectServer = "{{cf_coolforge_is_screenconnect_server}}"
+#   - cf_policy_screenconnect_instance_id : Your MSP's ScreenConnect instance ID
+#   - cf_policy_screenconnect_machine_hosts_screenconnect_server : Set to "true" if device hosts ScreenConnect server
+$ScreenConnectInstanceId = "{{cf_policy_screenconnect_instance_id}}"
+$IsScreenConnectServer = "{{cf_policy_screenconnect_machine_hosts_screenconnect_server}}"
 
 # Normalize empty/unsubstituted values
 if ($ScreenConnectInstanceId -like "{{*}}") { $ScreenConnectInstanceId = "" }

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Removes deprecated legacy custom fields after migration to CoolForge_* naming.
 
@@ -18,8 +18,8 @@
     - msp_scratch_folder          (replaced by CoolForge_msp_scratch_folder)
     - ps_module_library_source    (replaced by CoolForge_ps_module_library_source)
     - pin_psmodule_to_version     (replaced by CoolForge_pin_psmodule_to_version)
-    - screenconnect_instance_id   (replaced by CoolForge_screenconnect_instance_id)
-    - is_screenconnect_server     (replaced by CoolForge_is_screenconnect_server)
+    - screenconnect_instance_id   (replaced by policy_screenconnect_instance_id)
+    - is_screenconnect_server     (replaced by policy_screenconnect_machine_hosts_screenconnect_server)
 
 .NOTES
     Version:          2025.12.29.01

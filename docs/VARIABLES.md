@@ -25,8 +25,8 @@ These custom fields are used by COOLForge_Lib scripts:
 | `{{cf_coolforge_pat}}` | GitHub Personal Access Token for private repo access | No |
 | `{{cf_apikey}}` | Level.io API key for API calls (tags, custom fields, etc.) | No |
 | `{{cf_debug_scripts}}` | Set to "true" to enable debug output in scripts | No |
-| `{{cf_coolforge_screenconnect_instance_id}}` | Your MSP's ScreenConnect instance ID | No |
-| `{{cf_coolforge_is_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
+| `{{cf_policy_screenconnect_instance_id}}` | Your MSP's ScreenConnect instance ID | No |
+| `{{cf_policy_screenconnect_machine_hosts_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
 | `{{cf_coolforge_nosleep_duration_min}}` | Duration in minutes to prevent device from sleeping (default: 60) | No |
 
 ---

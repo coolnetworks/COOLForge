@@ -424,11 +424,11 @@ CUSTOM FIELDS USED
       Override GitHub URL for library download
       Default: github.com/coolnetworks/COOLForge
 
-    cf_coolforge_screenconnect_instance_id
+    cf_policy_screenconnect_instance_id
       Whitelist your org's ScreenConnect instance
       Example: 983fa4f3c185dd21
 
-    cf_coolforge_is_screenconnect_server
+    cf_policy_screenconnect_machine_hosts_screenconnect_server
       Set to "true" on ScreenConnect server machines
       Excludes all ScreenConnect detection
 
