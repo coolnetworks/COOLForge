@@ -13,7 +13,7 @@
     Designed to run as a daily policy script to catch hostname drift.
 
 .NOTES
-    Version:          2026.01.21.03
+    Version:          2026.01.21.04
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
@@ -38,7 +38,7 @@
 #>
 
 # Hostname Mismatch Detection
-# Version: 2026.01.21.03
+# Version: 2026.01.21.04
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
@@ -124,6 +124,33 @@ Invoke-LevelScript -ScriptBlock {
 
     Write-LevelLog "Starting Hostname Mismatch Check"
 
+    # ============================================================
+    # AUTO-BOOTSTRAP: Create required tags if they don't exist
+    # ============================================================
+    if ($LevelApiKey) {
+        $TagsToCreate = @(
+            @{ Name = $FullTagMismatch; Description = "Warning tag for hostname mismatch" }
+            @{ Name = $FullTagRenameLevel; Description = "Action tag to rename Level device" }
+            @{ Name = $FullTagRenameWindows; Description = "Action tag to rename Windows hostname" }
+        )
+
+        foreach ($TagDef in $TagsToCreate) {
+            $ExistingTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $TagDef.Name
+            if (-not $ExistingTag) {
+                Write-LevelLog "Creating tag: $($TagDef.Name)" -Level "INFO"
+                $NewTag = New-LevelTag -ApiKey $LevelApiKey -TagName $TagDef.Name
+                if ($NewTag) {
+                    Write-LevelLog "Tag created: $($TagDef.Name)" -Level "SUCCESS"
+                } else {
+                    Write-LevelLog "Failed to create tag: $($TagDef.Name)" -Level "WARN"
+                }
+            }
+        }
+    }
+
+    # ============================================================
+    # GET HOSTNAMES
+    # ============================================================
     # Get Windows hostname
     $WindowsHostname = $env:COMPUTERNAME
 
