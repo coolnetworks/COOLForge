@@ -432,7 +432,7 @@ elseif (-not $WhatIf) {
     if ($deleteConfirmed) {
         foreach ($f in $DeprecatedFields) {
             Write-Host "    Deleting $($f.name)..." -NoNewline
-            $del = Remove-LevelCustomField -FieldId $f.id
+            $del = Remove-LevelCustomField -FieldId $f.id -FieldName $f.name
             if ($del) {
                 Write-Host " OK" -ForegroundColor Green
                 $DeletedCount++

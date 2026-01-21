@@ -90,6 +90,13 @@
       "displayName": "Chrome Configuration",
       "description": "Chrome browser configuration policies (location, extensions, etc).",
       "prerequisites": []
+    },
+    "dnsfilter": {
+      "displayName": "DNSFilter",
+      "description": "DNSFilter agent deployment and management using the 5-tag policy model.",
+      "prerequisites": [
+        "DNSFilter site key (NKEY) from your DNSFilter portal"
+      ]
     }
   },
   "fields": {
@@ -149,74 +156,104 @@
     ],
     "screenconnect": [
       {
-        "name": "screenconnect_instance_id",
+        "name": "policy_screenconnect_instance_id",
         "description": "Your MSP's ScreenConnect instance ID for whitelisting",
-        "legacyNames": ["screenconnect_instance"],
+        "legacyNames": ["screenconnect_instance_id", "screenconnect_instance", "coolforge_screenconnect_instance_id"],
         "adminOnly": true,
         "required": false,
         "prompt": "ScreenConnect instance ID (for RAT whitelisting)"
       },
       {
-        "name": "screenconnect_baseurl",
-        "description": "Your ScreenConnect server URL (e.g., https://support.example.com)",
-        "legacyNames": [],
-        "adminOnly": false,
-        "required": false,
-        "prompt": "ScreenConnect server URL (e.g., support.yourcompany.com)"
-      },
-      {
-        "name": "screenconnect_api_user",
+        "name": "policy_screenconnect_api_user",
         "description": "ScreenConnect API username for automation",
-        "legacyNames": [],
+        "legacyNames": ["screenconnect_api_user"],
         "adminOnly": true,
         "required": false,
         "prompt": "ScreenConnect API username (optional)"
       },
       {
-        "name": "screenconnect_api_password",
+        "name": "policy_screenconnect_api_password",
         "description": "ScreenConnect API password for automation",
-        "legacyNames": [],
+        "legacyNames": ["screenconnect_api_password"],
         "adminOnly": true,
         "required": false,
         "prompt": "ScreenConnect API password (optional)"
       },
       {
-        "name": "is_screenconnect_server",
+        "name": "policy_screenconnect_is_server",
         "description": "Set to 'true' on devices hosting ScreenConnect server",
-        "legacyNames": [],
+        "legacyNames": ["is_screenconnect_server", "coolforge_is_screenconnect_server"],
         "adminOnly": false,
         "required": false
       },
       {
-        "name": "screenconnect_device_url",
+        "name": "policy_screenconnect_device_url",
         "description": "Per-device ScreenConnect URL (populated automatically by scripts)",
-        "legacyNames": ["screenconnect_url"],
+        "legacyNames": ["screenconnect_device_url", "screenconnect_url"],
         "adminOnly": false,
         "required": false,
         "autoCreate": true
+      },
+      {
+        "name": "policy_screenconnect",
+        "description": "ScreenConnect client policy: install, remove, pin. Uses 5-tag model with SC prefix.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "ScreenConnect policy (install/remove/pin)"
+      },
+      {
+        "name": "policy_screenconnect_instance",
+        "description": "ScreenConnect service display name to match/install",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "ScreenConnect service display name"
+      },
+      {
+        "name": "policy_screenconnect_baseurl",
+        "description": "ScreenConnect server base URL (e.g., support.company.com)",
+        "legacyNames": ["screenconnect_baseurl"],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "ScreenConnect server URL"
       }
     ],
     "huntress": [
       {
-        "name": "huntress_account_key",
-        "description": "Huntress account key for agent deployment",
+        "name": "policy_huntress",
+        "description": "Huntress agent policy: install, remove, pin. Uses 5-tag model.",
         "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "Huntress policy (install/remove/pin)"
+      },
+      {
+        "name": "policy_huntress_account_key",
+        "description": "Huntress account key for agent deployment",
+        "legacyNames": ["huntress_account_key"],
         "adminOnly": true,
         "required": false,
         "prompt": "Huntress account key (from Dashboard > Agents > Deploy)"
       },
       {
-        "name": "huntress_organization_key",
+        "name": "policy_huntress_org_key",
         "description": "Huntress organization key for agent deployment",
-        "legacyNames": [],
+        "legacyNames": ["huntress_organization_key"],
         "adminOnly": true,
         "required": false,
         "prompt": "Huntress organization key (from Dashboard > Agents > Deploy)"
       },
       {
-        "name": "huntress_tags",
+        "name": "policy_huntress_tags",
         "description": "Comma-separated tags to apply to Huntress agent",
-        "legacyNames": [],
+        "legacyNames": ["huntress_tags"],
         "adminOnly": false,
         "required": false,
         "prompt": "Default Huntress tags (comma-separated, optional)"
@@ -260,6 +297,7 @@
         "legacyNames": [],
         "adminOnly": false,
         "required": false,
+        "default": "true",
         "prompt": "Enable debug output in scripts? (true/false)"
       }
     ],
@@ -343,35 +381,6 @@
         "required": false
       }
     ],
-    "screenconnect": [
-      {
-        "name": "policy_screenconnect",
-        "description": "ScreenConnect client policy: install, remove, pin. Uses 5-tag model with SC prefix.",
-        "legacyNames": [],
-        "adminOnly": false,
-        "required": false,
-        "default": "pin",
-        "valueOptions": ["pin", "install", "remove"],
-        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
-        "prompt": "ScreenConnect policy (install/remove/pin)"
-      },
-      {
-        "name": "policy_screenconnect_instance",
-        "description": "ScreenConnect service display name to match/install",
-        "legacyNames": [],
-        "adminOnly": false,
-        "required": false,
-        "prompt": "ScreenConnect service display name"
-      },
-      {
-        "name": "policy_screenconnect_baseurl",
-        "description": "ScreenConnect server base URL (e.g., support.company.com)",
-        "legacyNames": [],
-        "adminOnly": false,
-        "required": false,
-        "prompt": "ScreenConnect server URL"
-      }
-    ],
     "windows_config": [
       {
         "name": "policy_device_locationservices",
@@ -396,6 +405,27 @@
         "valueOptions": ["pin", "install", "remove"],
         "valueFormat": "{value} | uses pin/install/remove (install=allow, remove=block)",
         "prompt": "Chrome location policy (install=allow/remove=block/pin)"
+      }
+    ],
+    "dnsfilter": [
+      {
+        "name": "policy_dnsfilter",
+        "description": "DNSFilter agent policy: install, remove, pin. Uses 5-tag model.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "DNSFilter policy (install/remove/pin)"
+      },
+      {
+        "name": "policy_dnsfilter_sitekey",
+        "description": "DNSFilter site key (NKEY) for agent installation. Get this from your DNSFilter portal.",
+        "legacyNames": [],
+        "adminOnly": true,
+        "required": false,
+        "prompt": "DNSFilter site key (NKEY from portal)"
       }
     ]
   }

@@ -162,10 +162,13 @@ The launcher automatically passes these variables to downloaded scripts:
 |----------|--------|-------------|
 | `$MspScratchFolder` | `{{cf_coolforge_msp_scratch_folder}}` | Persistent storage folder |
 | `$LibraryUrl` | `{{cf_coolforge_ps_module_library_source}}` | Library download URL |
-| `$DeviceHostname` | `{{level_device_hostname}}` | Device hostname |
+| `$DeviceHostname` | `{{level_device_hostname}}` or `{{level_device_nickname}}` | Device hostname/name |
+| `$DeviceId` | `{{level_device_id}}` | Level.io device ID |
 | `$DeviceTags` | `{{level_tag_names}}` | Comma-separated device tags |
+| `$LevelApiKey` | `{{cf_apikey}}` | Level.io API key for API calls |
+| `$DebugScripts` | `{{cf_debug_scripts}}` | Debug mode flag (true/false) |
 
-**Adding more variables:** Edit `templates/Launcher_Template.ps1` to pass additional custom fields to your scripts.
+**Adding more variables:** Edit `templates/Slim-Launcher.ps1` to pass additional custom fields to your scripts.
 
 ---
 

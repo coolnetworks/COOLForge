@@ -516,8 +516,8 @@ fc22e1527690676a4d53f5c015353a8b  CHANGELOG.md
 d76de5eec0727bb706061619c427a3d7  docs/CODEBASE.md
 32b562167021beaac7c3645c223f7d9f  docs/EMOJI-HANDLING.md
 02d4bacc9607a7d35684e290e8400f7d  docs/FOLDER-STRUCTURE.md
-35685aa71a1bec66fb2f8a44768ab720  docs/FUNCTIONS.md
-e97707f379afc593c0c66979c0eb9995  docs/LAUNCHER.md
+8804e5bb0a5e015057043c88f1e6c913  docs/FUNCTIONS.md
+bbd0f465786cd73e634d17d52bbe7c38  docs/LAUNCHER.md
 f095117a0ee4995c5532a609ff5ec5ba  docs/LAUNCHER-FLOWCHART.md
 b23eeee0ced51cb4c52ca0b04e08c3ac  docs/LEVEL-API-CUSTOM-FIELDS.md
 7458ffa280618e3aedbd5a69539af560  docs/policy/Chrome.md
@@ -529,7 +529,7 @@ def1b497bfc2adc1d16acd5744c502db  docs/policy/CREATING-SCRIPTS.md
 fd7e4b7e078e41fd7182065919c84ea0  docs/policy/TAGS.md
 c1712a34819c7e0c310a699f0dd6b4b3  docs/policy/Unchecky.md
 299660276b1b4bc320f8458434a0cd70  docs/policy/Windows.md
-40c0c788a089760df57d0e35b2d409dd  docs/POLICY-FIELDS.md
+aad84818f14a46fbb1100292f8a121f2  docs/POLICY-FIELDS.md
 cad1512fad6b0a8f136994dc75fc3172  docs/PRIVATE-FORK.md
 55525401827f7c28ba5eb23d5c0e6c00  docs/RELEASE-WORKFLOW.md
 56a36c9e1a9ba6830b2443b24f98a25b  docs/scripts/Fix-Windows-Services.md
@@ -545,9 +545,10 @@ ff47f9469b032912629f2f26ee1f9cd2  docs/scripts/ScreenConnect-Device-URL.md
 d5b4ded9659d35360db4dc7c4fd3b59f  docs/scripts/Test-Variable-Output.md
 7cf596fc9669f1b827baad414f632842  docs/scripts/Wake-Devices.md
 228ca2efd2caf11e637c84541e555b7b  docs/TECHNICIAN-ALERTS.md
-887af9bcbb8b912c66927d99f964b327  docs/VARIABLES.md
+34874b29a7611b3b93b0ac09d122ac0d  docs/VARIABLES.md
 82df6de5e4414aa846ad0b02b63cc127  docs/VERSION-PINNING.md
 95e694ffeac9942483bfc94252085936  docs/WHY.md
+cf8abcfa522e91ed1ebdd76d183644f0  docs/WHY-COOLFORGE.md
 36f598a5874afebf5ca514c4aa2afb80  docs/WOL.md
 55b75dc4b4cfdb479ad7a35b4e1b951c  launchers/⚙️COOLForge Cache Sync.ps1
 b5aee3f08a2e54c3faca6d8afff4b7c8  launchers/⚙️Extract and Set ScreenConnect Device URL.ps1
@@ -564,6 +565,7 @@ cbad2f254e7d3f953a7766b2df46c3d0  launchers/Policy/👀meshcentral.ps1
 81ea5f4ba198a2b4def9b313c4607676  launchers/Policy/👀screenconnect.ps1
 a22d50054fc4c0203d29cf35e0c7b870  launchers/Policy/👀unchecky.ps1
 ee5c1bd6985704707761b7a6949c0997  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+e9121f5b1e7651368d8ace15f6e6b7b3  launchers/Utility/⚙️Reset Level Instance.ps1
 7184781d274a865620abdea2eec694e1  launchers/Utility/⚙️Universal Disk Cleaner.ps1
 125478367416f097f44089c387592472  launchers/👀Check DNS Server Compliance.ps1
 e60de2c98ae123e05fc5577beeb1de57  launchers/👀Check for Unauthorized Remote Access Tools.ps1
@@ -584,7 +586,7 @@ ed1f452b9853eeb89cc0614a32f9aa4f  launchers/🙏Wake all devices in parent to le
 013cb65246d9003d07c710bb27c74ff7  LEVEL-SUPPORT-QUESTIONS.md
 ac02595a53ea6c81e5444e6e64f4415c  LEVEL-SUPPORT-SUBMITTED.md
 5746acb006595a0ec8e3e8ccfe2a7131  MEETING NOTES - Level.io Demo.md
-a82880d050e35bc4831aa2f3639b66ce  modules/COOLForge-Common.psm1
+3c62e5a8b4d44aebd5a6c2aa3d567b24  modules/COOLForge-Common.psm1
 07f2114b030950370cf6ac38e64f222f  NEEDS_TESTING.md
 3c230ff8cd8b89385d4fb66e136aa10a  pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  pre-release/Test-Syntax.ps1
@@ -626,6 +628,7 @@ d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 2354ae26195e7ce19c52cdeb76407d24  scripts/Utility/⚙️COOLForge Cache Sync.ps1
+0a5d7052271875f993c4910e5405c789  scripts/Utility/⚙️Reset Level Instance.ps1
 83caf93fbbb7060d66389e64a97f0805  scripts/Utility/⚙️Universal Disk Cleaner.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1

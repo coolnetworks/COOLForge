@@ -184,6 +184,6 @@ The setup wizard uses `valueFormat` to construct the full self-documenting value
 
 ## See Also
 
-- [POLICY-TAGS.md](POLICY-TAGS.md) - Complete tag specification
+- [policy/TAGS.md](policy/TAGS.md) - Complete tag specification
 - [definitions/custom-fields.json](../definitions/custom-fields.json) - Field definitions
 - [definitions/tags.json](../definitions/tags.json) - Tag definitions

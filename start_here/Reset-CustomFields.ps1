@@ -233,7 +233,7 @@ Write-Host "Deleting existing fields..." -ForegroundColor Yellow
 $DeletedCount = 0
 foreach ($f in $ExistingFields) {
     Write-Host "  Deleting $($f.name)..." -NoNewline
-    $del = Remove-LevelCustomField -FieldId $f.id
+    $del = Remove-LevelCustomField -FieldId $f.id -FieldName $f.name
     if ($del) {
         Write-Host " OK" -ForegroundColor Green
         $DeletedCount++

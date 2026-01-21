@@ -56,7 +56,10 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
-    [string]$ApiKey
+    [string]$ApiKey,
+
+    [Parameter(Mandatory = $false)]
+    [string]$AnswerFile
 )
 
 # ============================================================
@@ -80,11 +83,143 @@ Import-Module $ModulePath -Force -DisableNameChecking
 $Script:ConfigFileName = ".COOLForge_Lib-setup.json"
 $Script:ConfigPath = Join-Path $PSScriptRoot $Script:ConfigFileName
 $Script:FieldsConfigPath = Join-Path (Split-Path $PSScriptRoot -Parent) "definitions\custom-fields.json"
+$Script:DefaultAnswerFilePath = Join-Path $PSScriptRoot ".COOLForge_Answers.json"
 
 # MSP name (set after prompting user)
 $Script:MspName = ""
 $Script:SavedConfig = $null
 $Script:ResolvedApiKey = $null
+$Script:AnswerFileData = $null
+$Script:UsingAnswerFile = $false
+
+# ============================================================
+# ANSWER FILE FUNCTIONS
+# ============================================================
+
+function Import-AnswerFile {
+    param([string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        return $null
+    }
+
+    try {
+        $Content = Get-Content $Path -Raw | ConvertFrom-Json
+        return $Content
+    }
+    catch {
+        Write-Host "[!] Could not load answer file: $_" -ForegroundColor Yellow
+        return $null
+    }
+}
+
+function Get-AnswerValue {
+    param([string]$FieldName)
+
+    if (-not $Script:AnswerFileData -or -not $Script:AnswerFileData.fields) {
+        return $null
+    }
+
+    # Check if field exists in answer file
+    if ($Script:AnswerFileData.fields.PSObject.Properties.Name -contains $FieldName) {
+        return $Script:AnswerFileData.fields.$FieldName
+    }
+
+    return $null
+}
+
+function Get-ExtraFieldValue {
+    param([string]$FieldName)
+
+    if (-not $Script:AnswerFileData -or -not $Script:AnswerFileData.extraFields) {
+        return $null
+    }
+
+    if ($Script:AnswerFileData.extraFields.PSObject.Properties.Name -contains $FieldName) {
+        return $Script:AnswerFileData.extraFields.$FieldName
+    }
+
+    return $null
+}
+
+function Read-FieldWithAnswer {
+    param(
+        [string]$FieldName,
+        [string]$Prompt,
+        [string]$CurrentValue,
+        [string]$DefaultValue,
+        [bool]$FieldExistsInLevel = $true
+    )
+
+    $AnswerValue = Get-AnswerValue -FieldName $FieldName
+
+    # If not using answer file, use normal prompting
+    if (-not $Script:UsingAnswerFile) {
+        if (-not [string]::IsNullOrWhiteSpace($CurrentValue)) {
+            return Read-UserInput -Prompt $Prompt -Default $CurrentValue
+        }
+        elseif (-not [string]::IsNullOrWhiteSpace($DefaultValue)) {
+            return Read-UserInput -Prompt $Prompt -Default $DefaultValue
+        }
+        else {
+            return Read-UserInput -Prompt $Prompt -Default ""
+        }
+    }
+
+    # If field doesn't exist in Level.io yet, skip it
+    if (-not $FieldExistsInLevel) {
+        Write-Host "    (Field not deployed yet - skipping)" -ForegroundColor DarkGray
+        return $null
+    }
+
+    # Smart prompting with answer file
+    if ($null -ne $AnswerValue -and -not [string]::IsNullOrWhiteSpace($AnswerValue)) {
+        Write-Host "    Saved value: $AnswerValue" -ForegroundColor Cyan
+        Write-Host "    [1] Use saved value (default)" -ForegroundColor White
+        Write-Host "    [2] Enter new value" -ForegroundColor White
+        Write-Host "    [3] Leave empty" -ForegroundColor White
+
+        $Choice = Read-UserInput -Prompt "    Choice" -Default "1"
+
+        switch ($Choice) {
+            "1" { return $AnswerValue }
+            "2" { return Read-UserInput -Prompt "    New value" -Default "" }
+            "3" { return "" }
+            default { return $AnswerValue }
+        }
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($CurrentValue)) {
+        # Field exists in Level.io with value, but not in answer file
+        Write-Host "    Current Level.io value: $CurrentValue" -ForegroundColor Yellow
+        Write-Host "    (Not in answer file)" -ForegroundColor DarkGray
+        Write-Host "    [1] Keep current value (default)" -ForegroundColor White
+        Write-Host "    [2] Enter new value" -ForegroundColor White
+        Write-Host "    [3] Leave empty" -ForegroundColor White
+
+        $Choice = Read-UserInput -Prompt "    Choice" -Default "1"
+
+        switch ($Choice) {
+            "1" { return $CurrentValue }
+            "2" { return Read-UserInput -Prompt "    New value" -Default "" }
+            "3" { return "" }
+            default { return $CurrentValue }
+        }
+    }
+    else {
+        # Field exists in Level.io but empty, and not in answer file
+        Write-Host "    No saved value in answer file" -ForegroundColor DarkGray
+        Write-Host "    [1] Enter value" -ForegroundColor White
+        Write-Host "    [2] Skip (leave empty)" -ForegroundColor White
+
+        $Choice = Read-UserInput -Prompt "    Choice" -Default "2"
+
+        switch ($Choice) {
+            "1" { return Read-UserInput -Prompt "    Value" -Default $DefaultValue }
+            "2" { return "" }
+            default { return "" }
+        }
+    }
+}
 
 # ============================================================
 # LOAD FIELD DEFINITIONS FROM CONFIG
@@ -298,6 +433,45 @@ if ($Script:SavedConfig) {
     Write-LevelInfo "Found saved configuration."
 }
 
+# Check for answer file
+if (-not [string]::IsNullOrWhiteSpace($AnswerFile)) {
+    # Explicit answer file provided
+    if (Test-Path $AnswerFile) {
+        $Script:AnswerFileData = Import-AnswerFile -Path $AnswerFile
+        if ($Script:AnswerFileData) {
+            $Script:UsingAnswerFile = $true
+            Write-LevelInfo "Using answer file: $AnswerFile"
+            if ($Script:AnswerFileData.companyName) {
+                Write-Host "    Company: $($Script:AnswerFileData.companyName)" -ForegroundColor DarkGray
+            }
+            if ($Script:AnswerFileData.exportedAt) {
+                Write-Host "    Exported: $($Script:AnswerFileData.exportedAt)" -ForegroundColor DarkGray
+            }
+        }
+    }
+    else {
+        Write-LevelWarning "Answer file not found: $AnswerFile"
+    }
+}
+elseif (Test-Path $Script:DefaultAnswerFilePath) {
+    # Auto-detect default answer file
+    Write-Host ""
+    Write-Host "Found answer file: $Script:DefaultAnswerFilePath" -ForegroundColor Cyan
+    if (Read-YesNo -Prompt "Use saved values from answer file" -Default $true) {
+        $Script:AnswerFileData = Import-AnswerFile -Path $Script:DefaultAnswerFilePath
+        if ($Script:AnswerFileData) {
+            $Script:UsingAnswerFile = $true
+            Write-LevelInfo "Using answer file values"
+            if ($Script:AnswerFileData.companyName) {
+                Write-Host "    Company: $($Script:AnswerFileData.companyName)" -ForegroundColor DarkGray
+            }
+        }
+    }
+    else {
+        Write-LevelInfo "Skipping answer file - will prompt for all values"
+    }
+}
+
 # Get API Key - check parameter, then saved config (new key name, then legacy), then prompt
 if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
     $Script:ResolvedApiKey = $ApiKey
@@ -333,7 +507,7 @@ if ([string]::IsNullOrWhiteSpace($Script:ResolvedApiKey)) {
 
 # Initialize the module with API key
 $Script:LevelApiBaseUrl = "https://api.level.io/v2"
-Initialize-COOLForgeCustomFields -ApiKey $Script:ResolvedApiKey -LevelApiBase $Script:LevelApiBaseUrl | Out-Null
+Initialize-LevelApi -ApiKey $Script:ResolvedApiKey | Out-Null
 
 # Test API connection
 Write-Header "Testing API Connection"
@@ -513,7 +687,14 @@ $InferredCompanyName = ""
 $UsingLegacyField = $false
 $LegacyFieldsToDelete = @()
 
-if ($AllMatchingFields.Count -gt 0) {
+# Check if answer file has scratch folder value - use it as preferred default
+$AnswerFileScratchFolder = Get-AnswerValue -FieldName "coolforge_msp_scratch_folder"
+if ($Script:UsingAnswerFile -and -not [string]::IsNullOrWhiteSpace($AnswerFileScratchFolder)) {
+    Write-LevelInfo "Using scratch folder from answer file: $AnswerFileScratchFolder"
+    $CurrentScratchFolder = $AnswerFileScratchFolder
+    $InferredCompanyName = Get-CompanyNameFromPath -Path $AnswerFileScratchFolder
+}
+elseif ($AllMatchingFields.Count -gt 0) {
     Write-LevelInfo "Found $($AllMatchingFields.Count) matching field(s):"
     foreach ($Field in $AllMatchingFields) {
         $FieldType = if ($Field.IsNew) { "(current)" } else { "(legacy)" }
@@ -589,10 +770,14 @@ Write-Host "Example: 'Contoso' -> C:\ProgramData\Contoso"
 Write-Host "Example: 'COOLForge' -> C:\ProgramData\COOLForge (default)"
 Write-Host ""
 
-# Default to: inferred from scratch folder > saved config > "COOLForge"
+# Default to: inferred from scratch folder > answer file > saved config > "COOLForge"
 $DefaultCompanyName = "COOLForge"
 if (-not [string]::IsNullOrWhiteSpace($InferredCompanyName)) {
     $DefaultCompanyName = $InferredCompanyName
+}
+elseif ($Script:UsingAnswerFile -and $Script:AnswerFileData.companyName) {
+    $DefaultCompanyName = $Script:AnswerFileData.companyName
+    Write-LevelInfo "Using company name from answer file: $DefaultCompanyName"
 }
 elseif ($Script:SavedConfig -and $Script:SavedConfig.CompanyName) {
     $DefaultCompanyName = $Script:SavedConfig.CompanyName
@@ -1386,6 +1571,64 @@ else {
     }
     else {
         Write-LevelInfo "Skipped tag setup"
+    }
+}
+
+# ============================================================
+# EXTRA FIELDS FROM ANSWER FILE
+# ============================================================
+
+# If using answer file and it has extra fields, offer to handle them
+if ($Script:UsingAnswerFile -and $Script:AnswerFileData.extraFields) {
+    $ExtraFieldNames = $Script:AnswerFileData.extraFields.PSObject.Properties.Name
+    if ($ExtraFieldNames.Count -gt 0) {
+        Write-Header "Extra Fields from Answer File"
+
+        Write-Host "The answer file contains fields not in current definitions." -ForegroundColor Yellow
+        Write-Host "These may be legacy/deprecated fields from your Level.io instance." -ForegroundColor Yellow
+        Write-Host ""
+
+        foreach ($ExtraFieldName in $ExtraFieldNames) {
+            $ExtraValue = $Script:AnswerFileData.extraFields.$ExtraFieldName
+            $DisplayValue = if ([string]::IsNullOrWhiteSpace($ExtraValue)) { "(empty)" } else { $ExtraValue }
+
+            Write-Host "  $ExtraFieldName = $DisplayValue" -ForegroundColor Cyan
+
+            # Check if this field exists in Level.io
+            $ExistingField = Find-CustomField -Name $ExtraFieldName -ExistingFields $ExistingFields
+            if ($ExistingField) {
+                Write-Host "    [1] Keep as-is" -ForegroundColor White
+                Write-Host "    [2] Mark as DEPRECATED - REMOVE THIS FIELD" -ForegroundColor Yellow
+                Write-Host "    [3] Delete field from Level.io" -ForegroundColor Red
+                Write-Host ""
+
+                $Choice = Read-UserInput -Prompt "    Choice" -Default "1"
+
+                switch ($Choice) {
+                    "2" {
+                        $DeprecatedValue = "DEPRECATED - REMOVE THIS FIELD"
+                        if (Update-CustomFieldValue -FieldId $ExistingField.id -Value $DeprecatedValue) {
+                            Write-LevelSuccess "Marked $ExtraFieldName as deprecated"
+                        }
+                    }
+                    "3" {
+                        if (Read-YesNo -Prompt "    Are you sure you want to delete '$ExtraFieldName'" -Default $false) {
+                            Remove-CustomField -FieldId $ExistingField.id -FieldName $ExtraFieldName
+                        }
+                        else {
+                            Write-LevelInfo "Keeping $ExtraFieldName"
+                        }
+                    }
+                    default {
+                        Write-LevelInfo "Keeping $ExtraFieldName as-is"
+                    }
+                }
+            }
+            else {
+                Write-Host "    (Field no longer exists in Level.io)" -ForegroundColor DarkGray
+            }
+            Write-Host ""
+        }
     }
 }
 

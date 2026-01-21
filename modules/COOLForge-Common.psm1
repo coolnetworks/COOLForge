@@ -52,10 +52,15 @@ $script:DebugMode = $false          # Debug mode flag for verbose output
 # ============================================================
 # REGISTRY CACHE
 # Caches Level.io data locally to reduce API calls
+# Cache path is derived from scratch folder name (e.g., C:\ProgramData\MyCorp -> HKLM:\SOFTWARE\MyCorp\Cache)
 # ============================================================
 
-$script:CacheBasePath = "HKLM:\SOFTWARE\COOLForge\Cache"
+$script:CacheBasePath = $null  # Set dynamically by Initialize-LevelScript
 $script:CacheVersion = "1.0"
+$script:ScratchFolder = $null  # Set by Initialize-LevelScript
+
+# Default scratch folder that must be customized
+$script:DefaultScratchFolder = "C:\ProgramData\MSP"
 
 # API call counter for debugging
 $script:ApiCallCount = 0
@@ -81,13 +86,58 @@ function Reset-ApiCallCount {
 
 <#
 .SYNOPSIS
-    Gets the base registry path for the COOLForge cache.
+    Derives the MSP/company name from the scratch folder path.
+
+.DESCRIPTION
+    Extracts the folder name from a path like C:\ProgramData\MyCorp to return "MyCorp".
+    This name is used for the registry cache path.
+
+.PARAMETER ScratchFolder
+    The full path to the scratch folder (e.g., C:\ProgramData\MyCorp)
 
 .OUTPUTS
-    String. The registry path.
+    String. The MSP/company name derived from the path.
+#>
+function Get-MspNameFromPath {
+    param([string]$ScratchFolder)
+
+    if ([string]::IsNullOrWhiteSpace($ScratchFolder)) {
+        return "COOLForge"  # Fallback
+    }
+
+    # Get the last folder name from the path
+    $folderName = Split-Path -Path $ScratchFolder -Leaf
+    if ([string]::IsNullOrWhiteSpace($folderName)) {
+        return "COOLForge"  # Fallback
+    }
+
+    return $folderName
+}
+
+<#
+.SYNOPSIS
+    Gets the base registry path for the COOLForge cache.
+
+.DESCRIPTION
+    Returns the registry path for caching Level.io data locally.
+    Path is derived from the scratch folder name set during Initialize-LevelScript.
+
+.OUTPUTS
+    String. The registry path (e.g., HKLM:\SOFTWARE\MyCorp\Cache)
 #>
 function Get-LevelCachePath {
-    return $script:CacheBasePath
+    if ($script:CacheBasePath) {
+        return $script:CacheBasePath
+    }
+
+    # Fallback if not yet initialized - use scratch folder if available
+    if ($script:ScratchFolder) {
+        $mspName = Get-MspNameFromPath -ScratchFolder $script:ScratchFolder
+        return "HKLM:\SOFTWARE\$mspName\Cache"
+    }
+
+    # Ultimate fallback
+    return "HKLM:\SOFTWARE\COOLForge\Cache"
 }
 
 <#
@@ -732,10 +782,30 @@ function Initialize-LevelScript {
     $script:LockFilePath = Join-Path -Path $MspScratchFolder -ChildPath "lockfiles"
     $script:LockFile = Join-Path -Path $script:LockFilePath -ChildPath "$ScriptName.lock"
 
+    # Set dynamic cache path based on MSP name from scratch folder
+    $mspName = Get-MspNameFromPath -ScratchFolder $MspScratchFolder
+    $script:CacheBasePath = "HKLM:\SOFTWARE\$mspName\Cache"
+
     # Reset API call counter for this script run
     Reset-ApiCallCount
 
     Write-LevelLog "Initializing: $ScriptName on $DeviceHostname"
+
+    # --- Scratch Folder Validation ---
+    # Ensure coolforge_msp_scratch_folder has been customized from the default
+    if ([string]::IsNullOrWhiteSpace($MspScratchFolder) -or $MspScratchFolder -like "{{*}}") {
+        Write-Host "[Alert] coolforge_msp_scratch_folder is not set!" -ForegroundColor Red
+        Write-Host "[Alert] Set this custom field in Level.io to your MSP folder (e.g., C:\ProgramData\YourMSP)" -ForegroundColor Red
+        return @{ Success = $false; Reason = "ScratchFolderNotSet" }
+    }
+
+    if ($MspScratchFolder -ieq $script:DefaultScratchFolder) {
+        Write-Host "[Alert] coolforge_msp_scratch_folder is still set to the default path!" -ForegroundColor Red
+        Write-Host "[Alert] Current: $MspScratchFolder" -ForegroundColor Red
+        Write-Host "[Alert] Change this to your MSP folder (e.g., C:\ProgramData\YourMSP)" -ForegroundColor Red
+        Write-Host "[Alert] The folder name determines the registry cache location (HKLM:\SOFTWARE\YourMSP\Cache)" -ForegroundColor Red
+        return @{ Success = $false; Reason = "DefaultScratchFolder" }
+    }
 
     # --- Policy Block Check ---
     # If policy_block_device starts with "block" (e.g., "block | set to unblock to enable"), skip all operations
@@ -2523,7 +2593,13 @@ function Invoke-LevelApiCall {
         [hashtable]$Body,
 
         [Parameter(Mandatory = $false)]
-        [int]$TimeoutSec = 30
+        [int]$TimeoutSec = 30,
+
+        [Parameter(Mandatory = $false)]
+        [int]$MaxRetries = 3,
+
+        [Parameter(Mandatory = $false)]
+        [int]$RetryDelayMs = 1000
     )
 
     # Increment API call counter
@@ -2535,8 +2611,7 @@ function Invoke-LevelApiCall {
     # Note: Level.io v2 API does NOT use "Bearer" prefix - just the API key directly
     $Headers = @{
         "Authorization" = $ApiKey
-        "Content-Type"  = "application/json; charset=utf-8"
-        "Accept"        = "application/json"
+        "Content-Type"  = "application/json"
     }
 
     # Build request parameters
@@ -2548,41 +2623,60 @@ function Invoke-LevelApiCall {
         UseBasicParsing = $true
     }
 
-    # Add body for non-GET requests - ensure UTF-8 encoding for emojis
+    # Add body for non-GET requests
     if ($Body -and $Method -ne "GET") {
-        $JsonString = ($Body | ConvertTo-Json -Depth 10)
-        # Explicitly encode as UTF-8 bytes to handle emojis correctly
-        $Params.Body = [System.Text.Encoding]::UTF8.GetBytes($JsonString)
+        $Params.Body = ($Body | ConvertTo-Json -Depth 10)
     }
 
-    try {
-        $Response = Invoke-RestMethod @Params
-        return @{ Success = $true; Data = $Response }
-    }
-    catch {
-        $StatusCode = $null
-        $ResponseBody = $null
-        if ($_.Exception.Response) {
-            $StatusCode = [int]$_.Exception.Response.StatusCode
-            # Try to read the response body for error details
-            try {
-                $Stream = $_.Exception.Response.GetResponseStream()
-                $Reader = New-Object System.IO.StreamReader($Stream)
-                $ResponseBody = $Reader.ReadToEnd()
-                $Reader.Close()
-                $Stream.Close()
-            }
-            catch {
-                # Ignore stream read errors
-            }
+    for ($Attempt = 1; $Attempt -le $MaxRetries; $Attempt++) {
+        try {
+            $Response = Invoke-RestMethod @Params
+            return @{ Success = $true; Data = $Response }
         }
-        $ErrorMsg = $_.Exception.Message
-        if ($ResponseBody) {
-            $ErrorMsg = "$ErrorMsg - Response: $ResponseBody"
+        catch {
+            $ErrorMsg = $_.Exception.Message
+
+            # Check if this is a retryable connection error
+            $IsRetryable = $ErrorMsg -match 'connection was closed' -or
+                           $ErrorMsg -match 'Unable to connect' -or
+                           $ErrorMsg -match 'The operation has timed out' -or
+                           $ErrorMsg -match 'A connection attempt failed'
+
+            if ($IsRetryable -and $Attempt -lt $MaxRetries) {
+                Write-LevelLog "API call failed (attempt $Attempt/$MaxRetries): $ErrorMsg - Retrying in ${RetryDelayMs}ms..." -Level "DEBUG"
+                Start-Sleep -Milliseconds $RetryDelayMs
+                # Increase delay for subsequent retries
+                $RetryDelayMs = $RetryDelayMs * 2
+                continue
+            }
+
+            # Not retryable or max retries reached
+            $StatusCode = $null
+            $ResponseBody = $null
+            if ($_.Exception.Response) {
+                $StatusCode = [int]$_.Exception.Response.StatusCode
+                # Try to read the response body for error details
+                try {
+                    $Stream = $_.Exception.Response.GetResponseStream()
+                    $Reader = New-Object System.IO.StreamReader($Stream)
+                    $ResponseBody = $Reader.ReadToEnd()
+                    $Reader.Close()
+                    $Stream.Close()
+                }
+                catch {
+                    # Ignore stream read errors
+                }
+            }
+            if ($ResponseBody) {
+                $ErrorMsg = "$ErrorMsg - Response: $ResponseBody"
+            }
+            Write-LevelLog "API call failed: $ErrorMsg" -Level "ERROR"
+            return @{ Success = $false; Error = $ErrorMsg; StatusCode = $StatusCode; ResponseBody = $ResponseBody }
         }
-        Write-LevelLog "API call failed: $ErrorMsg" -Level "ERROR"
-        return @{ Success = $false; Error = $ErrorMsg; StatusCode = $StatusCode; ResponseBody = $ResponseBody }
     }
+
+    # Should not reach here, but just in case
+    return @{ Success = $false; Error = "Max retries exceeded"; StatusCode = $null; ResponseBody = $null }
 }
 
 # ============================================================
@@ -3780,12 +3874,19 @@ function Remove-LevelPolicyTag {
 function Get-LevelCustomFields {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ApiKey,
 
         [Parameter(Mandatory = $false)]
         [string]$BaseUrl = "https://api.level.io/v2"
     )
+
+    # Use passed ApiKey or fall back to stored key from Initialize-LevelApi
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        Write-LevelLog "No API key provided or stored. Call Initialize-LevelApi first." -Level "ERROR"
+        return $null
+    }
 
     $AllFields = @()
     $StartingAfter = $null
@@ -3796,7 +3897,7 @@ function Get-LevelCustomFields {
             $Uri += "&starting_after=$StartingAfter"
         }
 
-        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "GET"
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $EffectiveApiKey -Method "GET"
 
         if (-not $Result.Success) {
             Write-LevelLog "Failed to fetch custom fields: $($Result.Error)" -Level "ERROR"
@@ -3853,17 +3954,28 @@ function Get-LevelCustomFields {
 function Find-LevelCustomField {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
         [string]$FieldName,
 
         [Parameter(Mandatory = $false)]
-        [string]$BaseUrl = "https://api.level.io/v2"
+        [string]$BaseUrl = "https://api.level.io/v2",
+
+        [Parameter(Mandatory = $false)]
+        $ExistingFields = $null
     )
 
-    $Fields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
+    # If caller provided existing fields, use them (avoids extra API call)
+    if ($ExistingFields) {
+        $Fields = $ExistingFields
+    }
+    else {
+        # Use passed ApiKey or fall back to stored key from Initialize-LevelApi
+        $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+        $Fields = Get-LevelCustomFields -ApiKey $EffectiveApiKey -BaseUrl $BaseUrl
+    }
     if (-not $Fields) {
         return $null
     }
@@ -3908,7 +4020,7 @@ function Find-LevelCustomField {
 function New-LevelCustomField {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
@@ -3924,6 +4036,13 @@ function New-LevelCustomField {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
+    # Use passed ApiKey or fall back to stored key from Initialize-LevelApi
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        Write-LevelLog "No API key provided or stored. Call Initialize-LevelApi first." -Level "ERROR"
+        return $null
+    }
+
     $Body = @{
         name       = $Name
         admin_only = $AdminOnly
@@ -3934,7 +4053,7 @@ function New-LevelCustomField {
     }
 
     Write-LevelLog "Creating custom field: $Name" -Level "DEBUG"
-    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields" -ApiKey $ApiKey -Method "POST" -Body $Body
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields" -ApiKey $EffectiveApiKey -Method "POST" -Body $Body
 
     if ($Result.Success) {
         Write-LevelLog "Created custom field: $Name" -Level "SUCCESS"
@@ -3982,7 +4101,7 @@ function New-LevelCustomField {
 function Set-LevelCustomFieldValue {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
@@ -4002,8 +4121,15 @@ function Set-LevelCustomFieldValue {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
+    # Use passed ApiKey or fall back to stored key from Initialize-LevelApi
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        Write-LevelLog "No API key provided or stored. Call Initialize-LevelApi first." -Level "ERROR"
+        return $false
+    }
+
     # First, find the custom field ID by name
-    $Fields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
+    $Fields = Get-LevelCustomFields -ApiKey $EffectiveApiKey -BaseUrl $BaseUrl
     $Field = $Fields | Where-Object { $_.name -eq $FieldReference }
 
     if (-not $Field) {
@@ -4021,7 +4147,7 @@ function Set-LevelCustomFieldValue {
     }
 
     Write-LevelLog "PATCH $BaseUrl/custom_field_values with body: $($Body | ConvertTo-Json -Compress)" -Level "DEBUG"
-    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values" -ApiKey $ApiKey -Method "PATCH" -Body $Body
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values" -ApiKey $EffectiveApiKey -Method "PATCH" -Body $Body
 
     if ($Result.Success) {
         Write-LevelLog "Set $EntityType custom field '$FieldReference' = '$Value'" -Level "DEBUG"
@@ -4592,7 +4718,7 @@ function Initialize-SoftwarePolicyInfrastructure {
 function Get-LevelCustomFieldById {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
@@ -4602,7 +4728,14 @@ function Get-LevelCustomFieldById {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $ApiKey -Method "GET"
+    # Use passed ApiKey or fall back to stored key from Initialize-LevelApi
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        Write-LevelLog "No API key provided or stored. Call Initialize-LevelApi first." -Level "ERROR"
+        return $null
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $EffectiveApiKey -Method "GET"
     if (-not $Result.Success) {
         return $null
     }
@@ -4610,7 +4743,7 @@ function Get-LevelCustomFieldById {
     $Field = $Result.Data
 
     # Get the account-level value from custom_field_values
-    $ValueResult = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values?limit=100" -ApiKey $ApiKey -Method "GET"
+    $ValueResult = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values?limit=100" -ApiKey $EffectiveApiKey -Method "GET"
     if ($ValueResult.Success) {
         $Values = if ($ValueResult.Data.data) { $ValueResult.Data.data } else { @($ValueResult.Data) }
         $GlobalValue = $Values | Where-Object { $_.custom_field_id -eq $FieldId -and [string]::IsNullOrEmpty($_.assigned_to_id) } | Select-Object -First 1
@@ -4654,7 +4787,7 @@ function Get-LevelCustomFieldById {
 function Set-LevelCustomFieldDefaultValue {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
@@ -4667,13 +4800,20 @@ function Set-LevelCustomFieldDefaultValue {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
+    # Use passed ApiKey or fall back to stored key from Initialize-LevelApi
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        Write-LevelLog "No API key provided or stored. Call Initialize-LevelApi first." -Level "ERROR"
+        return $false
+    }
+
     $Body = @{
         custom_field_id = $FieldId
         assigned_to_id  = $null
         value           = $Value
     }
 
-    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values" -ApiKey $ApiKey -Method "PATCH" -Body $Body
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values" -ApiKey $EffectiveApiKey -Method "PATCH" -Body $Body
 
     if ($Result.Success) {
         Write-LevelLog "Updated custom field $FieldId default value" -Level "DEBUG"
@@ -4711,24 +4851,36 @@ function Set-LevelCustomFieldDefaultValue {
 function Remove-LevelCustomField {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
         [string]$FieldId,
 
         [Parameter(Mandatory = $false)]
+        [string]$FieldName,
+
+        [Parameter(Mandatory = $false)]
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
-    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $ApiKey -Method "DELETE"
+    # Use passed ApiKey or fall back to stored key from Initialize-LevelApi
+    $EffectiveApiKey = if ($ApiKey) { $ApiKey } else { $Script:LevelApiKey }
+    if ([string]::IsNullOrWhiteSpace($EffectiveApiKey)) {
+        Write-LevelLog "No API key provided or stored. Call Initialize-LevelApi first." -Level "ERROR"
+        return $false
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_fields/$FieldId" -ApiKey $EffectiveApiKey -Method "DELETE"
 
     if ($Result.Success) {
-        Write-LevelLog "Deleted custom field $FieldId" -Level "DEBUG"
+        $LogName = if ($FieldName) { "$FieldName ($FieldId)" } else { $FieldId }
+        Write-LevelLog "Deleted custom field $LogName" -Level "DEBUG"
         return $true
     }
     else {
-        Write-LevelLog "Failed to delete custom field: $($Result.Error)" -Level "ERROR"
+        $LogName = if ($FieldName) { $FieldName } else { $FieldId }
+        Write-LevelLog "Failed to delete custom field $LogName`: $($Result.Error)" -Level "ERROR"
         return $false
     }
 }
@@ -6517,6 +6669,11 @@ function Initialize-LevelApi {
 
 # Alias for backward compatibility
 Set-Alias -Name Initialize-COOLForgeCustomFields -Value Initialize-LevelApi -Scope Script
+Set-Alias -Name Get-ExistingCustomFields -Value Get-LevelCustomFields -Scope Script
+Set-Alias -Name Get-CustomFieldById -Value Get-LevelCustomFieldById -Scope Script
+Set-Alias -Name Find-CustomField -Value Find-LevelCustomField -Scope Script
+Set-Alias -Name Update-CustomFieldValue -Value Set-LevelCustomFieldDefaultValue -Scope Script
+Set-Alias -Name Remove-CustomField -Value Remove-LevelCustomField -Scope Script
 
 # ============================================================
 # LAUNCHER HELPERS
@@ -6992,6 +7149,15 @@ Export-ModuleMember -Function @(
     'Select-Version',
 
     # Admin Initialization
-    'Initialize-LevelApi',
-    'Initialize-COOLForgeCustomFields'
+    'Initialize-LevelApi'
+)
+
+# Export aliases separately (Export-ModuleMember -Function doesn't export aliases)
+Export-ModuleMember -Alias @(
+    'Initialize-COOLForgeCustomFields',
+    'Get-ExistingCustomFields',
+    'Get-CustomFieldById',
+    'Find-CustomField',
+    'Update-CustomFieldValue',
+    'Remove-CustomField'
 )

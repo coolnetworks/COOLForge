@@ -1,6 +1,9 @@
 # COOLForge_Lib setup config (contains encrypted API key)
 .COOLForge_Lib-setup.json
 
+# Answer file (contains API keys and sensitive field values)
+.COOLForge_Answers.json
+
 # Testing folder (dev tools, cache files, local configs)
 /testing/
 
@@ -23,6 +26,9 @@ ScreenConnectUrls_*.csv
 
 # Claude Code local settings
 .claude/
+
+# Local scripts (destructive/testing tools not for GitHub)
+.local/
 
 # Private notes (API questions, support tickets, etc.)
 LEVEL-SUPPORT-QUESTIONS.md

@@ -64,10 +64,11 @@ $Init = Initialize-LevelScript -ScriptName "MyScript" `
 | `-MspScratchFolder` | String | Yes | — | Base path for MSP files |
 | `-DeviceHostname` | String | No | `$env:COMPUTERNAME` | Device hostname for logging |
 | `-DeviceTags` | String | No | `""` | Comma-separated list of device tags |
-| `-BlockingTags` | String[] | No | `@("❌")` | Tags that block script execution |
+| `-BlockingTags` | String[] | No | `@()` | Tags that block script execution |
+| `-PolicyBlockDevice` | String | No | `""` | Policy field value for device blocking |
 | `-SkipTagCheck` | Switch | No | `$false` | Bypass tag gate check |
 | `-SkipLockFile` | Switch | No | `$false` | Don't create a lockfile |
-| `-ApiKey` | String | No | `""` | Level.io API key for auto-sending technician alerts |
+| `-DebugMode` | Bool | No | `$false` | Enable debug output and show cache info on completion |
 
 ### Return Values
 
@@ -165,6 +166,7 @@ Complete-LevelScript -ExitCode 1 -Message "Database connection failed"
 |-----------|------|----------|---------|-------------|
 | `-ExitCode` | Int | No | `0` | Exit code (0 = success, 1 = alert/failure) |
 | `-Message` | String | No | `"Script completed"` | Final log message |
+| `-DebugMode` | Bool | No | `$null` | Show cache info before exit (uses module variable if not specified) |
 
 ---
 

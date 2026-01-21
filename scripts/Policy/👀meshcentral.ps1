@@ -448,6 +448,7 @@ function Install-Meshcentral {
             if ($NormalizedDetected -like "*$NormalizedExpected*" -or $NormalizedExpected -like "*$NormalizedDetected*") {
                 Write-LevelLog "Server URL verified: $DetectedServer" -Level "SUCCESS"
             } else {
+                Write-Host "Alert: MeshCentral agent pointing to wrong server ($DetectedServer instead of $ServerUrl)"
                 Write-LevelLog "WARNING: Installed agent points to '$DetectedServer' but expected '$ServerUrl'" -Level "WARN"
             }
         }

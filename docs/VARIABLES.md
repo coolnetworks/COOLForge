@@ -22,6 +22,9 @@ These custom fields are used by COOLForge_Lib scripts:
 | `{{cf_coolforge_msp_scratch_folder}}` | Base path for MSP files (e.g., `C:\ProgramData\MSP`) | **Yes** |
 | `{{cf_coolforge_ps_module_library_source}}` | URL to download library (leave empty for official repo) | No |
 | `{{cf_coolforge_pin_psmodule_to_version}}` | Pin to specific version tag (e.g., `v2025.12.29`) | No |
+| `{{cf_coolforge_pat}}` | GitHub Personal Access Token for private repo access | No |
+| `{{cf_apikey}}` | Level.io API key for API calls (tags, custom fields, etc.) | No |
+| `{{cf_debug_scripts}}` | Set to "true" to enable debug output in scripts | No |
 | `{{cf_coolforge_screenconnect_instance_id}}` | Your MSP's ScreenConnect instance ID | No |
 | `{{cf_coolforge_is_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
 | `{{cf_coolforge_nosleep_duration_min}}` | Duration in minutes to prevent device from sleeping (default: 60) | No |
