@@ -25,7 +25,7 @@ $ScriptToRun = "👀Hostname Mismatch.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.21.04"
+$LauncherVersion = "2026.01.21.05"
 $LauncherName = "Policy/👀Hostname Mismatch.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -35,6 +35,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # ============================================================
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_nickname}}"
+$DeviceId = "{{level_device_id}}"
 $DeviceTags = "{{level_tag_names}}"
 $policy_sync_hostnames = "{{policy_sync_hostnames}}"
 
@@ -236,6 +237,7 @@ Write-Host "[*] Slim Launcher v$LauncherVersion"
 $LauncherVars = @{
     MspScratchFolder = $MspScratchFolder
     DeviceHostname   = $DeviceHostname
+    DeviceId         = $DeviceId
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts

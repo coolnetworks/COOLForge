@@ -18,7 +18,7 @@
     Designed to run as a daily check script.
 
 .NOTES
-    Version:          2026.01.21.10
+    Version:          2026.01.21.11
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
@@ -43,7 +43,7 @@
 #>
 
 # Hostname Mismatch Monitor
-# Version: 2026.01.21.10
+# Version: 2026.01.21.11
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
@@ -107,6 +107,13 @@ if (-not [string]::IsNullOrWhiteSpace($MspScratchFolder) -and $MspScratchFolder 
     if (-not [string]::IsNullOrWhiteSpace($CachedMspScratch)) {
         $MspScratchFolder = $CachedMspScratch
     }
+}
+
+# Cache DeviceId (level_device_id)
+if (-not [string]::IsNullOrWhiteSpace($DeviceId) -and $DeviceId -notlike "{{*}}") {
+    Set-LevelCacheValue -Name "DeviceId" -Value $DeviceId
+} else {
+    $DeviceId = Get-LevelCacheValue -Name "DeviceId"
 }
 
 # ============================================================
@@ -256,11 +263,10 @@ Invoke-LevelScript -ScriptBlock {
             Write-Host "  Removing stale mismatch tag..."
 
             if ($LevelApiKey) {
-                $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
-                if ($Device) {
+                if ($DeviceId) {
                     $Tag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
                     if ($Tag) {
-                        Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $Tag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                        Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $Tag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
                         Write-LevelLog "Removed $FullTagMismatch tag" -Level "INFO"
                     }
                 }
@@ -292,15 +298,14 @@ Invoke-LevelScript -ScriptBlock {
             return
         }
 
-        $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
-        if (-not $Device) {
-            Write-Host "[!] Cannot find device in Level.io" -ForegroundColor Red
-            Write-LevelLog "Cannot find device '$LevelHostname' in Level.io" -Level "ERROR"
-            Complete-LevelScript -ExitCode 1 -Message "Device not found in Level.io"
+        if (-not $DeviceId) {
+            Write-Host "[!] Device ID not available" -ForegroundColor Red
+            Write-LevelLog "Device ID not available from Level.io" -Level "ERROR"
+            Complete-LevelScript -ExitCode 1 -Message "Device ID not available"
             return
         }
 
-        $RenameResult = Set-LevelDeviceName -ApiKey $LevelApiKey -DeviceId $Device.id -NewName $WindowsHostname
+        $RenameResult = Set-LevelDeviceName -ApiKey $LevelApiKey -DeviceId $DeviceId -NewName $WindowsHostname
 
         if ($RenameResult) {
             Write-Host "[OK] Level.io device renamed successfully" -ForegroundColor Green
@@ -308,14 +313,14 @@ Invoke-LevelScript -ScriptBlock {
             # Remove action tag
             $ActionTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagRenameLevel
             if ($ActionTag) {
-                Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $ActionTag.id -DeviceId $Device.id -TagName $FullTagRenameLevel | Out-Null
+                Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $ActionTag.id -DeviceId $DeviceId -TagName $FullTagRenameLevel | Out-Null
                 Write-LevelLog "Removed action tag: $FullTagRenameLevel"
             }
 
             # Remove mismatch tag
             $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
             if ($MismatchTag) {
-                Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
                 Write-LevelLog "Removed mismatch tag: $FullTagMismatch"
             }
 
@@ -349,26 +354,25 @@ Invoke-LevelScript -ScriptBlock {
             Write-LevelLog "Windows hostname changed to '$LevelHostname' - reboot required" -Level "SUCCESS"
 
             if ($LevelApiKey) {
-                $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
-                if ($Device) {
+                if ($DeviceId) {
                     # Remove action tag
                     $ActionTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagRenameWindows
                     if ($ActionTag) {
-                        Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $ActionTag.id -DeviceId $Device.id -TagName $FullTagRenameWindows | Out-Null
+                        Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $ActionTag.id -DeviceId $DeviceId -TagName $FullTagRenameWindows | Out-Null
                         Write-LevelLog "Removed action tag: $FullTagRenameWindows"
                     }
 
                     # Remove mismatch tag
                     $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
                     if ($MismatchTag) {
-                        Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                        Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
                         Write-LevelLog "Removed mismatch tag: $FullTagMismatch"
                     }
 
                     # Add reboot tag
                     $RebootTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagReboot
                     if ($RebootTag) {
-                        Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $RebootTag.id -DeviceId $Device.id -TagName $FullTagReboot | Out-Null
+                        Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $RebootTag.id -DeviceId $DeviceId -TagName $FullTagReboot | Out-Null
                         Write-LevelLog "Added reboot tag: $FullTagReboot"
                         Write-Host "    Reboot scheduled via automation" -ForegroundColor Cyan
                     } else {
@@ -403,15 +407,14 @@ Invoke-LevelScript -ScriptBlock {
                 return
             }
 
-            $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
-            if (-not $Device) {
-                Write-Host "[!] Cannot find device in Level.io" -ForegroundColor Red
-                Write-LevelLog "Cannot find device '$LevelHostname' in Level.io" -Level "ERROR"
-                Complete-LevelScript -ExitCode 1 -Message "Device not found in Level.io"
+            if (-not $DeviceId) {
+                Write-Host "[!] Device ID not available" -ForegroundColor Red
+                Write-LevelLog "Device ID not available from Level.io" -Level "ERROR"
+                Complete-LevelScript -ExitCode 1 -Message "Device ID not available"
                 return
             }
 
-            $RenameResult = Set-LevelDeviceName -ApiKey $LevelApiKey -DeviceId $Device.id -NewName $WindowsHostname
+            $RenameResult = Set-LevelDeviceName -ApiKey $LevelApiKey -DeviceId $DeviceId -NewName $WindowsHostname
 
             if ($RenameResult) {
                 Write-Host "[OK] Level.io device renamed to '$WindowsHostname'" -ForegroundColor Green
@@ -420,7 +423,7 @@ Invoke-LevelScript -ScriptBlock {
                 # Remove mismatch tag if present
                 $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
                 if ($MismatchTag) {
-                    Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                    Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
                     Write-LevelLog "Removed mismatch tag: $FullTagMismatch"
                 }
 
@@ -432,7 +435,7 @@ Invoke-LevelScript -ScriptBlock {
                 # Set mismatch tag for visibility
                 $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
                 if ($MismatchTag) {
-                    Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                    Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
                 }
 
                 Complete-LevelScript -ExitCode 1 -Message "Failed to auto-sync Level device"
@@ -459,25 +462,22 @@ Invoke-LevelScript -ScriptBlock {
                 Write-Host "    REBOOT REQUIRED for change to take effect" -ForegroundColor Yellow
                 Write-LevelLog "Windows hostname changed to '$LevelHostname' - reboot required" -Level "SUCCESS"
 
-                if ($LevelApiKey) {
-                    $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
-                    if ($Device) {
-                        # Remove mismatch tag
-                        $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
-                        if ($MismatchTag) {
-                            Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
-                            Write-LevelLog "Removed mismatch tag: $FullTagMismatch"
-                        }
+                if ($LevelApiKey -and $DeviceId) {
+                    # Remove mismatch tag
+                    $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
+                    if ($MismatchTag) {
+                        Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
+                        Write-LevelLog "Removed mismatch tag: $FullTagMismatch"
+                    }
 
-                        # Add reboot tag
-                        $RebootTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagReboot
-                        if ($RebootTag) {
-                            Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $RebootTag.id -DeviceId $Device.id -TagName $FullTagReboot | Out-Null
-                            Write-LevelLog "Added reboot tag: $FullTagReboot"
-                            Write-Host "    Reboot scheduled via automation" -ForegroundColor Cyan
-                        } else {
-                            Write-Host "    Note: Reboot tag not found - schedule reboot manually" -ForegroundColor Yellow
-                        }
+                    # Add reboot tag
+                    $RebootTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagReboot
+                    if ($RebootTag) {
+                        Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $RebootTag.id -DeviceId $DeviceId -TagName $FullTagReboot | Out-Null
+                        Write-LevelLog "Added reboot tag: $FullTagReboot"
+                        Write-Host "    Reboot scheduled via automation" -ForegroundColor Cyan
+                    } else {
+                        Write-Host "    Note: Reboot tag not found - schedule reboot manually" -ForegroundColor Yellow
                     }
                 }
 
@@ -499,14 +499,13 @@ Invoke-LevelScript -ScriptBlock {
             Write-Host ""
 
             if ($LevelApiKey) {
-                $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
-                if ($Device) {
+                if ($DeviceId) {
                     # Ensure mismatch tag exists and is applied
                     $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
                     if (-not $MismatchTag) {
                         Write-LevelLog "Mismatch tag '$FullTagMismatch' not found - create it in Level.io" -Level "WARN"
                     } else {
-                        Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                        Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
                         Write-LevelLog "Added mismatch tag: $FullTagMismatch"
                         Write-Host "[*] Mismatch tag applied" -ForegroundColor Yellow
                     }
