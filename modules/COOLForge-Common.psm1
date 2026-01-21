@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.20.01
+    Version:    2026.01.21.01
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -47,6 +47,7 @@ $script:LockFilePath = $null        # Directory containing lockfiles
 $script:LockFile = $null            # Full path to this script's lockfile
 $script:DeviceHostname = $null      # Device hostname for logging
 $script:Initialized = $false        # Flag to ensure initialization
+$script:DebugMode = $false          # Debug mode flag for verbose output
 
 # ============================================================
 # REGISTRY CACHE
@@ -87,6 +88,96 @@ function Reset-ApiCallCount {
 #>
 function Get-LevelCachePath {
     return $script:CacheBasePath
+}
+
+<#
+.SYNOPSIS
+    Displays all cached values in the registry for debug purposes.
+
+.DESCRIPTION
+    Reads all values from the COOLForge registry cache and outputs them
+    in a formatted list. Sensitive values (API keys, tokens, etc.) are
+    masked but their existence is indicated.
+
+.NOTES
+    Sensitive field patterns: apikey, token, pat, secret, password, key (at end)
+#>
+function Show-DebugCacheInfo {
+    [CmdletBinding()]
+    param()
+
+    $path = Get-LevelCachePath
+    if (-not (Test-Path $path)) {
+        Write-Host ""
+        Write-Host "[DEBUG] Registry cache not initialized"
+        return
+    }
+
+    # Patterns that indicate sensitive data
+    $sensitivePatterns = @(
+        'apikey',
+        'api_key',
+        'token',
+        '_pat$',
+        'secret',
+        'password',
+        'credential',
+        '^Protected_'
+    )
+
+    Write-Host ""
+    Write-Host "============================================================"
+    Write-Host "[DEBUG] REGISTRY CACHE CONTENTS"
+    Write-Host "============================================================"
+    Write-Host "Path: $path"
+    Write-Host ""
+
+    try {
+        $props = Get-ItemProperty -Path $path -ErrorAction Stop
+        $values = $props.PSObject.Properties | Where-Object {
+            $_.Name -notin @('PSPath', 'PSParentPath', 'PSChildName', 'PSDrive', 'PSProvider')
+        } | Sort-Object Name
+
+        if ($values.Count -eq 0) {
+            Write-Host "[DEBUG] Cache is empty"
+            return
+        }
+
+        foreach ($prop in $values) {
+            $name = $prop.Name
+            $value = $prop.Value
+
+            # Check if this is a sensitive field
+            $isSensitive = $false
+            foreach ($pattern in $sensitivePatterns) {
+                if ($name -imatch $pattern) {
+                    $isSensitive = $true
+                    break
+                }
+            }
+
+            if ($isSensitive) {
+                if ([string]::IsNullOrWhiteSpace($value)) {
+                    Write-Host "  $name = [SENSITIVE - empty]"
+                } else {
+                    Write-Host "  $name = [SENSITIVE - hidden, length=$($value.Length)]"
+                }
+            } else {
+                # Truncate long values
+                $displayValue = if ($value.Length -gt 100) {
+                    "$($value.Substring(0, 100))... [truncated, length=$($value.Length)]"
+                } else {
+                    $value
+                }
+                Write-Host "  $name = $displayValue"
+            }
+        }
+    } catch {
+        Write-Host "[DEBUG] Failed to read cache: $_"
+    }
+
+    Write-Host "============================================================"
+    Write-Host ""
 }
 
 <#
@@ -572,6 +663,10 @@ function Clear-LevelCache {
 .PARAMETER SkipLockFile
     Switch to skip lockfile creation. Use for scripts that can run concurrently.
 
+.PARAMETER DebugMode
+    When $true, enables debug output including registry cache dump at script completion.
+    Stored as module variable and used automatically by Complete-LevelScript.
+
 .OUTPUTS
     Hashtable with Success, Reason, and additional properties:
     - Success: @{ Success = $true; Reason = "Initialized" }
@@ -623,11 +718,15 @@ function Initialize-LevelScript {
         [switch]$SkipTagCheck,
 
         [Parameter(Mandatory = $false)]
-        [switch]$SkipLockFile
+        [switch]$SkipLockFile,
+
+        [Parameter(Mandatory = $false)]
+        [bool]$DebugMode = $false
     )
 
     # Set module variables
     $script:ScriptName = $ScriptName
+    $script:DebugMode = $DebugMode
     $script:DeviceHostname = $DeviceHostname
     $script:ScratchFolder = $MspScratchFolder
     $script:LockFilePath = Join-Path -Path $MspScratchFolder -ChildPath "lockfiles"
@@ -935,6 +1034,10 @@ function Remove-LevelLockFile {
 .PARAMETER Message
     Final log message. Default: "Script completed"
 
+.PARAMETER DebugMode
+    If $true, outputs registry cache contents before exiting.
+    Sensitive values (API keys, tokens) are masked.
+
 .EXAMPLE
     Complete-LevelScript -ExitCode 0 -Message "All files processed"
 
@@ -947,6 +1050,10 @@ function Remove-LevelLockFile {
         Complete-LevelScript -ExitCode 1 -Message "Operation failed"
     }
 
+.EXAMPLE
+    # With debug mode showing cache contents
+    Complete-LevelScript -ExitCode 0 -Message "Done" -DebugMode $true
+
 .NOTES
     This function calls exit, so code after it will not execute.
 #>
@@ -957,11 +1064,21 @@ function Complete-LevelScript {
         [int]$ExitCode = 0,
 
         [Parameter(Mandatory = $false)]
-        [string]$Message = "Script completed"
+        [string]$Message = "Script completed",
+
+        [Parameter(Mandatory = $false)]
+        [Nullable[bool]]$DebugMode = $null
     )
 
     $Level = if ($ExitCode -eq 0) { "SUCCESS" } else { "ERROR" }
     Write-LevelLog $Message -Level $Level
+
+    # Show cache contents in debug mode (use module variable if not explicitly passed)
+    $showDebug = if ($null -ne $DebugMode) { $DebugMode } else { $script:DebugMode }
+    if ($showDebug) {
+        Show-DebugCacheInfo
+    }
+
     Remove-LevelLockFile
     exit $ExitCode
 }
@@ -3041,6 +3158,8 @@ function Set-LevelDeviceName {
 
     if ($Result.Success) {
         Write-LevelLog "Device renamed successfully to '$NewName'" -Level "SUCCESS"
+        # Update local cache so subsequent script runs see the new name
+        Set-LevelCacheValue -Name "DeviceHostname" -Value $NewName
         return $true
     } else {
         Write-LevelLog "Failed to rename device: $($Result.Error)" -Level "ERROR"
@@ -3906,6 +4025,8 @@ function Set-LevelCustomFieldValue {
 
     if ($Result.Success) {
         Write-LevelLog "Set $EntityType custom field '$FieldReference' = '$Value'" -Level "DEBUG"
+        # Update local cache so subsequent script runs see the new value
+        Set-LevelCacheValue -Name $FieldReference -Value $Value
         return $true
     }
     else {
@@ -6732,7 +6853,7 @@ $ScriptContent
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.20.01"
+$script:ModuleVersion = "2026.01.21.01"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
@@ -6840,6 +6961,12 @@ Export-ModuleMember -Function @(
     'Write-DebugTags',
     'Write-DebugPolicy',
     'Write-DebugTagManagement',
+    'Show-DebugCacheInfo',
+
+    # Registry Cache (for fallback when Level.io values unavailable)
+    'Get-LevelCacheValue',
+    'Set-LevelCacheValue',
+    'Get-LevelCachePath',
 
     'Get-CompanyNameFromPath',
 

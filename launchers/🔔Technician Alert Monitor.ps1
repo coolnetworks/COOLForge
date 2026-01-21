@@ -1,7 +1,7 @@
-﻿# ============================================================
+# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "🔔Technician Alert Monitor.ps1"
+$ScriptToRun = "??Technician Alert Monitor.ps1"
 <#
 .SYNOPSIS
     Slim Level.io Launcher for [DEPRECATED] Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
@@ -18,7 +18,7 @@ $ScriptToRun = "🔔Technician Alert Monitor.ps1"
 #>
 
 $LauncherVersion = "2026.01.20.02"
-$LauncherName = "🔔Technician Alert Monitor.ps1"
+$LauncherName = "??Technician Alert Monitor.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -195,14 +195,14 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
     if ($RepoVersion -and ([version]$RepoVersion -gt [version]$LauncherVersion)) {
         Write-Host ""
-        Write-Host "[Alert] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion"
-        Write-Host "[Alert] Update this script in Level.io from: launchers/$LauncherName"
+        Write-Host "[!] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion"
+        Write-Host "[!] Update this script in Level.io from: launchers/$LauncherName"
         Write-Host ""
     }
 } catch {

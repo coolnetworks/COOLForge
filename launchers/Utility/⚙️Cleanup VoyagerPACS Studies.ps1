@@ -1,7 +1,7 @@
-﻿# ============================================================
+# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "⚙️Cleanup VoyagerPACS Studies.ps1"
+$ScriptToRun = "??Cleanup VoyagerPACS Studies.ps1"
 <#
 .SYNOPSIS
     Slim Level.io Launcher for VoyagerPACS Studies Cleanup
@@ -25,7 +25,7 @@ $ScriptToRun = "⚙️Cleanup VoyagerPACS Studies.ps1"
 #>
 
 $LauncherVersion = "2026.01.20.01"
-$LauncherName = "Utility/⚙️Cleanup VoyagerPACS Studies.ps1"
+$LauncherName = "Utility/??Cleanup VoyagerPACS Studies.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -197,14 +197,14 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
     if ($RepoVersion -and ([version]$RepoVersion -gt [version]$LauncherVersion)) {
         Write-Host ""
-        Write-Host "[Alert] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion"
-        Write-Host "[Alert] Update this script in Level.io from: launchers/$LauncherName"
+        Write-Host "[!] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion"
+        Write-Host "[!] Update this script in Level.io from: launchers/$LauncherName"
         Write-Host ""
     }
 } catch {

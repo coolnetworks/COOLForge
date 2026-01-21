@@ -18,7 +18,7 @@
     Designed to run as a daily check script.
 
 .NOTES
-    Version:          2026.01.21.11
+    Version:          2026.01.21.13
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
@@ -43,7 +43,7 @@
 #>
 
 # Hostname Mismatch Monitor
-# Version: 2026.01.21.11
+# Version: 2026.01.21.13
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
@@ -140,7 +140,8 @@ $Init = Initialize-LevelScript -ScriptName "HostnameMismatch" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
                                -DeviceTags $DeviceTags `
-                               -SkipTagCheck
+                               -SkipTagCheck `
+                               -DebugMode $DebugScripts
 
 if (-not $Init.Success) {
     exit 0
@@ -246,7 +247,7 @@ Invoke-LevelScript -ScriptBlock {
     # Validate we have Level hostname
     if ([string]::IsNullOrWhiteSpace($LevelHostname)) {
         Write-LevelLog "Level.io device hostname not available (launcher and cache empty)" -Level "WARN"
-        Write-Host "[!] Cannot determine Level.io device name - skipping check"
+        Write-Host "[Alert] Cannot determine Level.io device name - skipping check"
         Complete-LevelScript -ExitCode 0 -Message "Level hostname not available"
         return
     }
@@ -278,7 +279,7 @@ Invoke-LevelScript -ScriptBlock {
     }
 
     # Mismatch detected
-    Write-Host "[!!] HOSTNAME MISMATCH DETECTED" -ForegroundColor Yellow
+    Write-Host "[Alert] Hostname mismatch: Windows='$WindowsHostname' Level='$LevelHostname'" -ForegroundColor Yellow
     Write-LevelLog "Hostname mismatch: Windows='$WindowsHostname' Level='$LevelHostname'" -Level "WARN"
 
     # Check for action tags
@@ -292,14 +293,14 @@ Invoke-LevelScript -ScriptBlock {
         Write-LevelLog "Action tag found: Renaming Level device to '$WindowsHostname'"
 
         if (-not $LevelApiKey) {
-            Write-Host "[!] Cannot rename: No API key available" -ForegroundColor Red
+            Write-Host "[Alert] Cannot rename: No API key available" -ForegroundColor Red
             Write-LevelLog "Cannot rename Level device: No API key" -Level "ERROR"
             Complete-LevelScript -ExitCode 1 -Message "No API key for rename"
             return
         }
 
         if (-not $DeviceId) {
-            Write-Host "[!] Device ID not available" -ForegroundColor Red
+            Write-Host "[Alert] Device ID not available" -ForegroundColor Red
             Write-LevelLog "Device ID not available from Level.io" -Level "ERROR"
             Complete-LevelScript -ExitCode 1 -Message "Device ID not available"
             return
@@ -326,7 +327,7 @@ Invoke-LevelScript -ScriptBlock {
 
             Complete-LevelScript -ExitCode 0 -Message "Level device renamed to $WindowsHostname"
         } else {
-            Write-Host "[!] Failed to rename Level.io device" -ForegroundColor Red
+            Write-Host "[Alert] Failed to rename Level.io device" -ForegroundColor Red
             Complete-LevelScript -ExitCode 1 -Message "Failed to rename Level device"
         }
         return
@@ -340,7 +341,7 @@ Invoke-LevelScript -ScriptBlock {
 
         # Validate the Level hostname is valid for Windows
         if (-not (Test-ValidWindowsHostname -Name $LevelHostname)) {
-            Write-Host "[!] Invalid Windows hostname: '$LevelHostname'" -ForegroundColor Red
+            Write-Host "[Alert] Invalid Windows hostname: '$LevelHostname'" -ForegroundColor Red
             Write-Host "    Windows hostnames must be 1-15 characters, alphanumeric/hyphens only"
             Write-LevelLog "Cannot rename Windows: '$LevelHostname' is not a valid hostname" -Level "ERROR"
             Complete-LevelScript -ExitCode 1 -Message "Invalid hostname for Windows"
@@ -384,7 +385,7 @@ Invoke-LevelScript -ScriptBlock {
             Complete-LevelScript -ExitCode 0 -Message "Windows renamed to $LevelHostname (reboot required)"
         }
         catch {
-            Write-Host "[!] Failed to rename Windows hostname: $_" -ForegroundColor Red
+            Write-Host "[Alert] Failed to rename Windows hostname: $_" -ForegroundColor Red
             Write-LevelLog "Failed to rename Windows: $_" -Level "ERROR"
             Complete-LevelScript -ExitCode 1 -Message "Failed to rename Windows"
         }
@@ -401,14 +402,14 @@ Invoke-LevelScript -ScriptBlock {
             Write-LevelLog "Policy=AutoHostname: Renaming Level device to '$WindowsHostname'"
 
             if (-not $LevelApiKey) {
-                Write-Host "[!] Cannot auto-sync: No API key available" -ForegroundColor Red
+                Write-Host "[Alert] Cannot auto-sync: No API key available" -ForegroundColor Red
                 Write-LevelLog "Cannot auto-sync Level device: No API key" -Level "ERROR"
                 Complete-LevelScript -ExitCode 1 -Message "No API key for auto-sync"
                 return
             }
 
             if (-not $DeviceId) {
-                Write-Host "[!] Device ID not available" -ForegroundColor Red
+                Write-Host "[Alert] Device ID not available" -ForegroundColor Red
                 Write-LevelLog "Device ID not available from Level.io" -Level "ERROR"
                 Complete-LevelScript -ExitCode 1 -Message "Device ID not available"
                 return
@@ -429,7 +430,7 @@ Invoke-LevelScript -ScriptBlock {
 
                 Complete-LevelScript -ExitCode 0 -Message "Auto-synced Level device to $WindowsHostname"
             } else {
-                Write-Host "[!] Failed to rename Level.io device" -ForegroundColor Red
+                Write-Host "[Alert] Failed to rename Level.io device" -ForegroundColor Red
                 Write-LevelLog "Auto-sync failed: Could not rename Level device" -Level "ERROR"
 
                 # Set mismatch tag for visibility
@@ -449,7 +450,7 @@ Invoke-LevelScript -ScriptBlock {
 
             # Validate the Level hostname is valid for Windows
             if (-not (Test-ValidWindowsHostname -Name $LevelHostname)) {
-                Write-Host "[!] Invalid Windows hostname: '$LevelHostname'" -ForegroundColor Red
+                Write-Host "[Alert] Invalid Windows hostname: '$LevelHostname'" -ForegroundColor Red
                 Write-Host "    Windows hostnames must be 1-15 characters, alphanumeric/hyphens only"
                 Write-LevelLog "Cannot rename Windows: '$LevelHostname' is not a valid hostname" -Level "ERROR"
                 Complete-LevelScript -ExitCode 1 -Message "Invalid hostname for Windows"
@@ -484,7 +485,7 @@ Invoke-LevelScript -ScriptBlock {
                 Complete-LevelScript -ExitCode 0 -Message "Windows renamed to $LevelHostname (reboot required)"
             }
             catch {
-                Write-Host "[!] Failed to rename Windows hostname: $_" -ForegroundColor Red
+                Write-Host "[Alert] Failed to rename Windows hostname: $_" -ForegroundColor Red
                 Write-LevelLog "Failed to rename Windows: $_" -Level "ERROR"
                 Complete-LevelScript -ExitCode 1 -Message "Failed to rename Windows"
             }
