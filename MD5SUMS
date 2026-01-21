@@ -598,7 +598,7 @@ fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.
 191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
 3940425d5ebc2db1f052a9d85affd944  scripts/Check/👀debug.ps1
-09f757183b1278f83c978c56aa6b8916  scripts/Check/👀Hostname Mismatch.ps1
+2ab5231dd9f7dc5d63df661e37fd836f  scripts/Check/👀Hostname Mismatch.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
 91317d2da2cf6ea934807bb3f598496b  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
