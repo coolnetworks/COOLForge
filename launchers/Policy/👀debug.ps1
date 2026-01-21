@@ -17,7 +17,7 @@ $ScriptToRun = "👀debug.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
+$LauncherVersion = "2026.01.21.01"
 $LauncherName = "Policy/👀debug.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -28,6 +28,18 @@ $ErrorActionPreference = "SilentlyContinue"
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
+
+# ALL Level.io System Variables (for debug output)
+$LevelDeviceId = "{{level_device_id}}"
+$LevelDeviceHostname = "{{level_device_hostname}}"
+$LevelDeviceNickname = "{{level_device_nickname}}"
+$LevelDevicePublicIp = "{{level_device_public_ip_address}}"
+$LevelDevicePrivateIps = "{{level_device_private_ip_addresses}}"
+$LevelGroupId = "{{level_group_id}}"
+$LevelGroupName = "{{level_group_name}}"
+$LevelGroupPath = "{{level_group_path}}"
+$LevelTagNames = "{{level_tag_names}}"
+$LevelTagIds = "{{level_tag_ids}}"
 
 $GitHubPAT = @'
 {{cf_coolforge_pat}}
@@ -230,6 +242,17 @@ $LauncherVars = @{
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
     LibraryUrl       = $LibraryUrl
+    # All Level.io System Variables
+    LevelDeviceId         = $LevelDeviceId
+    LevelDeviceHostname   = $LevelDeviceHostname
+    LevelDeviceNickname   = $LevelDeviceNickname
+    LevelDevicePublicIp   = $LevelDevicePublicIp
+    LevelDevicePrivateIps = $LevelDevicePrivateIps
+    LevelGroupId          = $LevelGroupId
+    LevelGroupName        = $LevelGroupName
+    LevelGroupPath        = $LevelGroupPath
+    LevelTagNames         = $LevelTagNames
+    LevelTagIds           = $LevelTagIds
 }
 
 # Add policy variables

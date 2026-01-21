@@ -16,7 +16,7 @@
     - ❌DEBUG = Skip (hands off)
 
 .NOTES
-    Version:          2026.01.01.03
+    Version:          2026.01.21.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -33,7 +33,7 @@
 #>
 
 # Debug Policy Check Script
-# Version: 2026.01.01.03
+# Version: 2026.01.21.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -96,8 +96,43 @@ if (-not $Init.Success) {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.01.03"
+$ScriptVersion = "2026.01.21.01"
 $InvokeParams = @{ ScriptBlock = {
+
+    Write-LevelLog "Debug Script (v$ScriptVersion)"
+
+    # ============================================================
+    # DUMP ALL LEVEL.IO SYSTEM VARIABLES
+    # ============================================================
+    Write-Host ""
+    Write-LevelLog "========================================" -Level "INFO"
+    Write-LevelLog "LEVEL.IO SYSTEM VARIABLES" -Level "INFO"
+    Write-LevelLog "========================================" -Level "INFO"
+    Write-Host ""
+
+    $LevelVars = @(
+        @{ Name = "LevelDeviceId";         Desc = "Device ID" }
+        @{ Name = "LevelDeviceHostname";   Desc = "Device Hostname (detected)" }
+        @{ Name = "LevelDeviceNickname";   Desc = "Device Nickname (display name)" }
+        @{ Name = "LevelDevicePublicIp";   Desc = "Public IP" }
+        @{ Name = "LevelDevicePrivateIps"; Desc = "Private IPs" }
+        @{ Name = "LevelGroupId";          Desc = "Group ID" }
+        @{ Name = "LevelGroupName";        Desc = "Group Name" }
+        @{ Name = "LevelGroupPath";        Desc = "Group Path" }
+        @{ Name = "LevelTagNames";         Desc = "Tag Names" }
+        @{ Name = "LevelTagIds";           Desc = "Tag IDs" }
+    )
+
+    foreach ($v in $LevelVars) {
+        $Value = Get-Variable -Name $v.Name -ValueOnly -ErrorAction SilentlyContinue
+        $Display = if ([string]::IsNullOrWhiteSpace($Value) -or $Value -like "{{*}}") { "(not set)" } else { $Value }
+        Write-Host ("  {0,-30} : {1}" -f $v.Desc, $Display)
+    }
+
+    Write-Host ""
+    Write-LevelLog "========================================" -Level "INFO"
+    Write-LevelLog "POLICY CHECK TEST" -Level "INFO"
+    Write-LevelLog "========================================" -Level "INFO"
 
     Write-LevelLog "Policy Check Script (v$ScriptVersion)"
     Write-LevelLog "Install Mode: $InstallMode"

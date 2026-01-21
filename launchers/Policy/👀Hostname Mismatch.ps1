@@ -25,7 +25,7 @@ $ScriptToRun = "👀Hostname Mismatch.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.21.03"
+$LauncherVersion = "2026.01.21.04"
 $LauncherName = "Policy/👀Hostname Mismatch.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -34,7 +34,7 @@ $ErrorActionPreference = "SilentlyContinue"
 # LEVEL.IO VARIABLES
 # ============================================================
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-$DeviceHostname = "{{level_device_hostname}}"
+$DeviceHostname = "{{level_device_nickname}}"
 $DeviceTags = "{{level_tag_names}}"
 $policy_sync_hostnames = "{{policy_sync_hostnames}}"
 

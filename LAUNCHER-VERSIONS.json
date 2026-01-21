@@ -4,7 +4,7 @@
   "description": "Current launcher versions - launchers check this to detect when they need updating in Level.io",
   "launchers": {
     "Policy/👀chrome.ps1": "2026.01.20.02",
-    "Policy/👀debug.ps1": "2026.01.20.02",
+    "Policy/👀debug.ps1": "2026.01.21.01",
     "Policy/👀dnsfilter.ps1": "2026.01.20.02",
     "Policy/👀huntress.ps1": "2026.01.20.02",
     "Policy/👀meshcentral.ps1": "2026.01.20.02",
@@ -20,7 +20,7 @@
     "⛔Force Remove Non MSP ScreenConnect.ps1": "2026.01.20.02",
     "👀Check DNS Server Compliance.ps1": "2026.01.20.02",
     "👀Check for Unauthorized Remote Access Tools.ps1": "2026.01.20.02",
-    "Policy/👀Hostname Mismatch.ps1": "2026.01.21.03",
+    "Policy/👀Hostname Mismatch.ps1": "2026.01.21.04",
     "👀Test Show Versions.ps1": "2026.01.20.02",
     "👀Test Variable Output.ps1": "2026.01.20.02",
     "🔔Technician Alert Monitor.ps1": "2026.01.20.02",

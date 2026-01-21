@@ -556,9 +556,9 @@ d5b4ded9659d35360db4dc7c4fd3b59f  docs/scripts/Test-Variable-Output.md
 02df6545a4423a4179380f89581f0b74  launchers/Policy/Chrome/👀Chrome Location Services.ps1
 99c54cfd86bb374a7be4ae2a98e9303b  launchers/Policy/Windows/👀Windows Location Services.ps1
 c3b2f8421fb6493a76ab54f0dfbcb28e  launchers/Policy/👀chrome.ps1
-7581e266fbab797baaa9c2a428d06ca3  launchers/Policy/👀debug.ps1
+163f2882cdff24856fd6205ca4c19ecf  launchers/Policy/👀debug.ps1
 a679b7dca2a5b2848a43b0d5c3229033  launchers/Policy/👀dnsfilter.ps1
-32e81eed7e6b52378df6a1166456039f  launchers/Policy/👀Hostname Mismatch.ps1
+9caa58f7000a16b23b3550895182c232  launchers/Policy/👀Hostname Mismatch.ps1
 3aa84bd6b3f977c4020f893d278be5aa  launchers/Policy/👀huntress.ps1
 1326f24635593a44302765b884fd30e8  launchers/Policy/👀meshcentral.ps1
 1badda47fcbebda131c97fcac7b704a4  launchers/Policy/👀screenconnect.ps1
@@ -597,7 +597,7 @@ dec00fbcc15ae5f1bbd36b2d5e926109  pre-release/Update-ScriptInventory.ps1
 fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.ps1
 191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
-3940425d5ebc2db1f052a9d85affd944  scripts/Check/👀debug.ps1
+66dee256530be177a1fe5293bc8298be  scripts/Check/👀debug.ps1
 ea3aca07a788d55fa55a7faa9547a8da  scripts/Check/👀Hostname Mismatch.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
