@@ -1709,6 +1709,10 @@ function Get-EmojiBytePatterns {
         Eyes      = [char]::ConvertFromUtf32(0x1F440)
         Apple     = [char]::ConvertFromUtf32(0x1F34E)
         Technician = [char]::ConvertFromUtf32(0x1F9D1) + [char]0x200D + [char]::ConvertFromUtf32(0x1F4BB)
+        Warning   = [char]0x26A0 + [char]0xFE0F                                              # U+26A0 + variation selector
+        Gear      = [char]::ConvertFromUtf32(0x2699) + [char]0xFE0F                          # U+2699 Gear
+        Bell      = [char]::ConvertFromUtf32(0x1F514)                                        # U+1F514 Bell
+        Stop      = [char]::ConvertFromUtf32(0x26D4)                                         # U+26D4 No Entry (alias)
     }
 }
 
