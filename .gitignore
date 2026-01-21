@@ -32,5 +32,6 @@ ScreenConnectUrls_*.csv
 
 # Private notes (API questions, support tickets, etc.)
 LEVEL-SUPPORT-QUESTIONS.md
+LEVEL-SUPPORT-SUBMITTED.md
 NEEDS_TESTING.md
 MEETING*.md

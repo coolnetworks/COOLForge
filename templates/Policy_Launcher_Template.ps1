@@ -272,6 +272,10 @@ else {
 # Attempt to fetch the latest version from GitHub
 try {
     $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
+    # Strip UTF-8 BOM if present (shows as ? when downloaded via Invoke-WebRequest)
+    if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
+        $RemoteContent = $RemoteContent.Substring(1)
+    }
     $RemoteVersion = Get-ModuleVersion -Content $RemoteContent -Source "remote URL"
 
     if ($null -eq $LocalVersion -or [version]$RemoteVersion -gt [version]$LocalVersion) {
@@ -286,7 +290,8 @@ try {
             Set-Content -Path $BackupPath -Value $LocalContent -Force -ErrorAction Stop
         }
 
-        Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
+        # Save with proper UTF-8 BOM for emoji handling
+        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, [System.Text.UTF8Encoding]::new($true))
 
         try {
             $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
@@ -527,6 +532,10 @@ else {
 # Download script from GitHub
 try {
     $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15).Content
+    # Strip UTF-8 BOM if present
+    if ($RemoteScriptContent.StartsWith([char]0xFEFF) -or $RemoteScriptContent.StartsWith('?')) {
+        $RemoteScriptContent = $RemoteScriptContent.Substring(1)
+    }
 
     # Try to get version, but don't require it for scripts
     try {
@@ -550,8 +559,8 @@ try {
             Set-Content -Path $ScriptBackupPath -Value $LocalScriptContent -Force -ErrorAction Stop
         }
 
-        # Write new version
-        Set-Content -Path $ScriptPath -Value $RemoteScriptContent -Force -ErrorAction Stop
+        # Write new version with proper UTF-8 BOM for emoji handling
+        [System.IO.File]::WriteAllText($ScriptPath, $RemoteScriptContent, [System.Text.UTF8Encoding]::new($true))
 
         # Verify the file was written correctly
         try {
