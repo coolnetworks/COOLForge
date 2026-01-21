@@ -90,10 +90,10 @@ $TagRenameLevel = "Rename Level to Hostname"
 $TagRenameWindows = "Rename Hostname to Level"
 $TagReboot = "REBOOT TONIGHT"
 
-# Emoji prefixes for tag operations
-$EmojiWarning = [char]0x26A0 + [char]0xFE0F  # Warning sign
-$EmojiFix = [char]0x1F527                     # Wrench
-$EmojiReboot = [char]0x1F64F + [char]0x1F504  # Pray + arrows (matching existing)
+# Emoji prefixes for tag operations (use ConvertFromUtf32 for code points > 0xFFFF)
+$EmojiWarning = [char]0x26A0 + [char]0xFE0F                                        # U+26A0 Warning sign
+$EmojiFix = [char]::ConvertFromUtf32(0x1F527)                                      # U+1F527 Wrench
+$EmojiReboot = [char]::ConvertFromUtf32(0x1F64F) + [char]::ConvertFromUtf32(0x1F504)  # U+1F64F Pray + U+1F504 Arrows
 
 # Full tag names
 $FullTagMismatch = "$EmojiWarning$TagMismatch"
