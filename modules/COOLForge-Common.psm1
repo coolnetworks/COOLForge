@@ -6441,6 +6441,7 @@ function Get-ScriptPathFromMD5 {
         Resolves full script path from MD5SUMS content.
     .DESCRIPTION
         Searches MD5SUMS for a path ending with the given ScriptName.
+        Only searches in the scripts/ folder (not launchers/).
         Supports both simple filenames and partial paths for disambiguation.
         Examples:
           - "unchecky.ps1" matches "scripts/unchecky.ps1"
@@ -6462,6 +6463,8 @@ function Get-ScriptPathFromMD5 {
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
             $FilePath = $Matches[2].Trim()
+            # Only look in scripts/ folder (not launchers/, modules/, etc.)
+            if ($FilePath -notlike "scripts/*") { continue }
             $MatchCount++
             # Check if path ends with the search pattern (supports partial paths)
             if ($FilePath -like "*/$SearchPattern" -or $FilePath -eq $SearchPattern) {
@@ -6470,7 +6473,7 @@ function Get-ScriptPathFromMD5 {
             }
         }
     }
-    Write-Host "[DEBUG MD5] Checked $MatchCount entries, no match for '*/$SearchPattern'"
+    Write-Host "[DEBUG MD5] Checked $MatchCount script entries, no match for '*/$SearchPattern'"
     return $null
 }
 
