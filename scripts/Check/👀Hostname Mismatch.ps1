@@ -106,7 +106,7 @@ $Init = Initialize-LevelScript -ScriptName "HostnameMismatch" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
                                -DeviceTags $DeviceTags `
-                               -SkipTagGate
+                               -SkipTagCheck
 
 if (-not $Init.Success) {
     exit 0

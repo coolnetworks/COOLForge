@@ -25,8 +25,8 @@ $ScriptToRun = "👀Hostname Mismatch.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.21.02"
-$LauncherName = "👀Hostname Mismatch.ps1"
+$LauncherVersion = "2026.01.21.03"
+$LauncherName = "Policy/👀Hostname Mismatch.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -219,18 +219,32 @@ try {
 }
 
 # ============================================================
+# COLLECT POLICY VARIABLES
+# ============================================================
+$PolicyVars = @{}
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
+        $PolicyVars[$_.Name] = $_.Value
+    }
+}
+
+# ============================================================
 # EXECUTE SCRIPT
 # ============================================================
 Write-Host "[*] Slim Launcher v$LauncherVersion"
 
 $LauncherVars = @{
-    MspScratchFolder     = $MspScratchFolder
-    DeviceHostname       = $DeviceHostname
-    DeviceTags           = $DeviceTags
-    LevelApiKey          = $LevelApiKey
-    DebugScripts         = $DebugScripts
-    LibraryUrl           = $LibraryUrl
-    policy_sync_hostnames = $policy_sync_hostnames
+    MspScratchFolder = $MspScratchFolder
+    DeviceHostname   = $DeviceHostname
+    DeviceTags       = $DeviceTags
+    LevelApiKey      = $LevelApiKey
+    DebugScripts     = $DebugScripts
+    LibraryUrl       = $LibraryUrl
+}
+
+# Add policy variables
+foreach ($key in $PolicyVars.Keys) {
+    $LauncherVars[$key] = $PolicyVars[$key]
 }
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
