@@ -1,33 +1,44 @@
 <#
 .SYNOPSIS
-    Detects and optionally resolves hostname mismatches between Level.io and Windows.
+    Policy script for hostname synchronization between Level.io and Windows.
 
 .DESCRIPTION
-    Compares the Level.io device name with the Windows hostname ($env:COMPUTERNAME).
-    If they differ:
-    - Sets the "HOSTNAME MISMATCH" warning tag
-    - If an action tag is present, performs the rename:
-      - "Rename Level to Hostname" -> Updates Level.io device name to match Windows
-      - "Rename Hostname to Level" -> Renames Windows computer to match Level.io
+    Implements hostname sync policy using the custom field: policy_sync_hostnames
 
-    Designed to run as a daily policy script to catch hostname drift.
+    POLICY VALUES:
+    - "yes" / "enable" / "on"  = Auto-sync Level device name to Windows hostname
+    - "no" / "disable" / "off" = Disabled - script does nothing
+    - "pin" / "lock"           = Report only - detect but don't modify anything
+    - "" (empty)               = Same as "yes" (active by default)
+
+    BEHAVIOR:
+    - When enabled: Detects mismatch, auto-renames Level device to match Windows
+    - When pinned: Detects mismatch, sets warning tag, but no auto-rename
+    - When disabled: Exits immediately, no checks performed
+
+    MANUAL OVERRIDE TAGS:
+    - "Rename Level to Hostname" -> Updates Level.io device name to match Windows
+    - "Rename Hostname to Level" -> Renames Windows computer to match Level.io
+      (Windows rename requires reboot)
+
+    Designed to run as a daily policy script to maintain hostname consistency.
 
 .NOTES
-    Version:          2026.01.21.04
+    Version:          2026.01.21.05
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
 
     Level.io Variables Used (passed from Script Launcher):
-    - $MspScratchFolder  : MSP-defined scratch folder for persistent storage
-    - $DeviceHostname    : Device hostname from Level.io
-    - $DeviceTags        : Comma-separated list of device tags
-    - $LevelApiKey       : Level.io API key for tag/device operations
+    - $MspScratchFolder      : MSP-defined scratch folder for persistent storage
+    - $DeviceHostname        : Device hostname from Level.io
+    - $DeviceTags            : Comma-separated list of device tags
+    - $LevelApiKey           : Level.io API key for tag/device operations
+    - $policy_sync_hostnames : Policy value (yes/no/pin/empty)
 
-    Tags Used:
-    - Warning tag set when mismatch detected
-    - Action tag "Rename Level to Hostname" - rename Level device to Windows name
-    - Action tag "Rename Hostname to Level" - rename Windows to Level name
+    Tags Created Automatically:
+    - Warning tag for hostname mismatch detection
+    - Action tags for manual override control
     - Reboot tag set after Windows hostname change
 
     Copyright (c) COOLNETWORKS
@@ -37,13 +48,39 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# Hostname Mismatch Detection
-# Version: 2026.01.21.04
+# Hostname Sync Policy
+# Version: 2026.01.21.05
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
 # Copyright (c) COOLNETWORKS
 # https://github.com/coolnetworks/COOLForge
+
+# ============================================================
+# POLICY CONFIGURATION
+# ============================================================
+$PolicyFieldName = "policy_sync_hostnames"
+
+# Get policy value from custom field (passed from launcher)
+$PolicyValue = Get-Variable -Name $PolicyFieldName -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($PolicyValue) -or $PolicyValue -like "{{*}}") {
+    $PolicyValue = ""
+}
+$PolicyValue = $PolicyValue.Trim().ToLower()
+
+# Parse policy value
+$PolicyAction = switch ($PolicyValue) {
+    { $_ -in @("yes", "enable", "on", "true", "1", "") } { "Enable" }
+    { $_ -in @("no", "disable", "off", "false", "0") } { "Disable" }
+    { $_ -in @("pin", "lock", "freeze", "hold", "report") } { "Pin" }
+    default { "Enable" }  # Unknown values default to enabled
+}
+
+# Handle disabled policy - exit immediately
+if ($PolicyAction -eq "Disable") {
+    Write-Host "[*] Hostname sync policy is disabled"
+    exit 0
+}
 
 # ============================================================
 # TAG DEFINITIONS
@@ -123,6 +160,7 @@ function Find-TagInList {
 Invoke-LevelScript -ScriptBlock {
 
     Write-LevelLog "Starting Hostname Mismatch Check"
+    Write-Host "  Policy Mode: $PolicyAction"
 
     # ============================================================
     # AUTO-BOOTSTRAP: Create required tags if they don't exist
@@ -332,28 +370,79 @@ Invoke-LevelScript -ScriptBlock {
         return
     }
 
-    # No action tag - just set the mismatch warning tag
-    Write-Host ""
-    Write-Host "  No action tag found - setting mismatch warning tag"
-    Write-Host "  To resolve, apply one of these tags to the device:"
-    Write-Host "    - $FullTagRenameLevel  (rename Level.io to match Windows)"
-    Write-Host "    - $FullTagRenameWindows (rename Windows to match Level.io)"
+    # No action tag - behavior depends on policy
     Write-Host ""
 
-    if ($LevelApiKey) {
+    if ($PolicyAction -eq "Enable") {
+        # Auto-sync: Rename Level.io device to match Windows hostname
+        Write-Host "  Policy Action: Auto-syncing Level.io device name to Windows hostname" -ForegroundColor Cyan
+        Write-LevelLog "Policy=Enable: Auto-renaming Level device to '$WindowsHostname'"
+
+        if (-not $LevelApiKey) {
+            Write-Host "[!] Cannot auto-sync: No API key available" -ForegroundColor Red
+            Write-LevelLog "Cannot auto-sync Level device: No API key" -Level "ERROR"
+            Complete-LevelScript -ExitCode 1 -Message "No API key for auto-sync"
+            return
+        }
+
         $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
-        if ($Device) {
-            # Ensure mismatch tag exists and is applied
+        if (-not $Device) {
+            Write-Host "[!] Cannot find device in Level.io" -ForegroundColor Red
+            Write-LevelLog "Cannot find device '$LevelHostname' in Level.io" -Level "ERROR"
+            Complete-LevelScript -ExitCode 1 -Message "Device not found in Level.io"
+            return
+        }
+
+        $RenameResult = Set-LevelDeviceName -ApiKey $LevelApiKey -DeviceId $Device.id -NewName $WindowsHostname
+
+        if ($RenameResult) {
+            Write-Host "[OK] Level.io device renamed to '$WindowsHostname'" -ForegroundColor Green
+            Write-LevelLog "Auto-sync: Level device renamed to '$WindowsHostname'" -Level "SUCCESS"
+
+            # Remove mismatch tag if present
             $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
-            if (-not $MismatchTag) {
-                Write-LevelLog "Mismatch tag '$FullTagMismatch' not found - create it in Level.io" -Level "WARN"
-            } else {
-                Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
-                Write-LevelLog "Added mismatch tag: $FullTagMismatch"
-                Write-Host "[*] Mismatch tag applied" -ForegroundColor Yellow
+            if ($MismatchTag) {
+                Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                Write-LevelLog "Removed mismatch tag: $FullTagMismatch"
             }
+
+            Complete-LevelScript -ExitCode 0 -Message "Auto-synced Level device to $WindowsHostname"
+        } else {
+            Write-Host "[!] Failed to rename Level.io device" -ForegroundColor Red
+            Write-LevelLog "Auto-sync failed: Could not rename Level device" -Level "ERROR"
+
+            # Set mismatch tag for visibility
+            $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
+            if ($MismatchTag) {
+                Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+            }
+
+            Complete-LevelScript -ExitCode 1 -Message "Failed to auto-sync Level device"
         }
     }
+    else {
+        # Pin mode: Report only - set mismatch tag but don't auto-rename
+        Write-Host "  Policy Mode: Pin (report only - no auto-rename)"
+        Write-Host "  To resolve, apply one of these tags to the device:"
+        Write-Host "    - $FullTagRenameLevel  (rename Level.io to match Windows)"
+        Write-Host "    - $FullTagRenameWindows (rename Windows to match Level.io)"
+        Write-Host ""
 
-    Complete-LevelScript -ExitCode 0 -Message "Mismatch detected: Windows='$WindowsHostname' Level='$LevelHostname'"
+        if ($LevelApiKey) {
+            $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $LevelHostname
+            if ($Device) {
+                # Ensure mismatch tag exists and is applied
+                $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
+                if (-not $MismatchTag) {
+                    Write-LevelLog "Mismatch tag '$FullTagMismatch' not found - create it in Level.io" -Level "WARN"
+                } else {
+                    Add-LevelTagToDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $Device.id -TagName $FullTagMismatch | Out-Null
+                    Write-LevelLog "Added mismatch tag: $FullTagMismatch"
+                    Write-Host "[*] Mismatch tag applied" -ForegroundColor Yellow
+                }
+            }
+        }
+
+        Complete-LevelScript -ExitCode 0 -Message "Mismatch detected (pinned): Windows='$WindowsHostname' Level='$LevelHostname'"
+    }
 }
