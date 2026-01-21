@@ -18,7 +18,7 @@
     Designed to run as a daily check script.
 
 .NOTES
-    Version:          2026.01.21.07
+    Version:          2026.01.21.08
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
@@ -43,7 +43,7 @@
 #>
 
 # Hostname Mismatch Monitor
-# Version: 2026.01.21.07
+# Version: 2026.01.21.08
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
@@ -148,9 +148,10 @@ Invoke-LevelScript -ScriptBlock {
     Write-Host "  Policy Mode: $PolicyMode"
 
     # ============================================================
-    # AUTO-BOOTSTRAP: Create required tags if they don't exist
+    # AUTO-BOOTSTRAP: Create required tags and custom field
     # ============================================================
     if ($LevelApiKey) {
+        # Create tags
         $TagsToCreate = @(
             @{ Name = $FullTagMismatch; Description = "Warning tag for hostname mismatch" }
             @{ Name = $FullTagRenameLevel; Description = "Action tag to rename Level device" }
@@ -167,6 +168,18 @@ Invoke-LevelScript -ScriptBlock {
                 } else {
                     Write-LevelLog "Failed to create tag: $($TagDef.Name)" -Level "WARN"
                 }
+            }
+        }
+
+        # Create custom field for policy
+        $ExistingField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $PolicyFieldName
+        if (-not $ExistingField) {
+            Write-LevelLog "Creating custom field: $PolicyFieldName" -Level "INFO"
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $PolicyFieldName -DefaultValue "monitor"
+            if ($NewField) {
+                Write-LevelLog "Custom field created: $PolicyFieldName (default=monitor)" -Level "SUCCESS"
+            } else {
+                Write-LevelLog "Failed to create custom field: $PolicyFieldName" -Level "WARN"
             }
         }
     }
