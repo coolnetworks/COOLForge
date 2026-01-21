@@ -549,42 +549,42 @@ d5b4ded9659d35360db4dc7c4fd3b59f  docs/scripts/Test-Variable-Output.md
 82df6de5e4414aa846ad0b02b63cc127  docs/VERSION-PINNING.md
 95e694ffeac9942483bfc94252085936  docs/WHY.md
 36f598a5874afebf5ca514c4aa2afb80  docs/WOL.md
-4b7cc8cc3f0e3411f93854b3bfdb2e1c  launchers/⚙️COOLForge Cache Sync.ps1
-13fcf888942f7656396de9295a493352  launchers/⚙️Extract and Set ScreenConnect Device URL.ps1
-e21657c5f392084058b939d7d484febf  launchers/⛔Force Remove Anydesk.ps1
-725d1cb4152caeef8446ea523775fba9  launchers/⛔Force Remove Non MSP ScreenConnect.ps1
-81ab9c72433db4cd9e6470291791c5dd  launchers/Policy/Chrome/👀Chrome Location Services.ps1
-de647bf5c906d81bd1c691f7c1e5466d  launchers/Policy/Windows/👀Windows Location Services.ps1
-c376178a89b21bb7a8b6ff30aeae6e0a  launchers/Policy/👀chrome.ps1
-1a9c5300373de5c509e86282a7780ca3  launchers/Policy/👀debug.ps1
-237e02e2daf7a36c1855a0bc598a48a4  launchers/Policy/👀dnsfilter.ps1
-9eba49bb9043f8bbdf389b3950a7f721  launchers/Policy/👀Hostname Mismatch.ps1
-750b63a799f1d7850d0ea99952907f27  launchers/Policy/👀huntress.ps1
-85f7f52ce286466ee424ec1bc317ee44  launchers/Policy/👀meshcentral.ps1
-62b9354466f1f6e15fc288783d3040af  launchers/Policy/👀screenconnect.ps1
-8fca94e2c4c304d766a75f414b1ca0be  launchers/Policy/👀unchecky.ps1
-8a87554781bf8650d127e12f53e4f052  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-98b3451d8d7e30e176f70dc3a8bb1196  launchers/Utility/⚙️Universal Disk Cleaner.ps1
-897555a47eb5b7e2c0b08bfd2aec5cf5  launchers/👀Check DNS Server Compliance.ps1
-41a0047aa6f21cd8a1a92ef99fb717fd  launchers/👀Check for Unauthorized Remote Access Tools.ps1
-432c5999d271ad662eda1faba814c5f3  launchers/👀Test Show Versions.ps1
-7ef7e130106903722118416400129554  launchers/👀Test Variable Output.ps1
-697e3ac00b5b715b7d23c017874387ee  launchers/🔔Technician Alert Monitor.ps1
-7fba481dc47dfe1a3f9b6a9a35807ba4  launchers/🔔Wake tagged devices.ps1
-fe2f5d55ce6b0325109d0d6d3b5df193  launchers/🔧Enable System Restore and Create Restore Point.ps1
-9afeb4cf2dea7021c33664dbb5182ca3  launchers/🔧Ensure Windows Defender Enabled.ps1
-3dccd365f2fd12be0c6628911fe8a7d0  launchers/🔧Fix Windows 10 Services.ps1
-a0ce710665520dd06396474297dc3d67  launchers/🔧Fix Windows 11 Services.ps1
-c5bea2751ec75ef190d3d71984425bb7  launchers/🔧Fix Windows 7 Services.ps1
-5392ffc86df67d230265750d7511db2b  launchers/🔧Fix Windows 8 Services.ps1
-c2f98135c45d68912f8154e921d910da  launchers/🔧Fix Windows 8.1 Services.ps1
-d4629905a6c55a88dd0414e04c19281c  launchers/🔧Fix Windows Location Services.ps1
-8fe1c324fd523114ca8a1dde542e6585  launchers/🔧Prevent Sleep.ps1
-451b74dcba3103f2b4bf792a6159d03a  launchers/🙏Wake all devices in parent to level.io folder.ps1
+ac7b69ae4afae2d1a7a6edf49eeb4023  launchers/⚙️COOLForge Cache Sync.ps1
+fd69876bb36adf2614c0b41c0df9ae96  launchers/⚙️Extract and Set ScreenConnect Device URL.ps1
+52da544e7d9afaf65fad422ba3a28432  launchers/⛔Force Remove Anydesk.ps1
+8a221ecf23d6d19705fd5b2ae421e542  launchers/⛔Force Remove Non MSP ScreenConnect.ps1
+28ec221bb5aea30747cb2598ce262a4b  launchers/Policy/Chrome/👀Chrome Location Services.ps1
+17318d03eb32e461109032f873df48c6  launchers/Policy/Windows/👀Windows Location Services.ps1
+68788055752bf13519919f7345bc17af  launchers/Policy/👀chrome.ps1
+9991894d61399c980d6891bb352c3b36  launchers/Policy/👀debug.ps1
+f164bb815070849e314c9c6645a7f7bc  launchers/Policy/👀dnsfilter.ps1
+748d968321199f0da188746dd40fe20d  launchers/Policy/👀Hostname Mismatch.ps1
+e7ab6151578739596a922d73f5aa5b83  launchers/Policy/👀huntress.ps1
+dad521a929b0405ebd058cb524b00a15  launchers/Policy/👀meshcentral.ps1
+0364683f6d6d436efa18e5a0075e62d0  launchers/Policy/👀screenconnect.ps1
+00a68d83ea4b3db0f1dbe37679f2c7e4  launchers/Policy/👀unchecky.ps1
+276b388b1c89a016fb38f1b8032b7bad  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+b0d07f8e56dbd64168b1f351f81ef830  launchers/Utility/⚙️Universal Disk Cleaner.ps1
+2e06429d444d350de494d31ba36c029f  launchers/👀Check DNS Server Compliance.ps1
+27cb641408498b54d09aee632a9b31aa  launchers/👀Check for Unauthorized Remote Access Tools.ps1
+8eaec278970d53007e168857a0d69232  launchers/👀Test Show Versions.ps1
+e215163a9461d82f154e9d4df3d277b5  launchers/👀Test Variable Output.ps1
+eb4585d355c2a5057a9be1564b869608  launchers/🔔Technician Alert Monitor.ps1
+98f3f81d659fd82241a0b72d4f0a4dd8  launchers/🔔Wake tagged devices.ps1
+da93859c6bf696958a87b1b2298dab58  launchers/🔧Enable System Restore and Create Restore Point.ps1
+608f79d7c3b658ff40235a27492f824e  launchers/🔧Ensure Windows Defender Enabled.ps1
+f8cf3f3e94947704994b5bfa9be6125c  launchers/🔧Fix Windows 10 Services.ps1
+d618fb71c38ccb157ad83401410b4a98  launchers/🔧Fix Windows 11 Services.ps1
+3e59cd251e368e575281f4003e4a8193  launchers/🔧Fix Windows 7 Services.ps1
+b62cfc2046f7f4b06b282e922c9570bc  launchers/🔧Fix Windows 8 Services.ps1
+862ff2293b0e26fd499bd7d62a2b809e  launchers/🔧Fix Windows 8.1 Services.ps1
+a1ebe80d533e1d0efd046c0da5f22616  launchers/🔧Fix Windows Location Services.ps1
+2e11916bfe7fabdc399968a14d8a56be  launchers/🔧Prevent Sleep.ps1
+37583e90cd3de4f5a44357efec7a31b6  launchers/🙏Wake all devices in parent to level.io folder.ps1
 013cb65246d9003d07c710bb27c74ff7  LEVEL-SUPPORT-QUESTIONS.md
 ac02595a53ea6c81e5444e6e64f4415c  LEVEL-SUPPORT-SUBMITTED.md
 5746acb006595a0ec8e3e8ccfe2a7131  MEETING NOTES - Level.io Demo.md
-ce484cda9046598d28ff9e61496f8b24  modules/COOLForge-Common.psm1
+a82880d050e35bc4831aa2f3639b66ce  modules/COOLForge-Common.psm1
 07f2114b030950370cf6ac38e64f222f  NEEDS_TESTING.md
 3c230ff8cd8b89385d4fb66e136aa10a  pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  pre-release/Test-Syntax.ps1
@@ -598,7 +598,7 @@ fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.
 191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
 66dee256530be177a1fe5293bc8298be  scripts/Check/👀debug.ps1
-f156805c922cf8072efac79ddf763e91  scripts/Check/👀Hostname Mismatch.ps1
+9a881e73d466e780f81022e34cf844ff  scripts/Check/👀Hostname Mismatch.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
 91317d2da2cf6ea934807bb3f598496b  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
@@ -659,7 +659,7 @@ fa1c378f96fde03552b003373e5feb1e  start_here/Remove-COOLForgeSetup.ps1
 7ee91513ff5576486a6c35931ad83026  start_here/Wake-AllDevicesInFolder-Standalone.ps1
 5cf8fef7685910c91339a7070b1ba9f0  templates/Policy_Launcher_Template.ps1
 ce86bc1dcdd34659ba944bc78665b89b  templates/Script_Template.ps1
-68e63bad220a49a1d62e1fa049f3bb75  templates/Slim-Launcher.ps1
+4aee0d2a15ab58c1b6b8e918da360e7a  templates/Slim-Launcher.ps1
 20ae969f11e8ec76a94f5a01fdd8e367  templates/SoftwarePolicy-Template.ps1
 6bc693c354bdfcca900f1768645d2145  templates/What is this folder.md
 a4e8d3753dc94a8ed78c1d216c423893  testing/Analyze-LevelBackup.ps1
