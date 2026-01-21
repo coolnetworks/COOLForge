@@ -145,6 +145,10 @@ if ($DebugScripts -and (Test-Path $LibraryPath)) {
 } elseif (Test-Path $LibraryPath) {
     try {
         $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
+        # Strip BOM for consistent hash comparison
+        if ($LocalContent.StartsWith([char]0xFEFF)) {
+            $LocalContent = $LocalContent.Substring(1)
+        }
         $LocalVersion = Get-ModuleVersion -Content $LocalContent
         $LocalHash = Get-StringMD5 -Content $LocalContent
         if ($DebugScripts) { Write-Host "[DEBUG] Local library hash: $LocalHash" }
@@ -168,6 +172,10 @@ if ($NeedsUpdate) {
 
     try {
         $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
+        # Strip UTF-8 BOM if present (shows as ? when downloaded via Invoke-WebRequest)
+        if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
+            $RemoteContent = $RemoteContent.Substring(1)
+        }
         $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
         $RemoteHash = Get-StringMD5 -Content $RemoteContent
 
@@ -180,7 +188,8 @@ if ($NeedsUpdate) {
             Write-Host "[!] Got: $RemoteHash"
         }
 
-        Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
+        # Save with proper UTF-8 BOM for emoji handling
+        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, [System.Text.UTF8Encoding]::new($true))
         Write-Host "[+] Library updated to v$RemoteVersion"
     } catch {
         if (!(Test-Path $LibraryPath)) {
