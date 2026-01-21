@@ -2840,12 +2840,23 @@ function Find-LevelDevice {
 
         if (-not $Result.Success) {
             Write-LevelLog "Failed to search for device: $($Result.Error)" -Level "ERROR"
+
+            # Fallback to cached device ID if API fails
+            $CachedDeviceId = Get-LevelCacheValue -Name "DeviceId"
+            $CachedHostname = Get-LevelCacheValue -Name "DeviceHostname"
+            if ($CachedDeviceId -and $CachedHostname -ieq $Hostname) {
+                Write-LevelLog "Using cached device ID: $CachedDeviceId" -Level "WARN"
+                return @{ id = $CachedDeviceId; hostname = $CachedHostname }
+            }
             return $null
         }
 
         $Device = $Result.Data.data | Where-Object { $_.hostname -eq $Hostname } | Select-Object -First 1
 
         if ($Device) {
+            # Cache device ID and hostname for future use
+            Set-LevelCacheValue -Name "DeviceId" -Value $Device.id
+            Set-LevelCacheValue -Name "DeviceHostname" -Value $Device.hostname
             return $Device
         }
 
@@ -2970,6 +2981,67 @@ function Get-LevelDeviceTagNames {
 
     Write-LevelLog "Device has $($Tags.Count) tags: $($Tags -join ', ')" -Level "DEBUG"
     return $Tags
+}
+
+<#
+.SYNOPSIS
+    Renames a device in Level.io.
+
+.DESCRIPTION
+    Updates the name of a device in Level.io using the API.
+    This is useful when the Windows hostname has changed and the Level.io
+    device name needs to be updated to match.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER DeviceId
+    The ID of the device to rename.
+
+.PARAMETER NewName
+    The new name for the device.
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+
+.OUTPUTS
+    Returns $true if rename was successful, $false otherwise.
+
+.EXAMPLE
+    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname "OLD-PC"
+    Set-LevelDeviceName -ApiKey $ApiKey -DeviceId $Device.id -NewName "NEW-PC"
+#>
+function Set-LevelDeviceName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DeviceId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$NewName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    Write-LevelLog "Renaming device $DeviceId to '$NewName'..." -Level "INFO"
+
+    $Body = @{
+        name = $NewName
+    }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/devices/$DeviceId" -ApiKey $ApiKey -Method "PATCH" -Body $Body
+
+    if ($Result.Success) {
+        Write-LevelLog "Device renamed successfully to '$NewName'" -Level "SUCCESS"
+        return $true
+    } else {
+        Write-LevelLog "Failed to rename device: $($Result.Error)" -Level "ERROR"
+        return $false
+    }
 }
 
 # ============================================================
@@ -3175,6 +3247,9 @@ function Add-LevelTagToDevice {
         [string]$DeviceId,
 
         [Parameter(Mandatory = $false)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $false)]
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
@@ -3195,10 +3270,19 @@ function Add-LevelTagToDevice {
             $ResponseInfo = if ($Result.ResponseBody) { " - $($Result.ResponseBody)" } else { "" }
             Write-LevelLog "API returned 422$ResponseInfo" -Level "DEBUG"
             # Treat 422 as success (idempotent - tag is on device either way)
+            # Update cache if tag name provided
+            if ($TagName) {
+                Update-CachedDeviceTags -TagName $TagName -Action "Add"
+            }
             return $true
         }
         Write-LevelLog "Failed to add tag to device: $($Result.Error)" -Level "ERROR"
         return $false
+    }
+
+    # Update cache if tag name provided
+    if ($TagName) {
+        Update-CachedDeviceTags -TagName $TagName -Action "Add"
     }
 
     return $true
@@ -3243,6 +3327,9 @@ function Remove-LevelTagFromDevice {
         [string]$DeviceId,
 
         [Parameter(Mandatory = $false)]
+        [string]$TagName,
+
+        [Parameter(Mandatory = $false)]
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
@@ -3262,10 +3349,19 @@ function Remove-LevelTagFromDevice {
             $ResponseInfo = if ($Result.ResponseBody) { " - $($Result.ResponseBody)" } else { "" }
             Write-LevelLog "API returned 422$ResponseInfo" -Level "DEBUG"
             # Treat 422 as success (idempotent - tag is off device either way)
+            # Update cache if tag name provided
+            if ($TagName) {
+                Update-CachedDeviceTags -TagName $TagName -Action "Remove"
+            }
             return $true
         }
         Write-LevelLog "Failed to remove tag from device: $($Result.Error)" -Level "ERROR"
         return $false
+    }
+
+    # Update cache if tag name provided
+    if ($TagName) {
+        Update-CachedDeviceTags -TagName $TagName -Action "Remove"
     }
 
     return $true
@@ -6677,6 +6773,7 @@ Export-ModuleMember -Function @(
     'Find-LevelDevice',
     'Get-LevelDeviceById',
     'Get-LevelDeviceTagNames',
+    'Set-LevelDeviceName',
 
     # Tag Management
     'Get-LevelTags',

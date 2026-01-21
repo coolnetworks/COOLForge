@@ -1,6 +1,6 @@
-﻿# MD5SUMS - Checksums for COOLForge_Lib files
+﻿# MD5SUMS - Checksums for COOLForge files
 # Format: MD5_HASH  FILENAME
-# Generated: 2026-01-19
+# Generated: 2026-01-21
 #
 # Verify with PowerShell:
 #   $expected = (Invoke-WebRequest -Uri "$BaseUrl/MD5SUMS").Content
@@ -9,35 +9,37 @@
 # Note: The launcher uses this file to locate scripts in subfolders.
 # Script paths are relative to repo root (e.g., scripts/Fix/ScriptName.ps1)
 #
-2f4308382b313aab7727d3c8b9edbf6c  modules/COOLForge-Common.psm1
+bb723365dbd3f0bdb017fef4c2c119f6  modules/COOLForge-Common.psm1
 fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.ps1
 191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-bb8de547cb25a7a443e81cab1c8e7172  scripts/Check/👀Check Windows Location Services.ps1
-3940425d5ebc2db1f052a9d85affd944  scripts/Check/👀debug.ps1
+2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
+b174ce7ca8b93b8e4e5f940a6b5dbc54  scripts/Check/👀Hostname Mismatch.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
-37fcf2addb87dd4ecf302bf366271ee7  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
+91317d2da2cf6ea934807bb3f598496b  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-0b21652beac13ca2d365c53011846b3c  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+b1356c760039d2beb48a6667c3a346d0  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 9e71bc81c1222cf9ede68b5f6f033d72  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
-6bae62fc42ea30a1ace3c2472dc4f901  scripts/Fix/🔧Fix Windows 10 Services.ps1
-a59778aa18ee3f6c38d66d3da27dca3e  scripts/Fix/🔧Fix Windows 11 Services.ps1
-581cbd2203a70ad612cdc0e872a35453  scripts/Fix/🔧Fix Windows 7 Services.ps1
-4207a5b92853180ca0d49823c298362d  scripts/Fix/🔧Fix Windows 8 Services.ps1
-d31ecec221d65522ca3cc89827474884  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-96e12ec31a8b373a86fde3273b1d33fd  scripts/Fix/🔧Prevent Sleep.ps1
+5cdac7ecfcd93d15a09892cf0fb34561  scripts/Fix/🔧Fix Windows 10 Services.ps1
+997b61fef81e8b9e6d2014223158b044  scripts/Fix/🔧Fix Windows 11 Services.ps1
+2b87fec41256cd53dd359fb3b0ce9e7d  scripts/Fix/🔧Fix Windows 7 Services.ps1
+c6bd76f462b894a8ff1e6d90aadea3cf  scripts/Fix/🔧Fix Windows 8 Services.ps1
+d79a398d1be20cc5d13293e3a132b12b  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+62f5ccece06145e976ab48b49dae31b9  scripts/Fix/🔧Fix Windows Location Services.ps1
+0acd004efe2ad665a5deac011bd4e4be  scripts/Fix/🔧Prevent Sleep.ps1
 b4b0bc02e964eea4f9676b07894c380c  scripts/Policy/👀chrome.ps1
 e7735d5106c5112ab01b6160f751dd03  scripts/Policy/👀dnsfilter.ps1
 c1b35bc245d2e2977a3d41ac5b47659a  scripts/Policy/👀huntress.ps1
 d8f1077ac7371dd9347ed3b61261b1c5  scripts/Policy/👀meshcentral.ps1
 394e295d3065c5d503585fe0b6ca7dbf  scripts/Policy/👀screenconnect.ps1
 195dc9e348d37ca7b1ef11e9456cc79c  scripts/Policy/👀unchecky.ps1
-5cfb87b92852f5aad30fa6fd4539fb96  scripts/Policy/Chrome/👀locationservices.ps1
-f659ad14ce8e41a331423edd5b63ba53  scripts/Policy/Windows/👀locationservices.ps1
+5cfb87b92852f5aad30fa6fd4539fb96  scripts/Policy/Chrome/👀Chrome Location Services.ps1
+3a605545f13f28b670d73f18ee4e60fa  scripts/Policy/Windows/👀Windows Location Services.ps1
 4400b053017fb7374230e6b3690dbdca  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 2354ae26195e7ce19c52cdeb76407d24  scripts/Utility/⚙️COOLForge Cache Sync.ps1
+41f72fe19acd6d14c5627a4c9794b72c  scripts/Utility/⚙️Universal Disk Cleaner.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
 331c29e1bc72f7bc759cbab1dc9a06b2  scripts/Utility/🙏Wake all devices in Level group.ps1
-6bc693c354bdfcca900f1768645d2145  templates/What is this folder.md

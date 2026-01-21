@@ -155,6 +155,63 @@ if ($MDM_LetAppsAccessLocation -eq 2) {
     LogStep "MDM: Privacy\LetAppsAccessLocation=NotConfigured" 'OK'
 }
 
+# ---------------------------------------------
+# STEP 1c: Azure AD Join Status (dsregcmd)
+# ---------------------------------------------
+LogStep "Step 1c: Checking Azure AD / Domain join status..." 'HEADER'
+
+$AzureADJoined = $false
+$DomainJoined = $false
+$MDMEnrolled = $false
+$TenantName = $null
+
+try {
+    $dsregOutput = dsregcmd /status 2>&1
+    foreach ($line in $dsregOutput) {
+        if ($line -match '^\s*AzureAdJoined\s*:\s*(\S+)') { $AzureADJoined = ($Matches[1] -eq 'YES') }
+        if ($line -match '^\s*DomainJoined\s*:\s*(\S+)') { $DomainJoined = ($Matches[1] -eq 'YES') }
+        if ($line -match '^\s*MdmUrl\s*:\s*(\S+)') { $MDMEnrolled = (-not [string]::IsNullOrWhiteSpace($Matches[1])) }
+        if ($line -match '^\s*TenantName\s*:\s*(.+)$') { $TenantName = $Matches[1].Trim() }
+    }
+} catch {
+    LogStep "Azure AD: Failed to run dsregcmd" 'WARN'
+}
+
+if ($AzureADJoined) {
+    $tenantInfo = if ($TenantName) { " ($TenantName)" } else { "" }
+    if ($MDMEnrolled) {
+        LogStep ("Azure AD: Joined{0}, MDM enrolled - device is fully managed" -f $tenantInfo) 'INFO'
+    } else {
+        LogStep ("Azure AD: Joined{0}, but NOT MDM enrolled" -f $tenantInfo) 'WARN'
+        # This is the scenario where Settings shows "managed by admin" without actual policies
+        $blockers += 'Azure AD joined without MDM (cosmetic managed banner)'
+    }
+} elseif ($DomainJoined) {
+    LogStep "Azure AD: Not joined (domain-joined traditional AD)" 'INFO'
+} else {
+    LogStep "Azure AD: Not joined (standalone/workgroup device)" 'OK'
+}
+
+# ---------------------------------------------
+# STEP 1d: Provisioning Packages
+# ---------------------------------------------
+LogStep "Step 1d: Checking for provisioning packages..." 'HEADER'
+
+$ProvPackages = @()
+try {
+    $ProvPackages = @(Get-ProvisioningPackage -AllInstalledPackages -ErrorAction SilentlyContinue)
+} catch {}
+
+if ($ProvPackages.Count -gt 0) {
+    LogStep ("Provisioning: {0} package(s) installed" -f $ProvPackages.Count) 'WARN'
+    foreach ($pkg in $ProvPackages) {
+        LogStep ("  - {0} (v{1})" -f $pkg.PackageName, $pkg.Version) 'INFO'
+    }
+    $blockers += 'Provisioning package(s) installed (may set privacy defaults)'
+} else {
+    LogStep "Provisioning: No packages detected" 'OK'
+}
+
 # ----------------------------------
 # STEP 2: Device Master Switch (OS)
 # ----------------------------------
@@ -305,6 +362,8 @@ $priority = @(
     'User HKCU Consent NotSet',
     'Admin policy DisableLocation exists (shows managed message)',
     'MDM System AllowLocation exists (shows managed message)',
+    'Provisioning package(s) installed (may set privacy defaults)',
+    'Azure AD joined without MDM (cosmetic managed banner)',
     'Per-app Deny overrides present'
 )
 foreach ($reason in $priority) {
@@ -329,6 +388,8 @@ $recommend = switch -Regex ($primary) {
     'User HKCU Consent=Deny'        { 'Set HKCU:\...\ConsentStore\location\Value=Allow (run as the logged-in user).' }
     'User HKCU Consent NotSet'      { 'Create HKCU key and set Value=Allow (run as the logged-in user).' }
     'Admin.*shows managed'          { 'DELETE the policy key from GPO/Intune (setting to 0 still shows "managed by admin"). Remove: HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors' }
+    'Provisioning package'          { 'Provisioning package may have set privacy defaults. Use Get-ProvisioningPackage to list, Remove-ProvisioningPackage to remove. May need to re-run OOBE or reset privacy settings.' }
+    'Azure AD joined without MDM'   { 'COSMETIC ONLY - toggle should still work. To remove banner: enroll in Intune and set AllowLocation=1, or check for provisioning packages (Get-ProvisioningPackage).' }
     'Per-app Deny overrides present'{ 'Set affected per-app ConsentStore entries to Allow or remove the entries (HKCU).' }
     default                         { 'No action needed; if an app still fails, inspect its per-app ConsentStore entry.' }
 }
@@ -339,6 +400,8 @@ LogStep ("GPO: DisableLocation={0}; DisableSensors={1}; DisableLocationScripting
     (IfNull $Pol_DisableLocation 'NotConfigured'), (IfNull $Pol_DisableSensors 'NotConfigured'), (IfNull $Pol_DisableLocationScripting 'NotConfigured'), (IfNull $Pol_AppPrivacy 'NotConfigured'))
 LogStep ("MDM: AllowLocation={0}; LetAppsAccessLocation={1}; Managed={2}" -f `
     (IfNull $MDM_AllowLocation 'NotConfigured'), (IfNull $MDM_LetAppsAccessLocation 'NotConfigured'), ($MDM_Providers.Count -gt 0 -or $MDM_Enrollments.Count -gt 0))
+LogStep ("AzureAD: Joined={0}; MDMEnrolled={1}; Tenant={2}; ProvPkgs={3}" -f `
+    $AzureADJoined, $MDMEnrolled, (IfNull $TenantName 'N/A'), $ProvPackages.Count)
 LogStep ("Device: MasterStatus={0}; HKLM_Consent={1}; lfsvc(StartType={2},Status={3})" -f `
     (IfNull $Master_Status 'NotSet'), (IfNull $HKLM_DeviceConsent 'NotSet'), $SvcStart, $SvcStatus)
 LogStep ("User: HKCU_Consent={0}; PerAppDenies={1}" -f (IfNull $HKCU_UserConsent 'NotSet'), ($PerAppDenies.Count))

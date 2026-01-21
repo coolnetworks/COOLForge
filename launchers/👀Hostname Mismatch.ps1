@@ -1,15 +1,22 @@
-﻿# ============================================================
+# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Policy/Windows/👀locationservices.ps1"
-$policy_device_locationservices = "{{cf_policy_device_locationservices}}"
+$ScriptToRun = "👀Hostname Mismatch.ps1"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for Windows Location Services Configuration Policy
+    Slim Level.io Launcher for Hostname Mismatch Detection
+
+.DESCRIPTION
+    Detects and optionally resolves hostname mismatches between Level.io and Windows.
+    - Compares Level.io device name with Windows hostname
+    - Sets warning tag when mismatch detected
+    - Can rename Level device or Windows hostname based on action tags
+    - Schedules reboot after Windows hostname change
 
 .NOTES
-    Launcher Version: 2026.01.19.01
+    Launcher Version: 2026.01.21.01
     Target Platform:  Level.io RMM
+    Recommended Timeout: 300 seconds (5 minutes)
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
     Script download/execution is handled by Invoke-ScriptLauncher in the library.
@@ -18,8 +25,8 @@ $policy_device_locationservices = "{{cf_policy_device_locationservices}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
-$LauncherName = "Policy/Windows/👀locationservices.ps1"
+$LauncherVersion = "2026.01.21.01"
+$LauncherName = "👀Hostname Mismatch.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -211,16 +218,6 @@ try {
 }
 
 # ============================================================
-# COLLECT POLICY VARIABLES
-# ============================================================
-$PolicyVars = @{}
-Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
-    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
-        $PolicyVars[$_.Name] = $_.Value
-    }
-}
-
-# ============================================================
 # EXECUTE SCRIPT
 # ============================================================
 Write-Host "[*] Slim Launcher v$LauncherVersion"
@@ -232,11 +229,6 @@ $LauncherVars = @{
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
     LibraryUrl       = $LibraryUrl
-}
-
-# Add policy variables
-foreach ($key in $PolicyVars.Keys) {
-    $LauncherVars[$key] = $PolicyVars[$key]
 }
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `

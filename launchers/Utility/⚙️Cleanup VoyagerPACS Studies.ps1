@@ -1,14 +1,20 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Policy/Chrome/👀locationservices.ps1"
-$policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
+$ScriptToRun = "⚙️Cleanup VoyagerPACS Studies.ps1"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for Chrome Location Services Configuration Policy
+    Slim Level.io Launcher for VoyagerPACS Studies Cleanup
+
+.DESCRIPTION
+    Cleans up old study files from VoyagerPACS/VoyagerWebViewer imaging folders.
+    - Searches all fixed drives for ProgramData\Voy* folders
+    - Finds Studies folders at any depth
+    - Removes files older than 2 days
+    - Reports space freed
 
 .NOTES
-    Launcher Version: 2026.01.19.01
+    Launcher Version: 2026.01.20.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -18,8 +24,8 @@ $policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
-$LauncherName = "Policy/Chrome/👀locationservices.ps1"
+$LauncherVersion = "2026.01.20.01"
+$LauncherName = "Utility/⚙️Cleanup VoyagerPACS Studies.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -55,11 +61,6 @@ if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}")
 } else {
     $DebugScripts = $DebugScripts -eq "true"
 }
-
-$LevelApiKey_Raw = @'
-{{cf_apikey}}
-'@
-$LevelApiKey = $LevelApiKey_Raw.Trim()
 
 # ============================================================
 # GITHUB PAT INJECTION
@@ -211,16 +212,6 @@ try {
 }
 
 # ============================================================
-# COLLECT POLICY VARIABLES
-# ============================================================
-$PolicyVars = @{}
-Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
-    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
-        $PolicyVars[$_.Name] = $_.Value
-    }
-}
-
-# ============================================================
 # EXECUTE SCRIPT
 # ============================================================
 Write-Host "[*] Slim Launcher v$LauncherVersion"
@@ -229,14 +220,8 @@ $LauncherVars = @{
     MspScratchFolder = $MspScratchFolder
     DeviceHostname   = $DeviceHostname
     DeviceTags       = $DeviceTags
-    LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
     LibraryUrl       = $LibraryUrl
-}
-
-# Add policy variables
-foreach ($key in $PolicyVars.Keys) {
-    $LauncherVars[$key] = $PolicyVars[$key]
 }
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
