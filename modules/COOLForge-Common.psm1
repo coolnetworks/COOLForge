@@ -3417,6 +3417,15 @@ function New-LevelTag {
     $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $ApiKey -Method "POST" -Body $Body
 
     if (-not $Result.Success) {
+        # 422 means tag already exists - look it up and return it (idempotent)
+        if ($Result.StatusCode -eq 422) {
+            Write-LevelLog "Tag '$TagName' already exists - looking up existing tag" -Level "DEBUG"
+            $ExistingTag = Find-LevelTag -ApiKey $ApiKey -TagName $TagName -BaseUrl $BaseUrl
+            if ($ExistingTag) {
+                Write-LevelLog "Found existing tag '$TagName' with ID: $($ExistingTag.id)" -Level "DEBUG"
+                return $ExistingTag
+            }
+        }
         Write-LevelLog "Failed to create tag '$TagName': $($Result.Error)" -Level "ERROR"
         return $null
     }
