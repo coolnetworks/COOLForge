@@ -1,7 +1,7 @@
-# ============================================================
+﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "??meshcentral.ps1"
+$ScriptToRun = "👀meshcentral.ps1"
 $policy_meshcentral = "{{cf_policy_meshcentral}}"
 $policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
 $policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
@@ -35,7 +35,7 @@ $policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url
 #>
 
 $LauncherVersion = "2026.01.20.02"
-$LauncherName = "Policy/??meshcentral.ps1"
+$LauncherName = "Policy/👀meshcentral.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -212,7 +212,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName

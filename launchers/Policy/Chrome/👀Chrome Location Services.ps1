@@ -1,7 +1,7 @@
-# ============================================================
+﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Policy/Chrome/??Chrome Location Services.ps1"
+$ScriptToRun = "Policy/Chrome/👀Chrome Location Services.ps1"
 $policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
 <#
 .SYNOPSIS
@@ -19,7 +19,7 @@ $policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
 #>
 
 $LauncherVersion = "2026.01.20.02"
-$LauncherName = "Policy/Chrome/??Chrome Location Services.ps1"
+$LauncherName = "Policy/Chrome/👀Chrome Location Services.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -196,7 +196,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName

@@ -1,7 +1,7 @@
-# ============================================================
+﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "??huntress.ps1"
+$ScriptToRun = "👀huntress.ps1"
 $policy_huntress = "{{cf_policy_huntress}}"
 $policy_huntress_account_key = "{{cf_policy_huntress_account_key}}"
 $policy_huntress_org_key = "{{cf_policy_huntress_org_key}}"
@@ -22,7 +22,7 @@ $policy_huntress_tags = "{{cf_policy_huntress_tags}}"
 #>
 
 $LauncherVersion = "2026.01.20.02"
-$LauncherName = "Policy/??huntress.ps1"
+$LauncherName = "Policy/👀huntress.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -199,7 +199,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
