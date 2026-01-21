@@ -18,7 +18,7 @@
     Designed to run as a daily check script.
 
 .NOTES
-    Version:          2026.01.21.08
+    Version:          2026.01.21.10
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
@@ -43,7 +43,7 @@
 #>
 
 # Hostname Mismatch Monitor
-# Version: 2026.01.21.08
+# Version: 2026.01.21.10
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
@@ -56,8 +56,18 @@
 $PolicyFieldName = "policy_sync_hostnames"
 
 # Get policy value from custom field (passed from launcher)
+# Cache valid values to registry for fallback
 $PolicyValue = Get-Variable -Name $PolicyFieldName -ValueOnly -ErrorAction SilentlyContinue
-if ([string]::IsNullOrWhiteSpace($PolicyValue) -or $PolicyValue -like "{{*}}") {
+if (-not [string]::IsNullOrWhiteSpace($PolicyValue) -and $PolicyValue -notlike "{{*}}") {
+    # Valid value from Level.io - cache it
+    Set-LevelCacheValue -Name $PolicyFieldName -Value $PolicyValue.Trim().ToLower()
+} else {
+    # No value from Level.io - try cache fallback
+    $PolicyValue = Get-LevelCacheValue -Name $PolicyFieldName
+}
+
+# Default to monitor if still empty
+if ([string]::IsNullOrWhiteSpace($PolicyValue)) {
     $PolicyValue = "monitor"
 }
 $PolicyValue = $PolicyValue.Trim().ToLower()
@@ -67,6 +77,36 @@ $PolicyMode = switch ($PolicyValue) {
     "auto-hostname" { "AutoHostname" }
     "auto-level"    { "AutoLevel" }
     default         { "Monitor" }
+}
+
+# ============================================================
+# CACHE LEVEL.IO VARIABLES
+# ============================================================
+# Cache valid Level.io variables to registry for fallback when values aren't passed
+# This ensures the script can still function even if Level.io doesn't provide values
+
+# Cache DeviceHostname (level_device_hostname)
+if (-not [string]::IsNullOrWhiteSpace($DeviceHostname) -and $DeviceHostname -notlike "{{*}}") {
+    Set-LevelCacheValue -Name "DeviceHostname" -Value $DeviceHostname
+} else {
+    $DeviceHostname = Get-LevelCacheValue -Name "DeviceHostname"
+}
+
+# Cache DeviceTags (level_tag_names)
+if (-not [string]::IsNullOrWhiteSpace($DeviceTags) -and $DeviceTags -notlike "{{*}}") {
+    Set-LevelCacheValue -Name "DeviceTags" -Value $DeviceTags
+} else {
+    $DeviceTags = Get-LevelCacheValue -Name "DeviceTags"
+}
+
+# Cache MspScratchFolder (cf_coolforge_msp_scratch_folder)
+if (-not [string]::IsNullOrWhiteSpace($MspScratchFolder) -and $MspScratchFolder -notlike "{{*}}") {
+    Set-LevelCacheValue -Name "MspScratchFolder" -Value $MspScratchFolder
+} else {
+    $CachedMspScratch = Get-LevelCacheValue -Name "MspScratchFolder"
+    if (-not [string]::IsNullOrWhiteSpace($CachedMspScratch)) {
+        $MspScratchFolder = $CachedMspScratch
+    }
 }
 
 # ============================================================
@@ -187,34 +227,13 @@ Invoke-LevelScript -ScriptBlock {
     # ============================================================
     # GET HOSTNAMES
     # ============================================================
-    # Get Windows hostname
     $WindowsHostname = $env:COMPUTERNAME
-
-    # Get Level hostname - from launcher variable or cache fallback
     $LevelHostname = $DeviceHostname
-    $UsingCachedHostname = $false
-    if ([string]::IsNullOrWhiteSpace($LevelHostname) -or $LevelHostname -like "{{*}}") {
-        $LevelHostname = Get-LevelCacheValue -Name "DeviceHostname"
-        $UsingCachedHostname = $true
-    }
-
-    # Get device tags - from launcher variable or cache fallback
     $TagSource = $DeviceTags
-    $UsingCachedTags = $false
-    if ([string]::IsNullOrWhiteSpace($TagSource) -or $TagSource -like "{{*}}") {
-        $CachedTags = Get-CachedDeviceTags
-        if ($CachedTags -and $CachedTags.Count -gt 0) {
-            $TagSource = $CachedTags -join ", "
-            $UsingCachedTags = $true
-        }
-    }
 
     Write-Host ""
     Write-Host "  Windows Hostname:  $WindowsHostname"
-    Write-Host "  Level.io Name:     $LevelHostname$(if ($UsingCachedHostname) { ' (from cache)' })"
-    if ($UsingCachedTags) {
-        Write-Host "  Tags Source:       Registry cache"
-    }
+    Write-Host "  Level.io Name:     $LevelHostname"
     Write-Host ""
 
     # Validate we have Level hostname
