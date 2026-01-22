@@ -222,9 +222,9 @@ function Get-ServiceProcessId {
                 $_.DisplayName -like "ConnectWise Control Client*"
             }
         }
-        $pid = ($cim | Select-Object -First 1).ProcessId
-        if ($null -eq $pid) { return 0 }
-        return [int]$pid
+        $processId = ($cim | Select-Object -First 1).ProcessId
+        if ($null -eq $processId) { return 0 }
+        return [int]$processId
     } catch {
         return 0
     }
@@ -524,8 +524,8 @@ function Remove-ScreenConnect {
                         Write-LevelLog "Running uninstall string..."
                         $parts = $uninstallString -split '\s+', 2
                         $exe = $parts[0]
-                        $args = if ($parts.Count -gt 1) { $parts[1] } else { "" }
-                        Start-Process -FilePath $exe -ArgumentList $args -Wait -ErrorAction SilentlyContinue
+                        $uninstallArgs = if ($parts.Count -gt 1) { $parts[1] } else { "" }
+                        Start-Process -FilePath $exe -ArgumentList $uninstallArgs -Wait -ErrorAction SilentlyContinue
                         $uninstalled = $true
                     }
                 }

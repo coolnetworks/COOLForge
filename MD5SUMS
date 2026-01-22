@@ -622,7 +622,7 @@ bbdb0cc4777afb4c2e102e2a10ca99a6  scripts/Policy/👀chrome.ps1
 4d2f0bb5a1537aa6820cdea2e222677e  scripts/Policy/👀dnsfilter.ps1
 af3eab8ee9c30eaad6e5c6715c8ce39b  scripts/Policy/👀huntress.ps1
 699e8bfd975e9b0fe8600bbd421fc3d9  scripts/Policy/👀meshcentral.ps1
-842a3b1bb872cbdf266b9da59aa59ce3  scripts/Policy/👀screenconnect.ps1
+94ffbbef9b55d14b5f824f8d89f806d3  scripts/Policy/👀screenconnect.ps1
 7b39ce7586eb23d343ef156ed1d7343b  scripts/Policy/👀unchecky.ps1
 4400b053017fb7374230e6b3690dbdca  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
