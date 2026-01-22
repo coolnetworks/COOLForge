@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.21.01
+    Version:    2026.01.22.01
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -2611,7 +2611,8 @@ function Invoke-LevelApiCall {
     # Note: Level.io v2 API does NOT use "Bearer" prefix - just the API key directly
     $Headers = @{
         "Authorization" = $ApiKey
-        "Content-Type"  = "application/json"
+        "Content-Type"  = "application/json; charset=utf-8"
+        "Accept"        = "application/json"
     }
 
     # Build request parameters
@@ -2623,9 +2624,11 @@ function Invoke-LevelApiCall {
         UseBasicParsing = $true
     }
 
-    # Add body for non-GET requests
+    # Add body for non-GET requests - ensure UTF-8 encoding for emojis
     if ($Body -and $Method -ne "GET") {
-        $Params.Body = ($Body | ConvertTo-Json -Depth 10)
+        $JsonString = ($Body | ConvertTo-Json -Depth 10)
+        # Explicitly encode as UTF-8 bytes to handle emojis correctly
+        $Params.Body = [System.Text.Encoding]::UTF8.GetBytes($JsonString)
     }
 
     for ($Attempt = 1; $Attempt -le $MaxRetries; $Attempt++) {
