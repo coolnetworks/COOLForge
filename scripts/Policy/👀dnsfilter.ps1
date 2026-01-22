@@ -479,9 +479,13 @@ $InvokeParams = @{ ScriptBlock = {
         $KeyPreview = if ($KeyLength -gt 4) { $LevelApiKey.Substring(0, 4) + "****" } else { "(invalid)" }
         Write-LevelLog "API key: $KeyPreview (length: $KeyLength)" -Level "DEBUG"
 
+        # Pass launcher variable to skip API calls for field existence check
+        $PolicyFieldValue = Get-Variable -Name "policy_$SoftwareName" -ValueOnly -ErrorAction SilentlyContinue
+
         $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
             -SoftwareName $SoftwareName `
-            -RequireUrl $false
+            -RequireUrl $false `
+            -PolicyFieldValue $PolicyFieldValue
 
         # Also create the site key custom field if it doesn't exist
         $SiteKeyFieldName = "policy_dnsfilter_sitekey"

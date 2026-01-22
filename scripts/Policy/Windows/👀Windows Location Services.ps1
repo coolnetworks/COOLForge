@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Configuration policy enforcement for Windows Location Services.
 
@@ -746,11 +746,15 @@ $InvokeParams = @{ ScriptBlock = {
         $KeyPreview = if ($KeyLength -gt 4) { $LevelApiKey.Substring(0, 4) + "****" } else { "(invalid)" }
         Write-LevelLog "API key: $KeyPreview (length: $KeyLength)" -Level "DEBUG"
 
+        # Pass launcher variable value to skip API calls for field existence check
+        $PolicyFieldValue = Get-Variable -Name $CustomFieldName -ValueOnly -ErrorAction SilentlyContinue
+
         $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
             -SoftwareName $SoftwareName `
             -RequireUrl $false `
             -CustomFieldName $CustomFieldName `
-            -DefaultPolicyValue "pin | uses pin/install/remove (install=enable, remove=disable)"
+            -DefaultPolicyValue "pin | uses pin/install/remove (install=enable, remove=disable)" `
+            -PolicyFieldValue $PolicyFieldValue
 
         if ($InfraResult.Success) {
             if ($InfraResult.TagsCreated -gt 0 -or $InfraResult.FieldsCreated -gt 0) {

@@ -4552,7 +4552,14 @@ function Initialize-SoftwarePolicyInfrastructure {
         [string]$CustomFieldName = "",
 
         [Parameter(Mandatory = $false)]
-        [string]$BaseUrl = "https://api.level.io/v2"
+        [string]$BaseUrl = "https://api.level.io/v2",
+
+        # Launcher variable values - if provided, skip API calls for field existence check
+        [Parameter(Mandatory = $false)]
+        [string]$PolicyFieldValue = "",
+
+        [Parameter(Mandatory = $false)]
+        [string]$UrlFieldValue = ""
     )
 
     $SoftwareName = $SoftwareName.ToLower()
@@ -4629,17 +4636,21 @@ function Initialize-SoftwarePolicyInfrastructure {
     }
 
     # ================================================================
-    # STEP 3: Create custom fields
+    # STEP 3: Create custom fields (only if missing)
     # ================================================================
-    # Policy field (e.g., policy_unchecky or custom name)
+    # Use launcher variable values to determine if fields exist (no API call needed)
+    # If variable is unexpanded (contains {{) or empty, field may not exist
     $PolicyFieldName = if ([string]::IsNullOrWhiteSpace($CustomFieldName)) { "policy_$SoftwareName" } else { $CustomFieldName }
-    $ExistingPolicyField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $PolicyFieldName -BaseUrl $BaseUrl
 
-    if (-not $ExistingPolicyField) {
+    # Check if policy field exists based on launcher variable
+    $PolicyFieldExists = -not [string]::IsNullOrWhiteSpace($PolicyFieldValue) -and $PolicyFieldValue -notlike "{{*}}"
+
+    if (-not $PolicyFieldExists) {
+        # Field doesn't exist - create it (this is the only API call for fields)
         Write-LevelLog "Creating custom field: $PolicyFieldName (default: '$DefaultPolicyValue')" -Level "INFO"
         $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $PolicyFieldName -DefaultValue $DefaultPolicyValue -BaseUrl $BaseUrl
         if ($NewField) {
-            # Set the org-level default value (API default_value only defines it, doesn't apply it)
+            # Set the org-level default value
             if (-not [string]::IsNullOrWhiteSpace($DefaultPolicyValue) -and $NewField.id) {
                 $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $NewField.id -Value $DefaultPolicyValue -BaseUrl $BaseUrl
             }
@@ -4652,28 +4663,17 @@ function Initialize-SoftwarePolicyInfrastructure {
         }
     }
     else {
-        # Field exists - check if value is empty and set default if so (handles race conditions)
-        if (-not [string]::IsNullOrWhiteSpace($DefaultPolicyValue)) {
-            $ExistingWithValue = Get-LevelCustomFieldById -ApiKey $ApiKey -FieldId $ExistingPolicyField.id -BaseUrl $BaseUrl
-            if ($ExistingWithValue -and [string]::IsNullOrWhiteSpace($ExistingWithValue.default_value)) {
-                Write-LevelLog "Custom field '$PolicyFieldName' exists but has no value - setting default" -Level "INFO"
-                $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $ExistingPolicyField.id -Value $DefaultPolicyValue -BaseUrl $BaseUrl
-            }
-            else {
-                Write-LevelLog "Custom field '$PolicyFieldName' already exists with value" -Level "DEBUG"
-            }
-        }
-        else {
-            Write-LevelLog "Custom field '$PolicyFieldName' already exists" -Level "DEBUG"
-        }
+        Write-LevelLog "Custom field '$PolicyFieldName' exists (from launcher)" -Level "DEBUG"
     }
 
     # URL field (e.g., policy_unchecky_url) - only if required
     if ($RequireUrl) {
         $UrlFieldName = "policy_${SoftwareName}_url"
-        $ExistingUrlField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $UrlFieldName -BaseUrl $BaseUrl
 
-        if (-not $ExistingUrlField) {
+        # Check if URL field exists based on launcher variable
+        $UrlFieldExists = -not [string]::IsNullOrWhiteSpace($UrlFieldValue) -and $UrlFieldValue -notlike "{{*}}"
+
+        if (-not $UrlFieldExists) {
             Write-LevelLog "Creating custom field: $UrlFieldName" -Level "INFO"
             $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $UrlFieldName -DefaultValue "" -BaseUrl $BaseUrl
             if ($NewField) {
@@ -4685,7 +4685,7 @@ function Initialize-SoftwarePolicyInfrastructure {
             }
         }
         else {
-            Write-LevelLog "Custom field '$UrlFieldName' already exists" -Level "DEBUG"
+            Write-LevelLog "Custom field '$UrlFieldName' exists (from launcher)" -Level "DEBUG"
         }
     }
 

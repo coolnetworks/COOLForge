@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Software policy enforcement for ScreenConnect (ConnectWise Control).
 
@@ -649,12 +649,14 @@ $InvokeParams = @{ ScriptBlock = {
             -RequireUrl $false
 
         # Create ScreenConnect-specific custom fields (using "screenconnect" not "sc")
+        # Use launcher variable values to detect if fields exist (no API calls needed)
         $ScFieldsCreated = 0
 
-        # Main policy field
+        # Main policy field - check if launcher expanded it (means field exists)
         $PolicyFieldName = "policy_screenconnect"
-        $ExistingPolicyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $PolicyFieldName
-        if (-not $ExistingPolicyField) {
+        $PolicyFieldLauncherValue = Get-Variable -Name "policy_screenconnect" -ValueOnly -ErrorAction SilentlyContinue
+        $PolicyFieldExists = -not [string]::IsNullOrWhiteSpace($PolicyFieldLauncherValue) -and $PolicyFieldLauncherValue -notlike "{{*}}"
+        if (-not $PolicyFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $PolicyFieldName -DefaultValue "pin | uses pin/install/remove (change to activate policy)"
             if ($NewField) {
                 Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
@@ -662,9 +664,14 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
+        # Instance field - already checked at script start (lines 74-77)
         $InstanceFieldName = "policy_screenconnect_instance"
-        $ExistingInstanceField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $InstanceFieldName
-        if (-not $ExistingInstanceField) {
+        $InstanceFieldExists = $null -ne $InstanceName  # Already parsed from launcher
+        if (-not $InstanceFieldExists) {
+            $InstanceRaw = Get-Variable -Name $InstanceNameVar -ValueOnly -ErrorAction SilentlyContinue
+            $InstanceFieldExists = -not [string]::IsNullOrWhiteSpace($InstanceRaw) -and $InstanceRaw -notlike "{{*}}"
+        }
+        if (-not $InstanceFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $InstanceFieldName -DefaultValue ""
             if ($NewField) {
                 Write-LevelLog "Created custom field: $InstanceFieldName" -Level "SUCCESS"
@@ -672,9 +679,14 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
+        # BaseUrl field - already checked at script start (lines 79-87)
         $BaseUrlFieldName = "policy_screenconnect_baseurl"
-        $ExistingBaseUrlField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $BaseUrlFieldName
-        if (-not $ExistingBaseUrlField) {
+        $BaseUrlFieldExists = $null -ne $BaseUrl  # Already parsed from launcher
+        if (-not $BaseUrlFieldExists) {
+            $BaseUrlRaw = Get-Variable -Name $BaseUrlVar -ValueOnly -ErrorAction SilentlyContinue
+            $BaseUrlFieldExists = -not [string]::IsNullOrWhiteSpace($BaseUrlRaw) -and $BaseUrlRaw -notlike "{{*}}"
+        }
+        if (-not $BaseUrlFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $BaseUrlFieldName -DefaultValue ""
             if ($NewField) {
                 Write-LevelLog "Created custom field: $BaseUrlFieldName" -Level "SUCCESS"

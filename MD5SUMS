@@ -586,7 +586,7 @@ bba92b6bfe13e14560a33acffdd18578  launchers/🔧Prevent Sleep.ps1
 9a5c78cd4ab457f345d63c3f0a835a83  LEVEL-SUPPORT-QUESTIONS.md
 9b45e597763b94993608aca55a086b1f  LEVEL-SUPPORT-SUBMITTED.md
 5746acb006595a0ec8e3e8ccfe2a7131  MEETING NOTES - Level.io Demo.md
-56d8eb79fd2c4aaf65d9ff040c8424ac  modules/COOLForge-Common.psm1
+6aa1695cc1d5fe5a094f0a97661a3158  modules/COOLForge-Common.psm1
 07f2114b030950370cf6ac38e64f222f  NEEDS_TESTING.md
 3c230ff8cd8b89385d4fb66e136aa10a  pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  pre-release/Test-Syntax.ps1
@@ -615,15 +615,15 @@ d79a398d1be20cc5d13293e3a132b12b  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
 62f5ccece06145e976ab48b49dae31b9  scripts/Fix/🔧Fix Windows Location Services.ps1
 0acd004efe2ad665a5deac011bd4e4be  scripts/Fix/🔧Prevent Sleep.ps1
 31412ed098c7bfd30362926a06ecdd96  scripts/Policy/Chrome/README.md
-5cfb87b92852f5aad30fa6fd4539fb96  scripts/Policy/Chrome/👀Chrome Location Services.ps1
+e795c97f36241a47afbd45c56c28e414  scripts/Policy/Chrome/👀Chrome Location Services.ps1
 40e098ca771ee0ce0dadc4f460d8c55d  scripts/Policy/Windows/README.md
-3a605545f13f28b670d73f18ee4e60fa  scripts/Policy/Windows/👀Windows Location Services.ps1
-b4b0bc02e964eea4f9676b07894c380c  scripts/Policy/👀chrome.ps1
-e7735d5106c5112ab01b6160f751dd03  scripts/Policy/👀dnsfilter.ps1
-c1b35bc245d2e2977a3d41ac5b47659a  scripts/Policy/👀huntress.ps1
-a57f2f3b070e049843bfe74e7333f6dd  scripts/Policy/👀meshcentral.ps1
-394e295d3065c5d503585fe0b6ca7dbf  scripts/Policy/👀screenconnect.ps1
-195dc9e348d37ca7b1ef11e9456cc79c  scripts/Policy/👀unchecky.ps1
+6a79e89ae66bded86e13d784e17c8775  scripts/Policy/Windows/👀Windows Location Services.ps1
+bbdb0cc4777afb4c2e102e2a10ca99a6  scripts/Policy/👀chrome.ps1
+4d2f0bb5a1537aa6820cdea2e222677e  scripts/Policy/👀dnsfilter.ps1
+af3eab8ee9c30eaad6e5c6715c8ce39b  scripts/Policy/👀huntress.ps1
+699e8bfd975e9b0fe8600bbd421fc3d9  scripts/Policy/👀meshcentral.ps1
+842a3b1bb872cbdf266b9da59aa59ce3  scripts/Policy/👀screenconnect.ps1
+7b39ce7586eb23d343ef156ed1d7343b  scripts/Policy/👀unchecky.ps1
 4400b053017fb7374230e6b3690dbdca  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
