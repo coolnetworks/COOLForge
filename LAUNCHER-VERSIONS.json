@@ -1,6 +1,6 @@
 {
   "$schema": "./definitions/launcher-versions.schema.json",
-  "version": "2026.01.21",
+  "version": "2026.01.22",
   "description": "Current launcher versions - launchers check this to detect when they need updating in Level.io",
   "launchers": {
     "Policy/👀chrome.ps1": "2026.01.20.02",
@@ -34,6 +34,8 @@
     "🔧Fix Windows 8 Services.ps1": "2026.01.20.02",
     "🔧Fix Windows 8.1 Services.ps1": "2026.01.20.02",
     "🔧Prevent Sleep.ps1": "2026.01.20.02",
-    "🙏Wake all devices in parent to level.io folder.ps1": "2026.01.20.02"
+    "🙏Wake all devices in Level group.ps1": "2026.01.22.01",
+    "👀Check Windows Location Services.ps1": "2026.01.22.01",
+    "⚙️Configure Wake-on-LAN.ps1": "2026.01.22.01"
   }
 }

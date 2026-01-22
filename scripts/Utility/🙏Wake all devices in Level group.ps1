@@ -26,7 +26,7 @@
     - etc.
 
 .NOTES
-    File Name      : Wake all devices in parent to level.io folder.ps1
+    File Name      : Wake all devices in Level group.ps1
     Prerequisite   : Level.io API key with device read permissions
     API Version    : Level.io API v2
     Requires       : COOLForge-Common module

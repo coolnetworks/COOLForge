@@ -1,10 +1,10 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "🙏Wake all devices in parent to level.io folder.ps1"
+$ScriptToRun = "👀Check Windows Location Services.ps1"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for [DEPRECATED] Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
+    Slim Level.io Launcher - Downloads and executes scripts from GitHub with auto-update.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -18,7 +18,7 @@ $ScriptToRun = "🙏Wake all devices in parent to level.io folder.ps1"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "🙏Wake all devices in parent to level.io folder.ps1"
+$LauncherName = "👀Check Windows Location Services.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
