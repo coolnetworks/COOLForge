@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Removes AnyDesk remote access software from the system.
 
@@ -35,7 +35,7 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# ⛔Force Remove Anydesk
+# â›”Force Remove Anydesk
 # Version: 2025.12.27.05
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
@@ -53,7 +53,7 @@ $Init = Initialize-LevelScript -ScriptName "RemoveAnyDesk" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
                                -DeviceTags $DeviceTags `
-                               -BlockingTags @("❌")
+                               -BlockingTags @("âŒ")
 
 if (-not $Init.Success) {
     exit 0
@@ -105,25 +105,25 @@ function Invoke-AnyDeskUninstall {
                 # Handle different uninstall string formats
                 if ($uninstallString -match '^"(.+)"(.*)$') {
                     $exe = $Matches[1]
-                    $args = $Matches[2].Trim()
+                    $uninstallArgs = $Matches[2].Trim()
                 }
                 elseif ($uninstallString -match '^(.+\.exe)(.*)$') {
                     $exe = $Matches[1]
-                    $args = $Matches[2].Trim()
+                    $uninstallArgs = $Matches[2].Trim()
                 }
                 else {
                     $exe = $uninstallString
-                    $args = ""
+                    $uninstallArgs = ""
                 }
 
                 # Add silent flags if not present
-                if ($args -notmatch '/S|--silent|--remove') {
-                    $args = "$args --remove --silent"
+                if ($uninstallArgs -notmatch '/S|--silent|--remove') {
+                    $uninstallArgs = "$uninstallArgs --remove --silent"
                 }
 
                 try {
-                    Write-LevelLog "Executing: $exe $args"
-                    $process = Start-Process -FilePath $exe -ArgumentList $args -Wait -PassThru -ErrorAction Stop
+                    Write-LevelLog "Executing: $exe $uninstallArgs"
+                    $process = Start-Process -FilePath $exe -ArgumentList $uninstallArgs -Wait -PassThru -ErrorAction Stop
                     Write-LevelLog "Uninstaller exited with code: $($process.ExitCode)"
                     $uninstalled = $true
                     Start-Sleep -Seconds 3
