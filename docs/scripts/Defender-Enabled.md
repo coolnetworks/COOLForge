@@ -33,8 +33,10 @@ Ensures Windows Defender antivirus is enabled and running.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Ensure
-   Defender enabled
+   SCRIPT: Checks Defender
+   service, starts if
+   stopped, verifies
+   real-time protection
          |
          v
 +--------------------+

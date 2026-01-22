@@ -34,8 +34,10 @@ Validates that device DNS server settings match expected configuration.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Check DNS
-   server compliance
+   SCRIPT: Checks each
+   adapter's DNS against
+   expected servers,
+   reports compliance
          |
          v
 +--------------------+

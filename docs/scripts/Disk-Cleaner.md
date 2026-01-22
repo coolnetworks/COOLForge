@@ -33,8 +33,10 @@ Cleans temporary files and frees disk space across common locations.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Clean
-   temporary files
+   SCRIPT: Cleans temp
+   folders, browser
+   caches, Windows Update
+   cache to free space
          |
          v
 +--------------------+

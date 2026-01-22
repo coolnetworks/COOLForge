@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Polls API for
+   pending alerts, filters
+   unseen, shows toast
+   notifications, caches
          |
          v
 +--------------------+

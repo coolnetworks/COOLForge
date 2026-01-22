@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Checks tags and
+   policy, installs agent
+   with NKEY, removes or
+   verifies DNS Agent
          |
          v
 +--------------------+

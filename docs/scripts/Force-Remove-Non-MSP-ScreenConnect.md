@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Finds SC instances
+   filters by whitelist,
+   removes unauthorized,
+   cleans files/registry
          |
          v
 +--------------------+

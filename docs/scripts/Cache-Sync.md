@@ -34,8 +34,10 @@ Synchronizes the local registry cache with Level.io data.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Sync cache
-   with Level.io API
+   SCRIPT: Queries API
+   for device data,
+   updates registry
+   cache, clears stale
          |
          v
 +--------------------+

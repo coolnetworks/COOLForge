@@ -34,7 +34,10 @@ Automated installation and removal of [Unchecky](https://unchecky.com/) across y
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Checks tags and
+   policy, downloads from
+   hosted URL, installs
+   or removes Unchecky
          |
          v
 +--------------------+

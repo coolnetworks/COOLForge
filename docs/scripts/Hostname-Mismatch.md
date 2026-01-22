@@ -33,8 +33,10 @@ Detects when a device's actual hostname doesn't match what Level.io expects.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Detect
-   hostname mismatch
+   SCRIPT: Gets actual
+   Windows hostname,
+   compares to Level.io
+   value, alerts if different
          |
          v
 +--------------------+

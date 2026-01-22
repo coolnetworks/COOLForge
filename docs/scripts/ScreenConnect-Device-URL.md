@@ -36,7 +36,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Searches registry
+   for SC service, parses
+   GUID from ImagePath,
+   constructs device URL
          |
          v
 +--------------------+

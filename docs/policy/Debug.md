@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Tests policy
+   resolution, displays
+   what action would run,
+   simulates install/remove
          |
          v
 +--------------------+

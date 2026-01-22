@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: 5-phase removal
+   uninstall, stop services,
+   delete files, clean
+   registry, verify gone
          |
          v
 +--------------------+

@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Tests all
+   library functions,
+   displays versions,
+   reports pass/fail
          |
          v
 +--------------------+

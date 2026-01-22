@@ -36,7 +36,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Enables System
+   Protection, sets disk
+   space, creates restore
+   point, schedules daily
          |
          v
 +--------------------+

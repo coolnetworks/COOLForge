@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Loads 60+ RAT
+   definitions, checks SC
+   whitelist, scans procs
+   services, registry, dirs
          |
          v
 +--------------------+

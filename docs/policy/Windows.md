@@ -36,7 +36,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Checks tags and
+   policy, enables/disables
+   Windows settings via
+   registry and services
          |
          v
 +--------------------+

@@ -36,7 +36,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Gets device
+   group, traverses up by
+   LevelsUp, fetches all
+   devices, sends WOL
          |
          v
 +--------------------+

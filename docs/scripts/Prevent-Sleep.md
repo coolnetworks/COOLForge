@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Backs up power
+   settings, disables sleep
+   and hibernate, schedules
+   auto-restore task
          |
          v
 +--------------------+

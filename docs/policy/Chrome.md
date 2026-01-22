@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Checks tags and
+   policy field, installs
+   Enterprise MSI, removes
+   or pins Chrome state
          |
          v
 +--------------------+

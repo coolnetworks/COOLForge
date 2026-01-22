@@ -34,7 +34,10 @@ Software policy enforcement for ConnectWise ScreenConnect (Control) remote acces
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Checks tags and
+   policy, installs from
+   base URL, removes or
+   pins ScreenConnect state
          |
          v
 +--------------------+

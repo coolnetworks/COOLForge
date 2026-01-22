@@ -33,8 +33,10 @@ Sends Wake-on-LAN packets to devices with specific tags.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Wake
-   tagged devices
+   SCRIPT: Queries API
+   for devices with wake
+   tag, gets MACs, sends
+   WOL packets to each
          |
          v
 +--------------------+

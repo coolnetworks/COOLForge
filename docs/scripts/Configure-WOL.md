@@ -33,8 +33,10 @@ Enables Wake-on-LAN (WOL) settings on network adapters.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Configure
-   Wake-on-LAN
+   SCRIPT: Finds NICs,
+   enables WOL power
+   settings, configures
+   adapter properties
          |
          v
 +--------------------+

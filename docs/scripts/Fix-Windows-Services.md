@@ -41,7 +41,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Detects Windows
+   version, loads default
+   service list, resets
+   each to MS defaults
          |
          v
 +--------------------+

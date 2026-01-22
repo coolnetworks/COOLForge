@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Collects system
+   info, outputs variables
+   in Level.io format
+   {{var=value}}
          |
          v
 +--------------------+

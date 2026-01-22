@@ -34,7 +34,10 @@ Software policy enforcement for MeshCentral remote management agent.
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Checks tags and
+   policy, downloads agent
+   from server URL, installs
+   or removes MeshCentral
          |
          v
 +--------------------+

@@ -33,8 +33,10 @@ Cleans up old PACS imaging studies from VoyagerPACS installations.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Cleanup
-   old PACS studies
+   SCRIPT: Finds PACS
+   install, scans for
+   studies past retention,
+   deletes and reports
          |
          v
 +--------------------+

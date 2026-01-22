@@ -37,7 +37,10 @@
 | Launcher           |
 +========+===========+
          |
-    SCRIPT LOGIC
+   SCRIPT: Checks tags and
+   policy, installs with
+   account key, handles
+   tamper protection
          |
          v
 +--------------------+

@@ -33,8 +33,10 @@ Checks the status of Windows Location Services on the device.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Check
-   location services
+   SCRIPT: Queries
+   registry for location
+   service status,
+   reports enabled/disabled
          |
          v
 +--------------------+

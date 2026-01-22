@@ -33,8 +33,10 @@ Configures Windows Location Services to the desired state.
 | Launcher           |
 +========+===========+
          |
-   SCRIPT: Fix
-   location services
+   SCRIPT: Reads policy,
+   enables or disables
+   Windows location via
+   registry settings
          |
          v
 +--------------------+
