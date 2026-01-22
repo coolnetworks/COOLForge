@@ -10,12 +10,19 @@ param(
     [string]$FromAddress = "allen@cool.net.au",
     [string]$ToAddress = "support@level.io",
     [string]$RepoPath = "E:\COOLForge",
+    [string]$BackupPath = "E:\supportquestions",
     [switch]$WhatIf
 )
 
-$QuestionsFile = Join-Path $RepoPath "LEVEL-SUPPORT-QUESTIONS.md"
-$SubmittedFile = Join-Path $RepoPath "LEVEL-SUPPORT-SUBMITTED.md"
+$QuestionsFile = Join-Path $RepoPath "mynotes\LEVEL-SUPPORT-QUESTIONS.md"
+$SubmittedFile = Join-Path $RepoPath "mynotes\LEVEL-SUPPORT-SUBMITTED.md"
 $Today = Get-Date -Format "yyyy-MM-dd"
+$Timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
+
+# Ensure backup folder exists
+if (!(Test-Path $BackupPath)) {
+    New-Item -Path $BackupPath -ItemType Directory -Force | Out-Null
+}
 
 # Read the questions file
 $QuestionsContent = Get-Content $QuestionsFile -Raw
@@ -85,7 +92,7 @@ Allen
     }
     else {
         try {
-            Send-MailMessage -SmtpServer $SmtpServer -From $FromAddress -To $ToAddress -Subject $Subject -Body $Body
+            Send-MailMessage -SmtpServer $SmtpServer -From $FromAddress -To $ToAddress -Cc $FromAddress -Subject $Subject -Body $Body
             Write-Host "    Sent email: $Subject"
         }
         catch {
@@ -137,6 +144,35 @@ else {
 $NewQuestionsContent = $QuestionsContent -replace `
     '(?s)(## Pending Questions for Level\.io\s*\r?\n).+?(?=\r?\n\*Document created|\z)', `
     "`$1`n*No pending questions - all submitted. See [LEVEL-SUPPORT-SUBMITTED.md](LEVEL-SUPPORT-SUBMITTED.md)*`n`n"
+
+# Backup files before writing
+$QuestionsBackup = Join-Path $BackupPath "LEVEL-SUPPORT-QUESTIONS_$Timestamp.md"
+$SubmittedBackup = Join-Path $BackupPath "LEVEL-SUPPORT-SUBMITTED_$Timestamp.md"
+$LatestFile = Join-Path $BackupPath "LATEST.md"
+Copy-Item -Path $QuestionsFile -Destination $QuestionsBackup -Force
+if (Test-Path $SubmittedFile) {
+    Copy-Item -Path $SubmittedFile -Destination $SubmittedBackup -Force
+}
+
+# Create combined latest file
+$LatestContent = @"
+# Level.io Support - Combined Backup
+# Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+
+================================================================================
+PENDING QUESTIONS
+================================================================================
+
+$QuestionsContent
+
+================================================================================
+SUBMITTED QUESTIONS
+================================================================================
+
+$SubmittedContent
+"@
+[System.IO.File]::WriteAllText($LatestFile, $LatestContent, [System.Text.UTF8Encoding]::new($true))
+Write-Host "[*] Backups saved to $BackupPath"
 
 # Write files
 [System.IO.File]::WriteAllText($SubmittedFile, $SubmittedContent, [System.Text.UTF8Encoding]::new($true))

@@ -30,8 +30,9 @@ ScreenConnectUrls_*.csv
 # Local scripts (destructive/testing tools not for GitHub)
 .local/
 
-# Private notes (API questions, support tickets, etc.)
-LEVEL-SUPPORT-QUESTIONS.md
-LEVEL-SUPPORT-SUBMITTED.md
+# Private notes (meeting notes, etc.)
 NEEDS_TESTING.md
 MEETING*.md
+
+# Personal notes folder
+/mynotes/
