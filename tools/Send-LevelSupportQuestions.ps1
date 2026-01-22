@@ -160,13 +160,13 @@ $LatestContent = @"
 # Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 
 ================================================================================
-PENDING QUESTIONS
+FILE: LEVEL-SUPPORT-QUESTIONS.md (Pending)
 ================================================================================
 
 $QuestionsContent
 
 ================================================================================
-SUBMITTED QUESTIONS
+FILE: LEVEL-SUPPORT-SUBMITTED.md (Submitted)
 ================================================================================
 
 $SubmittedContent
