@@ -34,6 +34,10 @@ This document provides detailed documentation for all functions exported by the 
 - [Get-LevelGroups](#get-levelgroups)
 - [Get-LevelDevices](#get-leveldevices)
 - [Find-LevelDevice](#find-leveldevice)
+- [Get-LevelDeviceById](#get-leveldevicebyid)
+- [Get-LevelDeviceTagNames](#get-leveldevicetagnames)
+- [Set-LevelDeviceName](#set-leveldevicename)
+- [New-LevelTag](#new-leveltag)
 - [Send-LevelWakeOnLan](#send-levelwakeonlan)
 
 ### Technician Alerts
@@ -42,6 +46,39 @@ This document provides detailed documentation for all functions exported by the 
 - [Send-TechnicianAlertQueue](#send-technicianalertqueue)
 - [Test-TechnicianWorkstation](#test-technicianworkstation)
 - [Get-TechnicianName](#get-technicianname)
+
+### Cache Management
+- [Initialize-LevelCache](#initialize-levelcache)
+- [Get-LevelCacheValue](#get-levelcachevalue)
+- [Set-LevelCacheValue](#set-levelcachevalue)
+- [Get-CachedDeviceTags](#get-cacheddevicetags)
+- [Update-CachedDeviceTags](#update-cacheddevicetags)
+- [Clear-LevelCache](#clear-levelcache)
+
+### Infrastructure Setup
+- [Initialize-COOLForgeInfrastructure](#initialize-coolforgeinfrastructure)
+- [Initialize-SoftwarePolicyInfrastructure](#initialize-softwarepolicyinfrastructure)
+
+### Installer Functions
+- [Install-MsiWithRetry](#install-msiwithretry)
+- [Install-ExeWithRetry](#install-exewithretry)
+
+### Emoji Functions
+- [Get-EmojiBytePatterns](#get-emojibytepatterns)
+- [Get-EmojiLiterals](#get-emojiliterals)
+
+### Script Launcher Functions
+- [Get-ContentMD5](#get-contentmd5)
+- [Get-ExpectedMD5](#get-expectedmd5)
+- [Get-ScriptPathFromMD5](#get-scriptpathfrommd5)
+- [Get-ScriptVersion](#get-scriptversion)
+- [Invoke-ScriptLauncher](#invoke-scriptlauncher)
+
+### Debug Helper Functions
+- [Write-DebugSection](#write-debugsection)
+- [Write-DebugTags](#write-debugtags)
+- [Write-DebugPolicy](#write-debugpolicy)
+- [Write-DebugTagManagement](#write-debugtagmanagement)
 
 ---
 
@@ -880,9 +917,491 @@ Technician name string extracted from the tag (e.g., "John" from `🧑‍💻Joh
 
 ---
 
+## Cache Management Functions
+
+### Initialize-LevelCache
+
+Initializes the registry cache structure for storing API data locally.
+
+```powershell
+Initialize-LevelCache -MspScratchFolder "C:\ProgramData\MyMSP"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-MspScratchFolder` | String | Yes | Path to MSP scratch folder (used to derive cache key) |
+
+---
+
+### Get-LevelCacheValue
+
+Retrieves a value from the registry cache.
+
+```powershell
+$DeviceId = Get-LevelCacheValue -Key "DeviceId"
+$Tags = Get-LevelCacheValue -Key "Tags" -AsJson
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-Key` | String | Yes | — | Cache key name |
+| `-AsJson` | Switch | No | `$false` | Parse value as JSON |
+
+**Returns:** Cached value or `$null` if not found.
+
+---
+
+### Set-LevelCacheValue
+
+Stores a value in the registry cache.
+
+```powershell
+Set-LevelCacheValue -Key "DeviceId" -Value "dev_abc123"
+Set-LevelCacheValue -Key "Tags" -Value $TagsArray -AsJson
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-Key` | String | Yes | — | Cache key name |
+| `-Value` | Object | Yes | — | Value to store |
+| `-AsJson` | Switch | No | `$false` | Convert value to JSON before storing |
+
+---
+
+### Get-CachedDeviceTags
+
+Retrieves cached device tags.
+
+```powershell
+$Tags = Get-CachedDeviceTags
+```
+
+**Returns:** Array of tag names or empty array.
+
+---
+
+### Update-CachedDeviceTags
+
+Updates the device tag cache from the current `$DeviceTags` variable.
+
+```powershell
+Update-CachedDeviceTags -DeviceTags $DeviceTags
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-DeviceTags` | String | Yes | Comma-separated tag names |
+
+---
+
+### Clear-LevelCache
+
+Clears all cached data from the registry.
+
+```powershell
+Clear-LevelCache
+```
+
+---
+
+## Infrastructure Setup Functions
+
+### Initialize-COOLForgeInfrastructure
+
+Creates the core COOLForge custom fields in Level.io. Only creates the 6 global fields that all scripts need.
+
+```powershell
+Initialize-COOLForgeInfrastructure -ApiKey "your-api-key"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ApiKey` | String | Yes | Level.io API key |
+
+### Created Fields
+
+- `policy_0_readme` - Documentation (read-only)
+- `coolforge_msp_scratch_folder` - Persistent storage path
+- `coolforge_ps_module_library_source` - Custom library URL override
+- `coolforge_pin_psmodule_to_version` - Version pinning
+- `coolforge_pat` - GitHub PAT for private repos
+- `debug_scripts` - Debug mode toggle
+
+---
+
+### Initialize-SoftwarePolicyInfrastructure
+
+Creates the custom field and tags for a specific software policy script.
+
+```powershell
+Initialize-SoftwarePolicyInfrastructure -ApiKey "your-api-key" -SoftwareName "unchecky"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ApiKey` | String | Yes | Level.io API key |
+| `-SoftwareName` | String | Yes | Name of the software (e.g., "unchecky", "huntress") |
+
+### Created Resources
+
+- Policy custom field: `policy_{softwarename}`
+- Tags: Install, Remove, Has, Pin prefixed with emojis
+
+---
+
+## Installer Functions
+
+### Install-MsiWithRetry
+
+Installs an MSI package with configurable retry logic.
+
+```powershell
+$Result = Install-MsiWithRetry -MsiPath "C:\temp\installer.msi" -Arguments "/qn"
+$Result = Install-MsiWithRetry -MsiPath $Path -MaxRetries 5 -RetryDelaySeconds 30
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-MsiPath` | String | Yes | — | Path to the MSI file |
+| `-Arguments` | String | No | `"/qn"` | msiexec arguments |
+| `-MaxRetries` | Int | No | `3` | Maximum retry attempts |
+| `-RetryDelaySeconds` | Int | No | `10` | Delay between retries |
+
+### Returns
+
+```powershell
+@{ Success = $true; ExitCode = 0; Attempts = 1 }
+@{ Success = $false; ExitCode = 1603; Attempts = 3; Error = "Install failed" }
+```
+
+---
+
+### Install-ExeWithRetry
+
+Installs an EXE installer with retry logic.
+
+```powershell
+$Result = Install-ExeWithRetry -ExePath "C:\temp\setup.exe" -Arguments "/S"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ExePath` | String | Yes | — | Path to the EXE installer |
+| `-Arguments` | String | No | `""` | Command-line arguments |
+| `-MaxRetries` | Int | No | `3` | Maximum retry attempts |
+| `-RetryDelaySeconds` | Int | No | `10` | Delay between retries |
+| `-SuccessExitCodes` | Int[] | No | `@(0)` | Exit codes considered successful |
+
+### Returns
+
+```powershell
+@{ Success = $true; ExitCode = 0; Attempts = 1 }
+```
+
+---
+
+## Additional API Functions
+
+### Get-LevelDeviceById
+
+Retrieves a device by its ID.
+
+```powershell
+$Device = Get-LevelDeviceById -ApiKey "{{cf_apikey}}" -DeviceId "dev_abc123"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ApiKey` | String | Yes | Level.io API key |
+| `-DeviceId` | String | Yes | Device ID |
+
+**Returns:** Device object or `$null`.
+
+---
+
+### Get-LevelDeviceTagNames
+
+Gets the tag names for a device.
+
+```powershell
+$TagNames = Get-LevelDeviceTagNames -ApiKey "{{cf_apikey}}" -DeviceId "dev_abc123"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ApiKey` | String | Yes | Level.io API key |
+| `-DeviceId` | String | Yes | Device ID |
+
+**Returns:** Array of tag name strings.
+
+---
+
+### Set-LevelDeviceName
+
+Updates a device's hostname in Level.io.
+
+```powershell
+Set-LevelDeviceName -ApiKey "{{cf_apikey}}" -DeviceId "dev_abc123" -NewName "WORKSTATION-01"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ApiKey` | String | Yes | Level.io API key |
+| `-DeviceId` | String | Yes | Device ID |
+| `-NewName` | String | Yes | New device hostname |
+
+**Returns:** `$true` on success, `$false` on failure.
+
+---
+
+### New-LevelTag
+
+Creates a new tag in Level.io.
+
+```powershell
+$Tag = New-LevelTag -ApiKey "{{cf_apikey}}" -Name "MyTag" -Color "blue"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | Yes | — | Level.io API key |
+| `-Name` | String | Yes | — | Tag name (can include emoji prefix) |
+| `-Color` | String | No | `"gray"` | Tag color |
+
+**Returns:** Created tag object or `$null` on failure.
+
+---
+
+## Emoji Functions
+
+### Get-EmojiBytePatterns
+
+Returns the raw byte patterns for emojis used in Level.io tag matching. Used internally by `Get-EmojiMap`.
+
+```powershell
+$Patterns = Get-EmojiBytePatterns
+```
+
+**Returns:** Hashtable of emoji names to byte pattern arrays.
+
+---
+
+### Get-EmojiLiterals
+
+Returns clean emoji literals for display purposes.
+
+```powershell
+$Emojis = Get-EmojiLiterals
+$InstallEmoji = $Emojis["Install"]  # Returns the pray emoji
+```
+
+**Returns:** Hashtable mapping action names to emoji characters.
+
+---
+
+## Script Launcher Functions
+
+### Get-ContentMD5
+
+Calculates the MD5 hash of content (file or string).
+
+```powershell
+$Hash = Get-ContentMD5 -FilePath "C:\path\to\script.ps1"
+$Hash = Get-ContentMD5 -Content $ScriptContent
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-FilePath` | String | No | Path to file to hash |
+| `-Content` | String | No | String content to hash |
+
+**Returns:** MD5 hash string (lowercase).
+
+---
+
+### Get-ExpectedMD5
+
+Gets the expected MD5 hash for a script from the MD5SUMS file.
+
+```powershell
+$ExpectedHash = Get-ExpectedMD5 -ScriptName "unchecky.ps1" -MD5SumsContent $MD5Content
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ScriptName` | String | Yes | Script filename |
+| `-MD5SumsContent` | String | Yes | Contents of MD5SUMS file |
+
+**Returns:** MD5 hash string or `$null` if not found.
+
+---
+
+### Get-ScriptPathFromMD5
+
+Resolves the full path to a script using the MD5SUMS file.
+
+```powershell
+$Path = Get-ScriptPathFromMD5 -ScriptName "unchecky.ps1" -MD5SumsContent $MD5Content
+# Returns: "scripts/Policy/unchecky.ps1"
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ScriptName` | String | Yes | Script filename |
+| `-MD5SumsContent` | String | Yes | Contents of MD5SUMS file |
+
+**Returns:** Relative path to script or `$null` if not found.
+
+---
+
+### Get-ScriptVersion
+
+Gets the version of a script from its content.
+
+```powershell
+$Version = Get-ScriptVersion -ScriptContent $Content
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ScriptContent` | String | Yes | Script file content |
+
+**Returns:** Version string or "Unknown".
+
+---
+
+### Invoke-ScriptLauncher
+
+Main launcher function that handles downloading and executing scripts from GitHub.
+
+```powershell
+Invoke-ScriptLauncher -ScriptToRun "unchecky.ps1" `
+                      -MspScratchFolder $MspScratchFolder `
+                      -LibraryUrl $LibraryUrl `
+                      -DeviceHostname $DeviceHostname `
+                      -DeviceTags $DeviceTags
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-ScriptToRun` | String | Yes | Script filename to execute |
+| `-MspScratchFolder` | String | Yes | Path to scratch folder |
+| `-LibraryUrl` | String | Yes | URL to download library |
+| `-DeviceHostname` | String | Yes | Device hostname |
+| `-DeviceTags` | String | No | Comma-separated device tags |
+| Various policy fields | String | No | Policy custom field values |
+
+---
+
+## Debug Helper Functions
+
+### Write-DebugSection
+
+Writes a formatted debug section header.
+
+```powershell
+Write-DebugSection -Title "Variables" -DebugMode $true
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-Title` | String | Yes | Section title |
+| `-DebugMode` | Bool | Yes | Only outputs if true |
+
+---
+
+### Write-DebugTags
+
+Writes debug output for tag analysis.
+
+```powershell
+Write-DebugTags -DeviceTags $DeviceTags -DebugMode $true
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-DeviceTags` | String | Yes | Comma-separated tags |
+| `-DebugMode` | Bool | Yes | Only outputs if true |
+
+---
+
+### Write-DebugPolicy
+
+Writes debug output for policy resolution.
+
+```powershell
+Write-DebugPolicy -Policy $PolicyResult -DebugMode $true
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-Policy` | Object | Yes | Policy result from Get-SoftwarePolicy |
+| `-DebugMode` | Bool | Yes | Only outputs if true |
+
+---
+
+### Write-DebugTagManagement
+
+Writes debug output for tag management operations.
+
+```powershell
+Write-DebugTagManagement -Operation "Add" -TagName "HasUnchecky" -DebugMode $true
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `-Operation` | String | Yes | Operation type (Add/Remove) |
+| `-TagName` | String | Yes | Tag being managed |
+| `-DebugMode` | Bool | Yes | Only outputs if true |
+
+---
+
 ## See Also
 
 - [Main README](../README.md)
 - [Technician Alerts Guide](TECHNICIAN-ALERTS.md) - Full documentation for the alert system
 - [Script Launcher Guide](LAUNCHER.md)
 - [Emoji Handling](EMOJI-HANDLING.md)
+- [Codebase Overview](CODEBASE.md) - Architecture and module organization

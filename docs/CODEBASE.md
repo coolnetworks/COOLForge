@@ -119,6 +119,8 @@ Generic functions for detecting and managing software installations. These conso
 | `Stop-SoftwareProcesses` | Stop all processes matching a pattern, returns count |
 | `Stop-SoftwareServices` | Stop and optionally disable services matching a pattern |
 | `Get-SoftwareUninstallString` | Get uninstall command from registry |
+| `Install-MsiWithRetry` | Install MSI packages with configurable retry logic |
+| `Install-ExeWithRetry` | Install EXE installers with retry logic |
 | `Test-ServiceExists` | Check if a Windows service exists by name |
 | `Test-ServiceRunning` | Check if a Windows service is running |
 
@@ -142,7 +144,9 @@ $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
 
 | Function | Description |
 |----------|-------------|
+| `Get-EmojiBytePatterns` | Get raw emoji byte patterns for tag matching |
 | `Get-EmojiMap` | Returns centralized emoji-to-action mapping (single source of truth) |
+| `Get-EmojiLiterals` | Get clean emoji literals for display |
 | `Get-SoftwarePolicy` | Parses device tags for software policy requirements |
 | `Invoke-SoftwarePolicyCheck` | High-level policy check with formatted output |
 
@@ -174,6 +178,9 @@ $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
 | `Get-LevelGroups` | Fetch all groups with pagination |
 | `Get-LevelDevices` | Fetch devices with optional group filter |
 | `Find-LevelDevice` | Find device by hostname |
+| `Get-LevelDeviceById` | Get device by ID |
+| `Get-LevelDeviceTagNames` | Get tag names for a device |
+| `Set-LevelDeviceName` | Update device hostname |
 
 #### Tag Management
 
@@ -181,10 +188,12 @@ $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
 |----------|-------------|
 | `Get-LevelTags` | Fetch all tags with pagination |
 | `Find-LevelTag` | Find tag by name |
+| `New-LevelTag` | Create a new tag in Level.io |
 | `Add-LevelTagToDevice` | Add tag to device |
 | `Remove-LevelTagFromDevice` | Remove tag from device |
 | `Add-LevelPolicyTag` | High-level: Add policy tag (e.g., add "Has" after install) |
 | `Remove-LevelPolicyTag` | High-level: Remove policy tag |
+| `Update-CachedDeviceTags` | Update cached device tags |
 
 #### Wake-on-LAN
 
@@ -208,9 +217,36 @@ $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
 | `New-LevelCustomField` | Create new custom field |
 | `Set-LevelCustomFieldValue` | Set custom field value for device |
 | `Initialize-LevelSoftwarePolicy` | Initialize software policy custom field |
+| `Initialize-COOLForgeInfrastructure` | Create core COOLForge custom fields |
+| `Initialize-SoftwarePolicyInfrastructure` | Create fields and tags for a specific software policy |
 | `Get-LevelCustomFieldById` | Get custom field by ID |
 | `Set-LevelCustomFieldDefaultValue` | Set account-level default value for custom field |
 | `Remove-LevelCustomField` | Delete a custom field |
+
+#### Cache Management
+
+Registry-based caching to reduce API calls and improve performance.
+
+| Function | Description |
+|----------|-------------|
+| `Initialize-LevelCache` | Initialize registry cache structure |
+| `Get-LevelCacheValue` | Retrieve value from registry cache |
+| `Set-LevelCacheValue` | Store value in registry cache |
+| `Get-LevelCachePath` | Get the registry path for cache |
+| `Protect-CacheValue` | Encrypt a cache value (DPAPI) |
+| `Unprotect-CacheValue` | Decrypt a protected cache value |
+| `Set-ProtectedCacheValue` | Store encrypted value in cache |
+| `Get-ProtectedCacheValue` | Retrieve and decrypt cache value |
+| `Update-LevelCache` | Refresh cache from API |
+| `Get-CachedDeviceTags` | Get cached tags for a device |
+| `Update-CachedDeviceTags` | Update device tag cache |
+| `Get-CachedTagId` | Get tag ID from cache |
+| `Get-CachedCustomFieldId` | Get custom field ID from cache |
+| `Clear-LevelCache` | Clear all cached data |
+| `Show-DebugCacheInfo` | Display cache contents for debugging |
+| `Get-MspNameFromPath` | Extract MSP name from scratch folder path |
+| `Get-ApiCallCount` | Get current API call count |
+| `Reset-ApiCallCount` | Reset API call counter |
 
 #### Hierarchy Navigation
 
@@ -246,10 +282,12 @@ See [TECHNICIAN-ALERTS.md](TECHNICIAN-ALERTS.md) for detailed usage.
 | Category | Functions |
 |----------|-----------|
 | **UI Helpers** | `Write-Header`, `Write-LevelSuccess`, `Write-LevelInfo`, `Write-LevelWarning`, `Write-LevelError`, `Read-UserInput`, `Read-YesNo` |
-| **Config/Security** | `Get-SavedConfig`, `Save-Config`, `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey` |
+| **Debug Helpers** | `Write-DebugSection`, `Write-DebugTags`, `Write-DebugPolicy`, `Write-DebugTagManagement` |
+| **Config/Security** | `Get-SavedConfig`, `Save-Config`, `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey`, `Get-CompanyNameFromPath` |
 | **Backup/Restore** | `Backup-AllCustomFields`, `Save-Backup`, `Import-Backup`, `Restore-CustomFields`, `Get-BackupPath`, `Get-LatestBackup`, `Compare-BackupWithCurrent`, `Show-BackupDifferences` |
 | **GitHub** | `Get-GitHubReleases`, `Show-ReleaseNotes`, `Select-Version` |
 | **Initialization** | `Initialize-LevelApi`, `Initialize-COOLForgeCustomFields` (alias) |
+| **Script Launcher** | `Get-ContentMD5`, `Get-ExpectedMD5`, `Get-ScriptPathFromMD5`, `Get-ScriptVersion`, `Invoke-ScriptLauncher` |
 
 ---
 
@@ -610,9 +648,9 @@ COOLForge/
 
 ## Version Information
 
-- **Module Version**: 2026.01.13.10 (COOLForge-Common)
-- **Launcher Version**: 2026.01.13.05
-- **Last Documentation Update**: 2026-01-13
+- **Module Version**: 2026.01.22 (COOLForge-Common)
+- **Launcher Version**: 2026.01.22
+- **Last Documentation Update**: 2026-01-22
 
 ---
 

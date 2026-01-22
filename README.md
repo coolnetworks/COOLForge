@@ -1,6 +1,6 @@
 # COOLForge_Lib - Level.io PowerShell Automation Library
 
-**Version:** 2026.01.13.10
+**Version:** 2026.01.22
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -37,7 +37,7 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 - **Script Launcher** — Manage scripts in Git, deploy once to Level.io, updates happen automatically
 - **Technician Alerts** — Send toast notifications to tech workstations when scripts need attention
 
-### Module Functions (79+ exported)
+### Module Functions (107 exported)
 
 The `COOLForge-Common.psm1` module exports functions organized into these categories:
 
@@ -46,17 +46,19 @@ The `COOLForge-Common.psm1` module exports functions organized into these catego
 | **Initialization** | 5 | Script setup, lockfiles, error handling |
 | **Logging** | 1 | Timestamped output with severity levels |
 | **System Info** | 2 | Admin check, device properties |
-| **Software Detection** | 6 | Generic install detection, process/service control |
-| **Software Policy** | 4 | Tag-based policy enforcement |
-| **Level.io API** | 18+ | Groups, devices, tags, custom fields |
-| **Tag Management** | 6 | Add/remove tags, policy tags |
-| **Custom Fields** | 7 | CRUD operations for custom fields |
+| **Software Detection** | 8 | Generic install detection, process/service control, MSI/EXE installers |
+| **Software Policy** | 5 | Tag-based policy enforcement, emoji mapping |
+| **Level.io API** | 10 | Core API calls, groups, devices |
+| **Tag Management** | 8 | Add/remove tags, policy tags, tag creation |
+| **Custom Fields** | 10 | CRUD operations, infrastructure setup |
 | **Hierarchy** | 4 | Organizations, folders, navigation |
 | **Technician Alerts** | 5 | Toast notifications to tech workstations |
 | **Network** | 1 | Wake-on-LAN |
-| **Text Processing** | 2 | String utilities, URL encoding |
+| **Text Processing** | 3 | String utilities, URL encoding, emoji repair |
+| **Cache Management** | 18 | Registry cache, protected values, tag/field caching |
 | **Config & Backup** | 14 | API config, backup/restore operations |
-| **UI Helpers** | 7 | Console output, user input |
+| **UI Helpers** | 8 | Console output, user input, debug sections |
+| **Script Launcher** | 5 | MD5 verification, script downloading |
 
 #### Key Functions
 
@@ -72,8 +74,8 @@ The `COOLForge-Common.psm1` module exports functions organized into these catego
 | | `Stop-SoftwareProcesses` | Stop processes by pattern |
 | | `Stop-SoftwareServices` | Stop/disable services by pattern |
 | | `Get-SoftwareUninstallString` | Get uninstall command from registry |
-| | `Test-ServiceExists` | Check if Windows service exists |
-| | `Test-ServiceRunning` | Check if Windows service is running |
+| | `Install-MsiWithRetry` | Install MSI packages with retry logic |
+| | `Install-ExeWithRetry` | Install EXE installers with retry logic |
 | **Policy** | `Get-SoftwarePolicy` | Parse device tags for software policy |
 | | `Invoke-SoftwarePolicyCheck` | Execute policy-based actions |
 | | `Get-EmojiMap` | Tag-to-action mapping for policy enforcement |
@@ -83,13 +85,20 @@ The `COOLForge-Common.psm1` module exports functions organized into these catego
 | **Tags** | `Add-LevelTagToDevice` | Add tag to device |
 | | `Remove-LevelTagFromDevice` | Remove tag from device |
 | | `Add-LevelPolicyTag` | Add policy tag to device |
+| | `New-LevelTag` | Create new tag in Level.io |
 | **Custom Fields** | `Get-LevelCustomFields` | Retrieve all custom fields |
 | | `Set-LevelCustomFieldValue` | Set field value for device |
+| | `Initialize-COOLForgeInfrastructure` | Create core COOLForge custom fields |
+| | `Initialize-SoftwarePolicyInfrastructure` | Create fields/tags for a software policy |
+| **Cache** | `Get-LevelCacheValue` | Get value from registry cache |
+| | `Set-LevelCacheValue` | Store value in registry cache |
+| | `Get-CachedDeviceTags` | Get cached device tags |
+| | `Update-CachedDeviceTags` | Update device tag cache |
 | **Network** | `Send-LevelWakeOnLan` | Send WOL magic packet |
 | **Alerts** | `Send-TechnicianAlert` | Send alert to tech workstations |
 | | `Add-TechnicianAlert` | Queue alert for auto-send |
 
-See [Function Reference](docs/FUNCTIONS.md) for complete documentation of all 79+ functions.
+See [Function Reference](docs/FUNCTIONS.md) for complete documentation of all 107 functions.
 
 ---
 
@@ -329,24 +338,65 @@ Invoke-LevelScript -ScriptBlock {
 
 Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-STRUCTURE.md) for details and [Script Documentation](docs/scripts/README.md) for detailed per-script documentation.
 
-| Folder | Script | Description |
-|--------|--------|-------------|
-| Check | [👀Check for Unauthorized Remote Access Tools](docs/scripts/RAT-Detection.md) | Detects 60+ RATs with whitelisting support |
-| Check | [👀huntress](docs/scripts/Huntress-Policy.md) | Huntress agent policy enforcement |
-| Check | [👀Test Show Versions](docs/scripts/Test-Show-Versions.md) | Library test suite and version info |
-| Check | [👀Test Variable Output](docs/scripts/Test-Variable-Output.md) | Level.io automation variable testing |
-| Check | [👀debug](docs/scripts/Debug-Policy.md) | Debug script for policy testing |
-| Configure | [⚙️Extract and Set ScreenConnect Device URL](docs/scripts/ScreenConnect-Device-URL.md) | Extracts ScreenConnect GUID and sets custom field |
-| Configure | [⚙️Configure Wake-on-LAN](docs/scripts/Configure-WOL.md) | Enables WOL in BIOS/NIC settings |
-| Fix | [🔧Fix Windows Services](docs/scripts/Fix-Windows-Services.md) | Restores Windows services to defaults (7/8/8.1/10/11) |
-| Fix | [🔧Enable System Restore](docs/scripts/System-Restore.md) | Enables System Restore and creates checkpoint |
-| Fix | [🔧Prevent Sleep](docs/scripts/Prevent-Sleep.md) | Temporarily prevents sleep with auto-restore |
-| Remove | [⛔Force Remove Anydesk](docs/scripts/Force-Remove-AnyDesk.md) | Removes AnyDesk with escalating force (5 phases) |
-| Remove | [⛔Force Remove Non MSP ScreenConnect](docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md) | Removes non-whitelisted ScreenConnect instances |
-| SoftwarePolicy | [👀unchecky](docs/scripts/Unchecky-Policy.md) | Unchecky software policy enforcement |
-| Utility | [🙏Wake all devices in Level group](docs/scripts/Wake-Devices.md) | Wakes devices in parent folder hierarchy via WOL |
-| Utility | [🔔Wake tagged devices](docs/scripts/Wake-Tagged-Devices.md) | Wakes devices with specific tags |
-| Utility | [🔔Technician Alert Monitor](docs/scripts/Technician-Alert-Monitor.md) | Toast notifications for tech alerts |
+### Check Scripts (👀)
+
+| Script | Description |
+|--------|-------------|
+| [👀Check for Unauthorized Remote Access Tools](docs/scripts/RAT-Detection.md) | Detects 60+ RATs with whitelisting support |
+| [👀Check DNS Server Compliance](docs/scripts/Check-DNS-Compliance.md) | Validates DNS server settings |
+| [👀Check Windows Location Services](docs/scripts/Check-Windows-Location.md) | Checks Windows location services status |
+| [👀Hostname Mismatch](docs/scripts/Hostname-Mismatch.md) | Detects Level.io vs actual hostname mismatches |
+| [👀Test Show Versions](docs/scripts/Test-Show-Versions.md) | Library test suite and version info |
+| [👀Test Variable Output](docs/scripts/Test-Variable-Output.md) | Level.io automation variable testing |
+| [👀debug](docs/scripts/Debug-Policy.md) | Debug script for policy testing |
+
+### Policy Scripts (👀)
+
+| Script | Description |
+|--------|-------------|
+| [👀unchecky](docs/policy/Unchecky.md) | Unchecky software policy enforcement |
+| [👀huntress](docs/policy/Huntress.md) | Huntress agent policy enforcement |
+| [👀dnsfilter](docs/policy/DNSFilter.md) | DNSFilter agent policy enforcement |
+| [👀chrome](docs/policy/Chrome.md) | Google Chrome policy enforcement |
+| [👀meshcentral](docs/policy/MeshCentral.md) | MeshCentral agent policy enforcement |
+| [👀screenconnect](docs/policy/ScreenConnect.md) | ScreenConnect/ConnectWise Control policy enforcement |
+| [👀Windows Location Services](docs/policy/Windows.md) | Windows location services policy |
+| [👀Chrome Location Services](docs/policy/Chrome.md) | Chrome geolocation policy |
+
+### Configure Scripts (⚙️)
+
+| Script | Description |
+|--------|-------------|
+| [⚙️Extract and Set ScreenConnect Device URL](docs/scripts/ScreenConnect-Device-URL.md) | Extracts ScreenConnect GUID and sets custom field |
+| [⚙️Configure Wake-on-LAN](docs/scripts/Configure-WOL.md) | Enables WOL in BIOS/NIC settings |
+
+### Fix Scripts (🔧)
+
+| Script | Description |
+|--------|-------------|
+| [🔧Fix Windows Services](docs/scripts/Fix-Windows-Services.md) | Restores Windows services to defaults (7/8/8.1/10/11) |
+| [🔧Enable System Restore](docs/scripts/System-Restore.md) | Enables System Restore and creates checkpoint |
+| [🔧Ensure Windows Defender Enabled](docs/scripts/Defender-Enabled.md) | Ensures Windows Defender is running |
+| [🔧Fix Windows Location Services](docs/scripts/Fix-Location-Services.md) | Fixes Windows location services |
+| [🔧Prevent Sleep](docs/scripts/Prevent-Sleep.md) | Temporarily prevents sleep with auto-restore |
+
+### Remove Scripts (⛔)
+
+| Script | Description |
+|--------|-------------|
+| [⛔Force Remove Anydesk](docs/scripts/Force-Remove-AnyDesk.md) | Removes AnyDesk with escalating force (5 phases) |
+| [⛔Force Remove Non MSP ScreenConnect](docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md) | Removes non-whitelisted ScreenConnect instances |
+
+### Utility Scripts (🙏 🔔 ⚙️)
+
+| Script | Description |
+|--------|-------------|
+| [🙏Wake all devices in Level group](docs/scripts/Wake-Devices.md) | Wakes devices in parent folder hierarchy via WOL |
+| [🔔Wake tagged devices](docs/scripts/Wake-Tagged-Devices.md) | Wakes devices with specific tags |
+| [🔔Technician Alert Monitor](docs/scripts/Technician-Alert-Monitor.md) | Toast notifications for tech alerts |
+| [⚙️COOLForge Cache Sync](docs/scripts/Cache-Sync.md) | Synchronizes registry cache |
+| [⚙️Universal Disk Cleaner](docs/scripts/Disk-Cleaner.md) | Cleans temporary files and frees disk space |
+| [⚙️Cleanup VoyagerPACS Studies](docs/scripts/VoyagerPACS-Cleanup.md) | Cleans up PACS imaging studies |
 
 ---
 
