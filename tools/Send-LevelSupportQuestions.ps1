@@ -20,16 +20,16 @@ $Today = Get-Date -Format "yyyy-MM-dd"
 # Read the questions file
 $QuestionsContent = Get-Content $QuestionsFile -Raw
 
-# Find the "Pending Questions for Level.io" section
-if ($QuestionsContent -notmatch '## Pending Questions for Level\.io\s*\r?\n(.+?)(?=\r?\n---|\z)') {
+# Find the "Pending Questions for Level.io" section - capture everything from that header to the footer
+if ($QuestionsContent -notmatch '(?s)## Pending Questions for Level\.io\s*\r?\n(.+?)(?=\r?\n\*Document created|\z)') {
     Write-Host "No pending questions section found."
     exit 0
 }
 
 $PendingSection = $Matches[1].Trim()
 
-# Check if there are actual questions (not just the "no pending" message)
-if ($PendingSection -match '^\*No pending questions' -or $PendingSection -match '^\*All submitted') {
+# Check if there are actual questions (not just the "no pending" message or empty)
+if ($PendingSection -match '^\*No pending questions' -or $PendingSection -match '^\*All submitted' -or $PendingSection -match '^---\s*$') {
     Write-Host "No new questions to send."
     exit 0
 }
@@ -103,23 +103,20 @@ if ($WhatIf) {
 # Build submitted entries
 $SubmittedEntries = ""
 foreach ($Q in $Questions) {
-    $BodyLines = ($Q.Content | Where-Object { $_.Trim() }) -join "`n"
+    # Join content lines, preserving structure (question already has **Question:** etc.)
+    $BodyLines = ($Q.Content | Where-Object { $_.Trim() }) -join "`n`n"
     $SubmittedEntries += @"
+
+---
 
 ## $($Q.Title)
 
 **Submitted:** $Today
 
-**Question:**
 $BodyLines
-
-**Use Case:** (See question details above)
-
-**Current Workaround:** (To be documented)
 
 **Response:**
 
----
 "@
 }
 
@@ -136,9 +133,9 @@ else {
     $SubmittedContent = $SubmittedContent.TrimEnd() + "`n" + $SubmittedEntries
 }
 
-# Update questions file - clear pending section
+# Update questions file - clear pending section (must match search regex pattern)
 $NewQuestionsContent = $QuestionsContent -replace `
-    '(## Pending Questions for Level\.io\s*\r?\n).+?((?=\r?\n---|\z))', `
+    '(?s)(## Pending Questions for Level\.io\s*\r?\n).+?(?=\r?\n\*Document created|\z)', `
     "`$1`n*No pending questions - all submitted. See [LEVEL-SUPPORT-SUBMITTED.md](LEVEL-SUPPORT-SUBMITTED.md)*`n`n"
 
 # Write files
