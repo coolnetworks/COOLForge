@@ -1,7 +1,9 @@
-﻿7fcca743b62efb646035ce81857bec8d  .claude/CLAUDE.md
+﻿40d86213f280013a0a1fbd5c65c3d88d  .claude/CLAUDE.md
 e2a0baa86c865c52f61f496a9c67e05e  .claude/LOCATION-SERVICES-CONTEXT.md
 fa425541f4f20582bda18c079b0f964f  .claude/SESSIONS.md
+f98f98827f0f04d0bcd149003c0a849f  .claude/TAG-FIELD-EVOLUTION.md
 8aafce98e1fc5ebfc046f6c8e27b3ab3  .claude/TODO.md
+1d6882ed85741e5e8c92feaf25f29bc1  .claude/UTF8-ISSUES-HISTORY.md
 a94bc156460d1b87c7bb792339dbac73  .local/Reset Level Instance.ps1
 5095bf93fc13e91c81d8a00d7f7300d5  backups/Level/scripts/⛔CIPP CHECK.ps1
 719b4fca685e4b4226f8ea772b499954  backups/Level/scripts/⛔DROPBOX.ps1
@@ -583,14 +585,14 @@ e52901b4cf2e85fe086732473bd18dde  launchers/🔧Fix Windows 8 Services.ps1
 a7a9ca31c3e234b78e1b4fcc8f1d4cc2  launchers/🔧Fix Windows Location Services.ps1
 bba92b6bfe13e14560a33acffdd18578  launchers/🔧Prevent Sleep.ps1
 11a1fd16f4ffa0678ddb7844d91f3660  launchers/🙏Wake all devices in parent to level.io folder.ps1
-9a5c78cd4ab457f345d63c3f0a835a83  LEVEL-SUPPORT-QUESTIONS.md
-9b45e597763b94993608aca55a086b1f  LEVEL-SUPPORT-SUBMITTED.md
+d76b36707c90ec3ff9fe4e5afac1e904  LEVEL-SUPPORT-QUESTIONS.md
+ae716d947339470eccb3fbe6da4fbf2e  LEVEL-SUPPORT-SUBMITTED.md
 5746acb006595a0ec8e3e8ccfe2a7131  MEETING NOTES - Level.io Demo.md
-6aa1695cc1d5fe5a094f0a97661a3158  modules/COOLForge-Common.psm1
+b73a961c19d1f8b48dc69ef17b2549eb  modules/COOLForge-Common.psm1
 07f2114b030950370cf6ac38e64f222f  NEEDS_TESTING.md
 3c230ff8cd8b89385d4fb66e136aa10a  pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  pre-release/Test-Syntax.ps1
-2d2c39abec00594d08075b718b5f0368  pre-release/Update-Launchers.ps1
+c704d506660f159fcf98d0ef60ef7124  pre-release/Update-Launchers.ps1
 9f563c201e62efca1cbbce108dc7d38d  pre-release/Update-MD5SUMS.ps1
 dec00fbcc15ae5f1bbd36b2d5e926109  pre-release/Update-ScriptInventory.ps1
 474a2ee0a20ae5ed9d280f0fd2a1857f  pre-release/Validate-Release.ps1
@@ -714,7 +716,7 @@ b094d4481ddd206f93a99679330c05c3  tools/Clear-EmptyCustomFields.ps1
 07e550d7d2ec58c622dc8b9490ae5745  tools/Convert-LegacyLaunchers.ps1
 2975893316d4af907339e88ed11864c4  tools/New-PolicyScript.ps1
 a22eac49fde6739697bda5a3148291df  tools/Restore-BOM.ps1
-04163955d4aaedf7d275597b7f5afeaa  tools/Send-LevelSupportQuestions.ps1
+c2336283e69770feb272214f0c228115  tools/Send-LevelSupportQuestions.ps1
 d8d031450a5d8e6306a6c33e53542f79  tools/Test-CustomFieldCharacters.ps1
 efe69a19db0abdcc4aab3a1f060462bd  tools/Update-LauncherBOMFix.ps1
 167572e84eb238da1182ce18cd5211ed  tools/Update-LauncherCaching.ps1
