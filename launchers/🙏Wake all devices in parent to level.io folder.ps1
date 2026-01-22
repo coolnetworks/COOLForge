@@ -7,7 +7,7 @@ $ScriptToRun = "🙏Wake all devices in parent to level.io folder.ps1"
     Slim Level.io Launcher for [DEPRECATED] Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
 
 .NOTES
-    Launcher Version: 2026.01.19.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -17,7 +17,7 @@ $ScriptToRun = "🙏Wake all devices in parent to level.io folder.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "🙏Wake all devices in parent to level.io folder.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

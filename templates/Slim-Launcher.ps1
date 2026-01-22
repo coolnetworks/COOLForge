@@ -8,7 +8,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.01.21.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -18,7 +18,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.21.01"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

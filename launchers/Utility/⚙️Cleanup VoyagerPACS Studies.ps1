@@ -14,7 +14,7 @@ $ScriptToRun = "⚙️Cleanup VoyagerPACS Studies.ps1"
     - Reports space freed
 
 .NOTES
-    Launcher Version: 2026.01.20.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -24,7 +24,7 @@ $ScriptToRun = "⚙️Cleanup VoyagerPACS Studies.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.01"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Utility/⚙️Cleanup VoyagerPACS Studies.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

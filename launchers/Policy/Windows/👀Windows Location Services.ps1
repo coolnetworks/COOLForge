@@ -8,7 +8,7 @@ $policy_device_locationservices = "{{cf_policy_device_locationservices}}"
     Slim Level.io Launcher for Windows Location Services Configuration Policy
 
 .NOTES
-    Launcher Version: 2026.01.19.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -18,7 +18,7 @@ $policy_device_locationservices = "{{cf_policy_device_locationservices}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Policy/Windows/👀Windows Location Services.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

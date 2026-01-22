@@ -15,7 +15,7 @@ $ScriptToRun = "⚙️Universal Disk Cleaner.ps1"
     - Reports total space freed
 
 .NOTES
-    Launcher Version: 2026.01.20.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -25,7 +25,7 @@ $ScriptToRun = "⚙️Universal Disk Cleaner.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.01"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Utility/⚙️Universal Disk Cleaner.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

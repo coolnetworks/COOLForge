@@ -7,7 +7,7 @@ $ScriptToRun = "🔧Fix Windows Location Services.ps1"
     Slim Level.io Launcher - Downloads and executes scripts from GitHub with auto-update.
 
 .NOTES
-    Launcher Version: 2026.01.20.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -17,7 +17,7 @@ $ScriptToRun = "🔧Fix Windows Location Services.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.01"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "🔧Fix Windows Location Services.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

@@ -9,7 +9,7 @@ $policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
     Slim Level.io Launcher for DNSFilter Policy Script
 
 .NOTES
-    Launcher Version: 2026.01.16.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -19,7 +19,7 @@ $policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Policy/👀dnsfilter.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

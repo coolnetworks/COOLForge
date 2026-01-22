@@ -24,7 +24,7 @@ $policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url
     - cf_policy_meshcentral_mac_download_url: Mac installer download URL
 
 .NOTES
-    Launcher Version: 2026.01.19.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -34,7 +34,7 @@ $policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Policy/👀meshcentral.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

@@ -14,7 +14,7 @@ $ScriptToRun = "👀Hostname Mismatch.ps1"
     - Schedules reboot after Windows hostname change
 
 .NOTES
-    Launcher Version: 2026.01.21.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
     Recommended Timeout: 300 seconds (5 minutes)
 
@@ -25,7 +25,7 @@ $ScriptToRun = "👀Hostname Mismatch.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.21.05"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Policy/👀Hostname Mismatch.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

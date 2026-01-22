@@ -22,7 +22,7 @@ $level_group_path = "{{level_group_path}}"
     - level_group_path: Used as company name for the installer (flattened)
 
 .NOTES
-    Launcher Version: 2026.01.19.01
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -32,7 +32,7 @@ $level_group_path = "{{level_group_path}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.20.02"
+$LauncherVersion = "2026.01.22.01"
 $LauncherName = "Policy/👀screenconnect.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
