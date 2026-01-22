@@ -2,21 +2,14 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀Hostname Mismatch.ps1"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for Hostname Mismatch Detection
-
-.DESCRIPTION
-    Detects and optionally resolves hostname mismatches between Level.io and Windows.
-    - Compares Level.io device name with Windows hostname
-    - Sets warning tag when mismatch detected
-    - Can rename Level device or Windows hostname based on action tags
-    - Schedules reboot after Windows hostname change
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
-    Recommended Timeout: 300 seconds (5 minutes)
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
     Script download/execution is handled by Invoke-ScriptLauncher in the library.
@@ -26,7 +19,7 @@ $ScriptToRun = "👀Hostname Mismatch.ps1"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/👀Hostname Mismatch.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -34,10 +27,8 @@ $ErrorActionPreference = "SilentlyContinue"
 # LEVEL.IO VARIABLES
 # ============================================================
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
-$DeviceHostname = "{{level_device_nickname}}"
-$DeviceId = "{{level_device_id}}"
+$DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
-$policy_sync_hostnames = "{{policy_sync_hostnames}}"
 
 $GitHubPAT = @'
 {{cf_coolforge_pat}}
@@ -58,12 +49,19 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
@@ -227,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -259,10 +257,10 @@ Write-Host "[*] Slim Launcher v$LauncherVersion"
 $LauncherVars = @{
     MspScratchFolder = $MspScratchFolder
     DeviceHostname   = $DeviceHostname
-    DeviceId         = $DeviceId
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
 }
 

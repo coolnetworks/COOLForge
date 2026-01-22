@@ -2,22 +2,10 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "⚙️COOLForge Cache Sync.ps1"
-$level_device_id = "{{level_device_id}}"
-$level_group_path = "{{level_group_path}}"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for COOLForge Cache Sync Script
-
-.DESCRIPTION
-    Syncs Level.io-provided data to local registry cache.
-    This script makes ZERO API calls - it only captures what Level.io provides.
-
-    Level.io Variables Used:
-    - level_device_id: Device ID for caching
-    - level_device_hostname: Device hostname
-    - level_tag_names: Current device tags
-    - level_group_path: Group hierarchy path
-    - cf_policy_*: All policy custom field values
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -31,7 +19,7 @@ $level_group_path = "{{level_group_path}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "⚙️COOLForge Cache Sync.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -61,43 +49,24 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
 '@
 $LevelApiKey = $LevelApiKey_Raw.Trim()
-
-# ============================================================
-# POLICY CUSTOM FIELDS (for caching)
-# ============================================================
-# Main policy toggles (install/remove/pin)
-$policy_unchecky = "{{cf_policy_unchecky}}"
-$policy_huntress = "{{cf_policy_huntress}}"
-$policy_dnsfilter = "{{cf_policy_dnsfilter}}"
-$policy_meshcentral = "{{cf_policy_meshcentral}}"
-$policy_chrome = "{{cf_policy_chrome}}"
-$policy_chrome_locationservices = "{{cf_policy_chrome_locationservices}}"
-$policy_screenconnect = "{{cf_policy_screenconnect}}"
-$policy_device_locationservices = "{{cf_policy_device_locationservices}}"
-
-# Non-sensitive config fields (URLs, identifiers)
-$policy_unchecky_url = "{{cf_policy_unchecky_url}}"
-$policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
-$policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
-$policy_screenconnect_instance = "{{cf_policy_screenconnect_instance}}"
-$policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"
-$policy_huntress_org_key = "{{cf_policy_huntress_org_key}}"
-$policy_huntress_tags = "{{cf_policy_huntress_tags}}"
-
-# Sensitive fields (will be encrypted with DPAPI)
-$sensitive_huntress_account_key = "{{cf_policy_huntress_account_key}}"
-$sensitive_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 
 # ============================================================
 # GITHUB PAT INJECTION
@@ -256,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -280,14 +249,6 @@ Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
     }
 }
 
-# Collect sensitive variables (will be encrypted)
-$SensitiveVars = @{}
-Get-Variable -Name "sensitive_*" -ErrorAction SilentlyContinue | ForEach-Object {
-    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
-        $SensitiveVars[$_.Name] = $_.Value
-    }
-}
-
 # ============================================================
 # EXECUTE SCRIPT
 # ============================================================
@@ -299,19 +260,13 @@ $LauncherVars = @{
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
-    level_device_id  = $level_device_id
-    level_group_path = $level_group_path
 }
 
 # Add policy variables
 foreach ($key in $PolicyVars.Keys) {
     $LauncherVars[$key] = $PolicyVars[$key]
-}
-
-# Add sensitive variables (script will encrypt these)
-foreach ($key in $SensitiveVars.Keys) {
-    $LauncherVars[$key] = $SensitiveVars[$key]
 }
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `

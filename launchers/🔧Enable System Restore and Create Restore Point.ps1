@@ -2,9 +2,10 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "🔧Enable System Restore and Create Restore Point.ps1"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for [DEPRECATED] Level.io Script Launcher - Downloads and executes scripts from GitHub with auto-update.
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -18,7 +19,7 @@ $ScriptToRun = "🔧Enable System Restore and Create Restore Point.ps1"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "🔧Enable System Restore and Create Restore Point.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -48,12 +49,19 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
@@ -68,7 +76,7 @@ function Add-GitHubToken {
     if ([string]::IsNullOrWhiteSpace($Token)) { return $Url }
     if ($Url -notmatch 'raw\.githubusercontent\.com') { return $Url }
     if ($Url -match '@raw\.githubusercontent\.com') { return $Url }
-    return $Url -replace '(https://)raw\.githubusercontent\.com', "$1$Token@raw.githubusercontent.com"
+    return $Url -replace '(https://)raw\.githubusercontent\.com', "`$1$Token@raw.githubusercontent.com"
 }
 
 $RepoBaseUrl = $LibraryUrl -replace '/modules/[^/]+$', ''
@@ -217,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -232,6 +240,16 @@ try {
 }
 
 # ============================================================
+# COLLECT POLICY VARIABLES
+# ============================================================
+$PolicyVars = @{}
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
+        $PolicyVars[$_.Name] = $_.Value
+    }
+}
+
+# ============================================================
 # EXECUTE SCRIPT
 # ============================================================
 Write-Host "[*] Slim Launcher v$LauncherVersion"
@@ -242,7 +260,13 @@ $LauncherVars = @{
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
+}
+
+# Add policy variables
+foreach ($key in $PolicyVars.Keys) {
+    $LauncherVars[$key] = $PolicyVars[$key]
 }
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `

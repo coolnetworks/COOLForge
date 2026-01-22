@@ -47,7 +47,8 @@ $script:LockFilePath = $null        # Directory containing lockfiles
 $script:LockFile = $null            # Full path to this script's lockfile
 $script:DeviceHostname = $null      # Device hostname for logging
 $script:Initialized = $false        # Flag to ensure initialization
-$script:DebugMode = $false          # Debug mode flag for verbose output
+$script:DebugMode = $false          # Debug mode flag for verbose output (backwards compat)
+$script:DebugLevel = "normal"       # Debug level: normal, verbose, veryverbose
 
 # ============================================================
 # REGISTRY CACHE
@@ -771,12 +772,24 @@ function Initialize-LevelScript {
         [switch]$SkipLockFile,
 
         [Parameter(Mandatory = $false)]
-        [bool]$DebugMode = $false
+        [ValidateSet("normal", "verbose", "veryverbose")]
+        [string]$DebugLevel = "normal",
+
+        [Parameter(Mandatory = $false)]
+        [bool]$DebugMode = $false  # Backwards compatibility
     )
 
     # Set module variables
     $script:ScriptName = $ScriptName
-    $script:DebugMode = $DebugMode
+    # DebugLevel takes precedence, but support legacy DebugMode boolean
+    if ($DebugLevel -ne "normal") {
+        $script:DebugLevel = $DebugLevel
+    } elseif ($DebugMode) {
+        $script:DebugLevel = "verbose"
+    } else {
+        $script:DebugLevel = "normal"
+    }
+    $script:DebugMode = ($script:DebugLevel -ne "normal")
     $script:DeviceHostname = $DeviceHostname
     $script:ScratchFolder = $MspScratchFolder
     $script:LockFilePath = Join-Path -Path $MspScratchFolder -ChildPath "lockfiles"
@@ -958,6 +971,62 @@ function Write-LevelLog {
             # Silently ignore logging errors - don't break script execution
         }
     }
+}
+
+<#
+.SYNOPSIS
+    Level-aware debug logging - only outputs if current debug level meets minimum requirement.
+
+.DESCRIPTION
+    Writes debug messages based on the current debug level:
+    - "normal": No debug output
+    - "verbose": Shows messages with MinLevel "verbose"
+    - "veryverbose": Shows messages with MinLevel "verbose" or "veryverbose"
+
+.PARAMETER Message
+    The message to log.
+
+.PARAMETER MinLevel
+    Minimum debug level required to show this message: "verbose" or "veryverbose".
+    Defaults to "verbose".
+
+.EXAMPLE
+    Write-DebugLog "Policy resolved: Install"
+    # Shows when DebugLevel is "verbose" or "veryverbose"
+
+.EXAMPLE
+    Write-DebugLog "API Response: $response" -MinLevel "veryverbose"
+    # Only shows when DebugLevel is "veryverbose"
+#>
+function Write-DebugLog {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("verbose", "veryverbose")]
+        [string]$MinLevel = "verbose"
+    )
+
+    $levels = @{ "normal" = 0; "verbose" = 1; "veryverbose" = 2 }
+    $currentLevel = $levels[$script:DebugLevel]
+    $requiredLevel = $levels[$MinLevel]
+
+    if ($currentLevel -ge $requiredLevel) {
+        Write-LevelLog $Message -Level "DEBUG"
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets the current debug level.
+
+.OUTPUTS
+    String. The current debug level: "normal", "verbose", or "veryverbose".
+#>
+function Get-DebugLevel {
+    return $script:DebugLevel
 }
 
 # ============================================================
@@ -7008,6 +7077,8 @@ Export-ModuleMember -Function @(
 
     # Logging
     'Write-LevelLog',
+    'Write-DebugLog',
+    'Get-DebugLevel',
 
     # Device & System Info
     'Test-LevelAdmin',

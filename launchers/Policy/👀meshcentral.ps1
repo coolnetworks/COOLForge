@@ -2,26 +2,10 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀meshcentral.ps1"
-$policy_meshcentral = "{{cf_policy_meshcentral}}"
-$policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
-$policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
-$policy_meshcentral_linux_install = "{{cf_policy_meshcentral_linux_install}}"
-$policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url}}"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for MeshCentral Policy Script
-
-.DESCRIPTION
-    Deploys and manages MeshCentral Agent on Windows devices.
-
-    Custom Fields Required:
-    - cf_policy_meshcentral: Policy action (install/remove/pin)
-    - cf_policy_meshcentral_server_url: Your MeshCentral server (e.g., mc.cool.net.au)
-    - cf_policy_meshcentral_download_url: Windows installer download URL from MeshCentral
-
-    Optional Custom Fields:
-    - cf_policy_meshcentral_linux_install: Linux install command (one-liner)
-    - cf_policy_meshcentral_mac_download_url: Mac installer download URL
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -35,7 +19,7 @@ $policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/👀meshcentral.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -65,12 +49,19 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
@@ -234,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -269,6 +260,7 @@ $LauncherVars = @{
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
 }
 

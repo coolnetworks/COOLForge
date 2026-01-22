@@ -2,10 +2,10 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "Policy/Windows/👀Windows Location Services.ps1"
-$policy_device_locationservices = "{{cf_policy_device_locationservices}}"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for Windows Location Services Configuration Policy
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -19,7 +19,7 @@ $policy_device_locationservices = "{{cf_policy_device_locationservices}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/Windows/👀Windows Location Services.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -49,12 +49,19 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
@@ -218,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -253,6 +260,7 @@ $LauncherVars = @{
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
 }
 

@@ -2,16 +2,10 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "⚙️Cleanup VoyagerPACS Studies.ps1"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for VoyagerPACS Studies Cleanup
-
-.DESCRIPTION
-    Cleans up old study files from VoyagerPACS/VoyagerWebViewer imaging folders.
-    - Searches all fixed drives for ProgramData\Voy* folders
-    - Finds Studies folders at any depth
-    - Removes files older than 2 days
-    - Reports space freed
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -25,7 +19,7 @@ $ScriptToRun = "⚙️Cleanup VoyagerPACS Studies.ps1"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Utility/⚙️Cleanup VoyagerPACS Studies.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -55,12 +49,24 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
+
+$LevelApiKey_Raw = @'
+{{cf_apikey}}
+'@
+$LevelApiKey = $LevelApiKey_Raw.Trim()
 
 # ============================================================
 # GITHUB PAT INJECTION
@@ -219,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -234,6 +240,16 @@ try {
 }
 
 # ============================================================
+# COLLECT POLICY VARIABLES
+# ============================================================
+$PolicyVars = @{}
+Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    if (-not [string]::IsNullOrWhiteSpace($_.Value) -and $_.Value -notlike "{{*}}") {
+        $PolicyVars[$_.Name] = $_.Value
+    }
+}
+
+# ============================================================
 # EXECUTE SCRIPT
 # ============================================================
 Write-Host "[*] Slim Launcher v$LauncherVersion"
@@ -242,8 +258,15 @@ $LauncherVars = @{
     MspScratchFolder = $MspScratchFolder
     DeviceHostname   = $DeviceHostname
     DeviceTags       = $DeviceTags
+    LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
+}
+
+# Add policy variables
+foreach ($key in $PolicyVars.Keys) {
+    $LauncherVars[$key] = $PolicyVars[$key]
 }
 
 $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `

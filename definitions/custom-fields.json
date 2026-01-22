@@ -55,7 +55,7 @@
     },
     "debugging": {
       "displayName": "Debugging",
-      "description": "These fields enable verbose debug output for troubleshooting COOLForge scripts.",
+      "description": "These fields control debug output levels: normal (basics), verbose (policy decisions), veryverbose (full API trace).",
       "prerequisites": []
     },
     "policy_readme": {
@@ -294,12 +294,14 @@
     "debugging": [
       {
         "name": "debug_scripts",
-        "description": "Enable verbose debug output in COOLForge scripts. Set to 'true' to show all variables, tags, policy resolution, and diagnostic information.",
+        "description": "Debug output level for COOLForge scripts. 'normal' (or empty/false): basics only. 'verbose' (or true/1): policy decisions, actions. 'veryverbose' (or 2): full trace with API calls, variable dumps.",
         "legacyNames": [],
         "adminOnly": false,
         "required": false,
-        "default": "true",
-        "prompt": "Enable debug output in scripts? (true/false)"
+        "default": "normal",
+        "valueOptions": ["normal", "verbose", "veryverbose"],
+        "valueFormat": "{value} | normal=basics, verbose=debug, veryverbose=full trace",
+        "prompt": "Debug output level (normal/verbose/veryverbose)"
       }
     ],
     "policy_readme": [

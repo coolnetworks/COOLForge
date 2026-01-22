@@ -54,8 +54,8 @@ Write-Host ""
 # Read template
 $TemplateContent = Get-Content -Path $TemplateFile -Raw
 
-# Get all launcher files
-$LauncherFiles = Get-ChildItem -Path $LaunchersDir -Filter "*.ps1" -File
+# Get all launcher files (including subdirectories)
+$LauncherFiles = Get-ChildItem -Path $LaunchersDir -Filter "*.ps1" -File -Recurse
 
 Write-Host "[*] Found $($LauncherFiles.Count) launcher files to update" -ForegroundColor Gray
 Write-Host ""
@@ -77,8 +77,8 @@ foreach ($LauncherFile in $LauncherFiles) {
         # Change "CHANGE THIS VALUE" to "PRE-CONFIGURED" in the comment
         $NewContent = $NewContent -replace '# SCRIPT TO RUN - CHANGE THIS VALUE', '# SCRIPT TO RUN - PRE-CONFIGURED'
 
-        # Write updated launcher
-        Set-Content -Path $LauncherFile.FullName -Value $NewContent -Force
+        # Write updated launcher with UTF-8 BOM (critical for emoji filenames)
+        [System.IO.File]::WriteAllText($LauncherFile.FullName, $NewContent, [System.Text.UTF8Encoding]::new($true))
         Write-Host "  [+] Updated successfully" -ForegroundColor Green
     }
     else {

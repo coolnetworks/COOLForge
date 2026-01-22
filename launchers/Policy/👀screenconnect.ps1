@@ -2,24 +2,10 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀screenconnect.ps1"
-$policy_screenconnect = "{{cf_policy_screenconnect}}"
-$policy_screenconnect_instance = "{{cf_policy_screenconnect_instance}}"
-$policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"
-$level_group_path = "{{level_group_path}}"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for ScreenConnect Policy Script
-
-.DESCRIPTION
-    Deploys and manages ScreenConnect (ConnectWise Control) client on Windows devices.
-
-    Custom Fields Required:
-    - cf_policy_screenconnect: Policy action (install/remove/pin)
-    - cf_policy_screenconnect_instance: ScreenConnect service display name
-    - cf_policy_screenconnect_baseurl: ScreenConnect server URL (e.g., support.company.com)
-
-    Level.io Variables Used:
-    - level_group_path: Used as company name for the installer (flattened)
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -33,7 +19,7 @@ $level_group_path = "{{level_group_path}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/👀screenconnect.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -63,12 +49,19 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
@@ -232,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -256,12 +249,6 @@ Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
     }
 }
 
-# Also pass level_group_path for company name
-$LevelGroupPath = Get-Variable -Name "level_group_path" -ValueOnly -ErrorAction SilentlyContinue
-if (-not [string]::IsNullOrWhiteSpace($LevelGroupPath) -and $LevelGroupPath -notlike "{{*}}") {
-    $PolicyVars["level_group_path"] = $LevelGroupPath
-}
-
 # ============================================================
 # EXECUTE SCRIPT
 # ============================================================
@@ -273,6 +260,7 @@ $LauncherVars = @{
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
 }
 

@@ -2,9 +2,10 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀debug.ps1"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
-    Slim Level.io Launcher for Debug Script
+    Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
     Launcher Version: 2026.01.22.01
@@ -18,7 +19,7 @@ $ScriptToRun = "👀debug.ps1"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/👀debug.ps1"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -28,18 +29,6 @@ $ErrorActionPreference = "SilentlyContinue"
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
-
-# ALL Level.io System Variables (for debug output)
-$LevelDeviceId = "{{level_device_id}}"
-$LevelDeviceHostname = "{{level_device_hostname}}"
-$LevelDeviceNickname = "{{level_device_nickname}}"
-$LevelDevicePublicIp = "{{level_device_public_ip_address}}"
-$LevelDevicePrivateIps = "{{level_device_private_ip_addresses}}"
-$LevelGroupId = "{{level_group_id}}"
-$LevelGroupName = "{{level_group_name}}"
-$LevelGroupPath = "{{level_group_path}}"
-$LevelTagNames = "{{level_tag_names}}"
-$LevelTagIds = "{{level_tag_ids}}"
 
 $GitHubPAT = @'
 {{cf_coolforge_pat}}
@@ -60,17 +49,25 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
-$DebugScripts = "{{cf_debug_scripts}}"
-if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
-    $DebugScripts = $false
+# Parse debug level: normal, verbose, veryverbose
+$DebugScriptsRaw = "{{cf_debug_scripts}}"
+if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
+    $DebugLevel = "normal"
+} elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
+    $DebugLevel = "verbose"
+} elseif ($DebugScriptsRaw -eq "2" -or $DebugScriptsRaw -eq "veryverbose") {
+    $DebugLevel = "veryverbose"
 } else {
-    $DebugScripts = $DebugScripts -eq "true"
+    $DebugLevel = "normal"
 }
+# Keep $DebugScripts boolean for backwards compatibility
+$DebugScripts = ($DebugLevel -ne "normal")
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
 '@
 $LevelApiKey = $LevelApiKey_Raw.Trim()
+
 # ============================================================
 # GITHUB PAT INJECTION
 # ============================================================
@@ -228,7 +225,7 @@ New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleC
 
 # Check launcher version
 try {
-    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json"
+    $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
@@ -263,18 +260,8 @@ $LauncherVars = @{
     DeviceTags       = $DeviceTags
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
     LibraryUrl       = $LibraryUrl
-    # All Level.io System Variables
-    LevelDeviceId         = $LevelDeviceId
-    LevelDeviceHostname   = $LevelDeviceHostname
-    LevelDeviceNickname   = $LevelDeviceNickname
-    LevelDevicePublicIp   = $LevelDevicePublicIp
-    LevelDevicePrivateIps = $LevelDevicePrivateIps
-    LevelGroupId          = $LevelGroupId
-    LevelGroupName        = $LevelGroupName
-    LevelGroupPath        = $LevelGroupPath
-    LevelTagNames         = $LevelTagNames
-    LevelTagIds           = $LevelTagIds
 }
 
 # Add policy variables
