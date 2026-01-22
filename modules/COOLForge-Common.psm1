@@ -6931,16 +6931,7 @@ function Invoke-ScriptLauncher {
                     if ($ExpectedScriptMD5) {
                         $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
                         if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
-                            # Retry with cache-bust before failing
-                            Write-Host "[*] Hash mismatch - retrying with cache-bust..."
-                            $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-                            $CacheBustUrl = "$ScriptUrl`?t=$CacheBuster"
-                            $RemoteScriptContent = (Invoke-WebRequest -Uri $CacheBustUrl -UseBasicParsing -TimeoutSec 15).Content
-                            Set-Content -Path $ScriptPath -Value $RemoteScriptContent -Force -ErrorAction Stop
-                            $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
-                            if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
-                                throw "MD5 checksum mismatch after cache-bust: expected $ExpectedScriptMD5, got $ActualScriptMD5"
-                            }
+                            throw "MD5 checksum mismatch: expected $ExpectedScriptMD5, got $ActualScriptMD5"
                         }
                         Write-Host "[+] Script checksum verified"
                     }

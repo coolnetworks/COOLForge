@@ -164,10 +164,9 @@ if ($DebugScripts -and (Test-Path $LibraryPath)) {
     Write-Host "[*] Library not found - downloading..."
 }
 
-# STEP 4: Download library if needed
-# Strategy: Try normal URL first (CDN cached), retry with cache-bust if hash mismatch
+# STEP 4: Download library if needed (always use cache-busting)
 if ($NeedsUpdate) {
-    $LibFetchUrl = if ($DebugScripts) { "$LibraryUrl`?t=$CacheBuster" } else { $LibraryUrl }
+    $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
     if ($DebugScripts) { Write-Host "[DEBUG] Library URL: $LibFetchUrl" }
 
     try {
@@ -181,21 +180,9 @@ if ($NeedsUpdate) {
 
         if ($DebugScripts) { Write-Host "[DEBUG] Remote library hash: $RemoteHash" }
 
-        # If hash mismatch and not already cache-busting, retry with cache-bust
-        if ($ExpectedLibraryHash -and $RemoteHash -ne $ExpectedLibraryHash -and -not $DebugScripts) {
-            Write-Host "[*] Hash mismatch - retrying with cache-bust..."
-            $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
-            $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
-            if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
-                $RemoteContent = $RemoteContent.Substring(1)
-            }
-            $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
-            $RemoteHash = Get-StringMD5 -Content $RemoteContent
-        }
-
-        # Final hash check
+        # Verify downloaded content matches expected hash
         if ($ExpectedLibraryHash -and $RemoteHash -ne $ExpectedLibraryHash) {
-            Write-Host "[!] WARNING: Library hash still doesn't match after cache-bust"
+            Write-Host "[!] WARNING: Downloaded library hash doesn't match MD5SUMS!"
             Write-Host "[!] Expected: $ExpectedLibraryHash"
             Write-Host "[!] Got: $RemoteHash"
         }
