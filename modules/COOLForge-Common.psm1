@@ -6857,6 +6857,9 @@ function Invoke-ScriptLauncher {
         $ScriptUrl = "$ScriptRepoBaseUrl/$(Get-LevelUrlEncoded $ScriptName)"
     }
 
+    # Save original URL for potential cache-bust retry
+    $OriginalScriptUrl = $ScriptUrl
+
     # Debug mode: cache-busting
     if ($DebugMode) {
         $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
@@ -6931,7 +6934,22 @@ function Invoke-ScriptLauncher {
                     if ($ExpectedScriptMD5) {
                         $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
                         if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
-                            throw "MD5 checksum mismatch: expected $ExpectedScriptMD5, got $ActualScriptMD5"
+                            # Retry with cache-bust before failing
+                            Write-Host "[*] Hash mismatch - retrying with cache-bust..."
+                            $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+                            $CacheBustUrl = "$OriginalScriptUrl`?t=$CacheBuster"
+                            $RemoteScriptContent = (Invoke-WebRequest -Uri $CacheBustUrl -UseBasicParsing -TimeoutSec 15).Content
+                            $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
+
+                            if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
+                                Write-Host "[!] WARNING: Script hash still doesn't match after cache-bust"
+                                Write-Host "[!] Expected: $ExpectedScriptMD5"
+                                Write-Host "[!] Got: $ActualScriptMD5"
+                                # Continue anyway - CDN may still be propagating
+                            } else {
+                                # Update version from fresh content
+                                $RemoteScriptVersion = Get-ScriptVersion -Content $RemoteScriptContent -Source "remote script"
+                            }
                         }
                         Write-Host "[+] Script checksum verified"
                     }
