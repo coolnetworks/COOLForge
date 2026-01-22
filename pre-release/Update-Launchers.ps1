@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Synchronizes all launcher files with the template.
 
@@ -33,7 +33,7 @@ $ErrorActionPreference = "Stop"
 # Get repository root
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 
-$TemplateFile = Join-Path $RepoRoot "templates\Policy_Launcher_Template.ps1"
+$TemplateFile = Join-Path $RepoRoot "templates\Slim-Launcher.ps1"
 $LaunchersDir = Join-Path $RepoRoot "launchers"
 
 if (!(Test-Path $TemplateFile)) {
