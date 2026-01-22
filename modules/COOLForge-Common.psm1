@@ -4562,13 +4562,8 @@ function Initialize-SoftwarePolicyInfrastructure {
 
     Write-LevelLog "Initializing policy infrastructure for '$SoftwareName'..." -Level "INFO"
 
-    # ================================================================
-    # STEP 0: Ensure global COOLForge infrastructure exists
-    # ================================================================
-    $GlobalResult = Initialize-COOLForgeInfrastructure -ApiKey $ApiKey -BaseUrl $BaseUrl
-    if ($GlobalResult.FieldsCreated -gt 0) {
-        $FieldsCreated += $GlobalResult.FieldsCreated
-    }
+    # NOTE: Global infrastructure (coolforge_* fields) should be set up via Setup-COOLForge.ps1
+    # This function only handles software-specific tags and fields
 
     # ================================================================
     # STEP 1: Create policy tags (5-tag model)

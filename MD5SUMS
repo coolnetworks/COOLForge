@@ -586,7 +586,7 @@ bba92b6bfe13e14560a33acffdd18578  launchers/🔧Prevent Sleep.ps1
 9a5c78cd4ab457f345d63c3f0a835a83  LEVEL-SUPPORT-QUESTIONS.md
 9b45e597763b94993608aca55a086b1f  LEVEL-SUPPORT-SUBMITTED.md
 5746acb006595a0ec8e3e8ccfe2a7131  MEETING NOTES - Level.io Demo.md
-0b8948afd5bad18b83a044966cea2178  modules/COOLForge-Common.psm1
+56d8eb79fd2c4aaf65d9ff040c8424ac  modules/COOLForge-Common.psm1
 07f2114b030950370cf6ac38e64f222f  NEEDS_TESTING.md
 3c230ff8cd8b89385d4fb66e136aa10a  pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  pre-release/Test-Syntax.ps1
