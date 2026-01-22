@@ -4,6 +4,69 @@
 **Launchers:** `launchers/Policy/Windows/`
 **Category:** Configuration Policy
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  Policy Fields)    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Tags &       |
+| Policy Field       |
++--------+-----------+
+         |
+    +----+----+----+----+
+    |    |    |    |    |
+    v    v    v    v    v
++----+ +----+ +---+ +----+ +---+
+|Skip| |Pin | |Rem| |Inst| |Has|
++----+ +--+-+ +-+-+ +-+--+ +-+-+
+           |    |     |     |
+           v    v     v     v
+        +------+ +-------+ +------+
+        |No-op | |Disable| |Enable|
+        +------+ +-------+ +------+
+                    |         |
+                    v         v
+          +--------------------+
+          | Update Has Tag     |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          |  Exit 0/1          |
+          +--------------------+
+```
+
 ## Purpose
 
 Windows configuration policies manage OS-level settings that affect all applications on the device.

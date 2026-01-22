@@ -5,21 +5,48 @@ Detects when a device's actual hostname doesn't match what Level.io expects.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Get Actual       |
-| Hostname         |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Device Hostname)  |
++--------+-----------+
          |
          v
-+------------------+
-| Compare to       |
-| Level.io Value   |
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Detect
+   hostname mismatch
+         |
+         v
++--------------------+
+| Get Actual         |
+| Hostname           |
++--------+-----------+
+         |
+         v
++--------------------+
+| Compare to         |
+| Level.io Value     |
++--------+-----------+
          |
     +----+----+
     |         |

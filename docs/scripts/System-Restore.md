@@ -5,6 +5,86 @@
 **Version:** 2025.12.29.01
 **Category:** Fix
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder)   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Enable System      |
+| Protection         |
++--------+-----------+
+         |
+         v
++--------------------+
+| Configure Disk     |
+| Space (10%)        |
++--------+-----------+
+         |
+         v
++--------------------+
+| Disable 24hr       |
+| Frequency Limit    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Create Restore     |
+| Point              |
++--------+-----------+
+         |
+         v
++--------------------+
+| Verify Restore     |
+| Point Created      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Create Daily       |
+| Scheduled Task     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Report Summary     |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0/1          |
++--------------------+
+```
+
 ## Purpose
 
 Enables System Protection, creates an immediate restore point, and schedules daily automatic restore points.

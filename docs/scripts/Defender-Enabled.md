@@ -5,15 +5,42 @@ Ensures Windows Defender antivirus is enabled and running.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Check Defender   |
-| Service Status   |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder)   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Ensure
+   Defender enabled
+         |
+         v
++--------------------+
+| Check Defender     |
+| Service Status     |
++--------+-----------+
          |
     +----+----+
     |         |
@@ -29,15 +56,15 @@ Ensures Windows Defender antivirus is enabled and running.
     |    +---+----+
     |         |
     v         v
-+------------------+
-| Verify Real-Time |
-| Protection       |
-+--------+---------+
++--------------------+
+| Verify Real-Time   |
+| Protection         |
++--------+-----------+
          |
          v
-+------------------+
-|  Exit 0/1        |
-+------------------+
++--------------------+
+|  Exit 0/1          |
++--------------------+
 ```
 
 ## Purpose

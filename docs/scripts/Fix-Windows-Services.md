@@ -10,6 +10,81 @@
 **Version:** 2025.12.29.01
 **Category:** Fix
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder)   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Admin        |
+| Privileges         |
++--------+-----------+
+         |
+         v
++--------------------+
+| Detect Windows     |
+| Version            |
++--------+-----------+
+         |
+    +----+----+
+    |         |
+    v         v
++------+  +--------+
+|Wrong |  |Correct |
+|Version|  +---+----+
+| Exit |      |
++------+      v
+     +--------------------+
+     | Load Service       |
+     | Defaults List      |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Reset Each         |
+     | Service Startup    |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Report Changes     |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     |  Exit 0/1          |
+     +--------------------+
+```
+
 ## Purpose
 
 Restores Windows services to their Microsoft-recommended default startup configurations.

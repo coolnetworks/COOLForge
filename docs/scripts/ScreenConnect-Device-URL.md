@@ -5,6 +5,76 @@
 **Version:** 2026.01.10.01
 **Category:** Configure
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (SC Base URL)      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Search Registry    |
+| for SC Services    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Parse ImagePath    |
+| for Session GUID   |
++--------+-----------+
+         |
+    +----+----+
+    |         |
+    v         v
++------+  +--------+
+|Not   |  | Found  |
+|Found |  +---+----+
+|Exit 1|      |
++------+      v
+     +--------------------+
+     | Construct URL      |
+     | from Base + GUID   |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Output CF Format   |
+     | {{cf_...=URL}}     |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     |  Exit 0            |
+     +--------------------+
+```
+
 ## Purpose
 
 Extracts the ScreenConnect client GUID from the local Windows registry and constructs the full ScreenConnect connection URL, then automatically populates the device's `cf_screenconnect_device_url` custom field.

@@ -2,6 +2,69 @@
 
 Automated installation and removal of [Unchecky](https://unchecky.com/) across your managed devices.
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  Unchecky URL)     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Tags &       |
+| Policy Field       |
++--------+-----------+
+         |
+    +----+----+----+----+
+    |    |    |    |    |
+    v    v    v    v    v
++----+ +----+ +---+ +----+ +---+
+|Skip| |Pin | |Rem| |Inst| |Has|
++----+ +--+-+ +-+-+ +-+--+ +-+-+
+           |    |     |     |
+           v    v     v     v
+        +------+ +------+ +------+
+        |No-op | |Remove| |Install|
+        +------+ +------+ +------+
+                   |        |
+                   v        v
+          +--------------------+
+          | Update Has Tag     |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          |  Exit 0/1          |
+          +--------------------+
+```
+
 ## Quick Start
 
 > **IMPORTANT:** Complete ALL steps before running the script. The script will fail if custom fields are not configured.

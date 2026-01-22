@@ -5,6 +5,82 @@
 **Version:** 2025.12.27.05
 **Category:** Remove
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder,   |
+|  Tags)             |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check for          |
+| Blocking Tags      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Phase 1: Standard  |
+| Uninstall          |
++--------+-----------+
+         |
+         v
++--------------------+
+| Phase 2: Stop      |
+| Services           |
++--------+-----------+
+         |
+         v
++--------------------+
+| Phase 3: Remove    |
+| Files              |
++--------+-----------+
+         |
+         v
++--------------------+
+| Phase 4: Clean     |
+| Registry           |
++--------+-----------+
+         |
+         v
++--------------------+
+| Phase 5: Verify    |
+| Removal            |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0/1          |
++--------------------+
+```
+
 ## Purpose
 
 Removes AnyDesk remote access software from the system using progressively forceful methods.

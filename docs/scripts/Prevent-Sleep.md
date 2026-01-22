@@ -5,6 +5,82 @@
 **Version:** 2025.12.30.01
 **Category:** Fix
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder,   |
+|  Duration Config)  |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Existing     |
+| Session            |
++--------+-----------+
+         |
+    +----+----+
+    |         |
+    v         v
++------+  +--------+
+|Active|  |  None  |
+|Extend|  +---+----+
++--+---+      |
+   |          v
+   |   +--------------------+
+   |   | Backup Current     |
+   |   | Power Settings     |
+   |   +--------+-----------+
+   |            |
+   |            v
+   |   +--------------------+
+   |   | Disable Sleep &    |
+   |   | Hibernate          |
+   +-->+--------+-----------+
+                |
+                v
+       +--------------------+
+       | Set Expiry Time    |
+       +--------+-----------+
+                |
+                v
+       +--------------------+
+       | Create Scheduled   |
+       | Task for Restore   |
+       +--------+-----------+
+                |
+                v
+       +--------------------+
+       |  Exit 0/1          |
+       +--------------------+
+```
+
 ## Purpose
 
 Temporarily disables sleep and hibernate modes on a Windows device with automatic restoration after a configurable timeout.

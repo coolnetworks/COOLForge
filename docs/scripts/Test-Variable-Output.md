@@ -5,6 +5,64 @@
 **Version:** 2025.12.29.02
 **Category:** Check
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder,   |
+|  Tags, Config)     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Parse Variable     |
+| Configuration      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Collect System     |
+| Information        |
++--------+-----------+
+         |
+         v
++--------------------+
+| Output Variables   |
+| {{var=value}}      |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0            |
++--------------------+
+```
+
 ## Purpose
 
 Demonstrates how to output values that Level.io captures and stores as automation variables for use in subsequent workflow steps.

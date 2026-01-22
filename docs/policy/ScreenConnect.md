@@ -5,9 +5,42 @@ Software policy enforcement for ConnectWise ScreenConnect (Control) remote acces
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  SC Instance ID)   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Tags &       |
+| Policy Field       |
++--------+-----------+
          |
          v
 +------------------+
@@ -28,14 +61,14 @@ Software policy enforcement for ConnectWise ScreenConnect (Control) remote acces
         +------+ +------+ +------+
                     |        |
                     v        v
-              +------------------+
-              | Update Has Tag   |
-              +------------------+
-                       |
-                       v
-              +------------------+
-              |  Exit 0/1        |
-              +------------------+
+          +--------------------+
+          | Update Has Tag     |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          |  Exit 0/1          |
+          +--------------------+
 ```
 
 ## Overview

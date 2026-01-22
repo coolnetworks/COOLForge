@@ -5,6 +5,76 @@
 **Version:** 2025.12.27.03
 **Category:** Check
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder,   |
+|  Tags, API Key)    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Display Device     |
+| Information        |
++--------+-----------+
+         |
+         v
++--------------------+
+| Display Library    |
+| Version            |
++--------+-----------+
+         |
+         v
++--------------------+
+| List Cached        |
+| Scripts            |
++--------+-----------+
+         |
+         v
++--------------------+
+| Test Each Library  |
+| Function           |
++--------+-----------+
+         |
+         v
++--------------------+
+| Display Test       |
+| Summary            |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0/1          |
++--------------------+
+```
+
 ## Purpose
 
 Comprehensive test script that verifies all COOLForge-Common library functions and displays version/device information.

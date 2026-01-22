@@ -5,39 +5,66 @@ Cleans temporary files and frees disk space across common locations.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Get Initial      |
-| Disk Space       |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder)   |
++--------+-----------+
          |
          v
-+------------------+
-| Clean Windows    |
-| Temp Folders     |
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
          |
          v
-+------------------+
-| Clean Browser    |
-| Caches           |
-+--------+---------+
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
          |
          v
-+------------------+
-| Clean Windows    |
-| Update Cache     |
-+--------+---------+
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Clean
+   temporary files
          |
          v
-+------------------+
-| Report Space     |
-| Recovered        |
-+--------+---------+
++--------------------+
+| Get Initial        |
+| Disk Space         |
++--------+-----------+
+         |
+         v
++--------------------+
+| Clean Windows      |
+| Temp Folders       |
++--------+-----------+
+         |
+         v
++--------------------+
+| Clean Browser      |
+| Caches             |
++--------+-----------+
+         |
+         v
++--------------------+
+| Clean Windows      |
+| Update Cache       |
++--------+-----------+
+         |
+         v
++--------------------+
+| Report Space       |
+| Recovered          |
++--------+-----------+
          |
          v
 +------------------+

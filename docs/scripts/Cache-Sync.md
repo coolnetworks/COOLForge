@@ -5,33 +5,61 @@ Synchronizes the local registry cache with Level.io data.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Query Level.io   |
-| API for Device   |
-| Data             |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (API Key, Scratch  |
+|  Folder)           |
++--------+-----------+
          |
          v
-+------------------+
-| Update Registry  |
-| Cache Values     |
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
          |
          v
-+------------------+
-| Clear Stale      |
-| Entries          |
-+--------+---------+
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
          |
          v
-+------------------+
-|  Exit 0          |
-+------------------+
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Sync cache
+   with Level.io API
+         |
+         v
++--------------------+
+| Query Level.io     |
+| API for Device     |
+| Data               |
++--------+-----------+
+         |
+         v
++--------------------+
+| Update Registry    |
+| Cache Values       |
++--------+-----------+
+         |
+         v
++--------------------+
+| Clear Stale        |
+| Entries            |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0            |
++--------------------+
 ```
 
 ## Purpose

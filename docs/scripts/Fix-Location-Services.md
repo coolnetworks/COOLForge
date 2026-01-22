@@ -5,15 +5,42 @@ Configures Windows Location Services to the desired state.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Get Policy       |
-| Setting          |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Policy Field)     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Fix
+   location services
+         |
+         v
++--------------------+
+| Get Policy         |
+| Setting            |
++--------+-----------+
          |
     +----+----+
     |         |
@@ -23,15 +50,15 @@ Configures Windows Location Services to the desired state.
 +---+---+ +---+----+
     |         |
     v         v
-+------------------+
-| Update Registry  |
-| Settings         |
-+--------+---------+
++--------------------+
+| Update Registry    |
+| Settings           |
++--------+-----------+
          |
          v
-+------------------+
-|  Exit 0/1        |
-+------------------+
++--------------------+
+|  Exit 0/1          |
++--------------------+
 ```
 
 ## Purpose

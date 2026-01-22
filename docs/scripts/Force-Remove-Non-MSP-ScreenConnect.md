@@ -5,6 +5,83 @@
 **Version:** 2025.12.27.01
 **Category:** Remove
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (SC Instance ID,   |
+|  Server Flag)      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check if SC        |
+| Server Device      |
++--------+-----------+
+         |
+    +----+----+
+    |         |
+    v         v
++------+  +--------+
+| Yes  |  |  No   |
+| Exit |  +---+----+
++------+      |
+              v
+     +--------------------+
+     | Find SC Instances  |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Filter Non-MSP     |
+     | (Check Instance    |
+     |  ID Whitelist)     |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Remove Each        |
+     | Unauthorized       |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Cleanup Files      |
+     | & Registry         |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     |  Exit 0/1          |
+     +--------------------+
+```
+
 ## Purpose
 
 Removes unauthorized ScreenConnect (ConnectWise Control) installations while preserving your MSP's authorized instance.

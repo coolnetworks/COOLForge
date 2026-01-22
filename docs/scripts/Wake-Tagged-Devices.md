@@ -5,33 +5,60 @@ Sends Wake-on-LAN packets to devices with specific tags.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Query Level.io   |
-| for Tagged       |
-| Devices          |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags)    |
++--------+-----------+
          |
          v
-+------------------+
-| Get MAC Addresses|
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
          |
          v
-+------------------+
-| For Each Device: |
-| Send WOL Packet  |
-+--------+---------+
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
          |
          v
-+------------------+
-| Report Results   |
-| Exit 0           |
-+------------------+
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Wake
+   tagged devices
+         |
+         v
++--------------------+
+| Query Level.io     |
+| for Tagged         |
+| Devices            |
++--------+-----------+
+         |
+         v
++--------------------+
+| Get MAC Addresses  |
++--------+-----------+
+         |
+         v
++--------------------+
+| For Each Device:   |
+| Send WOL Packet    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Report Results     |
+| Exit 0             |
++--------------------+
 ```
 
 ## Purpose

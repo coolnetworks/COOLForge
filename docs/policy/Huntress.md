@@ -5,6 +5,75 @@
 **Version:** 2026.01.08.03
 **Category:** Policy
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  Huntress Keys)    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Tags &       |
+| Policy Field       |
++--------+-----------+
+         |
+    +----+----+----+----+
+    |    |    |    |    |
+    v    v    v    v    v
++----+ +----+ +---+ +----+ +---+
+|Skip| |Pin | |Rem| |Inst| |Has|
++----+ +--+-+ +-+-+ +-+--+ +-+-+
+           |    |     |     |
+           v    v     v     v
+        +------+ +------+ +------+
+        |No-op | |Remove| |Install|
+        +------+ +------+ +------+
+                   |        |
+                   v        v
+          +--------------------+
+          | Check Tamper       |
+          | Protection         |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          | Update Has Tag     |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          |  Exit 0/1          |
+          +--------------------+
+```
+
 ## Purpose
 
 Tag-based policy enforcement script for Huntress agent management. Handles installation, removal (with tamper protection awareness), and verification based on Level.io device tags.

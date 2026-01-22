@@ -5,9 +5,42 @@ Software policy enforcement for MeshCentral remote management agent.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  MeshCentral URLs) |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Tags &       |
+| Policy Field       |
++--------+-----------+
          |
          v
 +------------------+
@@ -28,14 +61,14 @@ Software policy enforcement for MeshCentral remote management agent.
         +------+ +------+ +------+
                     |        |
                     v        v
-              +------------------+
-              | Update Has Tag   |
-              +------------------+
-                       |
-                       v
-              +------------------+
-              |  Exit 0/1        |
-              +------------------+
+          +--------------------+
+          | Update Has Tag     |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          |  Exit 0/1          |
+          +--------------------+
 ```
 
 ## Overview

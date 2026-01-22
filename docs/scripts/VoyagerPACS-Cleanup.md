@@ -5,39 +5,66 @@ Cleans up old PACS imaging studies from VoyagerPACS installations.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Find VoyagerPACS |
-| Installation     |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Retention Config) |
++--------+-----------+
          |
          v
-+------------------+
-| Scan for Studies |
-| Older Than       |
-| Retention Period |
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
          |
          v
-+------------------+
-| Delete Expired   |
-| Studies          |
-+--------+---------+
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
          |
          v
-+------------------+
-| Report Space     |
-| Recovered        |
-+--------+---------+
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Cleanup
+   old PACS studies
          |
          v
-+------------------+
-|  Exit 0          |
-+------------------+
++--------------------+
+| Find VoyagerPACS   |
+| Installation       |
++--------+-----------+
+         |
+         v
++--------------------+
+| Scan for Studies   |
+| Older Than         |
+| Retention Period   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Delete Expired     |
+| Studies            |
++--------+-----------+
+         |
+         v
++--------------------+
+| Report Space       |
+| Recovered          |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0            |
++--------------------+
 ```
 
 ## Purpose

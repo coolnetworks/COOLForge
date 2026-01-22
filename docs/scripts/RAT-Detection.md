@@ -5,6 +5,92 @@
 **Version:** 2026.01.10.01
 **Category:** Check
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (SC Instance ID,   |
+|  Tags)             |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Blocking     |
+| Tags               |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load RAT           |
+| Definitions (60+)  |
++--------+-----------+
+         |
+         v
++--------------------+
+| Check SC           |
+| Whitelist          |
++--------+-----------+
+         |
+         v
++--------------------+
+| Scan Processes     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Scan Services      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Scan Registry      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Scan Directories   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Report Findings    |
++--------+-----------+
+         |
+    +----+----+
+    |         |
+    v         v
++------+  +-------+
+|Found |  | None  |
+|Exit 1|  |Exit 0 |
++------+  +-------+
+```
+
 ## Purpose
 
 Detects unauthorized remote access tools (RATs) that may be installed without authorization on managed endpoints.

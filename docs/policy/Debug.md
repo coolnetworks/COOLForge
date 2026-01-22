@@ -5,6 +5,70 @@
 **Version:** 2026.01.01.03
 **Category:** Policy
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  Policy Fields)    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Tags &       |
+| Policy Field       |
++--------+-----------+
+         |
+    +----+----+----+----+
+    |    |    |    |    |
+    v    v    v    v    v
++----+ +----+ +---+ +----+ +---+
+|Skip| |Pin | |Rem| |Inst| |Has|
++----+ +--+-+ +-+-+ +-+--+ +-+-+
+           |    |     |     |
+           v    v     v     v
+        +------+ +--------+ +--------+
+        |No-op | |Simulate| |Simulate|
+        +------+ | Remove | | Install|
+                 +--------+ +--------+
+                    |          |
+                    v          v
+          +--------------------+
+          | Display Results    |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          |  Exit 0/1          |
+          +--------------------+
+```
+
 ## Purpose
 
 Debug script for testing software policy enforcement logic. Demonstrates the COOLForge policy check pattern without actually installing or removing software.

@@ -5,30 +5,58 @@ Validates that device DNS server settings match expected configuration.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Get Network      |
-| Adapters         |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Expected DNS      |
+|  Servers)          |
++--------+-----------+
          |
          v
-+------------------+
-| Check DNS        |
-| Settings         |
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Check DNS
+   server compliance
+         |
+         v
++--------------------+
+| Get Network        |
+| Adapters           |
++--------+-----------+
+         |
+         v
++--------------------+
+| Check DNS          |
+| Settings           |
++--------+-----------+
          |
     +----+----+
     |         |
     v         v
-+-------+ +--------+
-|Compliant| |Non-    |
++--------+ +--------+
+|Compliant| |Non-   |
 |Exit 0  | |Compliant|
-+-------+ |Exit 1  |
-          +--------+
++--------+ |Exit 1  |
+           +--------+
 ```
 
 ## Purpose

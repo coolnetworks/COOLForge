@@ -5,6 +5,82 @@
 **Version:** 2026.01.08.02
 **Category:** Utility
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  Scratch Folder)   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check for          |
+| Technician Tag     |
++--------+-----------+
+         |
+    +----+----+
+    |         |
+    v         v
++------+  +--------+
+|No Tag|  |Has Tag |
+| Exit |  +---+----+
++------+      |
+              v
+     +--------------------+
+     | Poll API for       |
+     | Pending Alerts     |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Filter Unseen      |
+     | Alerts             |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Display Toast      |
+     | Notifications      |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     | Cache Seen Alerts  |
+     +--------+-----------+
+              |
+              v
+     +--------------------+
+     |  Exit 0            |
+     +--------------------+
+```
+
 ## Purpose
 
 Monitors for technician alerts and displays Windows toast notifications on technician workstations.

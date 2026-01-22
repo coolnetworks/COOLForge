@@ -5,27 +5,54 @@ Enables Wake-on-LAN (WOL) settings on network adapters.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Find Network     |
-| Adapters         |
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder)   |
++--------+-----------+
          |
          v
-+------------------+
-| Enable WOL       |
-| Power Settings   |
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
          |
          v
-+------------------+
-| Configure NIC    |
-| Properties       |
-+--------+---------+
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Configure
+   Wake-on-LAN
+         |
+         v
++--------------------+
+| Find Network       |
+| Adapters           |
++--------+-----------+
+         |
+         v
++--------------------+
+| Enable WOL         |
+| Power Settings     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Configure NIC      |
+| Properties         |
++--------+-----------+
          |
     +----+----+
     |         |

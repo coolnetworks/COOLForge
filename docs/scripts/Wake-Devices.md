@@ -1,8 +1,77 @@
 # Wake All Devices Script
 
-**Script:** `scripts/Utility/🙏Wake all devices in parent to level.io folder.ps1`
-**Launcher:** `launchers/🙏Wake all devices in parent to level.io folder.ps1`
+**Script:** `scripts/Utility/🙏Wake all devices in Level group.ps1`
+**Launcher:** `launchers/🙏Wake all devices in Level group.ps1`
 **Category:** Utility
+
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Scratch  |
+|  Folder, Tags)     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Get Current Device |
+| Group/Folder       |
++--------+-----------+
+         |
+         v
++--------------------+
+| Traverse Up by     |
+| LevelsUp Count     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Fetch All Devices  |
+| in Target Folder   |
++--------+-----------+
+         |
+         v
++--------------------+
+| For Each Device    |
+| Send WOL Packets   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Report Results     |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0            |
++--------------------+
+```
 
 ## Purpose
 

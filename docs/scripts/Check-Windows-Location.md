@@ -5,26 +5,53 @@ Checks the status of Windows Location Services on the device.
 ## Flow
 
 ```
-+------------------+
-|  Script Start    |
-+--------+---------+
++--------------------+
+| Launcher Start     |
++--------+-----------+
          |
          v
-+------------------+
-| Query Registry   |
-| Location Settings|
-+--------+---------+
++--------------------+
+| Load Level.io Vars |
+| (Scratch Folder)   |
++--------+-----------+
          |
          v
-+------------------+
-| Report Status    |
-| (Enabled/Disabled)|
-+--------+---------+
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
          |
          v
-+------------------+
-|  Exit 0          |
-+------------------+
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+   SCRIPT: Check
+   location services
+         |
+         v
++--------------------+
+| Query Registry     |
+| Location Settings  |
++--------+-----------+
+         |
+         v
++--------------------+
+| Report Status      |
+| (Enabled/Disabled) |
++--------+-----------+
+         |
+         v
++--------------------+
+|  Exit 0            |
++--------------------+
 ```
 
 ## Purpose

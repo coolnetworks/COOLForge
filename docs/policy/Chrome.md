@@ -5,6 +5,69 @@
 **Version:** 2026.01.16.01
 **Category:** Policy
 
+## Flow
+
+```
++--------------------+
+| Launcher Start     |
++--------+-----------+
+         |
+         v
++--------------------+
+| Load Level.io Vars |
+| (API Key, Tags,    |
+|  Policy Fields)    |
++--------+-----------+
+         |
+         v
++--------------------+
+| Download MD5SUMS   |
+| & Verify Library   |
++--------+-----------+
+         |
+         v
++--------------------+
+| Import COOLForge   |
+| Common Module      |
++--------+-----------+
+         |
+         v
++--------------------+
+| Invoke-Script      |
+| Launcher           |
++========+===========+
+         |
+    SCRIPT LOGIC
+         |
+         v
++--------------------+
+| Check Tags &       |
+| Policy Field       |
++--------+-----------+
+         |
+    +----+----+----+----+
+    |    |    |    |    |
+    v    v    v    v    v
++----+ +----+ +---+ +----+ +---+
+|Skip| |Pin | |Rem| |Inst| |Has|
++----+ +--+-+ +-+-+ +-+--+ +-+-+
+           |    |     |     |
+           v    v     v     v
+        +------+ +------+ +------+
+        |No-op | |Remove| |Install|
+        +------+ +------+ +------+
+                   |        |
+                   v        v
+          +--------------------+
+          | Update Has Tag     |
+          +--------+-----------+
+                   |
+                   v
+          +--------------------+
+          |  Exit 0/1          |
+          +--------------------+
+```
+
 ## Purpose
 
 Tag-based policy enforcement script for Google Chrome Enterprise management. Ensures the **enterprise/corporate version** (64-bit MSI-based installation) is deployed rather than the consumer per-user installation.
