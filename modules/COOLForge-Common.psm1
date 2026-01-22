@@ -4350,7 +4350,9 @@ function Initialize-COOLForgeInfrastructure {
 
     Write-LevelLog "Initializing COOLForge global infrastructure..." -Level "INFO"
 
-    # Define global custom fields with their defaults
+    # Define ONLY core global infrastructure fields
+    # NOTE: Script-specific fields (policy_screenconnect_*, policy_defender, etc.) are NOT created here
+    # Those fields should be created by Setup-COOLForge.ps1 or by the respective policy scripts
     $GlobalFields = @(
         @{
             Name         = "policy_0_readme"
@@ -4378,53 +4380,9 @@ function Initialize-COOLForgeInfrastructure {
             Description  = "GitHub PAT for private repositories (admin-only)"
         }
         @{
-            Name         = "coolforge_nosleep_duration_min"
-            DefaultValue = "60"
-            Description  = "Duration in minutes for Prevent Sleep script"
-        }
-        @{
             Name         = "debug_scripts"
             DefaultValue = "false"
             Description  = "Enable verbose debug output (true/false)"
-        }
-        # ScreenConnect fields with legacy field migration
-        @{
-            Name         = "policy_screenconnect_baseurl"
-            DefaultValue = ""
-            LegacyNames  = @("screenconnect_baseurl")
-            Description  = "ScreenConnect server base URL"
-        }
-        @{
-            Name         = "policy_screenconnect_instance_id"
-            DefaultValue = ""
-            LegacyNames  = @("coolforge_screenconnect_instance_id")
-            Description  = "MSP's ScreenConnect instance ID to whitelist"
-        }
-        @{
-            Name         = "policy_screenconnect_machine_hosts_screenconnect_server"
-            DefaultValue = "false"
-            LegacyNames  = @("is_screenconnect_server", "coolforge_is_screenconnect_server", "policy_screenconnect_is_server")
-            Description  = "Set to 'true' if device hosts ScreenConnect server"
-        }
-        @{
-            Name         = "policy_defender"
-            DefaultValue = "enforce"
-            Description  = "Windows Defender policy: enforce (default) | skip"
-        }
-        @{
-            Name         = "policy_block_device"
-            DefaultValue = "block | uses block/unblock (change to enable/disable policies)"
-            Description  = "Block all policy changes on this device (default: block)"
-        }
-        @{
-            Name         = "policy_rat_removal"
-            DefaultValue = "detect"
-            Description  = "RAT removal policy: detect (default) | remove | skip"
-        }
-        @{
-            Name         = "policy_meshcentral_server_url"
-            DefaultValue = ""
-            Description  = "Whitelisted Meshcentral server URL (e.g., mc.example.com)"
         }
     )
 
