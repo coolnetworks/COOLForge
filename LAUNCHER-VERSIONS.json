@@ -36,6 +36,7 @@
     "🔧Prevent Sleep.ps1": "2026.01.20.02",
     "🙏Wake all devices in Level group.ps1": "2026.01.22.01",
     "👀Check Windows Location Services.ps1": "2026.01.22.01",
-    "⚙️Configure Wake-on-LAN.ps1": "2026.01.22.01"
+    "⚙️Configure Wake-on-LAN.ps1": "2026.01.22.01",
+    "Utility/⛔Force Remove Adobe Creative Cloud.ps1": "2026.01.27.01"
   }
 }

@@ -1,6 +1,7 @@
 ﻿40d86213f280013a0a1fbd5c65c3d88d  .claude/CLAUDE.md
+d0f75053c91acaf1c034579e6ce31b15  .claude/level-io-feature-request-tag-colors.md
 e2a0baa86c865c52f61f496a9c67e05e  .claude/LOCATION-SERVICES-CONTEXT.md
-fa425541f4f20582bda18c079b0f964f  .claude/SESSIONS.md
+67af5268fdae7f061bf88252818be7e9  .claude/SESSIONS.md
 f98f98827f0f04d0bcd149003c0a849f  .claude/TAG-FIELD-EVOLUTION.md
 8aafce98e1fc5ebfc046f6c8e27b3ab3  .claude/TODO.md
 1d6882ed85741e5e8c92feaf25f29bc1  .claude/UTF8-ISSUES-HISTORY.md
@@ -531,7 +532,7 @@ def1b497bfc2adc1d16acd5744c502db  docs/policy/CREATING-SCRIPTS.md
 450518c4e76003f328cfbe8096d7d488  docs/policy/MeshCentral.md
 729fe7ea781422fcba0894121748b389  docs/policy/README.md
 d61a19a563487cc8bdf3bfeee9ccbef4  docs/policy/ScreenConnect.md
-fd7e4b7e078e41fd7182065919c84ea0  docs/policy/TAGS.md
+9f59e60b27169f67656c1ebbd0d120ef  docs/policy/TAGS.md
 faeb0e36a664a0d81c471fc2222939cc  docs/policy/Unchecky.md
 8f17791ea470443f3a7be97e961fb41a  docs/policy/Windows.md
 aad84818f14a46fbb1100292f8a121f2  docs/POLICY-FIELDS.md
@@ -583,6 +584,7 @@ fb528507b405005addf26c7809dae999  launchers/Policy/👀screenconnect.ps1
 904f305696e9969abad8980f23d3feaf  launchers/Policy/👀unchecky.ps1
 83e1459678c05780e160820ad3983f07  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 5021d5e719f0556c0200c42ea0fca643  launchers/Utility/⚙️Universal Disk Cleaner.ps1
+3e4a43c5db077a83b115f390e45af043  launchers/Utility/⛔Force Remove Adobe Creative Cloud.ps1
 c75f189d5be8eca4d927001aa0fdc1f4  launchers/👀Check DNS Server Compliance.ps1
 d2a0cfdc39dc6e05f97b6aa9df5183fd  launchers/👀Check for Unauthorized Remote Access Tools.ps1
 7606725a1f0fd41efcdc193141f95bc0  launchers/👀Check Windows Location Services.ps1
@@ -604,7 +606,7 @@ d1dfdf837d1834d84861ac6384faa6db  launchers/🔧Prevent Sleep.ps1
 ed38e50a0f16a1349a362d678bbf136e  modules/COOLForge-Common.psm1
 57027943a9ac9e7a6d115ab1ce9beedf  mynotes/coolforge-recreation-prompt.md
 64422291bc735d788805a65554869feb  mynotes/LEVEL-SUPPORT-QUESTIONS.md
-925f03a30f85782a589009b546209b56  mynotes/LEVEL-SUPPORT-SUBMITTED.md
+d6d5c943c2e7747143035989a4e2c44f  mynotes/LEVEL-SUPPORT-SUBMITTED.md
 07f2114b030950370cf6ac38e64f222f  NEEDS_TESTING.md
 3c230ff8cd8b89385d4fb66e136aa10a  pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  pre-release/Test-Syntax.ps1
@@ -642,6 +644,7 @@ af3eab8ee9c30eaad6e5c6715c8ce39b  scripts/Policy/👀huntress.ps1
 699e8bfd975e9b0fe8600bbd421fc3d9  scripts/Policy/👀meshcentral.ps1
 94ffbbef9b55d14b5f824f8d89f806d3  scripts/Policy/👀screenconnect.ps1
 7b39ce7586eb23d343ef156ed1d7343b  scripts/Policy/👀unchecky.ps1
+a76d66a955ec0698396543fa21f21fa7  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 9938672219844b70c8a6847e6cf94b1b  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1

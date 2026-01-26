@@ -1,4 +1,4 @@
-# COOLForge Software Policy Tag System
+﻿# COOLForge Software Policy Tag System
 
 ## Overview
 
@@ -121,6 +121,46 @@ When no software-specific tags exist, check `policy_<software>` custom field:
    - Installed and working → Ensure ✅software is set
    - Not installed but ✅software exists → Remove ✅software tag
 ```
+
+## Recommended Tag Colors
+
+When creating tags in Level.io, use these colors for visual consistency. **Note:** Colors must be set manually in the Level.io UI - the API does not support color properties.
+
+### Software-Specific Tags
+
+| Tag | Color | Hex | Rationale |
+|-----|-------|-----|-----------|
+| 🙏 Install | **Green** | `#22c55e` | Positive action - adding software |
+| 🚫 Remove | **Orange** | `#f97316` | Warning - removing something |
+| 📌 Pin | **Red** | `#ef4444` | Stop/block - highest priority override |
+| 🔄 Reinstall | **Cyan** | `#06b6d4` | Neutral refresh action |
+| ✅ Installed | **Gray** | `#6b7280` | Passive status indicator (not an action) |
+
+### Global Control Tags
+
+| Tag | Color | Hex | Rationale |
+|-----|-------|-----|-----------|
+| ✅ (standalone) | **Blue** | `#3b82f6` | Device-level control (distinct from software status) |
+| ❌ Excluded | **Blue** | `#3b82f6` | Device-level control (matches checkmark) |
+
+### Color Logic
+
+The color scheme follows **traffic-light semantics** for action severity:
+
+```
+Green  → Go (install)
+Orange → Caution (remove)
+Red    → Stop (pin/freeze)
+Cyan   → Refresh (reinstall)
+Gray   → Status only (no action)
+Blue   → Device-level (not software-specific)
+```
+
+This makes it easy to scan a device list and immediately understand:
+- **Green tags** = software being added
+- **Orange tags** = software being removed
+- **Red tags** = frozen/protected
+- **Gray tags** = just showing current state
 
 ## Unicode Reference
 
