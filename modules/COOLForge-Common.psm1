@@ -7020,6 +7020,10 @@ function Invoke-ScriptLauncher {
     Write-Host "============================================================"
 
     $ScriptContent = Get-Content -Path $ScriptPath -Raw
+    # Strip UTF-8 BOM if present (prevents comment block parsing issues)
+    if ($ScriptContent.StartsWith([char]0xFEFF)) {
+        $ScriptContent = $ScriptContent.Substring(1)
+    }
 
     # Build variable injection block
     $VarsBlock = ""

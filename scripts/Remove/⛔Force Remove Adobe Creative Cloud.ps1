@@ -57,7 +57,7 @@ $Init = Initialize-LevelScript -ScriptName "RemoveAdobeCC" `
                                -MspScratchFolder $MspScratchFolder `
                                -DeviceHostname $DeviceHostname `
                                -DeviceTags $DeviceTags `
-                               -BlockingTags @("âŒ")
+                               -BlockingTags @("SKIP", "NoRemoval")
 
 if (-not $Init.Success) {
     exit 0

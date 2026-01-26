@@ -603,7 +603,7 @@ bebd842e9b57f60f9fd583b7931d6247  launchers/🔧Fix Windows 8 Services.ps1
 d1dfdf837d1834d84861ac6384faa6db  launchers/🔧Prevent Sleep.ps1
 4d0567cdb81944471083ade2b448385d  launchers/🙏Wake all devices in Level group.ps1
 5746acb006595a0ec8e3e8ccfe2a7131  MEETING NOTES - Level.io Demo.md
-ed38e50a0f16a1349a362d678bbf136e  modules/COOLForge-Common.psm1
+4afcea0ef29edcf7ce698aa69d505f32  modules/COOLForge-Common.psm1
 57027943a9ac9e7a6d115ab1ce9beedf  mynotes/coolforge-recreation-prompt.md
 64422291bc735d788805a65554869feb  mynotes/LEVEL-SUPPORT-QUESTIONS.md
 d6d5c943c2e7747143035989a4e2c44f  mynotes/LEVEL-SUPPORT-SUBMITTED.md
@@ -644,7 +644,7 @@ af3eab8ee9c30eaad6e5c6715c8ce39b  scripts/Policy/👀huntress.ps1
 699e8bfd975e9b0fe8600bbd421fc3d9  scripts/Policy/👀meshcentral.ps1
 94ffbbef9b55d14b5f824f8d89f806d3  scripts/Policy/👀screenconnect.ps1
 7b39ce7586eb23d343ef156ed1d7343b  scripts/Policy/👀unchecky.ps1
-a76d66a955ec0698396543fa21f21fa7  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+c747495ba80b701d0e3f3ff99d57fa12  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 9938672219844b70c8a6847e6cf94b1b  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
@@ -689,7 +689,8 @@ ae21e39ec928882b2624d7415aba4961  start_here/Restore-AnswerFile.ps1
 ec0a5abbe7083ed558c7d1aa5b5f4b3a  start_here/Setup-COOLForge.ps1
 3765015bf26dc7b42f1f5337cb9913d7  start_here/Sync-COOLForgeCustomFields.ps1
 7ee91513ff5576486a6c35931ad83026  start_here/Wake-AllDevicesInFolder-Standalone.ps1
-8e941401227c6106b72770fc5bd03977  temp-fix.ps1
+1db09f3b33f7d08d454c64377cdf4585  temp-check.ps1
+69f3d52a50a28b6585243c9b4e9465b7  temp-fix.ps1
 8101bf7bb2ee04542d4b2fbeb328d61e  templates/Policy_Launcher_Template.ps1
 ce86bc1dcdd34659ba944bc78665b89b  templates/Script_Template.ps1
 6da07b9dbb229902f5752dec7a127064  templates/Slim-Launcher.ps1
