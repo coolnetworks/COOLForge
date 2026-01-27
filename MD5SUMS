@@ -573,6 +573,7 @@ eb64bc38745cf4b568fefe831bf176af  launchers/Alert/🙏Wake all devices in Level 
 e2dca34edf02145453c5ae007e8af1af  launchers/Config/⚙️Configure Wake-on-LAN.ps1
 fe6f7d08ea6ac8c1a6d4d995e3e0c356  launchers/Config/⚙️COOLForge Cache Sync.ps1
 702681887c58df03b81a8c2753087dae  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
+727c2c3219aff8e422ffc4c9717cd6bb  launchers/Config/🔧Prevent Sleep.ps1
 f467ea112fd434d4dd291246e840a749  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
 10b41fc8dbb6143f64d27dbbd6f76fb5  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
 7ea6cd5cedf71fbd3e32f8f3ba4afa61  launchers/Fix/🔧Fix Windows 10 Services.ps1
@@ -581,7 +582,6 @@ c78280b96d3131560d63f2d3f4dd8cf1  launchers/Fix/🔧Fix Windows 7 Services.ps1
 22ca9c56b9457dbd230db5355b47a047  launchers/Fix/🔧Fix Windows 8 Services.ps1
 d061c3dca2619090fa66cf15669efcf0  launchers/Fix/🔧Fix Windows 8.1 Services.ps1
 daf5b85d10e872f4acf54554f188c557  launchers/Fix/🔧Fix Windows Location Services.ps1
-1d1e6680413f4ecf48e5126ab994841d  launchers/Fix/🔧Prevent Sleep.ps1
 648f556268ab39036b31c3e1f1562144  launchers/Monitor/👀Check DNS Server Compliance.ps1
 40a4d3022b158b3f71e53948ae558ded  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
 ec30a0440d2df68fa691dcb8a310a8ee  launchers/Monitor/👀Check Windows Location Services.ps1

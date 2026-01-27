@@ -19,7 +19,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Fix/🔧Prevent Sleep.ps1"
+$LauncherName = "Config/ðŸ”§Prevent Sleep.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

@@ -27,7 +27,7 @@
     "Fix/🔧Fix Windows 8 Services.ps1": "2026.01.27.01",
     "Fix/🔧Fix Windows 8.1 Services.ps1": "2026.01.27.01",
     "Fix/🔧Fix Windows Location Services.ps1": "2026.01.27.01",
-    "Fix/🔧Prevent Sleep.ps1": "2026.01.27.01",
+    "Config/🔧Prevent Sleep.ps1": "2026.01.27.01",
     "Alert/🔔Technician Alert Monitor.ps1": "2026.01.27.01",
     "Alert/🔔Wake tagged devices.ps1": "2026.01.27.01",
     "Alert/🙏Wake all devices in Level group.ps1": "2026.01.27.01",
