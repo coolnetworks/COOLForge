@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "🔧Fix Windows 11 Services.ps1"
+$ScriptToRun = "🔔Technician Alert Monitor.ps1"
 $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
@@ -19,7 +19,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Alert/🔔Technician Alert Monitor.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

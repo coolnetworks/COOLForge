@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "🔧Enable System Restore and Create Restore Point.ps1"
+$ScriptToRun = "🔔Wake tagged devices.ps1"
 $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
@@ -19,7 +19,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Alert/🔔Wake tagged devices.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

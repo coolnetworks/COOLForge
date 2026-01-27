@@ -567,9 +567,24 @@ cfdbdb0d1087db2839acb2791db97bd7  docs/VARIABLES.md
 95e694ffeac9942483bfc94252085936  docs/WHY.md
 cf8abcfa522e91ed1ebdd76d183644f0  docs/WHY-COOLFORGE.md
 36f598a5874afebf5ca514c4aa2afb80  docs/WOL.md
-1e992d6cc196360a04cbeb80db2f5b1d  launchers/⚙️Configure Wake-on-LAN.ps1
-ce165d485193e55096049a44a2149fe1  launchers/⚙️COOLForge Cache Sync.ps1
-640622a165da844ea69a94246a792336  launchers/⚙️Extract and Set ScreenConnect Device URL.ps1
+8864f7f928a01e8f555c78ca3a63c12e  launchers/Alert/🔔Technician Alert Monitor.ps1
+00af212939400893a8e0c0657edadd29  launchers/Alert/🔔Wake tagged devices.ps1
+eb64bc38745cf4b568fefe831bf176af  launchers/Alert/🙏Wake all devices in Level group.ps1
+e2dca34edf02145453c5ae007e8af1af  launchers/Config/⚙️Configure Wake-on-LAN.ps1
+fe6f7d08ea6ac8c1a6d4d995e3e0c356  launchers/Config/⚙️COOLForge Cache Sync.ps1
+702681887c58df03b81a8c2753087dae  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
+f467ea112fd434d4dd291246e840a749  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
+10b41fc8dbb6143f64d27dbbd6f76fb5  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
+7ea6cd5cedf71fbd3e32f8f3ba4afa61  launchers/Fix/🔧Fix Windows 10 Services.ps1
+7d102f9fd786c3a8fcdb5f9834f372d3  launchers/Fix/🔧Fix Windows 11 Services.ps1
+c78280b96d3131560d63f2d3f4dd8cf1  launchers/Fix/🔧Fix Windows 7 Services.ps1
+22ca9c56b9457dbd230db5355b47a047  launchers/Fix/🔧Fix Windows 8 Services.ps1
+d061c3dca2619090fa66cf15669efcf0  launchers/Fix/🔧Fix Windows 8.1 Services.ps1
+daf5b85d10e872f4acf54554f188c557  launchers/Fix/🔧Fix Windows Location Services.ps1
+1d1e6680413f4ecf48e5126ab994841d  launchers/Fix/🔧Prevent Sleep.ps1
+648f556268ab39036b31c3e1f1562144  launchers/Monitor/👀Check DNS Server Compliance.ps1
+40a4d3022b158b3f71e53948ae558ded  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
+ec30a0440d2df68fa691dcb8a310a8ee  launchers/Monitor/👀Check Windows Location Services.ps1
 33625581b9e0c7ee7445754d6c4fbecc  launchers/Policy/Chrome/👀Chrome Location Services.ps1
 958b91646cfa36cb42c7a96abb03fd9b  launchers/Policy/Windows/👀Windows Location Services.ps1
 ff5c04d9a5d8635851f472d1fb9012a1  launchers/Policy/👀chrome.ps1
@@ -583,25 +598,10 @@ fb528507b405005addf26c7809dae999  launchers/Policy/👀screenconnect.ps1
 53afc50693f2f7362877b0a2c5335b5a  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 962e6ecb346c7015cc4f246b5c315cc6  launchers/Remove/⛔Force Remove Anydesk.ps1
 4db601b60820e6e7a251a7e8f0dc8681  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+c6573fbfd27f5ed906eb616b2ab620ac  launchers/Test/👀Test Show Versions.ps1
+878df1cf8b6a46c896dd34d16dc8bebe  launchers/Test/👀Test Variable Output.ps1
 83e1459678c05780e160820ad3983f07  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 5021d5e719f0556c0200c42ea0fca643  launchers/Utility/⚙️Universal Disk Cleaner.ps1
-c75f189d5be8eca4d927001aa0fdc1f4  launchers/👀Check DNS Server Compliance.ps1
-d2a0cfdc39dc6e05f97b6aa9df5183fd  launchers/👀Check for Unauthorized Remote Access Tools.ps1
-7606725a1f0fd41efcdc193141f95bc0  launchers/👀Check Windows Location Services.ps1
-771292f4f150cdc9b2e82d3bf48beb11  launchers/👀Test Show Versions.ps1
-a651cfc7d78cc39aee5ac834915dce07  launchers/👀Test Variable Output.ps1
-9f73b4f7140ec49e3e22f4d2e9abf560  launchers/🔔Technician Alert Monitor.ps1
-ce956dc783f40b99325e0f104ee359bc  launchers/🔔Wake tagged devices.ps1
-d8cc71f50e6d7535dd12dad5192d1284  launchers/🔧Enable System Restore and Create Restore Point.ps1
-c37be86fd0d9a450b0bca49ecf83008d  launchers/🔧Ensure Windows Defender Enabled.ps1
-fd2718a3f06ab198a66c1567763acb30  launchers/🔧Fix Windows 10 Services.ps1
-d0c19c008f2567fc84288dabd5e5497d  launchers/🔧Fix Windows 11 Services.ps1
-2966498f510bf1d5b6a6bcccfb95b915  launchers/🔧Fix Windows 7 Services.ps1
-bebd842e9b57f60f9fd583b7931d6247  launchers/🔧Fix Windows 8 Services.ps1
-62624f248a8de9841f4598e5d09ac038  launchers/🔧Fix Windows 8.1 Services.ps1
-5aa2d973dd364b80ff9416b6e3faa2d5  launchers/🔧Fix Windows Location Services.ps1
-d1dfdf837d1834d84861ac6384faa6db  launchers/🔧Prevent Sleep.ps1
-4d0567cdb81944471083ade2b448385d  launchers/🙏Wake all devices in Level group.ps1
 5746acb006595a0ec8e3e8ccfe2a7131  MEETING NOTES - Level.io Demo.md
 4afcea0ef29edcf7ce698aa69d505f32  modules/COOLForge-Common.psm1
 57027943a9ac9e7a6d115ab1ce9beedf  mynotes/coolforge-recreation-prompt.md

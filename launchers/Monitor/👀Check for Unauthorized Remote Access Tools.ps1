@@ -19,7 +19,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Monitor/👀Check for Unauthorized Remote Access Tools.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
