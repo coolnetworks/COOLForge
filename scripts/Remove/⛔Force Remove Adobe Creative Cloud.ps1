@@ -284,13 +284,17 @@ function Stop-AllAdobeProcesses {
 function Invoke-AdobeUninstall {
     <#
     .SYNOPSIS
-        Attempts standard uninstall via Adobe uninstallers.
+        Attempts standard uninstall via Adobe Creative Cloud Uninstaller.
+    .DESCRIPTION
+        Only uses the official CC Uninstaller with correct flags.
+        Does NOT use registry uninstall strings as they often have wrong flags
+        and can hang indefinitely.
     .RETURNS
         $true if uninstall was attempted, $false if no uninstaller found.
     #>
     $uninstalled = $false
 
-    # Try Creative Cloud Uninstaller first
+    # Try Creative Cloud Uninstaller - this is the only reliable method
     $ccUninstallerPaths = @(
         "$env:ProgramFiles\Adobe\Adobe Creative Cloud\Utils\Creative Cloud Uninstaller.exe",
         "${env:ProgramFiles(x86)}\Adobe\Adobe Creative Cloud\Utils\Creative Cloud Uninstaller.exe",
@@ -301,11 +305,19 @@ function Invoke-AdobeUninstall {
         if (Test-Path $uninstaller) {
             try {
                 Write-LevelLog "Found CC Uninstaller: $uninstaller"
-                Write-LevelLog "Running Creative Cloud Uninstaller..."
+                Write-LevelLog "Running Creative Cloud Uninstaller with -u flag..."
+                # Use -u flag for uninstall - this is the correct flag for Adobe's uninstaller
+                # Do NOT use /S - that's for NSIS installers and causes hangs
                 $process = Start-Process -FilePath $uninstaller -ArgumentList "-u" -Wait -PassThru -ErrorAction Stop
                 Write-LevelLog "CC Uninstaller exited with code: $($process.ExitCode)"
                 $uninstalled = $true
                 Start-Sleep -Seconds 5
+
+                # If uninstaller succeeded, don't try other paths
+                if ($process.ExitCode -eq 0) {
+                    Write-LevelLog "CC Uninstaller completed successfully"
+                    return $true
+                }
             }
             catch {
                 Write-LevelLog "CC Uninstaller failed: $($_.Exception.Message)" -Level "WARN"
@@ -313,75 +325,29 @@ function Invoke-AdobeUninstall {
         }
     }
 
-    # Try registry uninstall strings for Adobe products
-    $regPaths = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
-    )
+    # Skip registry-based uninstalls for Creative Cloud - they use the same exe
+    # with wrong flags and hang. The direct uninstaller above is the correct method.
 
-    foreach ($regPath in $regPaths) {
-        $entries = Get-ItemProperty $regPath -ErrorAction SilentlyContinue |
-                   Where-Object {
-                       $_.DisplayName -like "*Adobe Creative Cloud*" -or
-                       $_.DisplayName -like "*Adobe CC*"
-                   }
+    # Only try Adobe Setup.exe as a last resort if CC Uninstaller wasn't found
+    if (-not $uninstalled) {
+        $setupPaths = @(
+            "$env:ProgramFiles\Common Files\Adobe\OOBE\PDApp\core\Setup.exe",
+            "${env:ProgramFiles(x86)}\Common Files\Adobe\OOBE\PDApp\core\Setup.exe"
+        )
 
-        foreach ($entry in $entries) {
-            $uninstallString = $entry.UninstallString
-            if ($uninstallString) {
-                Write-LevelLog "Found uninstaller for $($entry.DisplayName)"
-
-                # Parse the uninstall string
-                if ($uninstallString -match '^"(.+)"(.*)$') {
-                    $exe = $Matches[1]
-                    $args = $Matches[2].Trim()
-                }
-                elseif ($uninstallString -match '^(.+\.exe)(.*)$') {
-                    $exe = $Matches[1]
-                    $args = $Matches[2].Trim()
-                }
-                else {
-                    $exe = $uninstallString
-                    $args = ""
-                }
-
-                # Add silent flags
-                if ($args -notmatch '/S|/silent|/quiet|-u') {
-                    $args = "$args /S"
-                }
-
+        foreach ($setup in $setupPaths) {
+            if (Test-Path $setup) {
                 try {
-                    Write-LevelLog "Executing: $exe $args"
-                    $process = Start-Process -FilePath $exe -ArgumentList $args -Wait -PassThru -ErrorAction Stop
-                    Write-LevelLog "Uninstaller exited with code: $($process.ExitCode)"
+                    Write-LevelLog "Found Adobe Setup: $setup"
+                    Write-LevelLog "Running Setup with --uninstall=1..."
+                    $process = Start-Process -FilePath $setup -ArgumentList "--uninstall=1" -Wait -PassThru -ErrorAction Stop
+                    Write-LevelLog "Setup exited with code: $($process.ExitCode)"
                     $uninstalled = $true
-                    Start-Sleep -Seconds 3
+                    Start-Sleep -Seconds 5
                 }
                 catch {
-                    Write-LevelLog "Uninstall failed: $($_.Exception.Message)" -Level "WARN"
+                    Write-LevelLog "Setup uninstall failed: $($_.Exception.Message)" -Level "WARN"
                 }
-            }
-        }
-    }
-
-    # Try Adobe Setup.exe if present
-    $setupPaths = @(
-        "$env:ProgramFiles\Common Files\Adobe\OOBE\PDApp\core\Setup.exe",
-        "${env:ProgramFiles(x86)}\Common Files\Adobe\OOBE\PDApp\core\Setup.exe"
-    )
-
-    foreach ($setup in $setupPaths) {
-        if (Test-Path $setup) {
-            try {
-                Write-LevelLog "Found Adobe Setup: $setup"
-                Write-LevelLog "Running Setup with --uninstall..."
-                $process = Start-Process -FilePath $setup -ArgumentList "--uninstall=1" -Wait -PassThru -ErrorAction Stop
-                Write-LevelLog "Setup exited with code: $($process.ExitCode)"
-                $uninstalled = $true
-                Start-Sleep -Seconds 5
-            }
-            catch {
-                Write-LevelLog "Setup uninstall failed: $($_.Exception.Message)" -Level "WARN"
             }
         }
     }
