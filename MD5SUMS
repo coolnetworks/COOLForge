@@ -644,7 +644,7 @@ af3eab8ee9c30eaad6e5c6715c8ce39b  scripts/Policy/👀huntress.ps1
 699e8bfd975e9b0fe8600bbd421fc3d9  scripts/Policy/👀meshcentral.ps1
 94ffbbef9b55d14b5f824f8d89f806d3  scripts/Policy/👀screenconnect.ps1
 7b39ce7586eb23d343ef156ed1d7343b  scripts/Policy/👀unchecky.ps1
-e77bb219671c75a8863e61cee2fc7270  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+19b5c6b502ec545c3db060c151a7aa11  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 9938672219844b70c8a6847e6cf94b1b  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1

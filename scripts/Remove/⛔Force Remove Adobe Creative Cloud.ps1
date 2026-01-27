@@ -8,7 +8,7 @@
     forceful methods:
 
     Phase 1: Stop ALL Adobe services and processes (the key to success)
-    Phase 2: Standard uninstall via Creative Cloud Uninstaller
+    Phase 2: Download and run Adobe's CC Cleaner Tool (official silent removal)
     Phase 3: Remove Adobe files and folders from all locations
     Phase 4: Clean up registry entries
     Phase 5: Clean firewall rules and scheduled tasks
@@ -281,73 +281,113 @@ function Stop-AllAdobeProcesses {
     return $count
 }
 
-function Invoke-AdobeUninstall {
+function Invoke-AdobeCleanerTool {
     <#
     .SYNOPSIS
-        Attempts standard uninstall via Adobe Creative Cloud Uninstaller.
+        Downloads and runs Adobe's official Creative Cloud Cleaner Tool.
     .DESCRIPTION
-        Only uses the official CC Uninstaller with correct flags.
-        Does NOT use registry uninstall strings as they often have wrong flags
-        and can hang indefinitely.
+        The CC Cleaner Tool is Adobe's official silent removal utility.
+        It properly removes all Adobe products and cleans up leftovers.
     .RETURNS
-        $true if uninstall was attempted, $false if no uninstaller found.
+        $true if cleaner ran successfully, $false otherwise.
+    #>
+
+    $CleanerUrl = "https://swupmf.adobe.com/webfeed/CleanerTool/win/AdobeCreativeCloudCleanerTool.exe"
+    $CleanerPath = Join-Path $env:TEMP "AdobeCreativeCloudCleanerTool.exe"
+
+    Write-LevelLog "Downloading Adobe Creative Cloud Cleaner Tool..."
+
+    try {
+        # Download the cleaner tool
+        $webClient = New-Object System.Net.WebClient
+        $webClient.DownloadFile($CleanerUrl, $CleanerPath)
+        Write-LevelLog "Downloaded to: $CleanerPath"
+
+        if (-not (Test-Path $CleanerPath)) {
+            Write-LevelLog "Download failed - file not found" -Level "WARN"
+            return $false
+        }
+
+        # Run the cleaner tool with --removeAll=ALL flag
+        # This removes all Adobe products silently
+        Write-LevelLog "Running CC Cleaner Tool with --removeAll=ALL..."
+        Write-LevelLog "This may take several minutes..."
+
+        $process = Start-Process -FilePath $CleanerPath -ArgumentList "--removeAll=ALL" -Wait -PassThru -ErrorAction Stop
+
+        Write-LevelLog "CC Cleaner Tool exited with code: $($process.ExitCode)"
+
+        # Clean up the downloaded tool
+        Remove-Item -Path $CleanerPath -Force -ErrorAction SilentlyContinue
+
+        # Exit codes: 0 = success, other values may still indicate partial success
+        if ($process.ExitCode -eq 0) {
+            Write-LevelLog "CC Cleaner Tool completed successfully" -Level "SUCCESS"
+            return $true
+        } else {
+            Write-LevelLog "CC Cleaner Tool finished with warnings (exit: $($process.ExitCode))" -Level "WARN"
+            return $true  # Still consider it attempted
+        }
+    }
+    catch {
+        Write-LevelLog "CC Cleaner Tool failed: $($_.Exception.Message)" -Level "WARN"
+        # Clean up on failure
+        if (Test-Path $CleanerPath) {
+            Remove-Item -Path $CleanerPath -Force -ErrorAction SilentlyContinue
+        }
+        return $false
+    }
+}
+
+function Invoke-AdobeMsiUninstall {
+    <#
+    .SYNOPSIS
+        Attempts to uninstall Adobe products via MSI where possible.
+    .DESCRIPTION
+        Finds MSI-based Adobe products and uninstalls via msiexec.
+        This is a fallback if the CC Cleaner Tool fails.
+    .RETURNS
+        $true if any uninstall was attempted, $false if nothing found.
     #>
     $uninstalled = $false
 
-    # Try Creative Cloud Uninstaller - this is the only reliable method
-    $ccUninstallerPaths = @(
-        "$env:ProgramFiles\Adobe\Adobe Creative Cloud\Utils\Creative Cloud Uninstaller.exe",
-        "${env:ProgramFiles(x86)}\Adobe\Adobe Creative Cloud\Utils\Creative Cloud Uninstaller.exe",
-        "$env:ProgramFiles\Common Files\Adobe\Creative Cloud\Utils\Creative Cloud Uninstaller.exe"
+    Write-LevelLog "Searching for MSI-based Adobe products..."
+
+    $regPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
     )
 
-    foreach ($uninstaller in $ccUninstallerPaths) {
-        if (Test-Path $uninstaller) {
-            try {
-                Write-LevelLog "Found CC Uninstaller: $uninstaller"
-                Write-LevelLog "Running Creative Cloud Uninstaller with -u flag..."
-                # Use -u flag for uninstall - this is the correct flag for Adobe's uninstaller
-                # Do NOT use /S - that's for NSIS installers and causes hangs
-                $process = Start-Process -FilePath $uninstaller -ArgumentList "-u" -Wait -PassThru -ErrorAction Stop
-                Write-LevelLog "CC Uninstaller exited with code: $($process.ExitCode)"
-                $uninstalled = $true
-                Start-Sleep -Seconds 5
+    foreach ($regPath in $regPaths) {
+        $entries = Get-ItemProperty $regPath -ErrorAction SilentlyContinue |
+                   Where-Object {
+                       $_.DisplayName -like "*Adobe*" -and
+                       $_.DisplayName -notlike "*Adobe Acrobat Reader*" -and
+                       $_.UninstallString -like "*msiexec*"
+                   }
 
-                # If uninstaller succeeded, don't try other paths
-                if ($process.ExitCode -eq 0) {
-                    Write-LevelLog "CC Uninstaller completed successfully"
-                    return $true
-                }
-            }
-            catch {
-                Write-LevelLog "CC Uninstaller failed: $($_.Exception.Message)" -Level "WARN"
-            }
-        }
-    }
+        foreach ($entry in $entries) {
+            $uninstallString = $entry.UninstallString
+            $displayName = $entry.DisplayName
 
-    # Skip registry-based uninstalls for Creative Cloud - they use the same exe
-    # with wrong flags and hang. The direct uninstaller above is the correct method.
+            if ($uninstallString -match '\{[A-F0-9\-]+\}') {
+                $productCode = $Matches[0]
+                Write-LevelLog "Found MSI product: $displayName"
 
-    # Only try Adobe Setup.exe as a last resort if CC Uninstaller wasn't found
-    if (-not $uninstalled) {
-        $setupPaths = @(
-            "$env:ProgramFiles\Common Files\Adobe\OOBE\PDApp\core\Setup.exe",
-            "${env:ProgramFiles(x86)}\Common Files\Adobe\OOBE\PDApp\core\Setup.exe"
-        )
-
-        foreach ($setup in $setupPaths) {
-            if (Test-Path $setup) {
                 try {
-                    Write-LevelLog "Found Adobe Setup: $setup"
-                    Write-LevelLog "Running Setup with --uninstall=1..."
-                    $process = Start-Process -FilePath $setup -ArgumentList "--uninstall=1" -Wait -PassThru -ErrorAction Stop
-                    Write-LevelLog "Setup exited with code: $($process.ExitCode)"
-                    $uninstalled = $true
-                    Start-Sleep -Seconds 5
+                    $msiArgs = "/x $productCode /qn /norestart"
+                    $process = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiArgs -Wait -PassThru -ErrorAction Stop
+
+                    if ($process.ExitCode -eq 0 -or $process.ExitCode -eq 3010) {
+                        Write-LevelLog "  Uninstalled: $displayName"
+                        $uninstalled = $true
+                    }
                 }
                 catch {
-                    Write-LevelLog "Setup uninstall failed: $($_.Exception.Message)" -Level "WARN"
+                    Write-LevelLog "  Failed: $($_.Exception.Message)" -Level "WARN"
                 }
+
+                Start-Sleep -Seconds 2
             }
         }
     }
@@ -668,29 +708,32 @@ Invoke-LevelScript -ScriptBlock {
     }
 
     # --------------------------------------------------------
-    # PHASE 2: Standard Uninstall
+    # PHASE 2: Adobe Creative Cloud Cleaner Tool
+    # This is Adobe's official silent removal utility
     # --------------------------------------------------------
-    Write-LevelLog "=== PHASE 2: Standard Uninstall ===" -Level "INFO"
+    Write-LevelLog "=== PHASE 2: Adobe CC Cleaner Tool ===" -Level "INFO"
 
-    $uninstallAttempted = Invoke-AdobeUninstall
-    if ($uninstallAttempted) {
-        Write-LevelLog "Waiting for uninstaller to complete..."
-        Start-Sleep -Seconds 10
+    $cleanerSuccess = Invoke-AdobeCleanerTool
 
-        # Stop any processes that may have started during uninstall
+    if ($cleanerSuccess) {
+        # Stop any processes that may have started
         $null = Stop-AllAdobeProcesses
+        Start-Sleep -Seconds 5
 
         if (-not (Test-AdobeCCInstalled)) {
-            Write-LevelLog "Adobe CC removed successfully via standard uninstall" -Level "SUCCESS"
-            Complete-LevelScript -ExitCode 0 -Message "Adobe CC removed (standard uninstall)"
+            Write-LevelLog "Adobe CC removed successfully via CC Cleaner Tool" -Level "SUCCESS"
+            Complete-LevelScript -ExitCode 0 -Message "Adobe CC removed (CC Cleaner Tool)"
         }
         else {
-            Write-LevelLog "Standard uninstall completed but traces remain - continuing with force removal"
+            Write-LevelLog "CC Cleaner completed but traces remain - continuing with force removal"
         }
     }
     else {
-        Write-LevelLog "No standard uninstaller found - proceeding with force removal"
+        Write-LevelLog "CC Cleaner Tool unavailable - trying MSI uninstall fallback..."
+        $null = Invoke-AdobeMsiUninstall
     }
+
+    Write-LevelLog "Proceeding with force removal phases..."
 
     # --------------------------------------------------------
     # PHASE 3: Remove Files and Folders
