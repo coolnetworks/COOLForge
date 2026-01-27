@@ -1,14 +1,13 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀Check for Unauthorized Remote Access Tools.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
+$ScriptToRun = "Check/👀Check for Unauthorized Remote Access Tools.ps1"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.01.22.01
+    Launcher Version: 2026.01.27.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -18,7 +17,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.22.01"
+$LauncherVersion = "2026.01.27.01"
 $LauncherName = "Monitor/👀Check for Unauthorized Remote Access Tools.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"

@@ -585,7 +585,7 @@ c78280b96d3131560d63f2d3f4dd8cf1  launchers/Fix/🔧Fix Windows 7 Services.ps1
 d061c3dca2619090fa66cf15669efcf0  launchers/Fix/🔧Fix Windows 8.1 Services.ps1
 daf5b85d10e872f4acf54554f188c557  launchers/Fix/🔧Fix Windows Location Services.ps1
 648f556268ab39036b31c3e1f1562144  launchers/Monitor/👀Check DNS Server Compliance.ps1
-40a4d3022b158b3f71e53948ae558ded  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
+c502a1adfb91902ea405f00ce4631ab3  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
 ec30a0440d2df68fa691dcb8a310a8ee  launchers/Monitor/👀Check Windows Location Services.ps1
 33625581b9e0c7ee7445754d6c4fbecc  launchers/Policy/Chrome/👀Chrome Location Services.ps1
 958b91646cfa36cb42c7a96abb03fd9b  launchers/Policy/Windows/👀Windows Location Services.ps1
