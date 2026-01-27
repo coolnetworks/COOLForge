@@ -1,14 +1,13 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "⛔Force Remove Anydesk.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
+$ScriptToRun = "Remove/⛔Force Remove Anydesk.ps1"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.01.22.01
+    Launcher Version: 2026.01.27.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -18,8 +17,8 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherVersion = "2026.01.27.01"
+$LauncherName = "Remove/⛔Force Remove Anydesk.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

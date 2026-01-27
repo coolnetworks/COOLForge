@@ -5,6 +5,7 @@ e2a0baa86c865c52f61f496a9c67e05e  .claude/LOCATION-SERVICES-CONTEXT.md
 f98f98827f0f04d0bcd149003c0a849f  .claude/TAG-FIELD-EVOLUTION.md
 8aafce98e1fc5ebfc046f6c8e27b3ab3  .claude/TODO.md
 1d6882ed85741e5e8c92feaf25f29bc1  .claude/UTF8-ISSUES-HISTORY.md
+05b98b538a30b8024807018f369684db  .local/check-duplicates.ps1
 a94bc156460d1b87c7bb792339dbac73  .local/Reset Level Instance.ps1
 5095bf93fc13e91c81d8a00d7f7300d5  backups/Level/scripts/⛔CIPP CHECK.ps1
 719b4fca685e4b4226f8ea772b499954  backups/Level/scripts/⛔DROPBOX.ps1
@@ -597,8 +598,8 @@ bfac1767ee13f0243b2302ce58faf3e9  launchers/Policy/👀huntress.ps1
 fb528507b405005addf26c7809dae999  launchers/Policy/👀screenconnect.ps1
 904f305696e9969abad8980f23d3feaf  launchers/Policy/👀unchecky.ps1
 53afc50693f2f7362877b0a2c5335b5a  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-962e6ecb346c7015cc4f246b5c315cc6  launchers/Remove/⛔Force Remove Anydesk.ps1
-4db601b60820e6e7a251a7e8f0dc8681  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+f5f823b413a72691725de5ea817ca0ab  launchers/Remove/⛔Force Remove Anydesk.ps1
+77357fe35c9604e8ec507c06d824b6e0  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 c6573fbfd27f5ed906eb616b2ab620ac  launchers/Test/👀Test Show Versions.ps1
 878df1cf8b6a46c896dd34d16dc8bebe  launchers/Test/👀Test Variable Output.ps1
 83e1459678c05780e160820ad3983f07  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
