@@ -26,6 +26,7 @@ echo.
 echo   This will create a comprehensive security toolkit on a USB drive:
 echo.
 echo   DETECTION TOOLS:
+echo     - Security Baseline Checker   Defender, exclusions, UAC, keyloggers
 echo     - Autoruns (Sysinternals)     Enumerate all auto-start locations
 echo     - PersistenceSniper           PowerShell persistence detector
 echo     - Trawler                     IR-focused persistence scanner
@@ -258,6 +259,9 @@ echo.
 copy /Y "%SCRIPT_DIR%Remove-AllRATs-Standalone.ps1" "%RAT_FOLDER%\" >nul && echo   [OK] Remove-AllRATs-Standalone.ps1
 copy /Y "%SCRIPT_DIR%Remove-AllRATs-Launcher.cmd" "%RAT_FOLDER%\" >nul && echo   [OK] Remove-AllRATs-Launcher.cmd
 
+:: Copy Security Baseline Checker to toolkit root
+copy /Y "%SCRIPT_DIR%Check-SecurityBaseline.ps1" "%TOOLKIT_ROOT%\" >nul && echo   [OK] Check-SecurityBaseline.ps1
+
 if exist "%SCRIPT_DIR%Remove-AnyDesk-Standalone.ps1" (
     copy /Y "%SCRIPT_DIR%Remove-AnyDesk-Standalone.ps1" "%RAT_FOLDER%\" >nul && echo   [OK] Remove-AnyDesk-Standalone.ps1
 )
@@ -281,12 +285,14 @@ echo :: ========================================================================
 echo :: Security Toolkit - Main Orchestrator
 echo :: ============================================================================
 echo :: Run Order ^(Detection before Remediation^):
-echo ::   1. Autoruns      - Fast snapshot of all auto-start locations
-echo ::   2. PersistenceSniper - Comprehensive persistence detection
-echo ::   3. Trawler       - IR-focused persistence scanner with allow lists
-echo ::   4. LOKI          - Deep IOC/YARA scan of files and memory
-echo ::   5. MRT           - Microsoft malware scan ^(optional^)
-echo ::   6. RAT Removal   - Remove unauthorized remote access ^(if needed^)
+echo ::   1. Security Baseline - Defender, exclusions, UAC, keyloggers, firewall
+echo ::   2. Autoruns      - Fast snapshot of all auto-start locations
+echo ::   3. PersistenceSniper - Comprehensive persistence detection
+echo ::   4. Trawler       - IR-focused persistence scanner with allow lists
+echo ::   5. LOKI          - Deep IOC/YARA scan of files and memory
+echo ::   6. MRT           - Microsoft malware scan ^(optional^)
+echo ::   7. RAT Removal   - Remove unauthorized remote access ^(if needed^)
+echo ::   8. System Integrity - SFC, DISM, CHKDSK ^(final cleanup^)
 echo :: ============================================================================
 echo.
 echo title Security Toolkit - Comprehensive Scan
@@ -326,14 +332,18 @@ echo echo.
 echo echo   This toolkit will run multiple security scans in optimal order:
 echo echo.
 echo echo   PHASE 1 - DETECTION ^(No changes made^)
-echo echo     Step 1: Autoruns          - Enumerate all auto-start locations
-echo echo     Step 2: PersistenceSniper - Detect persistence mechanisms
-echo echo     Step 3: Trawler           - IR-focused persistence scan
-echo echo     Step 4: LOKI              - IOC and YARA signature scan
+echo echo     Step 1: Security Baseline - Defender, exclusions, UAC, keyloggers
+echo echo     Step 2: Autoruns          - Enumerate all auto-start locations
+echo echo     Step 3: PersistenceSniper - Detect persistence mechanisms
+echo echo     Step 4: Trawler           - IR-focused persistence scan
+echo echo     Step 5: LOKI              - IOC and YARA signature scan
 echo echo.
 echo echo   PHASE 2 - REMEDIATION ^(Optional, requires confirmation^)
-echo echo     Step 5: Microsoft MRT     - Malware removal ^(optional^)
-echo echo     Step 6: RAT Removal       - Remove unauthorized remote access
+echo echo     Step 6: Microsoft MRT     - Malware removal ^(optional^)
+echo echo     Step 7: RAT Removal       - Remove unauthorized remote access
+echo echo.
+echo echo   PHASE 3 - SYSTEM INTEGRITY ^(Repair and verify^)
+echo echo     Step 8: SFC/DISM/CHKDSK   - System file and disk repair
 echo echo.
 echo echo   All reports will be saved to: %%REPORTS_DIR%%
 echo echo.
@@ -346,12 +356,39 @@ echo :: PHASE 1: DETECTION
 echo :: ============================================================================
 echo.
 echo :: ----------------------------------------------------------------------------
-echo :: STEP 1: AUTORUNS
+echo :: STEP 1: SECURITY BASELINE
 echo :: ----------------------------------------------------------------------------
 echo cls
 echo echo.
 echo echo  ================================================================================
-echo echo   STEP 1/6: AUTORUNS - Enumerating Auto-Start Locations
+echo echo   STEP 1/8: SECURITY BASELINE - System Security Check
+echo echo  ================================================================================
+echo echo.
+echo echo   Checking Defender status, exclusions, UAC, firewall, keyloggers...
+echo echo   Output: %%SCAN_PREFIX%%-SecurityBaseline.txt
+echo echo.
+echo echo  --------------------------------------------------------------------------------
+echo echo.
+echo.
+echo set "BASELINE_PS=%%TOOLKIT_DIR%%Check-SecurityBaseline.ps1"
+echo if exist "%%BASELINE_PS%%" ^(
+echo     powershell.exe -ExecutionPolicy Bypass -NoProfile -File "%%BASELINE_PS%%" -OutputPath "%%REPORTS_DIR%%"
+echo     echo.
+echo     echo   [OK] Security Baseline check complete
+echo ^) else ^(
+echo     echo   [SKIP] Check-SecurityBaseline.ps1 not found
+echo ^)
+echo.
+echo echo.
+echo pause
+echo.
+echo :: ----------------------------------------------------------------------------
+echo :: STEP 2: AUTORUNS
+echo :: ----------------------------------------------------------------------------
+echo cls
+echo echo.
+echo echo  ================================================================================
+echo echo   STEP 2/8: AUTORUNS - Enumerating Auto-Start Locations
 echo echo  ================================================================================
 echo echo.
 echo echo   This creates a baseline of all programs that start automatically.
@@ -373,12 +410,12 @@ echo echo.
 echo pause
 echo.
 echo :: ----------------------------------------------------------------------------
-echo :: STEP 2: PERSISTENCESNIPER
+echo :: STEP 3: PERSISTENCESNIPER
 echo :: ----------------------------------------------------------------------------
 echo cls
 echo echo.
 echo echo  ================================================================================
-echo echo   STEP 2/6: PERSISTENCESNIPER - Comprehensive Persistence Detection
+echo echo   STEP 3/8: PERSISTENCESNIPER - Comprehensive Persistence Detection
 echo echo  ================================================================================
 echo echo.
 echo echo   Scanning for known persistence techniques...
@@ -401,12 +438,12 @@ echo echo.
 echo pause
 echo.
 echo :: ----------------------------------------------------------------------------
-echo :: STEP 3: TRAWLER
+echo :: STEP 4: TRAWLER
 echo :: ----------------------------------------------------------------------------
 echo cls
 echo echo.
 echo echo  ================================================================================
-echo echo   STEP 3/6: TRAWLER - IR-Focused Persistence Scanner
+echo echo   STEP 4/8: TRAWLER - IR-Focused Persistence Scanner
 echo echo  ================================================================================
 echo echo.
 echo echo   Scanning with built-in allow lists to reduce false positives...
@@ -429,12 +466,12 @@ echo echo.
 echo pause
 echo.
 echo :: ----------------------------------------------------------------------------
-echo :: STEP 4: LOKI
+echo :: STEP 5: LOKI
 echo :: ----------------------------------------------------------------------------
 echo cls
 echo echo.
 echo echo  ================================================================================
-echo echo   STEP 4/6: LOKI - IOC and YARA Scanner
+echo echo   STEP 5/8: LOKI - IOC and YARA Scanner
 echo echo  ================================================================================
 echo echo.
 echo echo   Deep scan for indicators of compromise using YARA signatures...
@@ -473,6 +510,7 @@ echo echo  =====================================================================
 echo echo.
 echo echo   The following reports have been generated:
 echo echo.
+echo for %%%%f in ^("%%REPORTS_DIR%%\SecurityBaseline-*.txt"^) do echo     [OK] Security Baseline: %%%%f
 echo if exist "%%SCAN_PREFIX%%-Autoruns.csv" echo     [OK] Autoruns:          %%SCAN_PREFIX%%-Autoruns.csv
 echo if exist "%%SCAN_PREFIX%%-PersistenceSniper.csv" echo     [OK] PersistenceSniper: %%SCAN_PREFIX%%-PersistenceSniper.csv
 echo if exist "%%SCAN_PREFIX%%-Trawler.csv" echo     [OK] Trawler:           %%SCAN_PREFIX%%-Trawler.csv
@@ -510,12 +548,12 @@ echo.
 echo :DO_REMEDIATION
 echo.
 echo :: ----------------------------------------------------------------------------
-echo :: STEP 5: MICROSOFT MRT ^(Optional^)
+echo :: STEP 6: MICROSOFT MRT ^(Optional^)
 echo :: ----------------------------------------------------------------------------
 echo cls
 echo echo.
 echo echo  ================================================================================
-echo echo   STEP 5/6: MICROSOFT MRT - Malicious Software Removal Tool
+echo echo   STEP 6/8: MICROSOFT MRT - Malicious Software Removal Tool
 echo echo  ================================================================================
 echo echo.
 echo echo   MRT scans for and removes common malware families.
@@ -550,12 +588,12 @@ echo echo.
 echo pause
 echo.
 echo :: ----------------------------------------------------------------------------
-echo :: STEP 6: RAT REMOVAL
+echo :: STEP 7: RAT REMOVAL
 echo :: ----------------------------------------------------------------------------
 echo cls
 echo echo.
 echo echo  ================================================================================
-echo echo   STEP 6/6: RAT REMOVAL - Remove Unauthorized Remote Access Tools
+echo echo   STEP 7/8: RAT REMOVAL - Remove Unauthorized Remote Access Tools
 echo echo  ================================================================================
 echo echo.
 echo echo   This will scan for and optionally remove unauthorized RATs.
@@ -585,6 +623,129 @@ echo ^) else ^(
 echo     echo   [SKIP] RAT Removal Launcher not found
 echo ^)
 echo.
+echo :: ----------------------------------------------------------------------------
+echo :: STEP 8: SYSTEM INTEGRITY ^(SFC, DISM, CHKDSK^)
+echo :: ----------------------------------------------------------------------------
+echo :SYSTEM_INTEGRITY
+echo cls
+echo echo.
+echo echo  ================================================================================
+echo echo   STEP 8/8: SYSTEM INTEGRITY - SFC, DISM, CHKDSK
+echo echo  ================================================================================
+echo echo.
+echo echo   This step verifies and repairs Windows system files and disk integrity.
+echo echo   Run order:
+echo echo     1. DISM CheckHealth  - Quick Windows image check
+echo echo     2. DISM ScanHealth   - Thorough Windows image scan
+echo echo     3. DISM RestoreHealth - Repair Windows image ^(may need internet^)
+echo echo     4. SFC /scannow      - System File Checker
+echo echo     5. CHKDSK /R         - Deep disk check ^(REQUIRES REBOOT^)
+echo echo.
+echo echo   NOTE: CHKDSK /R on the system drive requires a reboot to run.
+echo echo         The scan will run automatically on next restart.
+echo echo.
+echo echo  --------------------------------------------------------------------------------
+echo echo.
+echo.
+echo :ASK_INTEGRITY
+echo set /p "RUN_INTEGRITY=  Run System Integrity checks? [Y/N]: "
+echo if /i "%%RUN_INTEGRITY%%"=="N" goto :FINISHED
+echo if /i "%%RUN_INTEGRITY%%"=="Y" goto :DO_INTEGRITY
+echo echo   Please enter Y or N.
+echo goto :ASK_INTEGRITY
+echo.
+echo :DO_INTEGRITY
+echo echo.
+echo echo  --------------------------------------------------------------------------------
+echo echo   DISM - Deployment Image Servicing and Management
+echo echo  --------------------------------------------------------------------------------
+echo echo.
+echo echo   [1/5] DISM /CheckHealth - Quick health check...
+echo echo.
+echo DISM /Online /Cleanup-Image /CheckHealth
+echo echo.
+echo.
+echo echo   [2/5] DISM /ScanHealth - Scanning for component store corruption...
+echo echo         ^(This may take several minutes^)
+echo echo.
+echo DISM /Online /Cleanup-Image /ScanHealth
+echo echo.
+echo.
+echo :ASK_RESTORE
+echo set /p "RUN_RESTORE=  Run DISM /RestoreHealth? ^(may need internet^) [Y/N]: "
+echo if /i "%%RUN_RESTORE%%"=="N" goto :SKIP_RESTORE
+echo if /i "%%RUN_RESTORE%%"=="Y" goto :DO_RESTORE
+echo echo   Please enter Y or N.
+echo goto :ASK_RESTORE
+echo.
+echo :DO_RESTORE
+echo echo.
+echo echo   [3/5] DISM /RestoreHealth - Repairing Windows image...
+echo echo         ^(This may take 15-30 minutes^)
+echo echo.
+echo DISM /Online /Cleanup-Image /RestoreHealth
+echo echo.
+echo goto :DO_SFC
+echo.
+echo :SKIP_RESTORE
+echo echo   DISM /RestoreHealth skipped.
+echo echo.
+echo.
+echo :DO_SFC
+echo echo  --------------------------------------------------------------------------------
+echo echo   SFC - System File Checker
+echo echo  --------------------------------------------------------------------------------
+echo echo.
+echo echo   [4/5] SFC /scannow - Scanning and repairing system files...
+echo echo         ^(This may take 10-20 minutes^)
+echo echo.
+echo sfc /scannow
+echo echo.
+echo echo   SFC complete. Check %%SystemRoot%%\Logs\CBS\CBS.log for details.
+echo echo.
+echo.
+echo echo  --------------------------------------------------------------------------------
+echo echo   CHKDSK - Disk Check
+echo echo  --------------------------------------------------------------------------------
+echo echo.
+echo echo   [5/5] CHKDSK - Deep disk integrity check
+echo echo.
+echo echo   IMPORTANT: CHKDSK /R on the system drive ^(C:^) cannot run while Windows
+echo echo   is running. It will be SCHEDULED to run on the next reboot.
+echo echo.
+echo echo   Options:
+echo echo     /R = Locates bad sectors and recovers readable information
+echo echo          ^(includes /F functionality - fixes errors^)
+echo echo.
+echo.
+echo :ASK_CHKDSK
+echo set /p "RUN_CHKDSK=  Schedule CHKDSK /R for next reboot? [Y/N]: "
+echo if /i "%%RUN_CHKDSK%%"=="N" goto :SKIP_CHKDSK
+echo if /i "%%RUN_CHKDSK%%"=="Y" goto :DO_CHKDSK
+echo echo   Please enter Y or N.
+echo goto :ASK_CHKDSK
+echo.
+echo :DO_CHKDSK
+echo echo.
+echo echo   Scheduling CHKDSK /R for C: drive...
+echo echo Y ^| chkdsk C: /R
+echo echo.
+echo echo   CHKDSK has been scheduled. It will run automatically on next reboot.
+echo echo   The scan may take 1-3 hours depending on disk size.
+echo echo.
+echo goto :INTEGRITY_DONE
+echo.
+echo :SKIP_CHKDSK
+echo echo   CHKDSK skipped.
+echo echo.
+echo.
+echo :INTEGRITY_DONE
+echo echo  --------------------------------------------------------------------------------
+echo echo   System Integrity checks complete.
+echo echo  --------------------------------------------------------------------------------
+echo echo.
+echo pause
+echo.
 echo :FINISHED
 echo echo.
 echo echo  ================================================================================
@@ -596,8 +757,13 @@ echo echo.
 echo echo   NEXT STEPS:
 echo echo     1. Review all CSV/LOG files in the Reports folder
 echo echo     2. Investigate any flagged items
-echo echo     3. If issues found, consider running additional targeted scans
-echo echo     4. Document findings for incident response
+echo echo     3. If CHKDSK was scheduled, REBOOT to run disk check
+echo echo     4. After reboot, verify system stability
+echo echo     5. Document findings for incident response
+echo echo.
+echo echo   If system integrity issues were found:
+echo echo     - Review %%SystemRoot%%\Logs\CBS\CBS.log for SFC details
+echo echo     - Review %%SystemRoot%%\Logs\DISM\dism.log for DISM details
 echo echo.
 echo echo  ================================================================================
 echo echo.
@@ -639,6 +805,7 @@ echo ===========================================================================
 echo.
 echo Security-Toolkit\
 echo +-- Run-SecurityScan.cmd      ^<-- MAIN ENTRY POINT - Run this!
+echo +-- Check-SecurityBaseline.ps1   Security baseline checker
 echo +-- MRT.exe                   Microsoft Malicious Software Removal Tool
 echo +-- README.txt                This file
 echo +--
@@ -662,6 +829,7 @@ echo ^|   +-- Remove-AllRATs-Standalone.ps1
 echo ^|   +-- Logs\
 echo ^|
 echo +-- Reports\                  Scan results saved here
+echo     +-- SecurityBaseline-YYYY-MM-DD_HHMMSS.txt
 echo     +-- Scan-YYYY-MM-DD_HHMMSS-Autoruns.csv
 echo     +-- Scan-YYYY-MM-DD_HHMMSS-PersistenceSniper.csv
 echo     +-- Scan-YYYY-MM-DD_HHMMSS-Trawler.csv
@@ -675,22 +843,30 @@ echo The orchestrator runs scans in this specific order for good reason:
 echo.
 echo PHASE 1 - DETECTION ^(No system changes^)
 echo.
-echo   1. AUTORUNS ^(Fast, ~30 seconds^)
+echo   1. SECURITY BASELINE ^(Fast, ~1 minute^)
+echo      - Windows Defender status and exclusions audit
+echo      - Firewall status ^(all profiles^)
+echo      - UAC configuration check
+echo      - Keylogger indicators ^(processes, hooks, drivers^)
+echo      - SMBv1, RDP, Secure Boot, BitLocker status
+echo      - Suspicious scheduled tasks and startup items
+echo.
+echo   2. AUTORUNS ^(Fast, ~30 seconds^)
 echo      - Creates baseline of ALL auto-start locations
 echo      - Scheduled tasks, services, drivers, browser extensions, etc.
 echo      - Output is comprehensive but requires manual review
 echo.
-echo   2. PERSISTENCESNIPER ^(Medium, ~2-5 minutes^)
+echo   3. PERSISTENCESNIPER ^(Medium, ~2-5 minutes^)
 echo      - Specifically targets known persistence techniques
 echo      - MITRE ATT^&CK mapped detections
 echo      - Returns all findings for analyst review
 echo.
-echo   3. TRAWLER ^(Medium, ~2-5 minutes^)
+echo   4. TRAWLER ^(Medium, ~2-5 minutes^)
 echo      - Similar to PersistenceSniper but with built-in allow lists
 echo      - Reduces false positives from legitimate Windows components
 echo      - Better for quick triage
 echo.
-echo   4. LOKI ^(Slow, ~10-30 minutes^)
+echo   5. LOKI ^(Slow, ~10-30 minutes^)
 echo      - Deep file and memory scan using YARA signatures
 echo      - Checks file hashes against known malware
 echo      - Detects C2 callbacks from running processes
@@ -698,21 +874,35 @@ echo      - Most thorough but slowest
 echo.
 echo PHASE 2 - REMEDIATION ^(Only after review^)
 echo.
-echo   5. MICROSOFT MRT ^(Optional^)
+echo   6. MICROSOFT MRT ^(Optional^)
 echo      - Only run if LOKI found malware signatures
 echo      - Removes common malware families
 echo      - Microsoft-signed and trusted
 echo.
-echo   6. RAT REMOVAL ^(Optional^)
+echo   7. RAT REMOVAL ^(Optional^)
 echo      - Removes unauthorized remote access tools
 echo      - Always runs WhatIf first to show what would be removed
 echo      - Requires explicit confirmation before removal
+echo.
+echo PHASE 3 - SYSTEM INTEGRITY ^(Final cleanup and verification^)
+echo.
+echo   8. SFC / DISM / CHKDSK
+echo      - DISM CheckHealth: Quick Windows image health check
+echo      - DISM ScanHealth: Thorough component store scan
+echo      - DISM RestoreHealth: Repair Windows image ^(may need internet^)
+echo      - SFC /scannow: Scan and repair protected system files
+echo      - CHKDSK /R: Deep disk check ^(scheduled for reboot^)
+echo      - This ensures system integrity before going back online
 echo.
 echo ================================================================================
 echo INDIVIDUAL TOOL USAGE
 echo ================================================================================
 echo.
 echo You can run tools individually if needed:
+echo.
+echo SECURITY BASELINE:
+echo   powershell -ExecutionPolicy Bypass -File .\Check-SecurityBaseline.ps1
+echo   powershell -ExecutionPolicy Bypass -File .\Check-SecurityBaseline.ps1 -OutputPath "C:\Reports"
 echo.
 echo AUTORUNS ^(GUI^):
 echo   Right-click Autoruns\Autoruns.exe, Run as administrator
@@ -736,9 +926,42 @@ echo.
 echo RAT REMOVAL:
 echo   Right-click RAT-Removal\Remove-AllRATs-Launcher.cmd, Run as administrator
 echo.
+echo SYSTEM INTEGRITY ^(run as administrator^):
+echo   DISM /Online /Cleanup-Image /CheckHealth    ^(quick check^)
+echo   DISM /Online /Cleanup-Image /ScanHealth     ^(thorough scan^)
+echo   DISM /Online /Cleanup-Image /RestoreHealth  ^(repair - needs internet^)
+echo   sfc /scannow                                ^(system file checker^)
+echo   chkdsk C: /R                                ^(deep disk check - needs reboot^)
+echo.
 echo ================================================================================
 echo WHAT EACH TOOL DETECTS
 echo ================================================================================
+echo.
+echo SECURITY BASELINE:
+echo   - Windows Defender status ^(real-time protection, signatures^)
+echo   - Defender exclusions ^(flags suspicious paths like C:\ or AppData^)
+echo   - Hidden exclusions attack indicator
+echo   - Windows Firewall ^(Domain, Private, Public profiles^)
+echo   - UAC configuration and level
+echo   - User accounts ^(Guest, built-in Admin, recent accounts^)
+echo   - Keylogger indicators ^(known process names, hook DLLs, keyboard drivers^)
+echo   - SMBv1 status ^(vulnerable to EternalBlue^)
+echo   - RDP status and NLA configuration
+echo   - Secure Boot and BitLocker status
+echo   - PowerShell execution policy and script logging
+echo   - DNS hijacking ^(flags unknown DNS servers^)
+echo   - Hosts file tampering ^(detects security/banking site redirects^)
+echo   - Proxy settings ^(system proxy and PAC files^)
+echo   - Rogue root certificates ^(known malicious like Superfish, eDellRoot^)
+echo   - LSA Protection RunAsPPL ^(credential dump protection^)
+echo   - Credential Guard status
+echo   - WDigest plaintext passwords ^(should be disabled^)
+echo   - WMI event subscriptions ^(common malware persistence^)
+echo   - IFEO debugger hijacking ^(process replacement attack^)
+echo   - AppInit_DLLs ^(DLL injection^)
+echo   - Volume Shadow Copy ^(disabled = ransomware indicator^)
+echo   - Windows Recovery Environment status
+echo   - Suspicious scheduled tasks and startup items
 echo.
 echo AUTORUNS:
 echo   - Registry run keys ^(HKLM/HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run^)
@@ -783,12 +1006,22 @@ echo   - Malicious RATs ^(Remcos, QuasarRAT, AsyncRAT, etc.^)
 echo   - Skips Level.io ^(authorized RMM^)
 echo   - Verifies ScreenConnect instances
 echo.
+echo SYSTEM INTEGRITY ^(SFC/DISM/CHKDSK^):
+echo   - DISM CheckHealth: Quick component store corruption check
+echo   - DISM ScanHealth: Full component store scan
+echo   - DISM RestoreHealth: Repairs Windows image from Windows Update
+echo   - SFC /scannow: Scans/repairs protected Windows system files
+echo   - CHKDSK /R: Checks file system integrity and disk sectors
+echo   - Repairs malware damage to Windows system files
+echo   - Detects bad disk sectors that could indicate hardware failure
+echo.
 echo ================================================================================
 echo OFFLINE OPERATION
 echo ================================================================================
 echo.
 echo All tools on this USB are designed to work offline:
 echo.
+echo - Security Baseline: Fully offline PowerShell
 echo - Autoruns: Fully offline, reads local registry/files
 echo - PersistenceSniper: Fully offline PowerShell
 echo - Trawler: Fully offline PowerShell
@@ -796,9 +1029,14 @@ echo - LOKI: Offline with pre-downloaded signatures
 echo   ^(Run loki-upgrader.exe while online to update signatures^)
 echo - MRT: Fully offline, signatures embedded in executable
 echo - RAT Removal: Fully offline
+echo - SFC/CHKDSK: Fully offline ^(built into Windows^)
+echo - DISM RestoreHealth: Needs internet OR can use local install.wim
 echo.
 echo To update LOKI signatures when online:
 echo   Loki\loki\loki-upgrader.exe
+echo.
+echo For DISM RestoreHealth without internet, use a Windows ISO:
+echo   DISM /Online /Cleanup-Image /RestoreHealth /Source:D:\sources\install.wim
 echo.
 echo ================================================================================
 echo INTERPRETING RESULTS

@@ -663,6 +663,7 @@ c1144aeb454922521e405b1469100e1b  standalone_scripts/Fix/🔧Fix Windows 7 Servi
 a0c41107846e0f51b2e1ac7d0fc4f5aa  standalone_scripts/Fix/🔧Fix Windows 8 Services.ps1
 1a3acda16d7ee149e47faae61c812098  standalone_scripts/Fix/🔧Fix Windows 8.1 Services.ps1
 b32a62fb0150bb7f1c68fc5ff5e28fbc  standalone_scripts/Fix/🔧Prevent Sleep.ps1
+ab232c4116139416005d830cc1d612ac  standalone_scripts/Remove/Check-SecurityBaseline.ps1
 57ada1d5d0771f6227b2219bcc21847e  standalone_scripts/Remove/Remove-AllRATs-Standalone.ps1
 b3ff7da81066e0cdaf59cbe53bca6c15  standalone_scripts/Remove/Remove-AnyDesk-Standalone.ps1
 3ed612c0914128cdeef3a5cd8318f3d5  standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
