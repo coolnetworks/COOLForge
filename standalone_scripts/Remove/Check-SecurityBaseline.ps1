@@ -3,26 +3,44 @@
     Security Baseline Checker - Comprehensive Windows security audit
 
 .DESCRIPTION
-    Performs comprehensive offline security checks including:
+    Performs comprehensive offline security checks (36 sections):
+
+    CORE SECURITY (Sections 1-14):
     - Windows Defender status and exclusions audit
     - Firewall status (all profiles)
-    - UAC configuration
-    - Suspicious user accounts
+    - UAC configuration and user accounts
     - Keylogger indicators (hooks, processes, drivers)
-    - SMBv1, RDP, Secure Boot, BitLocker status
-    - DNS hijacking detection
-    - Hosts file tampering
-    - Proxy settings audit
+    - SMBv1, RDP, Secure Boot, BitLocker, PowerShell logging
+    - DNS hijacking, hosts file tampering, proxy settings
     - Rogue root certificate detection
-    - LSA Protection and Credential Guard status
-    - WDigest plaintext password check
-    - WMI persistence subscriptions
-    - IFEO debugger hijacking
-    - AppInit_DLLs injection
-    - Volume Shadow Copy status (ransomware indicator)
-    - Windows Recovery Environment status
-    - Scheduled tasks audit
-    - Startup items audit
+    - Credential protection (LSA, WDigest, Credential Guard)
+    - Advanced persistence (WMI, IFEO, AppInit_DLLs)
+    - System recovery (VSS, Windows RE)
+    - Scheduled tasks and startup items audit
+
+    ADVANCED CHECKS (Sections 15-22):
+    - Browser extensions (Chrome, Edge, Firefox)
+    - Recently modified executables in system folders
+    - Alternate Data Streams (ADS)
+    - Print Monitor DLLs, SSP DLLs, Netsh Helper DLLs
+    - Office add-ins and startup items
+    - Recently accessed files and Prefetch analysis
+
+    INCIDENT RESPONSE (Sections 23-36):
+    - Temp files audit (user/system/browser cache)
+    - Proxy hijacking (system, Chrome, Firefox, WPAD)
+    - Browser hijacking (shortcut tampering, homepage, search)
+    - File association hijacking (EXE, COM, BAT, etc.)
+    - Event log analysis (logon failures, new accounts, services)
+    - SMART disk health and disk space
+    - Executables in suspicious locations
+    - Network indicators (connections, listeners, ARP, SMB)
+    - USB/external device history
+    - Ransomware indicators (encrypted files, ransom notes)
+    - PowerShell command history analysis
+    - IFEO extended (GlobalFlag, SilentProcessExit)
+    - Broken shortcuts and orphaned directories
+    - Windows policies hijacking (disabled Task Manager, etc.)
 
 .PARAMETER OutputPath
     Path for the report file. Defaults to script directory.
@@ -35,9 +53,10 @@
     .\Check-SecurityBaseline.ps1 -OutputPath "C:\Reports"
 
 .NOTES
-    Version: 1.0.0
+    Version: 2.0.0
     Requires: Administrator privileges
     Runs offline - no internet required
+    36 security check sections
 #>
 
 param(
@@ -47,7 +66,7 @@ param(
 
 #region Initialization
 $ErrorActionPreference = "SilentlyContinue"
-$ScriptVersion = "1.0.0"
+$ScriptVersion = "2.0.0"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 if ([string]::IsNullOrEmpty($OutputPath)) {
@@ -999,6 +1018,1336 @@ foreach ($Path in $StartupPaths) {
             }
         }
     }
+}
+
+# ============================================================================
+# SECTION 15: BROWSER EXTENSIONS
+# ============================================================================
+Write-Report -Message "`n=== BROWSER EXTENSIONS ===" -Status "HEADER"
+
+# Chrome Extensions
+Write-Report -Message "  Checking Chrome extensions..." -Status "INFO"
+
+$ChromeExtPaths = @(
+    "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Extensions",
+    "$env:LOCALAPPDATA\Google\Chrome\User Data\Profile *\Extensions"
+)
+
+$ChromeExtCount = 0
+foreach ($BasePath in $ChromeExtPaths) {
+    $ExtFolders = Get-ChildItem -Path $BasePath -Directory -ErrorAction SilentlyContinue
+    foreach ($Ext in $ExtFolders) {
+        $ManifestPath = Get-ChildItem -Path $Ext.FullName -Recurse -Filter "manifest.json" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($ManifestPath) {
+            try {
+                $Manifest = Get-Content $ManifestPath.FullName -Raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+                $ExtName = if ($Manifest.name) { $Manifest.name } else { $Ext.Name }
+                # Flag extensions with broad permissions
+                $Permissions = $Manifest.permissions -join ", "
+                if ($Permissions -match "(<all_urls>|http://\*|https://\*|webRequest|webRequestBlocking|nativeMessaging)") {
+                    Add-CheckResult -Category "Browser" -Check "Chrome Extension" -Status "WARNING" -Details "$ExtName - High permissions: $Permissions"
+                } else {
+                    Add-CheckResult -Category "Browser" -Check "Chrome Extension" -Status "INFO" -Details $ExtName
+                }
+                $ChromeExtCount++
+            } catch {}
+        }
+    }
+}
+
+if ($ChromeExtCount -eq 0) {
+    Add-CheckResult -Category "Browser" -Check "Chrome Extensions" -Status "INFO" -Details "None found or Chrome not installed"
+}
+
+# Edge Extensions
+Write-Report -Message "  Checking Edge extensions..." -Status "INFO"
+
+$EdgeExtPath = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Extensions"
+$EdgeExtCount = 0
+
+if (Test-Path $EdgeExtPath) {
+    $ExtFolders = Get-ChildItem -Path $EdgeExtPath -Directory -ErrorAction SilentlyContinue
+    foreach ($Ext in $ExtFolders) {
+        $ManifestPath = Get-ChildItem -Path $Ext.FullName -Recurse -Filter "manifest.json" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($ManifestPath) {
+            try {
+                $Manifest = Get-Content $ManifestPath.FullName -Raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+                $ExtName = if ($Manifest.name) { $Manifest.name } else { $Ext.Name }
+                $Permissions = $Manifest.permissions -join ", "
+                if ($Permissions -match "(<all_urls>|http://\*|https://\*|webRequest|webRequestBlocking|nativeMessaging)") {
+                    Add-CheckResult -Category "Browser" -Check "Edge Extension" -Status "WARNING" -Details "$ExtName - High permissions: $Permissions"
+                } else {
+                    Add-CheckResult -Category "Browser" -Check "Edge Extension" -Status "INFO" -Details $ExtName
+                }
+                $EdgeExtCount++
+            } catch {}
+        }
+    }
+}
+
+if ($EdgeExtCount -eq 0) {
+    Add-CheckResult -Category "Browser" -Check "Edge Extensions" -Status "INFO" -Details "None found or Edge not installed"
+}
+
+# Firefox Extensions
+Write-Report -Message "  Checking Firefox extensions..." -Status "INFO"
+
+$FirefoxProfiles = "$env:APPDATA\Mozilla\Firefox\Profiles"
+$FirefoxExtCount = 0
+
+if (Test-Path $FirefoxProfiles) {
+    $Profiles = Get-ChildItem -Path $FirefoxProfiles -Directory -ErrorAction SilentlyContinue
+    foreach ($Profile in $Profiles) {
+        $ExtensionsJson = Join-Path $Profile.FullName "extensions.json"
+        if (Test-Path $ExtensionsJson) {
+            try {
+                $ExtData = Get-Content $ExtensionsJson -Raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+                foreach ($Addon in $ExtData.addons) {
+                    if ($Addon.type -eq "extension" -and $Addon.active) {
+                        Add-CheckResult -Category "Browser" -Check "Firefox Extension" -Status "INFO" -Details "$($Addon.defaultLocale.name) - $($Addon.id)"
+                        $FirefoxExtCount++
+                    }
+                }
+            } catch {}
+        }
+    }
+}
+
+if ($FirefoxExtCount -eq 0) {
+    Add-CheckResult -Category "Browser" -Check "Firefox Extensions" -Status "INFO" -Details "None found or Firefox not installed"
+}
+
+# ============================================================================
+# SECTION 16: RECENTLY MODIFIED EXECUTABLES
+# ============================================================================
+Write-Report -Message "`n=== RECENTLY MODIFIED EXECUTABLES ===" -Status "HEADER"
+
+Write-Report -Message "  Checking for executables modified in last 7 days..." -Status "INFO"
+
+$SystemPaths = @(
+    "$env:SystemRoot\System32",
+    "$env:SystemRoot\SysWOW64",
+    "$env:SystemRoot",
+    "$env:ProgramFiles",
+    "${env:ProgramFiles(x86)}"
+)
+
+$RecentDate = (Get-Date).AddDays(-7)
+$RecentExeCount = 0
+
+foreach ($SysPath in $SystemPaths) {
+    if (Test-Path $SysPath) {
+        $RecentExes = Get-ChildItem -Path $SysPath -Filter "*.exe" -ErrorAction SilentlyContinue |
+            Where-Object { $_.LastWriteTime -gt $RecentDate } |
+            Select-Object -First 10
+
+        foreach ($Exe in $RecentExes) {
+            # Check if signed
+            $Sig = Get-AuthenticodeSignature -FilePath $Exe.FullName -ErrorAction SilentlyContinue
+            $SignStatus = if ($Sig.Status -eq "Valid") { "Signed" } else { "UNSIGNED" }
+
+            if ($SignStatus -eq "UNSIGNED") {
+                Add-CheckResult -Category "RecentExe" -Check "Modified Executable" -Status "WARNING" -Details "UNSIGNED: $($Exe.FullName) - Modified: $($Exe.LastWriteTime)"
+            } else {
+                Add-CheckResult -Category "RecentExe" -Check "Modified Executable" -Status "INFO" -Details "$($Exe.Name) - $($Exe.LastWriteTime) ($SignStatus)"
+            }
+            $RecentExeCount++
+        }
+    }
+}
+
+if ($RecentExeCount -eq 0) {
+    Add-CheckResult -Category "RecentExe" -Check "Recently Modified Executables" -Status "PASS" -Details "No executables modified in system folders in last 7 days"
+}
+
+# ============================================================================
+# SECTION 17: ALTERNATE DATA STREAMS (ADS)
+# ============================================================================
+Write-Report -Message "`n=== ALTERNATE DATA STREAMS ===" -Status "HEADER"
+
+Write-Report -Message "  Checking for suspicious ADS in common locations..." -Status "INFO"
+
+$ADSPaths = @(
+    "$env:SystemRoot\System32",
+    "$env:TEMP",
+    "$env:USERPROFILE\Downloads",
+    "$env:APPDATA",
+    "$env:LOCALAPPDATA\Temp"
+)
+
+$ADSCount = 0
+foreach ($ADSPath in $ADSPaths) {
+    if (Test-Path $ADSPath) {
+        # Get files with alternate data streams (excluding Zone.Identifier which is normal)
+        $FilesWithADS = Get-ChildItem -Path $ADSPath -File -ErrorAction SilentlyContinue | ForEach-Object {
+            $Streams = Get-Item -Path $_.FullName -Stream * -ErrorAction SilentlyContinue |
+                Where-Object { $_.Stream -ne ':$DATA' -and $_.Stream -ne 'Zone.Identifier' }
+            if ($Streams) {
+                [PSCustomObject]@{
+                    File = $_.FullName
+                    Streams = ($Streams.Stream -join ", ")
+                }
+            }
+        }
+
+        foreach ($ADS in $FilesWithADS) {
+            Add-CheckResult -Category "ADS" -Check "Alternate Data Stream" -Status "WARNING" -Details "$($ADS.File) has ADS: $($ADS.Streams)"
+            $ADSCount++
+            if ($ADSCount -ge 20) { break }
+        }
+    }
+    if ($ADSCount -ge 20) { break }
+}
+
+if ($ADSCount -eq 0) {
+    Add-CheckResult -Category "ADS" -Check "Alternate Data Streams" -Status "PASS" -Details "No suspicious ADS found in common locations"
+} else {
+    Write-Report -Message "  Found $ADSCount file(s) with alternate data streams" -Status "WARNING"
+}
+
+# ============================================================================
+# SECTION 18: PRINT MONITOR DLLs
+# ============================================================================
+Write-Report -Message "`n=== PRINT MONITOR DLLs ===" -Status "HEADER"
+
+Write-Report -Message "  Checking print monitors for suspicious DLLs..." -Status "INFO"
+
+$PrintMonitorPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Print\Monitors"
+$PrintMonitors = Get-ChildItem -Path $PrintMonitorPath -ErrorAction SilentlyContinue
+
+# Known legitimate print monitors
+$LegitMonitors = @(
+    "Local Port", "Standard TCP/IP Port", "USB Monitor", "WSD Port",
+    "Microsoft Shared Fax Monitor", "Send To Microsoft OneNote",
+    "Appmon", "TCPMON.DLL", "localspl.dll", "usbmon.dll", "wsdmon.dll"
+)
+
+foreach ($Monitor in $PrintMonitors) {
+    $DriverProp = Get-ItemProperty -Path $Monitor.PSPath -Name "Driver" -ErrorAction SilentlyContinue
+    if ($DriverProp.Driver) {
+        $MonitorName = $Monitor.PSChildName
+        $DriverDLL = $DriverProp.Driver
+
+        $IsLegit = $false
+        foreach ($Legit in $LegitMonitors) {
+            if ($MonitorName -like "*$Legit*" -or $DriverDLL -like "*$Legit*") {
+                $IsLegit = $true
+                break
+            }
+        }
+
+        if ($IsLegit) {
+            Add-CheckResult -Category "PrintMon" -Check "Print Monitor" -Status "INFO" -Details "$MonitorName - $DriverDLL"
+        } else {
+            # Check if DLL exists and is signed
+            $DLLPath = if (Test-Path $DriverDLL) { $DriverDLL } else { "$env:SystemRoot\System32\$DriverDLL" }
+            if (Test-Path $DLLPath) {
+                $Sig = Get-AuthenticodeSignature -FilePath $DLLPath -ErrorAction SilentlyContinue
+                if ($Sig.Status -ne "Valid") {
+                    Add-CheckResult -Category "PrintMon" -Check "Print Monitor" -Status "FAIL" -Details "SUSPICIOUS UNSIGNED: $MonitorName - $DriverDLL"
+                } else {
+                    Add-CheckResult -Category "PrintMon" -Check "Print Monitor" -Status "WARNING" -Details "Non-standard: $MonitorName - $DriverDLL (Signed by: $($Sig.SignerCertificate.Subject))"
+                }
+            } else {
+                Add-CheckResult -Category "PrintMon" -Check "Print Monitor" -Status "WARNING" -Details "Non-standard: $MonitorName - $DriverDLL (DLL not found)"
+            }
+        }
+    }
+}
+
+# ============================================================================
+# SECTION 19: SECURITY SUPPORT PROVIDERS (SSP)
+# ============================================================================
+Write-Report -Message "`n=== SECURITY SUPPORT PROVIDERS ===" -Status "HEADER"
+
+Write-Report -Message "  Checking Security Support Provider DLLs..." -Status "INFO"
+
+# SSPs can be used to capture credentials
+$SSPPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
+$SecurityPackages = (Get-ItemProperty -Path $SSPPath -Name "Security Packages" -ErrorAction SilentlyContinue)."Security Packages"
+
+# Known legitimate SSPs
+$LegitSSPs = @(
+    "kerberos", "msv1_0", "schannel", "wdigest", "tspkg", "pku2u",
+    "cloudap", "livessp", "wsauth", "negoexts", "negotiate"
+)
+
+if ($SecurityPackages) {
+    foreach ($SSP in $SecurityPackages) {
+        if ([string]::IsNullOrWhiteSpace($SSP)) { continue }
+
+        $IsLegit = $LegitSSPs -contains $SSP.ToLower()
+
+        if ($IsLegit) {
+            Add-CheckResult -Category "SSP" -Check "Security Package" -Status "PASS" -Details "$SSP (Standard Windows SSP)"
+        } else {
+            Add-CheckResult -Category "SSP" -Check "Security Package" -Status "FAIL" -Details "SUSPICIOUS: $SSP - Non-standard SSP (potential credential stealer)" -Remediation "Investigate and remove from HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Security Packages"
+        }
+    }
+}
+
+# Also check LSA OSConfig Security Packages
+$OSConfigSSP = (Get-ItemProperty -Path "$SSPPath\OSConfig" -Name "Security Packages" -ErrorAction SilentlyContinue)."Security Packages"
+if ($OSConfigSSP) {
+    foreach ($SSP in $OSConfigSSP) {
+        if ([string]::IsNullOrWhiteSpace($SSP)) { continue }
+        $IsLegit = $LegitSSPs -contains $SSP.ToLower()
+        if (-not $IsLegit) {
+            Add-CheckResult -Category "SSP" -Check "OSConfig Security Package" -Status "FAIL" -Details "SUSPICIOUS: $SSP in OSConfig"
+        }
+    }
+}
+
+# ============================================================================
+# SECTION 20: NETSH HELPER DLLs
+# ============================================================================
+Write-Report -Message "`n=== NETSH HELPER DLLs ===" -Status "HEADER"
+
+Write-Report -Message "  Checking Netsh helper DLLs..." -Status "INFO"
+
+$NetshHelperPath = "HKLM:\SOFTWARE\Microsoft\NetSh"
+$NetshHelpers = Get-ItemProperty -Path $NetshHelperPath -ErrorAction SilentlyContinue
+
+if ($NetshHelpers) {
+    $Props = $NetshHelpers.PSObject.Properties | Where-Object { $_.Name -notlike "PS*" }
+    foreach ($Prop in $Props) {
+        $DLLPath = $Prop.Value
+
+        # Expand environment variables
+        $DLLPath = [Environment]::ExpandEnvironmentVariables($DLLPath)
+
+        # Check if it's in System32 (expected location)
+        if ($DLLPath -like "*System32*" -or $DLLPath -like "*system32*") {
+            if (Test-Path $DLLPath) {
+                $Sig = Get-AuthenticodeSignature -FilePath $DLLPath -ErrorAction SilentlyContinue
+                if ($Sig.Status -eq "Valid" -and $Sig.SignerCertificate.Subject -like "*Microsoft*") {
+                    Add-CheckResult -Category "Netsh" -Check "Netsh Helper" -Status "PASS" -Details "$($Prop.Name) - $DLLPath (Microsoft signed)"
+                } else {
+                    Add-CheckResult -Category "Netsh" -Check "Netsh Helper" -Status "WARNING" -Details "$($Prop.Name) - $DLLPath (Non-Microsoft or unsigned)"
+                }
+            }
+        } else {
+            Add-CheckResult -Category "Netsh" -Check "Netsh Helper" -Status "FAIL" -Details "SUSPICIOUS LOCATION: $($Prop.Name) - $DLLPath" -Remediation "Remove from HKLM:\SOFTWARE\Microsoft\NetSh"
+        }
+    }
+}
+
+# ============================================================================
+# SECTION 21: OFFICE ADD-INS
+# ============================================================================
+Write-Report -Message "`n=== OFFICE ADD-INS ===" -Status "HEADER"
+
+Write-Report -Message "  Checking Microsoft Office add-ins and startup items..." -Status "INFO"
+
+# Office startup folders
+$OfficeStartupPaths = @(
+    "$env:APPDATA\Microsoft\Word\STARTUP",
+    "$env:APPDATA\Microsoft\Excel\XLSTART",
+    "$env:APPDATA\Microsoft\Outlook",
+    "$env:APPDATA\Microsoft\AddIns"
+)
+
+foreach ($OffPath in $OfficeStartupPaths) {
+    if (Test-Path $OffPath) {
+        $OfficeFiles = Get-ChildItem -Path $OffPath -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -match "\.(dll|xla|xlam|dotm|dot|wll|ppa|ppam|vsto)$" }
+
+        foreach ($OffFile in $OfficeFiles) {
+            Add-CheckResult -Category "Office" -Check "Office Startup" -Status "WARNING" -Details "$($OffFile.FullName)" -Remediation "Verify this add-in is legitimate"
+        }
+    }
+}
+
+# Registry-based Office add-ins
+$OfficeAddinPaths = @(
+    "HKCU:\SOFTWARE\Microsoft\Office\*\*\Addins",
+    "HKLM:\SOFTWARE\Microsoft\Office\*\*\Addins",
+    "HKCU:\SOFTWARE\Wow6432Node\Microsoft\Office\*\*\Addins",
+    "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Office\*\*\Addins"
+)
+
+$AddinCount = 0
+foreach ($AddinPath in $OfficeAddinPaths) {
+    $Addins = Get-ChildItem -Path $AddinPath -ErrorAction SilentlyContinue
+    foreach ($Addin in $Addins) {
+        $LoadBehavior = (Get-ItemProperty -Path $Addin.PSPath -Name "LoadBehavior" -ErrorAction SilentlyContinue).LoadBehavior
+        $Manifest = (Get-ItemProperty -Path $Addin.PSPath -Name "Manifest" -ErrorAction SilentlyContinue).Manifest
+        $Description = (Get-ItemProperty -Path $Addin.PSPath -Name "Description" -ErrorAction SilentlyContinue).Description
+
+        if ($LoadBehavior -ge 2) {
+            # Add-in is configured to load
+            $Details = "$($Addin.PSChildName)"
+            if ($Description) { $Details += " - $Description" }
+            if ($Manifest) { $Details += " ($Manifest)" }
+
+            Add-CheckResult -Category "Office" -Check "Office Add-in" -Status "INFO" -Details $Details
+            $AddinCount++
+        }
+    }
+}
+
+if ($AddinCount -eq 0) {
+    Add-CheckResult -Category "Office" -Check "Office Add-ins" -Status "INFO" -Details "No active Office add-ins found"
+}
+
+# ============================================================================
+# SECTION 22: RECENTLY ACCESSED FILES
+# ============================================================================
+Write-Report -Message "`n=== RECENTLY ACCESSED FILES ===" -Status "HEADER"
+
+Write-Report -Message "  Checking recently accessed files for suspicious activity..." -Status "INFO"
+
+# Recent items folder
+$RecentPath = "$env:APPDATA\Microsoft\Windows\Recent"
+if (Test-Path $RecentPath) {
+    $RecentItems = Get-ChildItem -Path $RecentPath -Filter "*.lnk" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 50
+
+    $SuspiciousExtensions = @(".exe", ".dll", ".ps1", ".bat", ".cmd", ".vbs", ".js", ".hta", ".scr", ".pif", ".msi")
+    $SuspiciousRecentCount = 0
+
+    $Shell = New-Object -ComObject WScript.Shell
+
+    foreach ($Item in $RecentItems) {
+        try {
+            $Shortcut = $Shell.CreateShortcut($Item.FullName)
+            $TargetPath = $Shortcut.TargetPath
+
+            if ($TargetPath) {
+                $TargetExt = [System.IO.Path]::GetExtension($TargetPath).ToLower()
+
+                if ($SuspiciousExtensions -contains $TargetExt) {
+                    # Check if from suspicious location
+                    if ($TargetPath -match "(\\Temp\\|\\Downloads\\|\\AppData\\Local\\Temp)") {
+                        Add-CheckResult -Category "Recent" -Check "Recent File" -Status "WARNING" -Details "Suspicious: $TargetPath (accessed: $($Item.LastWriteTime))"
+                        $SuspiciousRecentCount++
+                    }
+                }
+            }
+        } catch {}
+    }
+
+    if ($SuspiciousRecentCount -eq 0) {
+        Add-CheckResult -Category "Recent" -Check "Recent Files" -Status "PASS" -Details "No suspicious recently accessed executables from temp/download locations"
+    }
+}
+
+# Prefetch files (shows what was executed)
+Write-Report -Message "  Checking Prefetch for recently executed programs..." -Status "INFO"
+
+$PrefetchPath = "$env:SystemRoot\Prefetch"
+if (Test-Path $PrefetchPath) {
+    $RecentPrefetch = Get-ChildItem -Path $PrefetchPath -Filter "*.pf" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 20
+
+    $SuspiciousPrefetch = @(
+        "MIMIKATZ", "PROCDUMP", "PSEXEC", "WMIC", "CERTUTIL",
+        "BITSADMIN", "MSHTA", "REGSVR32", "RUNDLL32", "POWERSHELL",
+        "CMD.EXE", "CSCRIPT", "WSCRIPT"
+    )
+
+    foreach ($Pf in $RecentPrefetch) {
+        $PfName = $Pf.BaseName.Split("-")[0].ToUpper()
+
+        foreach ($Susp in $SuspiciousPrefetch) {
+            if ($PfName -like "*$Susp*") {
+                Add-CheckResult -Category "Recent" -Check "Prefetch" -Status "WARNING" -Details "$($Pf.BaseName) - Last run: $($Pf.LastWriteTime)"
+                break
+            }
+        }
+    }
+}
+
+# ============================================================================
+# SECTION 23: TEMP FILES AUDIT
+# ============================================================================
+Write-Report -Message "`n=== TEMP FILES AUDIT ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Malware often drops executables in temp folders because they're writable" -Status "INFO"
+Write-Report -Message "  by all users and rarely monitored. Finding EXE/DLL/SCR files in temp" -Status "INFO"
+Write-Report -Message "  folders is suspicious. Large browser caches may contain malicious content." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking temp folders for suspicious content..." -Status "INFO"
+
+# Check temp folder sizes and suspicious files
+$TempPaths = @(
+    @{ Path = "$env:TEMP"; Name = "User Temp" },
+    @{ Path = "$env:SystemRoot\Temp"; Name = "System Temp" },
+    @{ Path = "$env:SystemRoot\Prefetch"; Name = "Prefetch" }
+)
+
+foreach ($TempInfo in $TempPaths) {
+    if (Test-Path $TempInfo.Path) {
+        $Files = Get-ChildItem -Path $TempInfo.Path -File -Recurse -ErrorAction SilentlyContinue
+        $TotalSize = ($Files | Measure-Object -Property Length -Sum).Sum / 1MB
+        $ExeCount = ($Files | Where-Object { $_.Extension -match "\.(exe|dll|scr|bat|cmd|ps1|vbs|js)$" }).Count
+
+        $Status = "INFO"
+        $Details = "$($TempInfo.Name): $([math]::Round($TotalSize, 2)) MB, $($Files.Count) files"
+
+        if ($ExeCount -gt 0) {
+            $Status = "WARNING"
+            $Details += ", $ExeCount executables found"
+        }
+
+        Add-CheckResult -Category "TempFiles" -Check "Temp Folder" -Status $Status -Details $Details
+
+        # List executables in temp
+        if ($ExeCount -gt 0 -and $TempInfo.Name -ne "Prefetch") {
+            $Exes = $Files | Where-Object { $_.Extension -match "\.(exe|dll|scr)$" } | Select-Object -First 10
+            foreach ($Exe in $Exes) {
+                Add-CheckResult -Category "TempFiles" -Check "Temp Executable" -Status "WARNING" -Details "$($Exe.FullName) ($([math]::Round($Exe.Length/1KB, 2)) KB)"
+            }
+        }
+    }
+}
+
+# Check browser cache sizes
+Write-Report -Message "  Checking browser cache sizes..." -Status "INFO"
+
+$BrowserCachePaths = @(
+    @{ Path = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache"; Name = "Chrome Cache" },
+    @{ Path = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Cache"; Name = "Edge Cache" },
+    @{ Path = "$env:LOCALAPPDATA\Mozilla\Firefox\Profiles"; Name = "Firefox Cache" }
+)
+
+foreach ($Cache in $BrowserCachePaths) {
+    if (Test-Path $Cache.Path) {
+        $CacheFiles = Get-ChildItem -Path $Cache.Path -File -Recurse -ErrorAction SilentlyContinue
+        $CacheSize = ($CacheFiles | Measure-Object -Property Length -Sum).Sum / 1MB
+
+        $Status = if ($CacheSize -gt 500) { "WARNING" } else { "INFO" }
+        Add-CheckResult -Category "TempFiles" -Check "Browser Cache" -Status $Status -Details "$($Cache.Name): $([math]::Round($CacheSize, 2)) MB"
+    }
+}
+
+# ============================================================================
+# SECTION 24: PROXY SETTINGS HIJACKING
+# ============================================================================
+Write-Report -Message "`n=== PROXY SETTINGS CHECK ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Malware can redirect all web traffic through attacker-controlled proxies" -Status "INFO"
+Write-Report -Message "  to intercept passwords, inject ads, or block security updates. PAC files" -Status "INFO"
+Write-Report -Message "  and WPAD can be abused for man-in-the-middle attacks. Unexpected proxy" -Status "INFO"
+Write-Report -Message "  settings should be investigated and removed." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking for proxy hijacking..." -Status "INFO"
+
+# System proxy settings (Internet Options)
+$IEProxyPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+$ProxyEnable = (Get-ItemProperty -Path $IEProxyPath -Name "ProxyEnable" -ErrorAction SilentlyContinue).ProxyEnable
+$ProxyServer = (Get-ItemProperty -Path $IEProxyPath -Name "ProxyServer" -ErrorAction SilentlyContinue).ProxyServer
+$AutoConfigURL = (Get-ItemProperty -Path $IEProxyPath -Name "AutoConfigURL" -ErrorAction SilentlyContinue).AutoConfigURL
+
+if ($ProxyEnable -eq 1 -and $ProxyServer) {
+    Add-CheckResult -Category "Proxy" -Check "System Proxy" -Status "WARNING" -Details "Proxy enabled: $ProxyServer"
+} else {
+    Add-CheckResult -Category "Proxy" -Check "System Proxy" -Status "PASS" -Details "No system proxy configured"
+}
+
+if ($AutoConfigURL) {
+    # PAC files can be used for traffic interception
+    $Status = "WARNING"
+    if ($AutoConfigURL -match "^(http://|file://|https?://127\.|https?://localhost)") {
+        $Status = "FAIL"
+    }
+    Add-CheckResult -Category "Proxy" -Check "PAC Auto-Config" -Status $Status -Details "PAC URL: $AutoConfigURL"
+} else {
+    Add-CheckResult -Category "Proxy" -Check "PAC Auto-Config" -Status "PASS" -Details "No PAC auto-config URL"
+}
+
+# WPAD check
+$WPADDisabled = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Wpad" -Name "WpadOverride" -ErrorAction SilentlyContinue).WpadOverride
+if (-not $WPADDisabled) {
+    Add-CheckResult -Category "Proxy" -Check "WPAD" -Status "INFO" -Details "WPAD auto-discovery enabled (potential for WPAD attacks)"
+}
+
+# Chrome proxy settings
+$ChromePrefsPath = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Preferences"
+if (Test-Path $ChromePrefsPath) {
+    try {
+        $ChromePrefs = Get-Content $ChromePrefsPath -Raw | ConvertFrom-Json
+        if ($ChromePrefs.proxy -and $ChromePrefs.proxy.mode -ne "system") {
+            Add-CheckResult -Category "Proxy" -Check "Chrome Proxy" -Status "WARNING" -Details "Chrome has custom proxy settings: $($ChromePrefs.proxy.mode)"
+        }
+    } catch {}
+}
+
+# Firefox proxy settings
+$FFProfilePath = "$env:APPDATA\Mozilla\Firefox\Profiles"
+if (Test-Path $FFProfilePath) {
+    $FFProfiles = Get-ChildItem -Path $FFProfilePath -Directory -ErrorAction SilentlyContinue
+    foreach ($Profile in $FFProfiles) {
+        $PrefsFile = Join-Path $Profile.FullName "prefs.js"
+        if (Test-Path $PrefsFile) {
+            $PrefsContent = Get-Content $PrefsFile -Raw -ErrorAction SilentlyContinue
+            if ($PrefsContent -match 'network\.proxy\.type.*[1-5]') {
+                Add-CheckResult -Category "Proxy" -Check "Firefox Proxy" -Status "WARNING" -Details "Firefox has custom proxy settings in $($Profile.Name)"
+            }
+        }
+    }
+}
+
+# ============================================================================
+# SECTION 25: BROWSER HIJACKING
+# ============================================================================
+Write-Report -Message "`n=== BROWSER HIJACKING CHECK ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Adware and browser hijackers modify browser shortcuts to add URLs that" -Status "INFO"
+Write-Report -Message "  force the browser to open malicious/ad sites on every launch. They also" -Status "INFO"
+Write-Report -Message "  change homepage and default search engines to monetize your searches." -Status "INFO"
+Write-Report -Message "  Even after removal, these settings often persist and need manual cleanup." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking browser shortcuts for tampering..." -Status "INFO"
+
+# Check browser shortcut targets for URL injection
+$ShortcutLocations = @(
+    "$env:PUBLIC\Desktop",
+    "$env:USERPROFILE\Desktop",
+    "$env:APPDATA\Microsoft\Windows\Start Menu\Programs",
+    "$env:ProgramData\Microsoft\Windows\Start Menu\Programs"
+)
+
+$BrowserExes = @("chrome.exe", "msedge.exe", "firefox.exe", "iexplore.exe", "brave.exe", "opera.exe")
+$Shell = New-Object -ComObject WScript.Shell
+$TamperedShortcuts = 0
+
+foreach ($Location in $ShortcutLocations) {
+    if (Test-Path $Location) {
+        $Shortcuts = Get-ChildItem -Path $Location -Filter "*.lnk" -Recurse -ErrorAction SilentlyContinue
+        foreach ($Shortcut in $Shortcuts) {
+            try {
+                $SC = $Shell.CreateShortcut($Shortcut.FullName)
+                $Target = $SC.TargetPath
+                $Args = $SC.Arguments
+
+                # Check if it's a browser shortcut
+                $IsBrowser = $false
+                foreach ($Browser in $BrowserExes) {
+                    if ($Target -like "*$Browser*") {
+                        $IsBrowser = $true
+                        break
+                    }
+                }
+
+                if ($IsBrowser -and $Args) {
+                    # Browser shortcuts shouldn't have URLs in arguments (hijacking indicator)
+                    if ($Args -match "^https?://" -or $Args -match "^www\.") {
+                        Add-CheckResult -Category "Browser" -Check "Shortcut Hijack" -Status "FAIL" -Details "Tampered: $($Shortcut.Name) -> $Args"
+                        $TamperedShortcuts++
+                    }
+                }
+            } catch {}
+        }
+    }
+}
+
+if ($TamperedShortcuts -eq 0) {
+    Add-CheckResult -Category "Browser" -Check "Shortcut Hijack" -Status "PASS" -Details "No tampered browser shortcuts found"
+}
+
+# Check default browser homepage/search (Chrome)
+Write-Report -Message "  Checking browser homepage and search settings..." -Status "INFO"
+
+$ChromePrefsPath = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Preferences"
+if (Test-Path $ChromePrefsPath) {
+    try {
+        $ChromePrefs = Get-Content $ChromePrefsPath -Raw | ConvertFrom-Json
+
+        # Check homepage
+        if ($ChromePrefs.homepage) {
+            $Homepage = $ChromePrefs.homepage
+            $SuspiciousHomepages = @("search", "home", "start", "newtab", "default")
+            $IsSuspicious = $false
+            foreach ($Susp in $SuspiciousHomepages) {
+                if ($Homepage -match $Susp -and $Homepage -notmatch "(google|microsoft|bing|duckduckgo|yahoo)") {
+                    $IsSuspicious = $true
+                }
+            }
+            if ($IsSuspicious) {
+                Add-CheckResult -Category "Browser" -Check "Chrome Homepage" -Status "WARNING" -Details "Potentially hijacked homepage: $Homepage"
+            }
+        }
+
+        # Check search engine
+        if ($ChromePrefs.default_search_provider_data -and $ChromePrefs.default_search_provider_data.template_url_data) {
+            $SearchURL = $ChromePrefs.default_search_provider_data.template_url_data.url
+            if ($SearchURL -and $SearchURL -notmatch "(google|bing|duckduckgo|yahoo|ecosia)") {
+                Add-CheckResult -Category "Browser" -Check "Chrome Search" -Status "WARNING" -Details "Non-standard search engine: $SearchURL"
+            }
+        }
+    } catch {}
+}
+
+# ============================================================================
+# SECTION 26: FILE ASSOCIATION HIJACKING
+# ============================================================================
+Write-Report -Message "`n=== FILE ASSOCIATION CHECK ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Malware can hijack file associations so that when you run an EXE, BAT," -Status "INFO"
+Write-Report -Message "  or other executable, the malware runs instead (or in addition). This is" -Status "INFO"
+Write-Report -Message "  a persistence technique - every time ANY program runs, the malware runs." -Status "INFO"
+Write-Report -Message "  A hijacked .exe association can make the system nearly unusable." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking file associations for hijacking..." -Status "INFO"
+
+$CriticalAssociations = @(
+    @{ Extension = ".exe"; Expected = '"%1" %*' },
+    @{ Extension = ".com"; Expected = '"%1" %*' },
+    @{ Extension = ".bat"; Expected = '"%1" %*' },
+    @{ Extension = ".cmd"; Expected = '"%1" %*' },
+    @{ Extension = ".ps1"; Expected = $null },  # Variable
+    @{ Extension = ".vbs"; Expected = $null },
+    @{ Extension = ".js"; Expected = $null },
+    @{ Extension = ".reg"; Expected = $null }
+)
+
+foreach ($Assoc in $CriticalAssociations) {
+    $Ext = $Assoc.Extension
+
+    # Get file type
+    $FileType = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$Ext" -ErrorAction SilentlyContinue).'(default)'
+
+    if ($FileType) {
+        # Get command
+        $Command = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$FileType\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
+
+        if ($Command) {
+            $Status = "INFO"
+            $Details = "$Ext -> $Command"
+
+            # Check for suspicious redirections
+            if ($Command -match "(cmd\.exe.*\/c|powershell|wscript|cscript)" -and $Ext -eq ".exe") {
+                $Status = "FAIL"
+                $Details = "HIJACKED: $Ext -> $Command"
+            }
+
+            Add-CheckResult -Category "FileAssoc" -Check "File Association" -Status $Status -Details $Details
+        }
+    }
+}
+
+# Check exefile specifically (common target)
+$ExeCommand = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\exefile\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
+if ($ExeCommand -and $ExeCommand -ne '"%1" %*') {
+    Add-CheckResult -Category "FileAssoc" -Check "EXE Handler" -Status "FAIL" -Details "exefile handler modified: $ExeCommand"
+} else {
+    Add-CheckResult -Category "FileAssoc" -Check "EXE Handler" -Status "PASS" -Details "exefile handler is default"
+}
+
+# ============================================================================
+# SECTION 27: EVENT LOG ANALYSIS
+# ============================================================================
+Write-Report -Message "`n=== EVENT LOG ANALYSIS ===" -Status "HEADER"
+
+Write-Report -Message "  Analyzing security-relevant event logs (last 7 days)..." -Status "INFO"
+
+$StartDate = (Get-Date).AddDays(-7)
+
+# Check if Security log is accessible
+$CanReadSecurityLog = $true
+try {
+    $null = Get-WinEvent -LogName Security -MaxEvents 1 -ErrorAction Stop
+} catch {
+    $CanReadSecurityLog = $false
+    Add-CheckResult -Category "EventLog" -Check "Security Log Access" -Status "WARNING" -Details "Cannot read Security log (requires admin)"
+}
+
+if ($CanReadSecurityLog) {
+    # Event ID 1102 - Audit log cleared (CRITICAL)
+    $ClearedLogs = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=1102; StartTime=$StartDate} -ErrorAction SilentlyContinue
+    if ($ClearedLogs) {
+        foreach ($Event in $ClearedLogs) {
+            Add-CheckResult -Category "EventLog" -Check "Log Cleared" -Status "FAIL" -Details "Security log was cleared on $($Event.TimeCreated)"
+        }
+    } else {
+        Add-CheckResult -Category "EventLog" -Check "Log Cleared" -Status "PASS" -Details "No log clearing events found"
+    }
+
+    # Event ID 4720 - User account created
+    $NewUsers = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4720; StartTime=$StartDate} -ErrorAction SilentlyContinue
+    if ($NewUsers) {
+        foreach ($Event in $NewUsers | Select-Object -First 5) {
+            $UserName = ($Event.Properties[0]).Value
+            Add-CheckResult -Category "EventLog" -Check "Account Created" -Status "WARNING" -Details "User '$UserName' created on $($Event.TimeCreated)"
+        }
+    }
+
+    # Event ID 4625 - Failed logon attempts (brute force indicator)
+    $FailedLogons = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4625; StartTime=$StartDate} -ErrorAction SilentlyContinue
+    $FailedCount = ($FailedLogons | Measure-Object).Count
+    if ($FailedCount -gt 50) {
+        Add-CheckResult -Category "EventLog" -Check "Failed Logons" -Status "WARNING" -Details "$FailedCount failed logon attempts in last 7 days (potential brute force)"
+    } elseif ($FailedCount -gt 0) {
+        Add-CheckResult -Category "EventLog" -Check "Failed Logons" -Status "INFO" -Details "$FailedCount failed logon attempts in last 7 days"
+    }
+
+    # Event ID 4672 - Special privileges assigned (admin logon)
+    $PrivLogons = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4672; StartTime=$StartDate} -ErrorAction SilentlyContinue
+    $PrivCount = ($PrivLogons | Measure-Object).Count
+    Add-CheckResult -Category "EventLog" -Check "Privilege Logons" -Status "INFO" -Details "$PrivCount privileged logon events in last 7 days"
+}
+
+# System log - Event ID 7045 - Service installed
+$NewServices = Get-WinEvent -FilterHashtable @{LogName='System'; ID=7045; StartTime=$StartDate} -ErrorAction SilentlyContinue
+if ($NewServices) {
+    foreach ($Event in $NewServices | Select-Object -First 10) {
+        $ServiceName = ($Event.Properties[0]).Value
+        $ServicePath = ($Event.Properties[1]).Value
+        $Status = "INFO"
+
+        # Flag suspicious service paths
+        if ($ServicePath -match "(\\Temp\\|\\AppData\\|\\Downloads\\|powershell|cmd\.exe)") {
+            $Status = "WARNING"
+        }
+
+        Add-CheckResult -Category "EventLog" -Check "Service Installed" -Status $Status -Details "$ServiceName -> $ServicePath"
+    }
+}
+
+# Task Scheduler log - Event ID 106 - Scheduled task registered
+try {
+    $NewTasks = Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-TaskScheduler/Operational'; ID=106; StartTime=$StartDate} -ErrorAction SilentlyContinue
+    if ($NewTasks) {
+        foreach ($Event in $NewTasks | Select-Object -First 10) {
+            $TaskName = ($Event.Properties[0]).Value
+            Add-CheckResult -Category "EventLog" -Check "Task Created" -Status "INFO" -Details "Task '$TaskName' created on $($Event.TimeCreated)"
+        }
+    }
+} catch {}
+
+# PowerShell script block logging - Event ID 4104
+try {
+    $PSScriptBlocks = Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational'; ID=4104; StartTime=$StartDate} -MaxEvents 100 -ErrorAction SilentlyContinue
+
+    $SuspiciousPS = @("Invoke-Mimikatz", "Invoke-Empire", "Invoke-PSInject", "Get-Keystrokes", "Invoke-DllInjection",
+                      "Invoke-Shellcode", "Invoke-WMIMethod", "Invoke-ReflectivePEInjection", "Download", "DownloadString",
+                      "IEX", "Invoke-Expression", "EncodedCommand", "FromBase64", "bypass", "hidden", "-nop", "-w hidden")
+
+    foreach ($Event in $PSScriptBlocks) {
+        $ScriptBlock = $Event.Properties[2].Value
+        foreach ($Susp in $SuspiciousPS) {
+            if ($ScriptBlock -match $Susp) {
+                Add-CheckResult -Category "EventLog" -Check "Suspicious PowerShell" -Status "WARNING" -Details "Found '$Susp' in script block at $($Event.TimeCreated)"
+                break
+            }
+        }
+    }
+} catch {}
+
+# ============================================================================
+# SECTION 28: SMART DISK HEALTH
+# ============================================================================
+Write-Report -Message "`n=== SMART DISK HEALTH ===" -Status "HEADER"
+
+Write-Report -Message "  Checking disk SMART status..." -Status "INFO"
+
+try {
+    $Disks = Get-CimInstance -Namespace root\wmi -ClassName MSStorageDriver_FailurePredictStatus -ErrorAction SilentlyContinue
+
+    foreach ($Disk in $Disks) {
+        if ($Disk.PredictFailure) {
+            Add-CheckResult -Category "Disk" -Check "SMART Status" -Status "FAIL" -Details "Disk predicting failure: $($Disk.InstanceName)"
+        }
+    }
+
+    # Get disk info
+    $PhysicalDisks = Get-CimInstance -ClassName Win32_DiskDrive -ErrorAction SilentlyContinue
+    foreach ($Disk in $PhysicalDisks) {
+        $Status = if ($Disk.Status -eq "OK") { "PASS" } else { "WARNING" }
+        $SizeGB = [math]::Round($Disk.Size / 1GB, 2)
+        Add-CheckResult -Category "Disk" -Check "Disk Status" -Status $Status -Details "$($Disk.Model) - $SizeGB GB - Status: $($Disk.Status)"
+    }
+
+    # Check disk space (low space can indicate ransomware)
+    $Volumes = Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType=3" -ErrorAction SilentlyContinue
+    foreach ($Vol in $Volumes) {
+        $FreePercent = [math]::Round(($Vol.FreeSpace / $Vol.Size) * 100, 1)
+        $FreeGB = [math]::Round($Vol.FreeSpace / 1GB, 2)
+
+        $Status = "PASS"
+        if ($FreePercent -lt 5) { $Status = "FAIL" }
+        elseif ($FreePercent -lt 15) { $Status = "WARNING" }
+
+        Add-CheckResult -Category "Disk" -Check "Disk Space" -Status $Status -Details "$($Vol.DeviceID) $FreeGB GB free ($FreePercent%)"
+    }
+} catch {
+    Add-CheckResult -Category "Disk" -Check "SMART Status" -Status "INFO" -Details "Could not query SMART status"
+}
+
+# ============================================================================
+# SECTION 29: EXECUTABLES IN SUSPICIOUS LOCATIONS
+# ============================================================================
+Write-Report -Message "`n=== EXECUTABLES IN SUSPICIOUS LOCATIONS ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Legitimate software installs to Program Files. Malware hides in unusual" -Status "INFO"
+Write-Report -Message "  locations: Downloads, Temp, Documents, PerfLogs, C:\Intel, or the Recycle" -Status "INFO"
+Write-Report -Message "  Bin. These locations are writable without admin rights and often overlooked." -Status "INFO"
+Write-Report -Message "  Any EXE/DLL/SCR in these folders should be investigated." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking for executables in suspicious locations..." -Status "INFO"
+
+$SuspiciousLocations = @(
+    @{ Path = "$env:USERPROFILE\Downloads"; Name = "Downloads" },
+    @{ Path = "$env:TEMP"; Name = "User Temp" },
+    @{ Path = "$env:SystemRoot\Temp"; Name = "System Temp" },
+    @{ Path = "$env:USERPROFILE\Documents"; Name = "Documents" },
+    @{ Path = "$env:LOCALAPPDATA\Temp"; Name = "LocalAppData Temp" },
+    @{ Path = "$env:PUBLIC\Documents"; Name = "Public Documents" },
+    @{ Path = "$env:SystemDrive\PerfLogs"; Name = "PerfLogs" },
+    @{ Path = "$env:SystemDrive\Intel"; Name = "C:\Intel" },
+    @{ Path = "$env:SystemDrive\Recovery"; Name = "C:\Recovery" }
+)
+
+$ExeExtensions = @("*.exe", "*.dll", "*.scr", "*.bat", "*.cmd", "*.ps1", "*.vbs", "*.js", "*.hta", "*.pif")
+
+foreach ($Loc in $SuspiciousLocations) {
+    if (Test-Path $Loc.Path) {
+        $Executables = @()
+        foreach ($Ext in $ExeExtensions) {
+            $Executables += Get-ChildItem -Path $Loc.Path -Filter $Ext -Recurse -ErrorAction SilentlyContinue
+        }
+
+        if ($Executables.Count -gt 0) {
+            Add-CheckResult -Category "SuspiciousExe" -Check "Location Check" -Status "WARNING" -Details "$($Loc.Name): $($Executables.Count) executables found"
+
+            # List first 5
+            foreach ($Exe in ($Executables | Select-Object -First 5)) {
+                $SizeKB = [math]::Round($Exe.Length / 1KB, 2)
+                Add-CheckResult -Category "SuspiciousExe" -Check "Suspicious File" -Status "WARNING" -Details "$($Exe.FullName) ($SizeKB KB)"
+            }
+        }
+    }
+}
+
+# Check Recycle Bin for executables
+$RecycleBinPath = "C:\`$Recycle.Bin"
+if (Test-Path $RecycleBinPath) {
+    $RecycleExes = Get-ChildItem -Path $RecycleBinPath -Filter "*.exe" -Recurse -Force -ErrorAction SilentlyContinue
+    if ($RecycleExes.Count -gt 0) {
+        Add-CheckResult -Category "SuspiciousExe" -Check "Recycle Bin" -Status "INFO" -Details "$($RecycleExes.Count) executables in Recycle Bin"
+    }
+}
+
+# ============================================================================
+# SECTION 30: NETWORK INDICATORS
+# ============================================================================
+Write-Report -Message "`n=== NETWORK INDICATORS ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Active malware maintains connections to command-and-control (C2) servers." -Status "INFO"
+Write-Report -Message "  Look for: connections on unusual ports (4444, 5555, 31337), processes like" -Status "INFO"
+Write-Report -Message "  powershell/cmd with outbound connections, or multiple IPs sharing one MAC" -Status "INFO"
+Write-Report -Message "  (ARP spoofing). Unknown listening ports may indicate backdoors." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking active network connections..." -Status "INFO"
+
+# Active TCP connections with process info
+$Connections = Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue |
+    Where-Object { $_.RemoteAddress -notmatch "^(127\.|::1|0\.0\.0\.0)" }
+
+$SuspiciousPorts = @(4444, 5555, 6666, 7777, 8888, 9999, 1234, 31337, 12345, 54321)
+$ConnectionCount = 0
+
+foreach ($Conn in $Connections) {
+    try {
+        $Process = Get-Process -Id $Conn.OwningProcess -ErrorAction SilentlyContinue
+        $ProcessName = if ($Process) { $Process.ProcessName } else { "Unknown" }
+
+        $Status = "INFO"
+        if ($SuspiciousPorts -contains $Conn.RemotePort -or $SuspiciousPorts -contains $Conn.LocalPort) {
+            $Status = "WARNING"
+        }
+
+        # Only log non-standard connections
+        if ($Conn.RemotePort -notin @(80, 443, 53) -or $Status -eq "WARNING") {
+            Add-CheckResult -Category "Network" -Check "TCP Connection" -Status $Status -Details "$ProcessName -> $($Conn.RemoteAddress):$($Conn.RemotePort)"
+            $ConnectionCount++
+        }
+    } catch {}
+
+    if ($ConnectionCount -ge 20) { break }  # Limit output
+}
+
+# Listening ports
+Write-Report -Message "  Checking listening ports..." -Status "INFO"
+
+$Listeners = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
+    Where-Object { $_.LocalAddress -notmatch "^(::1|127\.0\.0\.1)$" }
+
+$SuspiciousListeners = @()
+foreach ($Listener in $Listeners) {
+    try {
+        $Process = Get-Process -Id $Listener.OwningProcess -ErrorAction SilentlyContinue
+        $ProcessName = if ($Process) { $Process.ProcessName } else { "Unknown" }
+
+        # Flag unusual listeners
+        if ($Listener.LocalPort -in $SuspiciousPorts -or
+            ($ProcessName -match "(powershell|cmd|wscript|cscript|mshta)")) {
+            Add-CheckResult -Category "Network" -Check "Suspicious Listener" -Status "WARNING" -Details "$ProcessName listening on port $($Listener.LocalPort)"
+        }
+    } catch {}
+}
+
+# ARP cache check
+Write-Report -Message "  Checking ARP cache for anomalies..." -Status "INFO"
+
+$ArpCache = Get-NetNeighbor -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.State -eq "Reachable" }
+$MacAddresses = $ArpCache | Group-Object LinkLayerAddress | Where-Object { $_.Count -gt 1 }
+
+foreach ($DupMac in $MacAddresses) {
+    if ($DupMac.Count -gt 1) {
+        $IPs = ($DupMac.Group | Select-Object -ExpandProperty IPAddress) -join ", "
+        Add-CheckResult -Category "Network" -Check "ARP Anomaly" -Status "WARNING" -Details "MAC $($DupMac.Name) maps to multiple IPs: $IPs (possible ARP spoofing)"
+    }
+}
+
+# Active SMB shares
+$Shares = Get-SmbShare -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch "^(ADMIN\$|C\$|IPC\$)$" }
+foreach ($Share in $Shares) {
+    Add-CheckResult -Category "Network" -Check "SMB Share" -Status "INFO" -Details "Share: $($Share.Name) -> $($Share.Path)"
+}
+
+# ============================================================================
+# SECTION 31: USB/EXTERNAL DEVICE HISTORY
+# ============================================================================
+Write-Report -Message "`n=== USB/EXTERNAL DEVICE HISTORY ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  USB devices are a common malware infection vector. Knowing what devices" -Status "INFO"
+Write-Report -Message "  have been connected helps trace infection sources. If investigating a" -Status "INFO"
+Write-Report -Message "  breach, USB history shows what storage devices may have exfiltrated data" -Status "INFO"
+Write-Report -Message "  or introduced malware to the system." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking USB device history..." -Status "INFO"
+
+# USB storage devices from registry
+$USBStorPath = "HKLM:\SYSTEM\CurrentControlSet\Enum\USBSTOR"
+if (Test-Path $USBStorPath) {
+    $USBDevices = Get-ChildItem -Path $USBStorPath -ErrorAction SilentlyContinue
+
+    $USBCount = 0
+    foreach ($Device in $USBDevices) {
+        $Instances = Get-ChildItem -Path $Device.PSPath -ErrorAction SilentlyContinue
+        foreach ($Instance in $Instances) {
+            $FriendlyName = (Get-ItemProperty -Path $Instance.PSPath -Name "FriendlyName" -ErrorAction SilentlyContinue).FriendlyName
+            if ($FriendlyName) {
+                Add-CheckResult -Category "USB" -Check "USB History" -Status "INFO" -Details "Previously connected: $FriendlyName"
+                $USBCount++
+            }
+        }
+        if ($USBCount -ge 10) { break }
+    }
+
+    if ($USBCount -eq 0) {
+        Add-CheckResult -Category "USB" -Check "USB History" -Status "INFO" -Details "No USB storage device history found"
+    }
+}
+
+# Currently mounted removable drives
+$RemovableDrives = Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType=2" -ErrorAction SilentlyContinue
+foreach ($Drive in $RemovableDrives) {
+    Add-CheckResult -Category "USB" -Check "Removable Drive" -Status "INFO" -Details "Currently mounted: $($Drive.DeviceID) ($($Drive.VolumeName))"
+}
+
+# ============================================================================
+# SECTION 32: RANSOMWARE INDICATORS
+# ============================================================================
+Write-Report -Message "`n=== RANSOMWARE INDICATORS ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Ransomware encrypts files and leaves telltale signs: files with extensions" -Status "INFO"
+Write-Report -Message "  like .locky, .cerber, .wannacry, .lockbit, and ransom notes (README.txt," -Status "INFO"
+Write-Report -Message "  HOW_TO_DECRYPT, etc.). Early detection of these indicators is critical." -Status "INFO"
+Write-Report -Message "  Finding these files means the system is compromised and needs isolation." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking for ransomware indicators..." -Status "INFO"
+
+# Known ransomware file extensions
+$RansomwareExtensions = @(
+    ".locky", ".zepto", ".cerber", ".cerber2", ".cerber3", ".crypt", ".crypted", ".encrypted",
+    ".enc", ".locked", ".crypto", ".crinf", ".r5a", ".XRNT", ".XTBL", ".crypt", ".R16M01D05",
+    ".pzdc", ".good", ".LOL!", ".OMG!", ".RDM", ".RRK", ".encryptedRSA", ".crysis", ".dharma",
+    ".wallet", ".onion", ".zzzzz", ".micro", ".xxx", ".ttt", ".mp3", ".osiris", ".thor",
+    ".aesir", ".odin", ".shit", ".amber", ".wncry", ".wcry", ".wanna", ".wannacry",
+    ".petya", ".notpetya", ".GandCrab", ".KRAB", ".CRAB", ".sage", ".globe", ".ryuk",
+    ".RYK", ".maze", ".egregor", ".conti", ".lockbit", ".blackcat", ".alphv"
+)
+
+$RansomwareFound = 0
+$SearchPaths = @("$env:USERPROFILE\Documents", "$env:USERPROFILE\Desktop", "$env:PUBLIC\Documents")
+
+foreach ($SearchPath in $SearchPaths) {
+    if (Test-Path $SearchPath) {
+        foreach ($Ext in $RansomwareExtensions) {
+            $EncryptedFiles = Get-ChildItem -Path $SearchPath -Filter "*$Ext" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 3
+            foreach ($File in $EncryptedFiles) {
+                Add-CheckResult -Category "Ransomware" -Check "Encrypted File" -Status "FAIL" -Details "Potential ransomware: $($File.FullName)"
+                $RansomwareFound++
+            }
+        }
+        if ($RansomwareFound -ge 10) { break }
+    }
+}
+
+# Check for ransom notes
+$RansomNotePatterns = @(
+    "README.txt", "DECRYPT*.txt", "HOW_TO_DECRYPT*", "HELP_DECRYPT*", "RECOVERY*.txt",
+    "RESTORE*.txt", "_readme.txt", "!!!*.txt", "@Please_Read_Me@*", "HELP_YOUR_FILES*",
+    "YOUR_FILES_ARE*", "*RANSOM*", "*DECRYPT_INSTRUCTION*", "!*!", "_HELP_*"
+)
+
+foreach ($SearchPath in $SearchPaths) {
+    if (Test-Path $SearchPath) {
+        foreach ($Pattern in $RansomNotePatterns) {
+            $Notes = Get-ChildItem -Path $SearchPath -Filter $Pattern -Recurse -ErrorAction SilentlyContinue | Select-Object -First 2
+            foreach ($Note in $Notes) {
+                Add-CheckResult -Category "Ransomware" -Check "Ransom Note" -Status "FAIL" -Details "Potential ransom note: $($Note.FullName)"
+            }
+        }
+    }
+}
+
+if ($RansomwareFound -eq 0) {
+    Add-CheckResult -Category "Ransomware" -Check "Ransomware Check" -Status "PASS" -Details "No known ransomware indicators found"
+}
+
+# ============================================================================
+# SECTION 33: POWERSHELL HISTORY
+# ============================================================================
+Write-Report -Message "`n=== POWERSHELL HISTORY ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  PowerShell is the #1 tool for attackers on Windows. The PSReadLine history" -Status "INFO"
+Write-Report -Message "  file records commands run interactively. Look for: Invoke-WebRequest," -Status "INFO"
+Write-Report -Message "  DownloadString, IEX, encoded commands, -bypass, -hidden flags, and known" -Status "INFO"
+Write-Report -Message "  attack tools like Mimikatz. This can reveal attacker activity." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking PowerShell command history..." -Status "INFO"
+
+# PSReadline history file
+$PSHistoryPath = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+
+if (Test-Path $PSHistoryPath) {
+    $History = Get-Content $PSHistoryPath -Tail 500 -ErrorAction SilentlyContinue
+
+    $SuspiciousCommands = @(
+        "Invoke-WebRequest", "Invoke-RestMethod", "DownloadString", "DownloadFile",
+        "IEX", "Invoke-Expression", "EncodedCommand", "FromBase64String", "bypass",
+        "-nop", "-noprofile", "-w hidden", "-windowstyle hidden", "Net.WebClient",
+        "Start-BitsTransfer", "certutil", "bitsadmin", "Invoke-Mimikatz", "sekurlsa",
+        "Get-Credential", "ConvertTo-SecureString", "reg add", "reg delete", "schtasks",
+        "New-Service", "sc create", "Add-MpPreference", "Set-MpPreference -Exclusion"
+    )
+
+    $FoundSuspicious = @()
+    foreach ($Cmd in $History) {
+        foreach ($Susp in $SuspiciousCommands) {
+            if ($Cmd -match [regex]::Escape($Susp)) {
+                $FoundSuspicious += @{ Command = $Cmd; Pattern = $Susp }
+                break
+            }
+        }
+    }
+
+    if ($FoundSuspicious.Count -gt 0) {
+        Add-CheckResult -Category "PSHistory" -Check "PS History" -Status "WARNING" -Details "Found $($FoundSuspicious.Count) suspicious commands in history"
+        foreach ($Item in ($FoundSuspicious | Select-Object -First 5)) {
+            $TruncatedCmd = if ($Item.Command.Length -gt 100) { $Item.Command.Substring(0, 100) + "..." } else { $Item.Command }
+            Add-CheckResult -Category "PSHistory" -Check "Suspicious Command" -Status "WARNING" -Details $TruncatedCmd
+        }
+    } else {
+        Add-CheckResult -Category "PSHistory" -Check "PS History" -Status "PASS" -Details "No suspicious commands found in PowerShell history"
+    }
+
+    Add-CheckResult -Category "PSHistory" -Check "History Size" -Status "INFO" -Details "PowerShell history: $($History.Count) commands"
+} else {
+    Add-CheckResult -Category "PSHistory" -Check "PS History" -Status "INFO" -Details "No PowerShell history file found"
+}
+
+# ============================================================================
+# SECTION 34: IFEO EXTENDED CHECK
+# ============================================================================
+Write-Report -Message "`n=== IFEO EXTENDED CHECK ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Image File Execution Options (IFEO) can attach a debugger to any process." -Status "INFO"
+Write-Report -Message "  Attackers abuse this to hijack executables: when you run notepad.exe," -Status "INFO"
+Write-Report -Message "  malware runs instead. SilentProcessExit monitoring is another technique" -Status "INFO"
+Write-Report -Message "  to run code when specific processes terminate. Both are persistence methods." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking Image File Execution Options for abuse..." -Status "INFO"
+
+$IFEOPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+
+if (Test-Path $IFEOPath) {
+    $IFEOEntries = Get-ChildItem -Path $IFEOPath -ErrorAction SilentlyContinue
+
+    foreach ($Entry in $IFEOEntries) {
+        $Debugger = (Get-ItemProperty -Path $Entry.PSPath -Name "Debugger" -ErrorAction SilentlyContinue).Debugger
+        $GlobalFlag = (Get-ItemProperty -Path $Entry.PSPath -Name "GlobalFlag" -ErrorAction SilentlyContinue).GlobalFlag
+
+        # Check for debugger hijacking
+        if ($Debugger) {
+            $ExeName = Split-Path $Entry.PSPath -Leaf
+
+            # Whitelist legitimate debuggers
+            if ($Debugger -notmatch "(devenv|vsjitdebugger|windbg|ntsd|cdb|procdump)") {
+                Add-CheckResult -Category "IFEO" -Check "Debugger Hijack" -Status "FAIL" -Details "$ExeName -> $Debugger"
+            }
+        }
+
+        # GlobalFlag for monitoring (sometimes abused)
+        if ($GlobalFlag) {
+            $ExeName = Split-Path $Entry.PSPath -Leaf
+
+            # Check SilentProcessExit monitoring
+            $SilentProcessExit = Join-Path $Entry.PSPath "SilentProcessExit"
+            if (Test-Path "Registry::$SilentProcessExit") {
+                $MonitorProcess = (Get-ItemProperty -Path "Registry::$SilentProcessExit" -Name "MonitorProcess" -ErrorAction SilentlyContinue).MonitorProcess
+                if ($MonitorProcess) {
+                    Add-CheckResult -Category "IFEO" -Check "Silent Process Exit" -Status "WARNING" -Details "$ExeName: Monitored by $MonitorProcess"
+                }
+            }
+        }
+    }
+}
+
+# ============================================================================
+# SECTION 35: BROKEN SHORTCUTS / ORPHANED DIRECTORIES
+# ============================================================================
+Write-Report -Message "`n=== BROKEN SHORTCUTS / ORPHANED DIRECTORIES ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Broken shortcuts pointing to missing files may indicate malware that was" -Status "INFO"
+Write-Report -Message "  partially removed or moved. Orphaned folders in Program Files (with no" -Status "INFO"
+Write-Report -Message "  executables) are remnants of uninstalled software - sometimes malware" -Status "INFO"
+Write-Report -Message "  that antivirus removed but left folders behind. Cleanup improves hygiene." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking for broken shortcuts..." -Status "INFO"
+
+$Shell = New-Object -ComObject WScript.Shell
+$ShortcutPaths = @(
+    "$env:APPDATA\Microsoft\Windows\Start Menu\Programs",
+    "$env:ProgramData\Microsoft\Windows\Start Menu\Programs",
+    "$env:USERPROFILE\Desktop",
+    "$env:PUBLIC\Desktop"
+)
+
+$BrokenShortcuts = 0
+foreach ($Path in $ShortcutPaths) {
+    if (Test-Path $Path) {
+        $Shortcuts = Get-ChildItem -Path $Path -Filter "*.lnk" -Recurse -ErrorAction SilentlyContinue
+        foreach ($Shortcut in $Shortcuts) {
+            try {
+                $SC = $Shell.CreateShortcut($Shortcut.FullName)
+                $Target = $SC.TargetPath
+
+                if ($Target -and -not (Test-Path $Target)) {
+                    Add-CheckResult -Category "Shortcuts" -Check "Broken Shortcut" -Status "INFO" -Details "$($Shortcut.Name) -> $Target (missing)"
+                    $BrokenShortcuts++
+                }
+            } catch {}
+
+            if ($BrokenShortcuts -ge 15) { break }
+        }
+    }
+}
+
+if ($BrokenShortcuts -eq 0) {
+    Add-CheckResult -Category "Shortcuts" -Check "Broken Shortcuts" -Status "PASS" -Details "No broken shortcuts found"
+}
+
+# Check for orphaned Program Files directories
+Write-Report -Message "  Checking for orphaned Program Files directories..." -Status "INFO"
+
+$ProgramDirs = @("$env:ProgramFiles", "${env:ProgramFiles(x86)}")
+$OrphanedDirs = 0
+
+foreach ($ProgramDir in $ProgramDirs) {
+    if (Test-Path $ProgramDir) {
+        $SubDirs = Get-ChildItem -Path $ProgramDir -Directory -ErrorAction SilentlyContinue
+        foreach ($Dir in $SubDirs) {
+            # Check if directory has any executables
+            $Exes = Get-ChildItem -Path $Dir.FullName -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            $Dlls = Get-ChildItem -Path $Dir.FullName -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+
+            if (-not $Exes -and -not $Dlls) {
+                # No executables - might be orphaned
+                $FileCount = (Get-ChildItem -Path $Dir.FullName -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count
+                if ($FileCount -lt 5) {
+                    Add-CheckResult -Category "Shortcuts" -Check "Orphaned Dir" -Status "INFO" -Details "$($Dir.FullName) (no executables, $FileCount files)"
+                    $OrphanedDirs++
+                }
+            }
+
+            if ($OrphanedDirs -ge 10) { break }
+        }
+    }
+}
+
+# ============================================================================
+# SECTION 36: WINDOWS POLICIES HIJACKING
+# ============================================================================
+Write-Report -Message "`n=== WINDOWS POLICIES CHECK ===" -Status "HEADER"
+
+Write-Report -Message "  WHY THIS MATTERS:" -Status "INFO"
+Write-Report -Message "  Malware often disables Windows security features via registry policies:" -Status "INFO"
+Write-Report -Message "  Task Manager, Registry Editor, Command Prompt, Control Panel, and Defender." -Status "INFO"
+Write-Report -Message "  This prevents users from investigating or removing the infection. Some" -Status "INFO"
+Write-Report -Message "  ransomware also damages Safe Mode to prevent recovery. These must be fixed." -Status "INFO"
+Write-Report -Message "" -Status "INFO"
+Write-Report -Message "  Checking for malicious policy restrictions..." -Status "INFO"
+
+$PolicyChecks = @(
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\System"; Name = "DisableTaskMgr"; Description = "Task Manager disabled" },
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\System"; Name = "DisableRegistryTools"; Description = "Registry Editor disabled" },
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\System"; Name = "DisableCMD"; Description = "Command Prompt disabled" },
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoRun"; Description = "Run dialog disabled" },
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoControlPanel"; Description = "Control Panel disabled" },
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoFolderOptions"; Description = "Folder Options disabled" },
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoDrives"; Description = "Drives hidden" },
+    @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoViewOnDrive"; Description = "Drive access restricted" },
+    @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Name = "DisableTaskMgr"; Description = "Task Manager disabled (system)" },
+    @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Name = "DisableRegistryTools"; Description = "Registry Editor disabled (system)" },
+    @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender"; Name = "DisableAntiSpyware"; Description = "Windows Defender disabled by policy" },
+    @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection"; Name = "DisableRealtimeMonitoring"; Description = "Real-time protection disabled by policy" }
+)
+
+$RestrictionsFound = 0
+foreach ($Check in $PolicyChecks) {
+    if (Test-Path $Check.Path) {
+        $Value = (Get-ItemProperty -Path $Check.Path -Name $Check.Name -ErrorAction SilentlyContinue).$($Check.Name)
+        if ($Value -eq 1) {
+            Add-CheckResult -Category "Policies" -Check "Policy Restriction" -Status "FAIL" -Details $Check.Description
+            $RestrictionsFound++
+        }
+    }
+}
+
+if ($RestrictionsFound -eq 0) {
+    Add-CheckResult -Category "Policies" -Check "Policy Restrictions" -Status "PASS" -Details "No malicious policy restrictions found"
+}
+
+# Check for hidden files/folders policy
+$ShowHidden = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -ErrorAction SilentlyContinue).Hidden
+$ShowSuperHidden = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSuperHidden" -ErrorAction SilentlyContinue).ShowSuperHidden
+
+if ($ShowHidden -eq 2 -or $ShowSuperHidden -eq 0) {
+    Add-CheckResult -Category "Policies" -Check "Hidden Files" -Status "INFO" -Details "Hidden files/folders are not shown (malware may hide this way)"
+}
+
+# Check for Safe Mode restrictions (ransomware often disables)
+$SafeBootPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SafeBoot"
+if (-not (Test-Path "$SafeBootPath\Minimal") -or -not (Test-Path "$SafeBootPath\Network")) {
+    Add-CheckResult -Category "Policies" -Check "Safe Mode" -Status "FAIL" -Details "Safe Mode registry keys may be damaged or removed"
 }
 
 # ============================================================================

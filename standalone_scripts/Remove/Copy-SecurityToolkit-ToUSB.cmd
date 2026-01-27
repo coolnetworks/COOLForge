@@ -119,7 +119,7 @@ set "AUTORUNS_FOLDER=%TOOLKIT_ROOT%\Autoruns"
 set "PERSISTENCE_FOLDER=%TOOLKIT_ROOT%\PersistenceSniper"
 set "TRAWLER_FOLDER=%TOOLKIT_ROOT%\Trawler"
 set "LOKI_FOLDER=%TOOLKIT_ROOT%\Loki"
-set "REPORTS_FOLDER=%TOOLKIT_ROOT%\Reports"
+:: Reports saved directly to TOOLKIT_ROOT
 
 :: Check if drive exists
 if not exist "%TARGET_DRIVE%\" (
@@ -150,7 +150,7 @@ echo  ==========================================================================
 echo.
 
 :: Create all folders
-for %%F in ("%TOOLKIT_ROOT%" "%RAT_FOLDER%" "%RAT_FOLDER%\Logs" "%AUTORUNS_FOLDER%" "%PERSISTENCE_FOLDER%" "%TRAWLER_FOLDER%" "%LOKI_FOLDER%" "%REPORTS_FOLDER%") do (
+for %%F in ("%TOOLKIT_ROOT%" "%RAT_FOLDER%" "%RAT_FOLDER%\Logs" "%AUTORUNS_FOLDER%" "%PERSISTENCE_FOLDER%" "%TRAWLER_FOLDER%" "%LOKI_FOLDER%") do (
     if not exist "%%~F" (
         mkdir "%%~F"
         echo   Created: %%~F
@@ -297,17 +297,16 @@ echo :: ========================================================================
 echo.
 echo title Security Toolkit - Comprehensive Scan
 echo.
-echo :: Get script directory
+echo :: Get script directory - reports saved in same folder
 echo set "TOOLKIT_DIR=%%~dp0"
-echo set "REPORTS_DIR=%%TOOLKIT_DIR%%Reports"
+echo set "REPORTS_DIR=%%TOOLKIT_DIR%%"
 echo.
 echo :: Generate timestamp
 echo for /f "tokens=2 delims==" %%%%I in ^('wmic os get localdatetime /value'^) do set "DT=%%%%I"
 echo set "TIMESTAMP=%%DT:~0,4%%-%%DT:~4,2%%-%%DT:~6,2%%_%%DT:~8,2%%%%DT:~10,2%%%%DT:~12,2%%"
 echo set "SCAN_PREFIX=%%REPORTS_DIR%%\Scan-%%TIMESTAMP%%"
 echo.
-echo :: Create reports directory
-echo if not exist "%%REPORTS_DIR%%" mkdir "%%REPORTS_DIR%%"
+echo :: Reports saved in toolkit root directory
 echo.
 echo :: Check for admin
 echo net session ^>nul 2^>^&1
@@ -755,7 +754,7 @@ echo echo.
 echo echo   All reports saved to: %%REPORTS_DIR%%
 echo echo.
 echo echo   NEXT STEPS:
-echo echo     1. Review all CSV/LOG files in the Reports folder
+echo echo     1. Review all CSV/LOG files in the toolkit folder
 echo echo     2. Investigate any flagged items
 echo echo     3. If CHKDSK was scheduled, REBOOT to run disk check
 echo echo     4. After reboot, verify system stability
@@ -808,6 +807,11 @@ echo +-- Run-SecurityScan.cmd      ^<-- MAIN ENTRY POINT - Run this!
 echo +-- Check-SecurityBaseline.ps1   Security baseline checker
 echo +-- MRT.exe                   Microsoft Malicious Software Removal Tool
 echo +-- README.txt                This file
+echo +-- SecurityBaseline-*.txt    ^(generated - security check results^)
+echo +-- Scan-*-Autoruns.csv       ^(generated - autoruns results^)
+echo +-- Scan-*-PersistenceSniper.csv  ^(generated^)
+echo +-- Scan-*-Trawler.csv        ^(generated^)
+echo +-- Scan-*-Loki.log           ^(generated^)
 echo +--
 echo +-- Autoruns\                 Sysinternals Autoruns
 echo ^|   +-- autorunsc.exe        Command-line version
@@ -824,16 +828,9 @@ echo ^|   +-- loki.exe
 echo ^|   +-- signature-base\      YARA signatures
 echo ^|
 echo +-- RAT-Removal\              Remote Access Tool removal
-echo ^|   +-- Remove-AllRATs-Launcher.cmd
-echo ^|   +-- Remove-AllRATs-Standalone.ps1
-echo ^|   +-- Logs\
-echo ^|
-echo +-- Reports\                  Scan results saved here
-echo     +-- SecurityBaseline-YYYY-MM-DD_HHMMSS.txt
-echo     +-- Scan-YYYY-MM-DD_HHMMSS-Autoruns.csv
-echo     +-- Scan-YYYY-MM-DD_HHMMSS-PersistenceSniper.csv
-echo     +-- Scan-YYYY-MM-DD_HHMMSS-Trawler.csv
-echo     +-- Scan-YYYY-MM-DD_HHMMSS-Loki.log
+echo     +-- Remove-AllRATs-Launcher.cmd
+echo     +-- Remove-AllRATs-Standalone.ps1
+echo     +-- Logs\
 echo.
 echo ================================================================================
 echo SCAN ORDER RATIONALE
@@ -843,13 +840,21 @@ echo The orchestrator runs scans in this specific order for good reason:
 echo.
 echo PHASE 1 - DETECTION ^(No system changes^)
 echo.
-echo   1. SECURITY BASELINE ^(Fast, ~1 minute^)
-echo      - Windows Defender status and exclusions audit
-echo      - Firewall status ^(all profiles^)
-echo      - UAC configuration check
-echo      - Keylogger indicators ^(processes, hooks, drivers^)
-echo      - SMBv1, RDP, Secure Boot, BitLocker status
-echo      - Suspicious scheduled tasks and startup items
+echo   1. SECURITY BASELINE ^(~5-10 minutes^)
+echo      36 comprehensive security checks including:
+echo      - Windows Defender, exclusions, firewall, UAC, accounts
+echo      - Keylogger indicators, credential protection
+echo      - DNS hijacking, proxy hijacking, rogue certificates
+echo      - WMI/IFEO/AppInit persistence, Volume Shadow Copy
+echo      - Browser extensions and hijacking detection
+echo      - Alternate Data Streams, Print/SSP/Netsh DLLs
+echo      - Event log analysis ^(failed logons, new services^)
+echo      - Temp files, executables in suspicious locations
+echo      - Ransomware indicators ^(encrypted files, ransom notes^)
+echo      - PowerShell history, file association hijacking
+echo      - USB device history, network indicators
+echo      - SMART disk health, broken shortcuts
+echo      - Policy hijacking ^(disabled Task Manager, etc.^)
 echo.
 echo   2. AUTORUNS ^(Fast, ~30 seconds^)
 echo      - Creates baseline of ALL auto-start locations
@@ -937,31 +942,49 @@ echo ===========================================================================
 echo WHAT EACH TOOL DETECTS
 echo ================================================================================
 echo.
-echo SECURITY BASELINE:
-echo   - Windows Defender status ^(real-time protection, signatures^)
-echo   - Defender exclusions ^(flags suspicious paths like C:\ or AppData^)
-echo   - Hidden exclusions attack indicator
-echo   - Windows Firewall ^(Domain, Private, Public profiles^)
-echo   - UAC configuration and level
-echo   - User accounts ^(Guest, built-in Admin, recent accounts^)
-echo   - Keylogger indicators ^(known process names, hook DLLs, keyboard drivers^)
-echo   - SMBv1 status ^(vulnerable to EternalBlue^)
-echo   - RDP status and NLA configuration
-echo   - Secure Boot and BitLocker status
-echo   - PowerShell execution policy and script logging
-echo   - DNS hijacking ^(flags unknown DNS servers^)
-echo   - Hosts file tampering ^(detects security/banking site redirects^)
-echo   - Proxy settings ^(system proxy and PAC files^)
-echo   - Rogue root certificates ^(known malicious like Superfish, eDellRoot^)
-echo   - LSA Protection RunAsPPL ^(credential dump protection^)
-echo   - Credential Guard status
-echo   - WDigest plaintext passwords ^(should be disabled^)
-echo   - WMI event subscriptions ^(common malware persistence^)
-echo   - IFEO debugger hijacking ^(process replacement attack^)
-echo   - AppInit_DLLs ^(DLL injection^)
-echo   - Volume Shadow Copy ^(disabled = ransomware indicator^)
-echo   - Windows Recovery Environment status
-echo   - Suspicious scheduled tasks and startup items
+echo SECURITY BASELINE ^(36 Sections^):
+echo.
+echo   CORE SECURITY ^(1-14^):
+echo   Section 1:  Windows Defender status ^(real-time, signatures, tamper^)
+echo   Section 2:  Defender exclusions ^(suspicious paths, hidden exclusions^)
+echo   Section 3:  Windows Firewall ^(Domain, Private, Public profiles^)
+echo   Section 4:  UAC configuration and level
+echo   Section 5:  User accounts ^(Guest, Admin, suspicious accounts^)
+echo   Section 6:  Keylogger indicators ^(processes, hooks, drivers^)
+echo   Section 7:  Additional security ^(SMBv1, RDP, Secure Boot, BitLocker^)
+echo   Section 8:  Network security ^(DNS hijacking, hosts file, proxy^)
+echo   Section 9:  Certificate trust ^(rogue certs: Superfish, eDellRoot^)
+echo   Section 10: Credential protection ^(LSA, Credential Guard, WDigest^)
+echo   Section 11: Advanced persistence ^(WMI, IFEO, AppInit_DLLs^)
+echo   Section 12: System recovery ^(VSS, Windows RE^)
+echo   Section 13: Suspicious scheduled tasks
+echo   Section 14: Startup items
+echo.
+echo   ADVANCED CHECKS ^(15-22^):
+echo   Section 15: Browser extensions ^(Chrome, Edge, Firefox permissions^)
+echo   Section 16: Recently modified executables ^(unsigned in system^)
+echo   Section 17: Alternate Data Streams ^(ADS hidden data^)
+echo   Section 18: Print Monitor DLLs
+echo   Section 19: Security Support Providers ^(SSP/mimikatz^)
+echo   Section 20: Netsh Helper DLLs
+echo   Section 21: Office Add-ins ^(COM, VSTO, startup^)
+echo   Section 22: Recently accessed files and Prefetch
+echo.
+echo   INCIDENT RESPONSE ^(23-36^):
+echo   Section 23: Temp files audit ^(user, system, browser cache^)
+echo   Section 24: Proxy hijacking ^(system, Chrome, Firefox, WPAD^)
+echo   Section 25: Browser hijacking ^(shortcut tampering, homepage^)
+echo   Section 26: File association hijacking ^(EXE, COM, BAT, etc.^)
+echo   Section 27: Event log analysis ^(logon failures, new accounts^)
+echo   Section 28: SMART disk health and space
+echo   Section 29: Executables in suspicious locations
+echo   Section 30: Network indicators ^(connections, listeners, ARP^)
+echo   Section 31: USB/external device history
+echo   Section 32: Ransomware indicators ^(encrypted files, notes^)
+echo   Section 33: PowerShell command history analysis
+echo   Section 34: IFEO extended ^(GlobalFlag, SilentProcessExit^)
+echo   Section 35: Broken shortcuts and orphaned directories
+echo   Section 36: Windows policies hijacking ^(disabled Task Manager^)
 echo.
 echo AUTORUNS:
 echo   - Registry run keys ^(HKLM/HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run^)
@@ -1089,7 +1112,7 @@ echo     - Trawler                    IR-focused persistence scanner
 echo     - LOKI                       IOC/YARA scanner
 echo     - MRT.exe                    Microsoft Malware Removal Tool
 echo     - RAT-Removal\               RAT removal toolkit
-echo     - Reports\                   Scan results saved here
+echo     - Scan results saved here    ^(in toolkit root^)
 echo     - README.txt                 Documentation
 echo.
 echo   TO USE:
