@@ -19,7 +19,7 @@
     Set to "true" if this device is a ScreenConnect server (optional).
 
 .NOTES
-    Version:          2025.01.07.01 (Standalone)
+    Version:          2026.01.27.01 (Standalone)
     Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected)
 
     License:          AGPL-3.0 (see LICENSE)
@@ -190,6 +190,60 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "PDQ";               Processes = @("PDQDeploy*", "PDQInventory*");   Services = @("PDQ*");                          Paths = @("*\PDQ*") }
         @{ Name = "ManageEngine";      Processes = @("UEMS*", "DesktopCentral*");      Services = @("ManageEngine*", "DesktopCentral*"); Paths = @("*\ManageEngine*", "*\DesktopCentral*") }
         @{ Name = "Level.io";          Processes = @("level-*", "level_*");            Services = @("level*");                        Paths = @("*\Level\*", "*\Level.io*") }
+
+        # Additional Legitimate Remote Access Tools
+        @{ Name = "UltraViewer";       Processes = @("UltraViewer*");                  Services = @("UltraViewer*");                  Paths = @("*\UltraViewer*") }
+        @{ Name = "ToDesk";            Processes = @("ToDesk*", "ToDesk_Service*");    Services = @("ToDesk*");                       Paths = @("*\ToDesk*") }
+        @{ Name = "Sunlogin";          Processes = @("SunloginClient*", "slservice*"); Services = @("Sunlogin*", "SunloginService*"); Paths = @("*\Sunlogin*", "*\Oray\SunLogin*") }
+        @{ Name = "Oray";              Processes = @("oray*", "PHTunnel*");            Services = @("Oray*", "PHTunnel*");            Paths = @("*\Oray*") }
+        @{ Name = "HopToDesk";         Processes = @("HopToDesk*");                    Services = @("HopToDesk*");                    Paths = @("*\HopToDesk*") }
+        @{ Name = "AweRay/AweSun";     Processes = @("AweSun*", "AweRay*");            Services = @("AweSun*", "AweRay*");            Paths = @("*\AweSun*", "*\AweRay*") }
+        @{ Name = "Dameware";          Processes = @("DVLS*", "dwrcs*", "DameWare*");  Services = @("DameWare*", "DVLS*", "dwmrcs*"); Paths = @("*\DameWare*", "*\SolarWinds\DameWare*") }
+        @{ Name = "ConnectWise Automate"; Processes = @("LTService*", "LTSvcMon*", "LabTech*", "LTClient*"); Services = @("LTService*", "LabTech*"); Paths = @("*\LabTech*", "*\ConnectWise\Automate*") }
+        @{ Name = "SolarWinds RMM";    Processes = @("SolarWinds*", "Advanced*Monitor*", "Windows Agent*"); Services = @("SolarWinds*", "Advanced Monitoring*"); Paths = @("*\SolarWinds*", "*\Advanced Monitoring*") }
+        @{ Name = "Comodo RMM";        Processes = @("ItsmRsp*", "CmdAgent*", "COMODO*"); Services = @("Comodo*", "ItsmRsp*", "CmdAgent*"); Paths = @("*\COMODO\*", "*\Comodo\*") }
+        @{ Name = "SuperOps";          Processes = @("SuperOps*");                     Services = @("SuperOps*");                     Paths = @("*\SuperOps*") }
+        @{ Name = "Automox";           Processes = @("amagent*", "Automox*");          Services = @("amagent*", "Automox*");          Paths = @("*\Automox*") }
+        @{ Name = "JumpCloud";         Processes = @("jumpcloud*", "jcagent*");        Services = @("jumpcloud*", "jcagent*");        Paths = @("*\JumpCloud*") }
+        @{ Name = "Screenleap";        Processes = @("Screenleap*");                   Services = @();                                Paths = @("*\Screenleap*") }
+        @{ Name = "FastViewer";        Processes = @("FastViewer*");                   Services = @("FastViewer*");                   Paths = @("*\FastViewer*") }
+        @{ Name = "CrossLoop";         Processes = @("CrossLoop*");                    Services = @("CrossLoop*");                    Paths = @("*\CrossLoop*") }
+        @{ Name = "HiDesk";            Processes = @("HiDesk*");                       Services = @("HiDesk*");                       Paths = @("*\HiDesk*") }
+        @{ Name = "RayLink";           Processes = @("RayLink*");                      Services = @("RayLink*");                      Paths = @("*\RayLink*") }
+        @{ Name = "RPort";             Processes = @("rport*");                        Services = @("rport*");                        Paths = @("*\rport*") }
+        @{ Name = "Tmate";             Processes = @("tmate*");                        Services = @();                                Paths = @("*\tmate*") }
+        @{ Name = "Ngrok";             Processes = @("ngrok*");                        Services = @("ngrok*");                        Paths = @("*\ngrok*") }
+        @{ Name = "LocalTunnel";       Processes = @("lt*", "localtunnel*");           Services = @();                                Paths = @("*\localtunnel*") }
+
+        # Known Malicious RATs / C2 Frameworks (High Priority Detection)
+        @{ Name = "Remcos RAT";        Processes = @("remcos*", "Remcos*");            Services = @("remcos*");                       Paths = @("*\Remcos*"); Malicious = $true }
+        @{ Name = "QuasarRAT";         Processes = @("Quasar*", "Client.exe");         Services = @("Quasar*");                       Paths = @("*\Quasar*"); Malicious = $true }
+        @{ Name = "AsyncRAT";          Processes = @("AsyncClient*", "Async*");        Services = @("Async*");                        Paths = @("*\Async*"); Malicious = $true }
+        @{ Name = "njRAT";             Processes = @("njRAT*", "Bladabindi*", "njw0rm*"); Services = @();                              Paths = @("*\njRAT*"); Malicious = $true }
+        @{ Name = "NanoCore";          Processes = @("NanoCore*", "nanocore*");        Services = @();                                Paths = @("*\NanoCore*"); Malicious = $true }
+        @{ Name = "DarkComet";         Processes = @("DarkComet*", "frmMain*");        Services = @();                                Paths = @("*\DarkComet*"); Malicious = $true }
+        @{ Name = "Orcus RAT";         Processes = @("Orcus*");                        Services = @("Orcus*");                        Paths = @("*\Orcus*"); Malicious = $true }
+        @{ Name = "NetWire RAT";       Processes = @("NetWire*", "Netwire*");          Services = @();                                Paths = @("*\NetWire*"); Malicious = $true }
+        @{ Name = "Warzone RAT";       Processes = @("Warzone*", "Ave Maria*", "AveMaria*"); Services = @();                          Paths = @("*\Warzone*", "*\AveMaria*"); Malicious = $true }
+        @{ Name = "Gh0st RAT";         Processes = @("Gh0st*", "ghost*", "pcshare*");  Services = @("Gh0st*");                        Paths = @("*\Gh0st*"); Malicious = $true }
+        @{ Name = "Poison Ivy";        Processes = @("PoisonIvy*", "PIVY*");           Services = @();                                Paths = @("*\PoisonIvy*"); Malicious = $true }
+        @{ Name = "BlackShades";       Processes = @("BlackShades*", "bss*");          Services = @();                                Paths = @("*\BlackShades*"); Malicious = $true }
+        @{ Name = "Cobalt Strike";     Processes = @("beacon*", "artifact*", "cobaltstrike*"); Services = @();                        Paths = @("*\cobaltstrike*"); Malicious = $true }
+        @{ Name = "Meterpreter";       Processes = @("metsrv*", "meterpreter*");       Services = @();                                Paths = @(); Malicious = $true }
+        @{ Name = "Havoc C2";          Processes = @("demon*", "havoc*");              Services = @();                                Paths = @("*\havoc*"); Malicious = $true }
+        @{ Name = "Sliver C2";         Processes = @("sliver*");                       Services = @();                                Paths = @("*\sliver*"); Malicious = $true }
+        @{ Name = "Brute Ratel";       Processes = @("badger*", "bruteratel*");        Services = @();                                Paths = @("*\bruteratel*"); Malicious = $true }
+        @{ Name = "Pupy RAT";          Processes = @("pupy*");                         Services = @();                                Paths = @("*\pupy*"); Malicious = $true }
+        @{ Name = "Mythic C2";         Processes = @("mythic*", "apollo*", "poseidon*"); Services = @();                              Paths = @("*\mythic*"); Malicious = $true }
+        @{ Name = "Covenant C2";       Processes = @("Grunt*", "covenant*");           Services = @();                                Paths = @("*\covenant*"); Malicious = $true }
+        @{ Name = "Empire/Starkiller"; Processes = @("empire*", "starkiller*");        Services = @();                                Paths = @("*\empire*", "*\starkiller*"); Malicious = $true }
+        @{ Name = "XtremeRAT";         Processes = @("Xtreme*", "XtremeRAT*");         Services = @();                                Paths = @("*\XtremeRAT*"); Malicious = $true }
+        @{ Name = "Imminent Monitor";  Processes = @("Imminent*");                     Services = @();                                Paths = @("*\Imminent*"); Malicious = $true }
+        @{ Name = "LuminosityLink";    Processes = @("Luminosity*");                   Services = @();                                Paths = @("*\Luminosity*"); Malicious = $true }
+        @{ Name = "Adwind/JRat";       Processes = @("java*", "javaw*");               Services = @();                                Paths = @("*\Adwind*", "*\JRat*"); Malicious = $true }
+        @{ Name = "SpyNote";           Processes = @("SpyNote*");                      Services = @();                                Paths = @("*\SpyNote*"); Malicious = $true }
+        @{ Name = "CrackMapExec";      Processes = @("crackmapexec*", "cme*");         Services = @();                                Paths = @("*\crackmapexec*"); Malicious = $true }
+        @{ Name = "Impacket";          Processes = @("impacket*", "smbexec*", "wmiexec*", "psexec*"); Services = @();                 Paths = @("*\impacket*"); Malicious = $true }
     )
 }
 

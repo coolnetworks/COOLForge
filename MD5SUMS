@@ -619,7 +619,7 @@ dec00fbcc15ae5f1bbd36b2d5e926109  pre-release/Update-ScriptInventory.ps1
 e7b1fec16e155962949263ad83cde951  README.md
 69f1b266b47ddb9b63414078e01fbed5  RELEASING.md
 fe8e8ca56cd3a055b90a1c803a99920b  scripts/Check/👀Check DNS Server Compliance.ps1
-191bb66cb13ac6cbcf74ab635bee113e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+ae263d43f17ba80652a13c398cd1bd23  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
 66dee256530be177a1fe5293bc8298be  scripts/Check/👀debug.ps1
 9a881e73d466e780f81022e34cf844ff  scripts/Check/👀Hostname Mismatch.ps1
@@ -655,7 +655,7 @@ fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Stud
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
 b3d1a58f2f8a7b84d0cfd52e08dfdcf8  scripts/Utility/🙏Wake all devices in Level group.ps1
-c49adec6f1bab59082eaf7da7320efcd  standalone_scripts/Check/Check-UnauthorizedRemoteAccessTools-Standalone.ps1
+dd240b19d55e9ed5d4b15c50b5ca6c54  standalone_scripts/Check/Check-UnauthorizedRemoteAccessTools-Standalone.ps1
 8d6d57bc7a10aec54763e1c82ad1a3f4  standalone_scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 b4043914615c60d5d663fe860acd182d  standalone_scripts/Fix/🔧Fix Windows 10 Services.ps1
 52d145d20e79c9c4d7496bfe930ac3d0  standalone_scripts/Fix/🔧Fix Windows 11 Services.ps1
