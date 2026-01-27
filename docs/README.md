@@ -2,7 +2,7 @@
 
 Complete documentation for the COOLForge PowerShell automation framework for Level.io RMM.
 
-**Last Updated:** 2026-01-22
+**Last Updated:** 2026-01-27
 
 ---
 
@@ -100,6 +100,7 @@ Complete documentation for the COOLForge PowerShell automation framework for Lev
 | Script | Documentation |
 |--------|---------------|
 | RAT Detection | [scripts/RAT-Detection.md](scripts/RAT-Detection.md) |
+| Force Remove Adobe CC | [scripts/Force-Remove-Adobe-CC.md](scripts/Force-Remove-Adobe-CC.md) |
 | Force Remove AnyDesk | [scripts/Force-Remove-AnyDesk.md](scripts/Force-Remove-AnyDesk.md) |
 | Force Remove ScreenConnect | [scripts/Force-Remove-Non-MSP-ScreenConnect.md](scripts/Force-Remove-Non-MSP-ScreenConnect.md) |
 | Fix Windows Services | [scripts/Fix-Windows-Services.md](scripts/Fix-Windows-Services.md) |
@@ -187,6 +188,7 @@ docs/
 +-- scripts/                   # Per-script docs
     +-- README.md              # Script index
     +-- RAT-Detection.md
+    +-- Force-Remove-Adobe-CC.md
     +-- Force-Remove-AnyDesk.md
     +-- Force-Remove-Non-MSP-ScreenConnect.md
     +-- Fix-Windows-Services.md

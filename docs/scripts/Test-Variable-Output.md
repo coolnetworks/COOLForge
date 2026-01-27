@@ -1,7 +1,7 @@
 # Test Variable Output Script
 
 **Script:** `scripts/Check/👀Test Variable Output.ps1`
-**Launcher:** `launchers/👀Test Variable Output.ps1`
+**Launcher:** `launchers/Test/👀Test Variable Output.ps1`
 **Version:** 2025.12.29.02
 **Category:** Check
 

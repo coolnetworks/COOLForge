@@ -1,7 +1,7 @@
 # Force Remove AnyDesk Script
 
 **Script:** `scripts/Remove/⛔Force Remove Anydesk.ps1`
-**Launcher:** `launchers/⛔Force Remove Anydesk.ps1`
+**Launcher:** `launchers/Remove/⛔Force Remove Anydesk.ps1`
 **Version:** 2025.12.27.05
 **Category:** Remove
 

@@ -1,7 +1,7 @@
 # Technician Alert Monitor Script
 
 **Script:** `scripts/Utility/🔔Technician Alert Monitor.ps1`
-**Launcher:** `launchers/🔔Technician Alert Monitor.ps1`
+**Launcher:** `launchers/Alert/🔔Technician Alert Monitor.ps1`
 **Version:** 2026.01.08.02
 **Category:** Utility
 

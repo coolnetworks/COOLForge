@@ -1,7 +1,7 @@
 # Wake All Devices Script
 
 **Script:** `scripts/Utility/🙏Wake all devices in Level group.ps1`
-**Launcher:** `launchers/🙏Wake all devices in Level group.ps1`
+**Launcher:** `launchers/Alert/🙏Wake all devices in Level group.ps1`
 **Category:** Utility
 
 ## Flow

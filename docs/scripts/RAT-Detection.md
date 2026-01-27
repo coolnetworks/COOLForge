@@ -1,7 +1,7 @@
 # RAT Detection Script
 
 **Script:** `scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1`
-**Launcher:** `launchers/👀Check for Unauthorized Remote Access Tools.ps1`
+**Launcher:** `launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1`
 **Version:** 2026.01.10.01
 **Category:** Check
 

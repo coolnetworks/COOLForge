@@ -53,7 +53,7 @@ Go to **Settings → Custom Fields** and create these fields:
 ### Step 2: Create Scripts in Level.io
 
 **Option A: Use a pre-configured launcher**
-1. Copy the contents of a file from `launchers/` (e.g., `launchers/👀Test Show Versions.ps1`)
+1. Copy the contents of a file from `launchers/<category>/` (e.g., `launchers/Test/👀Test Show Versions.ps1`)
 2. Paste into a new Level.io script - it's ready to use!
 
 **Option B: Use the template for a new script**
@@ -82,9 +82,9 @@ This generates both the launcher and script template automatically.
 ```
 Level.io runs launcher
          ↓
-Launcher sees: $ScriptToRun = "👀Test Show Versions.ps1"
+Launcher sees: $ScriptToRun = "Check/👀Test Show Versions.ps1"
          ↓
-Downloads: scripts/👀Test Show Versions.ps1 from GitHub
+Downloads: scripts/Check/👀Test Show Versions.ps1 from GitHub
          ↓
 Executes with all Level.io variables
 ```
@@ -103,22 +103,69 @@ Then set `script_to_run` custom field on devices/groups to control which script 
 
 ## Available Scripts
 
-Scripts in the `scripts/` folder are ready to use:
+Scripts in the `scripts/` folder are organized by category:
+
+### Check Scripts (`scripts/Check/`)
 
 | Script | Description |
 |--------|-------------|
-| `👀Test Show Versions.ps1` | Displays version info for all COOLForge_Lib components |
+| `👀Test Show Versions.ps1` | Displays version info for all COOLForge components |
 | `👀Test Variable Output.ps1` | Demonstrates all methods for setting automation variables |
-| `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
-| `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes ScreenConnect instances not matching your MSP's instance ID |
 | `👀Check for Unauthorized Remote Access Tools.ps1` | Detects 60+ RATs (TeamViewer, AnyDesk, etc.) |
+| `👀Check DNS Server Compliance.ps1` | Validates device DNS settings match expected config |
+| `👀Check Windows Location Services.ps1` | Checks Windows Location Services status |
+
+### Fix Scripts (`scripts/Fix/`)
+
+| Script | Description |
+|--------|-------------|
 | `🔧Fix Windows 11 Services.ps1` | Restores Windows 11 services to default startup types |
 | `🔧Fix Windows 10 Services.ps1` | Restores Windows 10 services to default startup types |
 | `🔧Fix Windows 8.1 Services.ps1` | Restores Windows 8.1 services to default startup types |
 | `🔧Fix Windows 8 Services.ps1` | Restores Windows 8 services to default startup types |
 | `🔧Fix Windows 7 Services.ps1` | Restores Windows 7 services to default startup types |
 | `🔧Enable System Restore and Create Restore Point.ps1` | Enables System Restore and creates a restore point |
-| `🙏Wake all devices in parent to level.io folder.ps1` | Wakes devices in parent folder hierarchy |
+| `🔧Ensure Windows Defender Enabled.ps1` | Ensures Windows Defender is enabled and running |
+| `🔧Fix Windows Location Services.ps1` | Configures Windows Location Services state |
+
+### Remove Scripts (`scripts/Remove/`)
+
+| Script | Description |
+|--------|-------------|
+| `⛔Force Remove Adobe Creative Cloud.ps1` | 6-phase Adobe CC removal with official cleaner tool |
+| `⛔Force Remove Anydesk.ps1` | Removes AnyDesk with escalating force (5 phases) |
+| `⛔Force Remove Non MSP ScreenConnect.ps1` | Removes ScreenConnect instances not matching your MSP's instance ID |
+
+### Configure Scripts (`scripts/Configure/`)
+
+| Script | Description |
+|--------|-------------|
+| `⚙️Configure Wake-on-LAN.ps1` | Enables Wake-on-LAN on network adapters |
+| `⚙️Extract and Set ScreenConnect Device URL.ps1` | Extracts ScreenConnect GUID and sets custom field |
+| `⚙️COOLForge Cache Sync.ps1` | Synchronizes local registry cache with Level.io |
+
+### Utility Scripts (`scripts/Utility/`)
+
+| Script | Description |
+|--------|-------------|
+| `⚙️Cleanup VoyagerPACS Studies.ps1` | Cleans up old PACS imaging studies |
+| `⚙️Universal Disk Cleaner.ps1` | Cleans temporary files and frees disk space |
+| `🔧Prevent Sleep.ps1` | Temporarily prevents device sleep with auto-restore |
+| `🙏Wake all devices in Level group.ps1` | Wakes devices in parent folder hierarchy |
+| `🔔Technician Alert Monitor.ps1` | Toast notifications for tech alerts |
+| `🔔Wake tagged devices.ps1` | Sends WOL packets to devices with specific tags |
+
+### Policy Scripts (`scripts/Policy/`)
+
+| Script | Description |
+|--------|-------------|
+| `👀chrome.ps1` | Google Chrome Enterprise policy enforcement |
+| `👀dnsfilter.ps1` | DNSFilter policy enforcement |
+| `👀huntress.ps1` | Huntress agent policy enforcement |
+| `👀meshcentral.ps1` | MeshCentral agent policy enforcement |
+| `👀screenconnect.ps1` | ScreenConnect agent policy enforcement |
+| `👀unchecky.ps1` | Unchecky software policy enforcement |
+| `👀debug.ps1` | Debug script for policy testing |
 
 ---
 

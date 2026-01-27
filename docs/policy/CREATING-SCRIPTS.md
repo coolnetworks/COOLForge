@@ -74,11 +74,19 @@ See [TAGS.md](TAGS.md) for the complete tag reference, priority resolution, and 
 
 ### Step 1: Create the Launcher
 
-Copy an existing launcher (e.g., `launchers/Policy/👀unchecky.ps1`) and update the script URL:
+Copy `templates/Slim-Launcher.ps1` or an existing launcher (e.g., `launchers/Policy/👀unchecky.ps1`) and update the configuration at the top:
 
 ```powershell
-$ScriptUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/scripts/Policy/👀newsoftware.ps1"
+# ============================================================
+# SCRIPT TO RUN - PRE-CONFIGURED
+# ============================================================
+$ScriptToRun = "Policy/👀newsoftware.ps1"     # Path to script in scripts/ folder
+$policy_newsoftware = "{{cf_policy_newsoftware}}"
+
+$LauncherName = "Policy/👀newsoftware.ps1"    # This launcher's location in launchers/ folder
 ```
+
+**Important:** The `$ScriptToRun` must include the subfolder path (e.g., `Policy/👀newsoftware.ps1`), not just the filename.
 
 ### Step 2: Create the Policy Script
 

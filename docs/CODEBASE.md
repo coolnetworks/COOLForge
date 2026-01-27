@@ -371,6 +371,7 @@ Software removal scripts prefixed with `⛔`:
 
 | Script | Description |
 |--------|-------------|
+| `⛔Force Remove Adobe Creative Cloud.ps1` | Forcefully remove Adobe CC (6-phase removal with official cleaner tool) |
 | `⛔Force Remove Anydesk.ps1` | Forcefully remove AnyDesk (5-phase removal) |
 | `⛔Force Remove Non MSP ScreenConnect.ps1` | Remove unauthorized ScreenConnect instances |
 
@@ -627,6 +628,14 @@ COOLForge/
 │   ├── Launcher_Template.ps1        # Launcher template
 │   └── What is this folder.md       # Scratch folder documentation
 ├── launchers/                        # Pre-configured launchers
+│   ├── Alert/                       # 🔔 Notifications, wake devices
+│   ├── Config/                      # ⚙️ Configuration, setup
+│   ├── Fix/                         # 🔧 Repair, remediation
+│   ├── Monitor/                     # 👀 Audits, compliance
+│   ├── Policy/                      # 👀 Software policy enforcement
+│   ├── Remove/                      # ⛔ Force removal
+│   ├── Test/                        # 👀 Testing, debugging
+│   └── Utility/                     # ⚙️ Cleanup, maintenance
 ├── scripts/
 │   ├── Check/                        # 👀 Inspection scripts
 │   ├── Fix/                          # 🔧 Repair scripts
@@ -648,9 +657,9 @@ COOLForge/
 
 ## Version Information
 
-- **Module Version**: 2026.01.22 (COOLForge-Common)
-- **Launcher Version**: 2026.01.22
-- **Last Documentation Update**: 2026-01-22
+- **Module Version**: 2026.01.27 (COOLForge-Common)
+- **Launcher Version**: 2026.01.27
+- **Last Documentation Update**: 2026-01-27
 
 ---
 

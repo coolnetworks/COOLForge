@@ -360,10 +360,14 @@ Each launcher defines its policy variables at the top. When creating a new launc
 # ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "👀unchecky.ps1"
+$ScriptToRun = "Policy/👀unchecky.ps1"           # Include subfolder path
 $policy_unchecky = "{{cf_policy_unchecky}}"
 $policy_unchecky_url = "{{cf_policy_unchecky_url}}"
+
+$LauncherName = "Policy/👀unchecky.ps1"          # This launcher's location
 ```
+
+**Important:** The `$ScriptToRun` must include the subfolder path (e.g., `Policy/👀unchecky.ps1`), not just the filename. The `$LauncherName` should match the launcher's location in the `launchers/` folder for version checking.
 
 The `$policy_*` variables map to Level.io custom fields and are passed to the policy script.
 

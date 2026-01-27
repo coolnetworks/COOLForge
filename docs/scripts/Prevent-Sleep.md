@@ -1,7 +1,7 @@
 # Prevent Sleep Script
 
-**Script:** `scripts/Fix/🔧Prevent Sleep.ps1`
-**Launcher:** `launchers/🔧Prevent Sleep.ps1`
+**Script:** `scripts/Utility/🔧Prevent Sleep.ps1`
+**Launcher:** `launchers/Config/🔧Prevent Sleep.ps1`
 **Version:** 2025.12.30.01
 **Category:** Fix
 

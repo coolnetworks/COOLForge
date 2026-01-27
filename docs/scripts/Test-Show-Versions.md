@@ -1,7 +1,7 @@
 # Test Show Versions Script
 
 **Script:** `scripts/Check/👀Test Show Versions.ps1`
-**Launcher:** `launchers/👀Test Show Versions.ps1`
+**Launcher:** `launchers/Test/👀Test Show Versions.ps1`
 **Version:** 2025.12.27.03
 **Category:** Check
 

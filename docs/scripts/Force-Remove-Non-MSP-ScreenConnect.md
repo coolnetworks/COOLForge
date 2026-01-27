@@ -1,7 +1,7 @@
 # Force Remove Non-MSP ScreenConnect Script
 
 **Script:** `scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1`
-**Launcher:** `launchers/⛔Force Remove Non MSP ScreenConnect.ps1`
+**Launcher:** `launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1`
 **Version:** 2025.12.27.01
 **Category:** Remove
 
