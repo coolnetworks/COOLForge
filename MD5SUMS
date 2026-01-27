@@ -644,7 +644,7 @@ af3eab8ee9c30eaad6e5c6715c8ce39b  scripts/Policy/👀huntress.ps1
 699e8bfd975e9b0fe8600bbd421fc3d9  scripts/Policy/👀meshcentral.ps1
 94ffbbef9b55d14b5f824f8d89f806d3  scripts/Policy/👀screenconnect.ps1
 7b39ce7586eb23d343ef156ed1d7343b  scripts/Policy/👀unchecky.ps1
-19b5c6b502ec545c3db060c151a7aa11  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+3690edf3e85254bf784db853a852b214  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 9938672219844b70c8a6847e6cf94b1b  scripts/Remove/⛔Force Remove Anydesk.ps1
 820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
@@ -689,7 +689,7 @@ ae21e39ec928882b2624d7415aba4961  start_here/Restore-AnswerFile.ps1
 ec0a5abbe7083ed558c7d1aa5b5f4b3a  start_here/Setup-COOLForge.ps1
 3765015bf26dc7b42f1f5337cb9913d7  start_here/Sync-COOLForgeCustomFields.ps1
 7ee91513ff5576486a6c35931ad83026  start_here/Wake-AllDevicesInFolder-Standalone.ps1
-9e579aa38cfde831f4dc958ae2b1c622  temp-fix.ps1
+a1d4c1b2ee6eca27813b0fc8dba57fdd  temp-fix.ps1
 8101bf7bb2ee04542d4b2fbeb328d61e  templates/Policy_Launcher_Template.ps1
 ce86bc1dcdd34659ba944bc78665b89b  templates/Script_Template.ps1
 6da07b9dbb229902f5752dec7a127064  templates/Slim-Launcher.ps1

@@ -308,12 +308,14 @@ function Invoke-AdobeCleanerTool {
             return $false
         }
 
-        # Run the cleaner tool with --removeAll=ALL flag
-        # This removes all Adobe products silently
-        Write-LevelLog "Running CC Cleaner Tool with --removeAll=ALL..."
+        # Run the cleaner tool with proper silent flags:
+        # --removeAll=ALL     : Remove all Adobe products
+        # --eulaAccepted=1    : Accept EULA (required for silent mode, otherwise shows dialog)
+        Write-LevelLog "Running CC Cleaner Tool (silent mode)..."
         Write-LevelLog "This may take several minutes..."
 
-        $process = Start-Process -FilePath $CleanerPath -ArgumentList "--removeAll=ALL" -Wait -PassThru -ErrorAction Stop
+        $cleanerArgs = "--removeAll=ALL --eulaAccepted=1"
+        $process = Start-Process -FilePath $CleanerPath -ArgumentList $cleanerArgs -Wait -PassThru -ErrorAction Stop
 
         Write-LevelLog "CC Cleaner Tool exited with code: $($process.ExitCode)"
 
