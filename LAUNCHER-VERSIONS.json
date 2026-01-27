@@ -16,8 +16,8 @@
     "Utility/⚙️Universal Disk Cleaner.ps1": "2026.01.20.01",
     "⚙️COOLForge Cache Sync.ps1": "2026.01.20.02",
     "⚙️Extract and Set ScreenConnect Device URL.ps1": "2026.01.20.02",
-    "⛔Force Remove Anydesk.ps1": "2026.01.20.02",
-    "⛔Force Remove Non MSP ScreenConnect.ps1": "2026.01.20.02",
+    "Remove/⛔Force Remove Anydesk.ps1": "2026.01.27.01",
+    "Remove/⛔Force Remove Non MSP ScreenConnect.ps1": "2026.01.27.01",
     "👀Check DNS Server Compliance.ps1": "2026.01.20.02",
     "👀Check for Unauthorized Remote Access Tools.ps1": "2026.01.20.02",
     "Policy/👀Hostname Mismatch.ps1": "2026.01.21.05",
@@ -37,6 +37,6 @@
     "🙏Wake all devices in Level group.ps1": "2026.01.22.01",
     "👀Check Windows Location Services.ps1": "2026.01.22.01",
     "⚙️Configure Wake-on-LAN.ps1": "2026.01.22.01",
-    "Utility/⛔Force Remove Adobe Creative Cloud.ps1": "2026.01.27.01"
+    "Remove/⛔Force Remove Adobe Creative Cloud.ps1": "2026.01.27.01"
   }
 }

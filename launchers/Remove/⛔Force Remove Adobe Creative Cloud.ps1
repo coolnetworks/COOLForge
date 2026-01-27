@@ -18,7 +18,7 @@ $ScriptToRun = "Remove/â›”Force Remove Adobe Creative Cloud.ps1"
 #>
 
 $LauncherVersion = "2026.01.27.01"
-$LauncherName = "Utility/â›”Force Remove Adobe Creative Cloud.ps1"
+$LauncherName = "Remove/â›”Force Remove Adobe Creative Cloud.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

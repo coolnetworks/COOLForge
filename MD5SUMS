@@ -570,8 +570,6 @@ cf8abcfa522e91ed1ebdd76d183644f0  docs/WHY-COOLFORGE.md
 1e992d6cc196360a04cbeb80db2f5b1d  launchers/⚙️Configure Wake-on-LAN.ps1
 ce165d485193e55096049a44a2149fe1  launchers/⚙️COOLForge Cache Sync.ps1
 640622a165da844ea69a94246a792336  launchers/⚙️Extract and Set ScreenConnect Device URL.ps1
-962e6ecb346c7015cc4f246b5c315cc6  launchers/⛔Force Remove Anydesk.ps1
-4db601b60820e6e7a251a7e8f0dc8681  launchers/⛔Force Remove Non MSP ScreenConnect.ps1
 33625581b9e0c7ee7445754d6c4fbecc  launchers/Policy/Chrome/👀Chrome Location Services.ps1
 958b91646cfa36cb42c7a96abb03fd9b  launchers/Policy/Windows/👀Windows Location Services.ps1
 ff5c04d9a5d8635851f472d1fb9012a1  launchers/Policy/👀chrome.ps1
@@ -582,9 +580,11 @@ bfac1767ee13f0243b2302ce58faf3e9  launchers/Policy/👀huntress.ps1
 824f376331b86d4f840dab5a9ccfbe4b  launchers/Policy/👀meshcentral.ps1
 fb528507b405005addf26c7809dae999  launchers/Policy/👀screenconnect.ps1
 904f305696e9969abad8980f23d3feaf  launchers/Policy/👀unchecky.ps1
+53afc50693f2f7362877b0a2c5335b5a  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+962e6ecb346c7015cc4f246b5c315cc6  launchers/Remove/⛔Force Remove Anydesk.ps1
+4db601b60820e6e7a251a7e8f0dc8681  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
 83e1459678c05780e160820ad3983f07  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 5021d5e719f0556c0200c42ea0fca643  launchers/Utility/⚙️Universal Disk Cleaner.ps1
-0508bb180e8ed6cfb1513787c8dc69d3  launchers/Utility/⛔Force Remove Adobe Creative Cloud.ps1
 c75f189d5be8eca4d927001aa0fdc1f4  launchers/👀Check DNS Server Compliance.ps1
 d2a0cfdc39dc6e05f97b6aa9df5183fd  launchers/👀Check for Unauthorized Remote Access Tools.ps1
 7606725a1f0fd41efcdc193141f95bc0  launchers/👀Check Windows Location Services.ps1
@@ -689,7 +689,6 @@ ae21e39ec928882b2624d7415aba4961  start_here/Restore-AnswerFile.ps1
 ec0a5abbe7083ed558c7d1aa5b5f4b3a  start_here/Setup-COOLForge.ps1
 3765015bf26dc7b42f1f5337cb9913d7  start_here/Sync-COOLForgeCustomFields.ps1
 7ee91513ff5576486a6c35931ad83026  start_here/Wake-AllDevicesInFolder-Standalone.ps1
-a1d4c1b2ee6eca27813b0fc8dba57fdd  temp-fix.ps1
 8101bf7bb2ee04542d4b2fbeb328d61e  templates/Policy_Launcher_Template.ps1
 ce86bc1dcdd34659ba944bc78665b89b  templates/Script_Template.ps1
 6da07b9dbb229902f5752dec7a127064  templates/Slim-Launcher.ps1
