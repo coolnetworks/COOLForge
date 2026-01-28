@@ -161,6 +161,16 @@ $Script:RATDefinitions = @(
     @{ Name = "Gh0st RAT"; Processes = @("Gh0st*", "pcshare*"); Services = @("Gh0st*"); Paths = @("Gh0st"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Cobalt Strike"; Processes = @("beacon*", "artifact*"); Services = @(); Paths = @("cobaltstrike"); Priority = "Critical"; Malicious = $true }
 
+    # Scareware / Fake Security Software (PUPs that impersonate security tools)
+    @{ Name = "Network Security Premium"; Processes = @("NetworkSecurity*", "NetSecPremium*", "NetFirewall*"); Services = @("NetworkSecurity*", "NetSecPremium*"); Paths = @("Network Security Premium", "NetworkSecurityPremium", "NetSecPremium"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Network Firewall Premium"; Processes = @("NetworkFirewall*", "NetFWPremium*", "FirewallPremium*"); Services = @("NetworkFirewall*", "FirewallPremium*"); Paths = @("Network Firewall Premium", "NetworkFirewallPremium", "NetFWPremium"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "PC Protector Plus"; Processes = @("PCProtector*", "PC Protector*"); Services = @("PCProtector*"); Paths = @("PC Protector", "PCProtector"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Security Shield"; Processes = @("SecurityShield*", "SecShield*"); Services = @("SecurityShield*"); Paths = @("Security Shield", "SecurityShield"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Antivirus Plus"; Processes = @("AntivirusPlus*", "AVPlus*"); Services = @("AntivirusPlus*"); Paths = @("Antivirus Plus", "AntivirusPlus", "AV Plus"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "System Security"; Processes = @("SystemSecurity*", "SysSecurity*"); Services = @("SystemSecurity*"); Paths = @("System Security", "SystemSecurity"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Security Tool"; Processes = @("SecurityTool*"); Services = @("SecurityTool*"); Paths = @("Security Tool", "SecurityTool"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Total Security"; Processes = @("TotalSecurity*", "Total_Security*"); Services = @("TotalSecurity*"); Paths = @("Total Security", "TotalSecurity"); Priority = "Critical"; Malicious = $true }
+
     # Level.io - Authorized (will be skipped)
     @{ Name = "Level.io"; Processes = @("level-*", "level_*"); Services = @("level*"); Paths = @("Level"); Priority = "Skip"; Authorized = $true }
 )
@@ -570,7 +580,8 @@ function Remove-RATFolders {
         $userPaths = @(
             "$($profile.FullName)\AppData\Local\$Name",
             "$($profile.FullName)\AppData\Roaming\$Name",
-            "$($profile.FullName)\Desktop\$Name*.lnk"
+            "$($profile.FullName)\Desktop\$Name*.lnk",
+            "$($profile.FullName)\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\$Name*.lnk"
         )
         foreach ($path in $userPaths) {
             $items = Get-Item -Path $path -ErrorAction SilentlyContinue
@@ -582,6 +593,24 @@ function Remove-RATFolders {
                         $count++
                     } catch { }
                 }
+            }
+        }
+    }
+
+    # Also check public desktop and start menu
+    $publicPaths = @(
+        "$env:PUBLIC\Desktop\$Name*.lnk",
+        "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\$Name*.lnk"
+    )
+    foreach ($path in $publicPaths) {
+        $items = Get-Item -Path $path -ErrorAction SilentlyContinue
+        foreach ($item in $items) {
+            Write-Log "${prefix}Removing: $($item.FullName)" -Level "DEBUG"
+            if (-not $WhatIf) {
+                try {
+                    Remove-Item -Path $item.FullName -Force -ErrorAction Stop
+                    $count++
+                } catch { }
             }
         }
     }
