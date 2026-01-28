@@ -1670,7 +1670,10 @@ if ($failCount -gt 0) {
 Write-Host ""
 Write-Log "Log file saved to: $logFile" -Level "INFO"
 
-if ($failCount -gt 0) {
+if ($WhatIf) {
+    # WhatIf mode: return 1 if RATs were found (to trigger removal prompt in launcher)
+    if ($detections.Count -gt 0) { exit 1 } else { exit 0 }
+} elseif ($failCount -gt 0) {
     exit 1
 } else {
     exit 0
