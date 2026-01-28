@@ -2208,10 +2208,10 @@ if (Test-Path $IFEOPath) {
         if ($GlobalFlag) {
             $ExeName = Split-Path $Entry.PSPath -Leaf
 
-            # Check SilentProcessExit monitoring
-            $SilentProcessExit = Join-Path $Entry.PSPath "SilentProcessExit"
-            if (Test-Path "Registry::$SilentProcessExit") {
-                $MonitorProcess = (Get-ItemProperty -Path "Registry::$SilentProcessExit" -Name "MonitorProcess" -ErrorAction SilentlyContinue).MonitorProcess
+            # Check SilentProcessExit monitoring (separate registry location)
+            $SilentProcessExitPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\$ExeName"
+            if (Test-Path $SilentProcessExitPath) {
+                $MonitorProcess = (Get-ItemProperty -Path $SilentProcessExitPath -Name "MonitorProcess" -ErrorAction SilentlyContinue).MonitorProcess
                 if ($MonitorProcess) {
                     Add-CheckResult -Category "IFEO" -Check "Silent Process Exit" -Status "WARNING" -Details "$ExeName: Monitored by $MonitorProcess"
                 }
