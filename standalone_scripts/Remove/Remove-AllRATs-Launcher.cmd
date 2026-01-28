@@ -68,11 +68,27 @@ echo.
 echo   PHASE 2: Removal (only if you confirm)
 echo            Actually removes the detected RATs.
 echo.
+echo   A temporary Defender exclusion will be added to prevent false positives.
+echo   It will be automatically removed when complete.
+echo.
 echo   Log files will be saved to: %LOG_DIR%
 echo.
 echo  ================================================================================
 echo.
 pause
+
+:: ============================================================================
+:: Add temporary Defender exclusion
+:: ============================================================================
+echo.
+echo  Adding temporary Defender exclusion...
+powershell -NoProfile -Command "Add-MpPreference -ExclusionPath '%SCRIPT_DIR%'" 2>nul
+if %errorlevel% neq 0 (
+    echo  [!] Could not add exclusion - script may be blocked by Defender.
+    echo      Add manually: Windows Security ^> Exclusions ^> Add folder
+    echo.
+    pause
+)
 
 :: ============================================================================
 :: PHASE 1: WhatIf Scan
@@ -106,6 +122,9 @@ if %SCAN_EXIT% equ 0 (
     echo.
     echo   Log saved to: %SCAN_LOG%
     echo.
+    echo  Removing Defender exclusion...
+    powershell -NoProfile -Command "Remove-MpPreference -ExclusionPath '%SCRIPT_DIR%'" 2>nul
+    echo.
     pause
     exit /b 0
 )
@@ -138,6 +157,9 @@ goto :ASK_REMOVAL
 echo.
 echo   Removal skipped by user.
 echo   Scan log saved to: %SCAN_LOG%
+echo.
+echo  Removing Defender exclusion...
+powershell -NoProfile -Command "Remove-MpPreference -ExclusionPath '%SCRIPT_DIR%'" 2>nul
 echo.
 pause
 exit /b 0
@@ -177,6 +199,9 @@ echo.
 echo   Logs saved to:
 echo     Scan:    %SCAN_LOG%
 echo     Removal: %REMOVAL_LOG%
+echo.
+echo  Removing Defender exclusion...
+powershell -NoProfile -Command "Remove-MpPreference -ExclusionPath '%SCRIPT_DIR%'" 2>nul
 echo.
 echo  ================================================================================
 echo.
