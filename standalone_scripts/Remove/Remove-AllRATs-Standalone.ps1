@@ -105,7 +105,7 @@ $Script:RATDefinitions = @(
     @{ Name = "Chrome Remote Desktop"; Processes = @("remoting_host*", "chromoting*"); Services = @("chromoting*", "Chrome Remote*"); Paths = @("Chrome Remote Desktop"); Priority = "Medium" }
     @{ Name = "Ammyy Admin"; Processes = @("AA_v*", "Ammyy*"); Services = @("Ammyy*"); Paths = @("Ammyy"); Priority = "Medium" }
     @{ Name = "SimpleHelp"; Processes = @("SimpleHelp*"); Services = @("SimpleHelp*"); Paths = @("SimpleHelp"); Priority = "Medium" }
-    @{ Name = "Supremo"; Processes = @("Supremo*", "SupremoService*"); Services = @("Supremo*"); Paths = @("Supremo"); Priority = "Medium" }
+    @{ Name = "Supremo"; Processes = @("Supremo*", "SupremoService*", "SupremoHelper*"); Services = @("Supremo*"); Paths = @("Supremo", "SupremoRemoteDesktop"); Priority = "Medium" }
     @{ Name = "Zoho Assist"; Processes = @("ZohoMeeting*", "ZohoAssist*", "ZA_Connect*"); Services = @("Zoho*Assist*"); Paths = @("Zoho Assist", "ZohoMeeting"); Priority = "Medium" }
     @{ Name = "ISL Online"; Processes = @("ISLLight*", "ISLAlwaysOn*"); Services = @("ISL*"); Paths = @("ISL Online", "ISLLight"); Priority = "Medium" }
     @{ Name = "Parsec"; Processes = @("parsecd*", "pservice*"); Services = @("Parsec*"); Paths = @("Parsec"); Priority = "Low" }
@@ -379,13 +379,15 @@ function Test-RATPresence {
         }
     }
 
-    # Check common installation directories
+    # Check common installation directories (including temp folders where RATs hide)
     $CommonPaths = @(
         "$env:ProgramFiles",
         "${env:ProgramFiles(x86)}",
         "$env:LOCALAPPDATA",
         "$env:APPDATA",
-        "$env:ProgramData"
+        "$env:ProgramData",
+        "$env:TEMP",
+        "$env:windir\Temp"
     )
 
     foreach ($basePath in $CommonPaths) {
