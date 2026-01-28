@@ -91,6 +91,9 @@ $Results = @{
     }
 }
 
+# Remediation items collection - populated during scan, processed at end
+$Script:RemediationItems = @()
+
 #endregion
 
 #region Helper Functions
@@ -153,6 +156,111 @@ function Add-CheckResult {
     if ($Remediation -and $Status -ne "PASS") {
         Write-Report -Message "  Remediation: $Remediation" -Status "INFO"
     }
+}
+
+function Add-RemediationItem {
+    param(
+        [string]$Category,
+        [string]$Description,
+        [string]$Risk,
+        [scriptblock]$Action,
+        [string]$ActionDescription
+    )
+
+    $Script:RemediationItems += @{
+        Category = $Category
+        Description = $Description
+        Risk = $Risk
+        Action = $Action
+        ActionDescription = $ActionDescription
+    }
+}
+
+function Invoke-Remediation {
+    if ($Script:RemediationItems.Count -eq 0) {
+        Write-Host ""
+        Write-Host "  No remediable issues found." -ForegroundColor Green
+        return
+    }
+
+    Write-Host ""
+    Write-Host "  ================================================================================" -ForegroundColor Cyan
+    Write-Host "                         REMEDIATION PHASE" -ForegroundColor Cyan
+    Write-Host "  ================================================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  Found $($Script:RemediationItems.Count) item(s) that can be fixed." -ForegroundColor Yellow
+    Write-Host "  You will be prompted for each item individually." -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "  Options: [Y] Yes, fix  [N] No, skip  [A] Fix all remaining  [Q] Quit remediation" -ForegroundColor Gray
+    Write-Host ""
+
+    $fixAll = $false
+    $fixedCount = 0
+    $skippedCount = 0
+
+    for ($i = 0; $i -lt $Script:RemediationItems.Count; $i++) {
+        $item = $Script:RemediationItems[$i]
+        $num = $i + 1
+
+        Write-Host "  --------------------------------------------------------------------------------" -ForegroundColor DarkGray
+        Write-Host "  [$num/$($Script:RemediationItems.Count)] $($item.Category)" -ForegroundColor White
+        Write-Host "  Issue: $($item.Description)" -ForegroundColor Yellow
+        Write-Host "  Risk:  $($item.Risk)" -ForegroundColor $(if ($item.Risk -eq "High") { "Red" } elseif ($item.Risk -eq "Medium") { "Yellow" } else { "Gray" })
+        Write-Host "  Fix:   $($item.ActionDescription)" -ForegroundColor Cyan
+        Write-Host ""
+
+        if ($fixAll) {
+            $choice = "Y"
+        } else {
+            $choice = ""
+            while ($choice -notmatch "^[YNAQ]$") {
+                Write-Host "  Fix this item? [Y/N/A/Q]: " -NoNewline -ForegroundColor White
+                $choice = (Read-Host).ToUpper()
+                if ($choice -eq "") { $choice = "N" }
+            }
+        }
+
+        switch ($choice) {
+            "Y" {
+                try {
+                    & $item.Action
+                    Write-Host "  [FIXED] $($item.Description)" -ForegroundColor Green
+                    Add-Content -Path $ReportFile -Value "[REMEDIATED] $($item.Category): $($item.Description)"
+                    $fixedCount++
+                } catch {
+                    Write-Host "  [ERROR] Failed to fix: $($_.Exception.Message)" -ForegroundColor Red
+                    Add-Content -Path $ReportFile -Value "[REMEDIATION FAILED] $($item.Category): $($item.Description) - $($_.Exception.Message)"
+                }
+            }
+            "N" {
+                Write-Host "  [SKIPPED] $($item.Description)" -ForegroundColor Gray
+                $skippedCount++
+            }
+            "A" {
+                $fixAll = $true
+                try {
+                    & $item.Action
+                    Write-Host "  [FIXED] $($item.Description)" -ForegroundColor Green
+                    Add-Content -Path $ReportFile -Value "[REMEDIATED] $($item.Category): $($item.Description)"
+                    $fixedCount++
+                } catch {
+                    Write-Host "  [ERROR] Failed to fix: $($_.Exception.Message)" -ForegroundColor Red
+                    Add-Content -Path $ReportFile -Value "[REMEDIATION FAILED] $($item.Category): $($item.Description) - $($_.Exception.Message)"
+                }
+            }
+            "Q" {
+                Write-Host ""
+                Write-Host "  Remediation cancelled. $fixedCount fixed, $skippedCount skipped, $($Script:RemediationItems.Count - $i) remaining." -ForegroundColor Yellow
+                return
+            }
+        }
+        Write-Host ""
+    }
+
+    Write-Host "  ================================================================================" -ForegroundColor Cyan
+    Write-Host "  REMEDIATION COMPLETE" -ForegroundColor Cyan
+    Write-Host "  Fixed: $fixedCount   Skipped: $skippedCount" -ForegroundColor White
+    Write-Host "  ================================================================================" -ForegroundColor Cyan
 }
 
 #endregion
@@ -941,37 +1049,88 @@ try {
 # ============================================================================
 Write-Report -Message "`n=== SUSPICIOUS SCHEDULED TASKS ===" -Status "HEADER"
 
-$SuspiciousTaskPatterns = @(
-    "powershell", "cmd.exe", "wscript", "cscript",
-    "mshta", "regsvr32", "rundll32", "certutil",
-    "bitsadmin", "AppData", "Temp", "ProgramData",
-    "http://", "https://", "ftp://", ".ps1", ".vbs", ".bat"
+# Known legitimate Windows task paths (not suspicious)
+$LegitimateTaskPaths = @(
+    "\Microsoft\Windows\",
+    "\Microsoft\Office\",
+    "\Microsoft\EdgeUpdate\",
+    "\Adobe Acrobat Update Task",
+    "\GoogleUpdateTask",
+    "\OneDrive"
+)
+
+# Patterns that are suspicious ONLY if not in legitimate paths
+$SuspiciousPatterns = @(
+    "powershell.*-enc", "powershell.*-nop", "powershell.*hidden",
+    "cmd.exe.*/c.*http", "mshta.*http", "mshta.*javascript",
+    "regsvr32.*/s.*/u", "regsvr32.*scrobj",
+    "certutil.*-decode", "certutil.*-urlcache",
+    "bitsadmin.*transfer"
+)
+
+# High-risk patterns (always suspicious regardless of path)
+$HighRiskPatterns = @(
+    "\\Temp\\.*\.exe", "\\AppData\\Local\\Temp\\",
+    "\\Users\\Public\\", "\\ProgramData\\.*\.exe$",
+    "pastebin\.com", "githubusercontent\.com/.*\.ps1",
+    "iex.*downloadstring", "invoke-expression.*webclient"
 )
 
 $Tasks = Get-ScheduledTask | Where-Object { $_.State -ne "Disabled" }
-
 Write-Report -Message "  Checking $($Tasks.Count) active scheduled tasks..." -Status "INFO"
 
 $SuspiciousTaskCount = 0
 foreach ($Task in $Tasks) {
     try {
-        $TaskInfo = Get-ScheduledTaskInfo -TaskName $Task.TaskName -TaskPath $Task.TaskPath -ErrorAction SilentlyContinue
+        $TaskFullPath = "$($Task.TaskPath)$($Task.TaskName)"
         $Actions = $Task.Actions
+
+        # Skip known legitimate Windows tasks
+        $IsLegitimate = $false
+        foreach ($LegitPath in $LegitimateTaskPaths) {
+            if ($TaskFullPath -like "*$LegitPath*") {
+                $IsLegitimate = $true
+                break
+            }
+        }
 
         foreach ($Action in $Actions) {
             $ActionPath = "$($Action.Execute) $($Action.Arguments)"
             $IsSuspicious = $false
+            $SuspicionReason = ""
 
-            foreach ($Pattern in $SuspiciousTaskPatterns) {
-                if ($ActionPath -like "*$Pattern*") {
+            # Check high-risk patterns (always flag)
+            foreach ($Pattern in $HighRiskPatterns) {
+                if ($ActionPath -match $Pattern) {
                     $IsSuspicious = $true
+                    $SuspicionReason = "High-risk pattern: $Pattern"
                     break
+                }
+            }
+
+            # Check suspicious patterns (only if not legitimate task)
+            if (-not $IsSuspicious -and -not $IsLegitimate) {
+                foreach ($Pattern in $SuspiciousPatterns) {
+                    if ($ActionPath -match $Pattern) {
+                        $IsSuspicious = $true
+                        $SuspicionReason = "Suspicious pattern: $Pattern"
+                        break
+                    }
                 }
             }
 
             if ($IsSuspicious) {
                 $SuspiciousTaskCount++
-                Add-CheckResult -Category "Tasks" -Check "Suspicious Task" -Status "WARNING" -Details "$($Task.TaskPath)$($Task.TaskName): $ActionPath"
+                Add-CheckResult -Category "Tasks" -Check "Suspicious Task" -Status "WARNING" -Details "$TaskFullPath`: $ActionPath"
+
+                # Add remediation item
+                $taskName = $Task.TaskName
+                $taskPath = $Task.TaskPath
+                Add-RemediationItem -Category "Scheduled Task" `
+                    -Description "$TaskFullPath - $SuspicionReason" `
+                    -Risk "High" `
+                    -ActionDescription "Disable scheduled task (can be re-enabled if legitimate)" `
+                    -Action ([scriptblock]::Create("Disable-ScheduledTask -TaskName '$taskName' -TaskPath '$taskPath'"))
             }
         }
     } catch {}
@@ -980,7 +1139,7 @@ foreach ($Task in $Tasks) {
 if ($SuspiciousTaskCount -eq 0) {
     Add-CheckResult -Category "Tasks" -Check "Scheduled Tasks" -Status "PASS" -Details "No suspicious patterns detected in active tasks"
 } else {
-    Write-Report -Message "  Found $SuspiciousTaskCount task(s) with suspicious patterns - review recommended" -Status "WARNING"
+    Write-Report -Message "  Found $SuspiciousTaskCount task(s) with suspicious patterns" -Status "WARNING"
 }
 
 # ============================================================================
@@ -988,33 +1147,88 @@ if ($SuspiciousTaskCount -eq 0) {
 # ============================================================================
 Write-Report -Message "`n=== STARTUP ITEMS ===" -Status "HEADER"
 
-$StartupPaths = @(
-    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
-    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
-    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"
+# Known legitimate startup items
+$LegitimateStartupNames = @(
+    "SecurityHealth", "Windows Defender", "WindowsDefender",
+    "iTunesHelper", "Adobe", "Acrobat", "Google", "Microsoft",
+    "Realtek", "Intel", "NVIDIA", "AMD", "Logitech", "Synaptics",
+    "Brother", "HP", "Canon", "Epson", "Dell", "Lenovo", "ASUS"
 )
 
-foreach ($Path in $StartupPaths) {
+# Suspicious patterns for startup items
+$StartupSuspiciousPatterns = @(
+    "\\Temp\\", "\\AppData\\Local\\Temp\\",
+    "powershell.*-enc", "powershell.*-nop", "powershell.*hidden",
+    "cmd\.exe.*/c", "mshta", "wscript.*http", "cscript.*http",
+    "regsvr32.*/s", "certutil", "bitsadmin",
+    "\\Users\\Public\\", "pastebin\.com", "bit\.ly"
+)
+
+$StartupPaths = @(
+    @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; Scope = "Machine" },
+    @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"; Scope = "Machine" },
+    @{ Path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; Scope = "User" },
+    @{ Path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"; Scope = "User" },
+    @{ Path = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"; Scope = "Machine (32-bit)" }
+)
+
+foreach ($PathInfo in $StartupPaths) {
+    $Path = $PathInfo.Path
     $Items = Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue
     if ($Items) {
         $Props = $Items.PSObject.Properties | Where-Object { $_.Name -notlike "PS*" }
         foreach ($Prop in $Props) {
+            $Name = $Prop.Name
             $Value = $Prop.Value
             $IsSuspicious = $false
+            $SuspicionReason = ""
 
-            foreach ($Pattern in $SuspiciousTaskPatterns) {
-                if ($Value -like "*$Pattern*") {
-                    $IsSuspicious = $true
+            # Check if it's a known legitimate startup
+            $IsLegitimate = $false
+            foreach ($LegitName in $LegitimateStartupNames) {
+                if ($Name -match $LegitName -or $Value -match $LegitName) {
+                    $IsLegitimate = $true
                     break
                 }
             }
 
+            # Check for suspicious patterns
+            foreach ($Pattern in $StartupSuspiciousPatterns) {
+                if ($Value -match $Pattern) {
+                    $IsSuspicious = $true
+                    $SuspicionReason = "Matches suspicious pattern: $Pattern"
+                    break
+                }
+            }
+
+            # Check if exe exists and is signed (for non-legitimate items)
+            if (-not $IsLegitimate -and -not $IsSuspicious) {
+                $ExePath = $Value -replace '^"([^"]+)".*', '$1' -replace "^'([^']+)'.*", '$1' -replace ' .*$', ''
+                if ($ExePath -and (Test-Path $ExePath -ErrorAction SilentlyContinue)) {
+                    $Sig = Get-AuthenticodeSignature -FilePath $ExePath -ErrorAction SilentlyContinue
+                    if ($Sig.Status -ne "Valid") {
+                        $IsSuspicious = $true
+                        $SuspicionReason = "Unsigned or invalid signature"
+                    }
+                } elseif ($ExePath -and $ExePath -notmatch "^%") {
+                    $IsSuspicious = $true
+                    $SuspicionReason = "Executable not found: $ExePath"
+                }
+            }
+
             if ($IsSuspicious) {
-                Add-CheckResult -Category "Startup" -Check "Startup Item" -Status "WARNING" -Details "$($Prop.Name): $Value"
+                Add-CheckResult -Category "Startup" -Check "Startup Item" -Status "WARNING" -Details "$Name`: $Value"
+
+                # Add remediation item
+                $regPath = $Path
+                $propName = $Name
+                Add-RemediationItem -Category "Startup Item ($($PathInfo.Scope))" `
+                    -Description "$Name - $SuspicionReason" `
+                    -Risk "High" `
+                    -ActionDescription "Remove startup entry from registry" `
+                    -Action ([scriptblock]::Create("Remove-ItemProperty -Path '$regPath' -Name '$propName' -Force"))
             } else {
-                Add-CheckResult -Category "Startup" -Check "Startup Item" -Status "INFO" -Details "$($Prop.Name): $Value"
+                Add-CheckResult -Category "Startup" -Check "Startup Item" -Status "INFO" -Details "$Name`: $Value"
             }
         }
     }
@@ -2206,6 +2420,14 @@ try {
                     if ($Debugger -notmatch "(devenv|vsjitdebugger|windbg|ntsd|cdb|procdump)") {
                         Add-CheckResult -Category "IFEO" -Check "Debugger Hijack" -Status "FAIL" -Details "$ExeName -> $Debugger"
                         $IFEOIssuesFound = $true
+
+                        # Add remediation item
+                        $regPath = $Entry.PSPath
+                        Add-RemediationItem -Category "IFEO Debugger Hijack" `
+                            -Description "$ExeName hijacked by: $Debugger" `
+                            -Risk "High" `
+                            -ActionDescription "Remove Debugger value from IFEO registry key" `
+                            -Action ([scriptblock]::Create("Remove-ItemProperty -Path '$regPath' -Name 'Debugger' -Force"))
                     }
                 }
 
@@ -2218,6 +2440,14 @@ try {
                         if ($MonitorProcess) {
                             Add-CheckResult -Category "IFEO" -Check "Silent Process Exit" -Status "WARNING" -Details "$ExeName monitored by $MonitorProcess"
                             $IFEOIssuesFound = $true
+
+                            # Add remediation item
+                            $spePath = $SilentProcessExitPath
+                            Add-RemediationItem -Category "SilentProcessExit Monitor" `
+                                -Description "$ExeName monitored by $MonitorProcess" `
+                                -Risk "Medium" `
+                                -ActionDescription "Remove SilentProcessExit registry key for $ExeName" `
+                                -Action ([scriptblock]::Create("Remove-Item -Path '$spePath' -Recurse -Force"))
                         }
                     }
                 }
@@ -2407,6 +2637,25 @@ if ($JsonOutput) {
 
 Write-Host ""
 Write-Host "  Report saved: $ReportFile" -ForegroundColor Gray
+
+# ============================================================================
+# REMEDIATION PHASE
+# ============================================================================
+if ($Script:RemediationItems.Count -gt 0) {
+    Write-Host ""
+    Write-Host "  --------------------------------------------------------------------------------" -ForegroundColor DarkGray
+    $response = ""
+    while ($response -notmatch "^[YN]$") {
+        Write-Host "  $($Script:RemediationItems.Count) issue(s) can be fixed. Enter remediation phase? [Y/N]: " -NoNewline -ForegroundColor Yellow
+        $response = (Read-Host).ToUpper()
+    }
+    if ($response -eq "Y") {
+        Invoke-Remediation
+    } else {
+        Write-Host "  Remediation skipped." -ForegroundColor Gray
+    }
+}
+
 Write-Host ""
 
 #endregion
