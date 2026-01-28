@@ -2186,38 +2186,52 @@ Write-Report -Message "" -Status "INFO"
 Write-Report -Message "  Checking Image File Execution Options for abuse..." -Status "INFO"
 
 $IFEOPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+$IFEOIssuesFound = $false
 
-if (Test-Path $IFEOPath) {
-    $IFEOEntries = Get-ChildItem -Path $IFEOPath -ErrorAction SilentlyContinue
+try {
+    if (Test-Path $IFEOPath) {
+        $IFEOEntries = Get-ChildItem -Path $IFEOPath -ErrorAction SilentlyContinue
 
-    foreach ($Entry in $IFEOEntries) {
-        $Debugger = (Get-ItemProperty -Path $Entry.PSPath -Name "Debugger" -ErrorAction SilentlyContinue).Debugger
-        $GlobalFlag = (Get-ItemProperty -Path $Entry.PSPath -Name "GlobalFlag" -ErrorAction SilentlyContinue).GlobalFlag
+        foreach ($Entry in $IFEOEntries) {
+            try {
+                $ExeName = $Entry.PSChildName
+                if (-not $ExeName) { continue }
 
-        # Check for debugger hijacking
-        if ($Debugger) {
-            $ExeName = Split-Path $Entry.PSPath -Leaf
+                $Debugger = (Get-ItemProperty -Path $Entry.PSPath -Name "Debugger" -ErrorAction SilentlyContinue).Debugger
+                $GlobalFlag = (Get-ItemProperty -Path $Entry.PSPath -Name "GlobalFlag" -ErrorAction SilentlyContinue).GlobalFlag
 
-            # Whitelist legitimate debuggers
-            if ($Debugger -notmatch "(devenv|vsjitdebugger|windbg|ntsd|cdb|procdump)") {
-                Add-CheckResult -Category "IFEO" -Check "Debugger Hijack" -Status "FAIL" -Details "$ExeName -> $Debugger"
-            }
-        }
-
-        # GlobalFlag for monitoring (sometimes abused)
-        if ($GlobalFlag) {
-            $ExeName = Split-Path $Entry.PSPath -Leaf
-
-            # Check SilentProcessExit monitoring (separate registry location)
-            $SilentProcessExitPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\$ExeName"
-            if (Test-Path $SilentProcessExitPath) {
-                $MonitorProcess = (Get-ItemProperty -Path $SilentProcessExitPath -Name "MonitorProcess" -ErrorAction SilentlyContinue).MonitorProcess
-                if ($MonitorProcess) {
-                    Add-CheckResult -Category "IFEO" -Check "Silent Process Exit" -Status "WARNING" -Details "$ExeName: Monitored by $MonitorProcess"
+                # Check for debugger hijacking
+                if ($Debugger) {
+                    # Whitelist legitimate debuggers
+                    if ($Debugger -notmatch "(devenv|vsjitdebugger|windbg|ntsd|cdb|procdump)") {
+                        Add-CheckResult -Category "IFEO" -Check "Debugger Hijack" -Status "FAIL" -Details "$ExeName -> $Debugger"
+                        $IFEOIssuesFound = $true
+                    }
                 }
+
+                # GlobalFlag for monitoring (sometimes abused)
+                if ($GlobalFlag) {
+                    # Check SilentProcessExit monitoring (separate registry location)
+                    $SilentProcessExitPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit\$ExeName"
+                    if (Test-Path $SilentProcessExitPath -ErrorAction SilentlyContinue) {
+                        $MonitorProcess = (Get-ItemProperty -Path $SilentProcessExitPath -Name "MonitorProcess" -ErrorAction SilentlyContinue).MonitorProcess
+                        if ($MonitorProcess) {
+                            Add-CheckResult -Category "IFEO" -Check "Silent Process Exit" -Status "WARNING" -Details "$ExeName monitored by $MonitorProcess"
+                            $IFEOIssuesFound = $true
+                        }
+                    }
+                }
+            } catch {
+                # Skip individual entry errors
             }
         }
     }
+} catch {
+    Add-CheckResult -Category "IFEO" -Check "IFEO Check" -Status "INFO" -Details "Unable to check IFEO registry"
+}
+
+if (-not $IFEOIssuesFound) {
+    Add-CheckResult -Category "IFEO" -Check "IFEO Check" -Status "PASS" -Details "No suspicious IFEO entries found"
 }
 
 # ============================================================================
