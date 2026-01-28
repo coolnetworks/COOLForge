@@ -10,9 +10,10 @@ setlocal
 
 title Security Baseline Checker
 
-:: Get the directory where this script is located
+:: Get the directory where this script is located (remove trailing backslash)
 set "SCRIPT_DIR=%~dp0"
-set "PS_SCRIPT=%SCRIPT_DIR%Check-SecurityBaseline.ps1"
+if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+set "PS_SCRIPT=%SCRIPT_DIR%\Check-SecurityBaseline.ps1"
 
 :: Check if PowerShell script exists
 if not exist "%PS_SCRIPT%" (
