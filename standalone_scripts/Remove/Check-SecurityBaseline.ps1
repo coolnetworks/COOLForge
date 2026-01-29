@@ -77,6 +77,7 @@ if ([string]::IsNullOrEmpty($OutputPath)) {
 $Timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
 $ReportFile = Join-Path $OutputPath "SecurityBaseline-$Timestamp.txt"
 $JsonFile = Join-Path $OutputPath "SecurityBaseline-$Timestamp.json"
+$HashFile = Join-Path $OutputPath "SuspiciousHashes-$Timestamp.txt"
 
 # Results collection
 $Results = @{
@@ -173,6 +174,53 @@ function Add-RemediationItem {
         Risk = $Risk
         Action = $Action
         ActionDescription = $ActionDescription
+    }
+}
+
+# Hash logging for suspicious files - outputs to SuspiciousHashes-*.txt for VirusTotal checking
+$Script:HashCount = 0
+$Script:HashFileInitialized = $false
+
+function Add-SuspiciousHash {
+    param(
+        [string]$FilePath,
+        [string]$Category,
+        [string]$Reason
+    )
+
+    if (-not (Test-Path $FilePath)) { return }
+
+    try {
+        # Initialize hash file on first use
+        if (-not $Script:HashFileInitialized) {
+            $Header = @"
+================================================================================
+SUSPICIOUS FILE HASHES - $($env:COMPUTERNAME)
+================================================================================
+Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+
+Check these hashes at: https://www.virustotal.com/gui/home/search
+Or use: vt search <hash> (if you have VT CLI installed)
+
+FORMAT: MD5 | SHA256 | Size | Category | Path
+================================================================================
+
+"@
+            $Header | Out-File -FilePath $HashFile -Encoding UTF8
+            $Script:HashFileInitialized = $true
+        }
+
+        $FileInfo = Get-Item $FilePath
+        $MD5 = (Get-FileHash -Path $FilePath -Algorithm MD5).Hash
+        $SHA256 = (Get-FileHash -Path $FilePath -Algorithm SHA256).Hash
+        $Size = "{0:N0} bytes" -f $FileInfo.Length
+
+        $HashEntry = "$MD5 | $SHA256 | $Size | $Category | $FilePath"
+        Add-Content -Path $HashFile -Value $HashEntry
+        $Script:HashCount++
+
+    } catch {
+        # Silently skip files we can't hash (locked, access denied, etc.)
     }
 }
 
@@ -585,10 +633,17 @@ if (-not $KeyloggerFound) {
 # Check for processes with keyboard hook capabilities (SetWindowsHookEx indicators)
 Write-Report -Message "  Checking for processes loaded in multiple contexts (hook indicator)..." -Status "INFO"
 
-# Look for suspicious DLLs that might be injected
+# Look for suspicious DLLs that might be injected (excluding legitimate Windows DLLs)
 $SuspiciousDLLs = @(
-    "hook.dll", "keyhook.dll", "kbhook.dll", "keyboard.dll",
-    "logger.dll", "capture.dll", "monitor.dll", "spy.dll"
+    "hook.dll", "keyhook.dll", "kbhook.dll",
+    "keylogger.dll", "capture.dll", "spy.dll"
+)
+# Legitimate Windows DLLs to ignore (even if name contains suspicious patterns)
+$LegitMonitorDLLs = @(
+    "MsCtfMonitor.dll",      # Windows Text Services Framework
+    "InprocLogger.dll",      # Windows component
+    "PerfMonitor.dll",       # Windows Performance Monitor
+    "WmiPerfClass.dll"       # WMI Performance
 )
 
 $LoadedModules = Get-Process | ForEach-Object {
@@ -600,10 +655,20 @@ $LoadedModules = Get-Process | ForEach-Object {
 $HookDLLFound = $false
 foreach ($Module in $LoadedModules) {
     $ModLower = $Module.ModuleName.ToLower()
-    foreach ($DLL in $SuspiciousDLLs) {
-        if ($ModLower -like "*$DLL*") {
-            Add-CheckResult -Category "Keylogger" -Check "Suspicious DLL" -Status "WARNING" -Details "POTENTIAL HOOK DLL: $($Module.ModuleName) - $($Module.FileName)"
-            $HookDLLFound = $true
+    # Skip known legitimate Windows DLLs
+    $IsLegit = $false
+    foreach ($LegitDLL in $LegitMonitorDLLs) {
+        if ($Module.ModuleName -eq $LegitDLL) {
+            $IsLegit = $true
+            break
+        }
+    }
+    if (-not $IsLegit) {
+        foreach ($DLL in $SuspiciousDLLs) {
+            if ($ModLower -like "*$DLL*") {
+                Add-CheckResult -Category "Keylogger" -Check "Suspicious DLL" -Status "WARNING" -Details "POTENTIAL HOOK DLL: $($Module.ModuleName) - $($Module.FileName)"
+                $HookDLLFound = $true
+            }
         }
     }
 }
@@ -621,7 +686,8 @@ $KbdDrivers = Get-WmiObject Win32_SystemDriver | Where-Object {
     $_.PathName -like "*kbfiltr*"
 }
 
-$StandardKbdDrivers = @("kbdclass", "kbdhid", "i8042prt")
+# Standard Windows keyboard drivers including Hyper-V and wireless
+$StandardKbdDrivers = @("kbdclass", "kbdhid", "i8042prt", "hyperkbd", "wirelesskeyboardfilter", "hidclass")
 foreach ($Driver in $KbdDrivers) {
     if ($StandardKbdDrivers -contains $Driver.Name.ToLower()) {
         Add-CheckResult -Category "Keylogger" -Check "Keyboard Driver" -Status "PASS" -Details "$($Driver.Name) (Standard Windows driver)"
@@ -829,11 +895,17 @@ Write-Report -Message "  Checking for suspicious root certificates..." -Status "
 # Get non-Microsoft root certificates
 $RootCerts = Get-ChildItem -Path Cert:\LocalMachine\Root
 
-# Known legitimate third-party root CAs (partial list)
+# Known legitimate third-party root CAs (comprehensive list)
 $KnownLegitCAs = @(
     "DigiCert", "GlobalSign", "Comodo", "GoDaddy", "Entrust", "Thawte",
     "VeriSign", "GeoTrust", "Symantec", "StartCom", "ISRG", "Let's Encrypt",
-    "Amazon", "Google Trust", "Apple", "Sectigo", "QuoVadis", "IdenTrust"
+    "Amazon", "Google Trust", "Apple", "Sectigo", "QuoVadis", "IdenTrust",
+    "DST Root", "Baltimore", "CyberTrust", "USERTrust", "SSL.com", "Starfield",
+    "SecureTrust", "Certum", "Unizeto", "SECOM", "T-TeleSec", "Deutsche Telekom",
+    "Hotspot 2.0", "WFA", "Buypass", "AddTrust", "Trustwave", "Network Solutions",
+    "SwissSign", "Sonera", "Staat der Nederlanden", "ACCV", "FNMT", "AC Camerfirma",
+    "Autoridad", "Certigna", "E-Tugra", "emSign", "GDCA", "Hongkong Post",
+    "Izenpe", "Krajowa Izba", "NetLock", "OISTE", "PKI", "TWCA", "TrustCor"
 )
 
 $SuspiciousCerts = @()
@@ -925,11 +997,29 @@ $WMIFilters = Get-WmiObject -Namespace root\subscription -Class __EventFilter -E
 $WMIConsumers = Get-WmiObject -Namespace root\subscription -Class __EventConsumer -ErrorAction SilentlyContinue
 $WMIBindings = Get-WmiObject -Namespace root\subscription -Class __FilterToConsumerBinding -ErrorAction SilentlyContinue
 
+# Known legitimate Windows WMI subscriptions to ignore
+$LegitWMIFilters = @(
+    "SCM Event Log Filter",           # Service Control Manager logging
+    "BVTFilter",                       # Windows built-in
+    "Microsoft-Windows-*",            # Windows components
+    "WMI Event Filter"                # Standard Windows
+)
+
 $WMIPersistence = @()
 
 if ($WMIFilters) {
     foreach ($Filter in $WMIFilters) {
-        $WMIPersistence += "Filter: $($Filter.Name) - Query: $($Filter.Query)"
+        # Skip known legitimate filters
+        $IsLegit = $false
+        foreach ($LegitFilter in $LegitWMIFilters) {
+            if ($Filter.Name -like $LegitFilter) {
+                $IsLegit = $true
+                break
+            }
+        }
+        if (-not $IsLegit) {
+            $WMIPersistence += "Filter: $($Filter.Name) - Query: $($Filter.Query)"
+        }
     }
 }
 
@@ -1362,6 +1452,7 @@ foreach ($SysPath in $SystemPaths) {
 
             if ($SignStatus -eq "UNSIGNED") {
                 Add-CheckResult -Category "RecentExe" -Check "Modified Executable" -Status "WARNING" -Details "UNSIGNED: $($Exe.FullName) - Modified: $($Exe.LastWriteTime)"
+                Add-SuspiciousHash -FilePath $Exe.FullName -Category "UnsignedRecentExe" -Reason "Unsigned executable modified recently"
             } else {
                 Add-CheckResult -Category "RecentExe" -Check "Modified Executable" -Status "INFO" -Details "$($Exe.Name) - $($Exe.LastWriteTime) ($SignStatus)"
             }
@@ -1392,10 +1483,16 @@ $ADSPaths = @(
 $ADSCount = 0
 foreach ($ADSPath in $ADSPaths) {
     if (Test-Path $ADSPath) {
-        # Get files with alternate data streams (excluding Zone.Identifier which is normal)
+        # Get files with alternate data streams (excluding common legitimate streams)
+        # Zone.Identifier = download source tracking
+        # SmartScreen = Windows SmartScreen metadata
+        # StreamedFileState = OneDrive/cloud sync state
+        # SummaryInformation = Office document metadata
         $FilesWithADS = Get-ChildItem -Path $ADSPath -File -ErrorAction SilentlyContinue | ForEach-Object {
             $Streams = Get-Item -Path $_.FullName -Stream * -ErrorAction SilentlyContinue |
-                Where-Object { $_.Stream -ne ':$DATA' -and $_.Stream -ne 'Zone.Identifier' }
+                Where-Object { $_.Stream -ne ':$DATA' -and $_.Stream -ne 'Zone.Identifier' -and
+                               $_.Stream -ne 'SmartScreen' -and $_.Stream -ne 'StreamedFileState' -and
+                               $_.Stream -notlike '*SummaryInformation*' }
             if ($Streams) {
                 [PSCustomObject]@{
                     File = $_.FullName
@@ -1530,12 +1627,26 @@ if ($NetshHelpers) {
         # Expand environment variables
         $DLLPath = [Environment]::ExpandEnvironmentVariables($DLLPath)
 
+        # If just a filename (no path), assume it's in System32
+        if (-not ($DLLPath -like "*\*" -or $DLLPath -like "*/*")) {
+            $FullPath = Join-Path $env:SystemRoot "System32\$DLLPath"
+            if (Test-Path $FullPath) {
+                $Sig = Get-AuthenticodeSignature -FilePath $FullPath -ErrorAction SilentlyContinue
+                if ($Sig.Status -eq "Valid" -and $Sig.SignerCertificate.Subject -like "*Microsoft*") {
+                    # Standard Windows netsh helper - don't report (too noisy)
+                } else {
+                    Add-CheckResult -Category "Netsh" -Check "Netsh Helper" -Status "WARNING" -Details "$($Prop.Name) - $FullPath (Non-Microsoft or unsigned)"
+                }
+            } else {
+                Add-CheckResult -Category "Netsh" -Check "Netsh Helper" -Status "WARNING" -Details "$($Prop.Name) - $DLLPath (DLL not found in System32)"
+            }
+        }
         # Check if it's in System32 (expected location)
-        if ($DLLPath -like "*System32*" -or $DLLPath -like "*system32*") {
+        elseif ($DLLPath -like "*System32*" -or $DLLPath -like "*system32*") {
             if (Test-Path $DLLPath) {
                 $Sig = Get-AuthenticodeSignature -FilePath $DLLPath -ErrorAction SilentlyContinue
                 if ($Sig.Status -eq "Valid" -and $Sig.SignerCertificate.Subject -like "*Microsoft*") {
-                    Add-CheckResult -Category "Netsh" -Check "Netsh Helper" -Status "PASS" -Details "$($Prop.Name) - $DLLPath (Microsoft signed)"
+                    # Standard Windows netsh helper - don't report (too noisy)
                 } else {
                     Add-CheckResult -Category "Netsh" -Check "Netsh Helper" -Status "WARNING" -Details "$($Prop.Name) - $DLLPath (Non-Microsoft or unsigned)"
                 }
@@ -1709,11 +1820,12 @@ foreach ($TempInfo in $TempPaths) {
 
         Add-CheckResult -Category "TempFiles" -Check "Temp Folder" -Status $Status -Details $Details
 
-        # List executables in temp
+        # List executables in temp and hash them
         if ($ExeCount -gt 0 -and $TempInfo.Name -ne "Prefetch") {
             $Exes = $Files | Where-Object { $_.Extension -match "\.(exe|dll|scr)$" } | Select-Object -First 10
             foreach ($Exe in $Exes) {
                 Add-CheckResult -Category "TempFiles" -Check "Temp Executable" -Status "WARNING" -Details "$($Exe.FullName) ($([math]::Round($Exe.Length/1KB, 2)) KB)"
+                Add-SuspiciousHash -FilePath $Exe.FullName -Category "TempExecutable" -Reason "Executable in temp folder"
             }
         }
     }
@@ -2132,10 +2244,11 @@ foreach ($Loc in $SuspiciousLocations) {
         if ($Executables.Count -gt 0) {
             Add-CheckResult -Category "SuspiciousExe" -Check "Location Check" -Status "WARNING" -Details "$($Loc.Name): $($Executables.Count) executables found"
 
-            # List first 5
+            # List first 5 and hash them
             foreach ($Exe in ($Executables | Select-Object -First 5)) {
                 $SizeKB = [math]::Round($Exe.Length / 1KB, 2)
                 Add-CheckResult -Category "SuspiciousExe" -Check "Suspicious File" -Status "WARNING" -Details "$($Exe.FullName) ($SizeKB KB)"
+                Add-SuspiciousHash -FilePath $Exe.FullName -Category "SuspiciousLocation" -Reason $Loc.Name
             }
         }
     }
@@ -2284,16 +2397,17 @@ Write-Report -Message "  Finding these files means the system is compromised and
 Write-Report -Message "" -Status "INFO"
 Write-Report -Message "  Checking for ransomware indicators..." -Status "INFO"
 
-# Known ransomware file extensions
+# Known ransomware file extensions (excluding .mp3 which is legitimate audio format)
 $RansomwareExtensions = @(
-    ".locky", ".zepto", ".cerber", ".cerber2", ".cerber3", ".crypt", ".crypted", ".encrypted",
-    ".enc", ".locked", ".crypto", ".crinf", ".r5a", ".XRNT", ".XTBL", ".crypt", ".R16M01D05",
+    ".locky", ".zepto", ".cerber", ".cerber2", ".cerber3", ".crypt", ".crypted",
+    ".enc", ".locked", ".crypto", ".crinf", ".r5a", ".XRNT", ".XTBL", ".R16M01D05",
     ".pzdc", ".good", ".LOL!", ".OMG!", ".RDM", ".RRK", ".encryptedRSA", ".crysis", ".dharma",
-    ".wallet", ".onion", ".zzzzz", ".micro", ".xxx", ".ttt", ".mp3", ".osiris", ".thor",
+    ".wallet", ".onion", ".zzzzz", ".micro", ".xxx", ".ttt", ".osiris", ".thor",
     ".aesir", ".odin", ".shit", ".amber", ".wncry", ".wcry", ".wanna", ".wannacry",
     ".petya", ".notpetya", ".GandCrab", ".KRAB", ".CRAB", ".sage", ".globe", ".ryuk",
     ".RYK", ".maze", ".egregor", ".conti", ".lockbit", ".blackcat", ".alphv"
 )
+# Note: .encrypted removed - too many false positives with Excel temp files (~$*.xlsx.encrypted)
 
 $RansomwareFound = 0
 $SearchPaths = @("$env:USERPROFILE\Documents", "$env:USERPROFILE\Desktop", "$env:PUBLIC\Documents")
@@ -2311,11 +2425,12 @@ foreach ($SearchPath in $SearchPaths) {
     }
 }
 
-# Check for ransom notes
+# Check for ransom notes (specific patterns, not generic folder names)
 $RansomNotePatterns = @(
-    "README.txt", "DECRYPT*.txt", "HOW_TO_DECRYPT*", "HELP_DECRYPT*", "RECOVERY*.txt",
-    "RESTORE*.txt", "_readme.txt", "!!!*.txt", "@Please_Read_Me@*", "HELP_YOUR_FILES*",
-    "YOUR_FILES_ARE*", "*RANSOM*", "*DECRYPT_INSTRUCTION*", "!*!", "_HELP_*"
+    "DECRYPT*.txt", "HOW_TO_DECRYPT*.txt", "HELP_DECRYPT*.txt", "RECOVERY_*.txt",
+    "RESTORE_*.txt", "_readme.txt", "@Please_Read_Me@*.txt", "HELP_YOUR_FILES*.txt",
+    "YOUR_FILES_ARE*.txt", "*RANSOM*.txt", "*DECRYPT_INSTRUCTION*.txt", "_HELP_*.txt",
+    "!README!.txt", "!!!README!!!.txt", "READ_ME_*.txt", "*_RECOVER_*.txt"
 )
 
 foreach ($SearchPath in $SearchPaths) {
@@ -2637,6 +2752,16 @@ if ($JsonOutput) {
 
 Write-Host ""
 Write-Host "  Report saved: $ReportFile" -ForegroundColor Gray
+
+# Output hash file summary
+if ($Script:HashCount -gt 0) {
+    Write-Host "  Hashes saved: $HashFile ($Script:HashCount files)" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  To check hashes against VirusTotal:" -ForegroundColor Cyan
+    Write-Host "    1. Visit https://www.virustotal.com/gui/home/search" -ForegroundColor Gray
+    Write-Host "    2. Paste MD5 or SHA256 hash from the file" -ForegroundColor Gray
+    Write-Host "    3. Review detection results" -ForegroundColor Gray
+}
 
 # ============================================================================
 # REMEDIATION PHASE
