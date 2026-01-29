@@ -5,7 +5,7 @@ setlocal
 :: Security Baseline Checker - Launcher Script
 :: ============================================================================
 :: Runs the comprehensive 36-section Windows security audit.
-:: Report is saved to the same directory as this script.
+:: Report is saved to the Logs subfolder.
 :: ============================================================================
 
 title Security Baseline Checker
@@ -14,6 +14,10 @@ title Security Baseline Checker
 set "SCRIPT_DIR=%~dp0"
 if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 set "PS_SCRIPT=%SCRIPT_DIR%\Check-SecurityBaseline.ps1"
+set "LOG_DIR=%SCRIPT_DIR%\Logs"
+
+:: Create logs directory if it doesn't exist
+if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 
 :: Check if PowerShell script exists
 if not exist "%PS_SCRIPT%" (
@@ -60,7 +64,7 @@ echo.
 echo   A temporary Defender exclusion will be added to prevent false positives.
 echo   It will be automatically removed when the scan completes.
 echo.
-echo   Report will be saved to: %SCRIPT_DIR%
+echo   Report will be saved to: %LOG_DIR%
 echo.
 echo  ================================================================================
 echo.
@@ -84,7 +88,7 @@ echo  ==========================================================================
 echo.
 
 :: Run the PowerShell script
-powershell.exe -ExecutionPolicy Bypass -NoProfile -File "%PS_SCRIPT%" -OutputPath "%SCRIPT_DIR%"
+powershell.exe -ExecutionPolicy Bypass -NoProfile -File "%PS_SCRIPT%" -OutputPath "%LOG_DIR%"
 set "SCAN_EXIT=%errorlevel%"
 
 echo.
@@ -100,7 +104,7 @@ echo  ==========================================================================
 echo   SCAN COMPLETE
 echo  ================================================================================
 echo.
-echo   Report saved to: %SCRIPT_DIR%
+echo   Report saved to: %LOG_DIR%
 echo   Look for: SecurityBaseline-*.txt
 echo.
 pause
