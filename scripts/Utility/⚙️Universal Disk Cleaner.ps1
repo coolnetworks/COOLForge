@@ -1,4 +1,4 @@
-<#
+﻿<#
 COOLNETWORKS - Universal Disk Cleaner
 Purpose:
   - Aggressively cleans temp files, caches, and junk from all user profiles

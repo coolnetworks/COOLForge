@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Gets all custom field values for all devices, showing inheritance level.
 .DESCRIPTION

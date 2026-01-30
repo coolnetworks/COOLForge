@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Sends Wake-on-LAN (WOL) packets to all devices within a Level.io folder hierarchy.
 

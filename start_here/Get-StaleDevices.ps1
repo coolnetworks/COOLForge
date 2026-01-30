@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Lists devices that have been offline for more than a specified number of days.
 

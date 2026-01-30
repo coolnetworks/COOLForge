@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Monitors DNS server configuration for compliance.
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Syncs Level.io-provided data to local registry cache.
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Ensures Windows Defender is enabled and running on all Windows variants.
 

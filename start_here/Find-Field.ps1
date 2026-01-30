@@ -1,4 +1,4 @@
-param([string]$FieldName = "huntress_organization_key")
+﻿param([string]$FieldName = "huntress_organization_key")
 
 Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1") -Force -DisableNameChecking
 

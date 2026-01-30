@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Removes unauthorized ScreenConnect (ConnectWise Control) instances while preserving your MSP instance.
 

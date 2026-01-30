@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Removes deprecated/legacy custom fields from Level.io.
 

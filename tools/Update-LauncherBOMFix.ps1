@@ -1,4 +1,4 @@
-# Update-LauncherBOMFix.ps1
+﻿# Update-LauncherBOMFix.ps1
 # Applies BOM handling fix to all launchers in the repo
 #
 # The fix:

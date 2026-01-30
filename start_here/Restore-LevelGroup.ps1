@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Restores a Level.io group hierarchy from backup with a new base name.
 

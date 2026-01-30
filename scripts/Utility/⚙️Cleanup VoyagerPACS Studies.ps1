@@ -1,4 +1,4 @@
-<#
+﻿<#
 COOLNETWORKS - Cleanup VoyagerPACS Studies
 Purpose:
   - Removes old study files from VoyagerPACS imaging folders

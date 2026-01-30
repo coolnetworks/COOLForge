@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Debug script to check screenconnect_url at all levels for a specific device.
 .DESCRIPTION

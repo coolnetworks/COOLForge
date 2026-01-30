@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Gets all ScreenConnect URL custom field values for devices.
 .DESCRIPTION

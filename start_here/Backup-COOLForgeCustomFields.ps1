@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Standalone backup and restore tool for Level.io custom fields.
 

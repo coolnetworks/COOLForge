@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Policy monitor that wakes peer devices tagged with a wake request.
 

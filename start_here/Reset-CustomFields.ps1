@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Resets all custom fields in Level.io based on definitions.
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Backs up a Level.io group hierarchy including subgroups and custom field values.
 

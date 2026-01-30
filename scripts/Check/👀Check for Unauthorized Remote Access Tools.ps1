@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Detects and optionally removes unauthorized remote access tools on the system.
 

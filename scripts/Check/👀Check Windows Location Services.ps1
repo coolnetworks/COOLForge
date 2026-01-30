@@ -1,4 +1,4 @@
-<#
+﻿<#
 COOLNETWORKS - Verbose Location Services Diagnostic (Windows 10/11)
 Purpose:
   - Verbosely checks every lever that affects Location:

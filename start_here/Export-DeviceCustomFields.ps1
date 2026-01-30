@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Exports all custom field values for every device to JSON.
 

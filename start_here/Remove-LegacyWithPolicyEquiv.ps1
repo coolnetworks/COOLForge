@@ -1,4 +1,4 @@
-Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1") -Force -DisableNameChecking
+﻿Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1") -Force -DisableNameChecking
 
 $ConfigPath = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"
 $Config = Get-Content $ConfigPath -Raw | ConvertFrom-Json

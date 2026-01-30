@@ -1,4 +1,4 @@
-# Update-LauncherCaching.ps1
+﻿# Update-LauncherCaching.ps1
 # Updates launchers to use smart caching: normal URL first, retry with cache-bust on hash mismatch
 
 param(

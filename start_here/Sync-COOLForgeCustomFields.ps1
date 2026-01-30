@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Ensures all COOLForge custom fields exist in Level.io.
 

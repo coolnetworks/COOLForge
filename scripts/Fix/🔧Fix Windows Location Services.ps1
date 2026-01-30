@@ -1,4 +1,4 @@
-<#
+﻿<#
 COOLNETWORKS - Fix Windows Location Services (Comprehensive)
 
 Purpose:

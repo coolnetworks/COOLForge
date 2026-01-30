@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Software policy enforcement for Unchecky.
 

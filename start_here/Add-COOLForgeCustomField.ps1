@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Interactive tool to add new custom fields or groups to the COOLForge config.
 

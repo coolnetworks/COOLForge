@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Tests methods for writing back to Level.io automation variables.
 

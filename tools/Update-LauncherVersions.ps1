@@ -1,4 +1,4 @@
-# Update-LauncherVersions.ps1
+﻿# Update-LauncherVersions.ps1
 # Updates launcher versions to specified version
 
 param(

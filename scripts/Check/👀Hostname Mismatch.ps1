@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Detects hostname mismatch between Level.io device name and Windows hostname.
 

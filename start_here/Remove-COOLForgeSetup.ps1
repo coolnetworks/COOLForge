@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Removes COOLForge custom fields and tags from Level.io.
 

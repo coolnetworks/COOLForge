@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Comprehensive test script for COOLForge-Common library via Script Launcher.
 

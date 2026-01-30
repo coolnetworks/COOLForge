@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Exports current Level.io custom field values to an answer file for Setup-COOLForge.ps1.
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Restores Level.io custom field values from an answer file backup.
 

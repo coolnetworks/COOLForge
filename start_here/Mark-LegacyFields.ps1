@@ -1,4 +1,4 @@
-Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1") -Force -DisableNameChecking
+﻿Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) "modules\COOLForge-Common.psm1") -Force -DisableNameChecking
 
 # Load saved config for API key
 $ConfigPath = Join-Path $PSScriptRoot ".COOLForge_Lib-setup.json"

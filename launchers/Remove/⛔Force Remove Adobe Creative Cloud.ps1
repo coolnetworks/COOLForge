@@ -1,7 +1,7 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Remove/â›”Force Remove Adobe Creative Cloud.ps1"
+$ScriptToRun = "⛔Force Remove Adobe Creative Cloud.ps1"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
@@ -18,7 +18,7 @@ $ScriptToRun = "Remove/â›”Force Remove Adobe Creative Cloud.ps1"
 #>
 
 $LauncherVersion = "2026.01.27.01"
-$LauncherName = "Remove/â›”Force Remove Adobe Creative Cloud.ps1"
+$LauncherName = "Remove/⛔Force Remove Adobe Creative Cloud.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

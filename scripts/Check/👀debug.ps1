@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Debug script for testing software policy enforcement.
 

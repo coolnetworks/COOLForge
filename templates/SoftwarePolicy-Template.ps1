@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Software policy enforcement for {{SOFTWARE_DISPLAY_NAME}}.
 

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Deletes all custom fields with empty values from Level.io
 

@@ -1,4 +1,4 @@
-# Update MD5SUMS file for the repository
+﻿# Update MD5SUMS file for the repository
 $RepoRoot = 'e:\COOLForge'
 Set-Location $RepoRoot
 

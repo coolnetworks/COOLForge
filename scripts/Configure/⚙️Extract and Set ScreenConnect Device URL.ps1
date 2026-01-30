@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Extracts the ScreenConnect GUID from registry and sets the device URL custom field.
 

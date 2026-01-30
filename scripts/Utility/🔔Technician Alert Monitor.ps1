@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Monitors for technician alerts and displays Windows toast notifications.
 

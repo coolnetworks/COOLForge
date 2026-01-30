@@ -1,4 +1,4 @@
-# Export-LevelAutomations.ps1
+﻿# Export-LevelAutomations.ps1
 # Exports all automations and scripts from Level.io via GraphQL API
 
 param(

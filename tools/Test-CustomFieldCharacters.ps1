@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Tests which characters Level.io accepts in custom field values
 
