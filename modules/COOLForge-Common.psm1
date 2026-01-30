@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.22.01
+    Version:    2026.01.30.01
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -6903,7 +6903,7 @@ function Invoke-ScriptLauncher {
 
     if (Test-Path $ScriptPath) {
         try {
-            $LocalScriptContent = Get-Content -Path $ScriptPath -Raw -ErrorAction Stop
+            $LocalScriptContent = [System.IO.File]::ReadAllText($ScriptPath, [System.Text.UTF8Encoding]::new($true))
             $LocalScriptVersion = Get-ScriptVersion -Content $LocalScriptContent -Source "local script"
         }
         catch {
@@ -6919,6 +6919,10 @@ function Invoke-ScriptLauncher {
     # Download script from GitHub
     try {
         $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15).Content
+        # Strip BOM from downloaded content (prevents encoding issues when caching)
+        if ($RemoteScriptContent -is [string] -and $RemoteScriptContent.Length -gt 0 -and $RemoteScriptContent[0] -eq [char]0xFEFF) {
+            $RemoteScriptContent = $RemoteScriptContent.Substring(1)
+        }
         $RemoteScriptVersion = Get-ScriptVersion -Content $RemoteScriptContent -Source "remote script"
 
         if ($RemoteScriptVersion) {
@@ -6936,15 +6940,15 @@ function Invoke-ScriptLauncher {
         if ($ScriptNeedsUpdate) {
             # Backup working local copy
             if ($LocalScriptVersion -and $LocalScriptContent) {
-                Set-Content -Path $ScriptBackupPath -Value $LocalScriptContent -Force -ErrorAction Stop
+                [System.IO.File]::WriteAllText($ScriptBackupPath, $LocalScriptContent, [System.Text.UTF8Encoding]::new($true))
             }
 
-            # Write new version
-            Set-Content -Path $ScriptPath -Value $RemoteScriptContent -Force -ErrorAction Stop
+            # Write new version (UTF-8 with BOM for emoji handling)
+            [System.IO.File]::WriteAllText($ScriptPath, $RemoteScriptContent, [System.Text.UTF8Encoding]::new($true))
 
             # Verify
             try {
-                $VerifyScriptContent = Get-Content -Path $ScriptPath -Raw -ErrorAction Stop
+                $VerifyScriptContent = [System.IO.File]::ReadAllText($ScriptPath, [System.Text.UTF8Encoding]::new($true))
                 if ($VerifyScriptContent.Length -lt 50) {
                     throw "Downloaded script appears to be empty or truncated"
                 }
@@ -6961,6 +6965,9 @@ function Invoke-ScriptLauncher {
                             $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
                             $CacheBustUrl = "$OriginalScriptUrl`?t=$CacheBuster"
                             $RemoteScriptContent = (Invoke-WebRequest -Uri $CacheBustUrl -UseBasicParsing -TimeoutSec 15).Content
+                            if ($RemoteScriptContent -is [string] -and $RemoteScriptContent.Length -gt 0 -and $RemoteScriptContent[0] -eq [char]0xFEFF) {
+                                $RemoteScriptContent = $RemoteScriptContent.Substring(1)
+                            }
                             $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
 
                             if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
@@ -7019,9 +7026,9 @@ function Invoke-ScriptLauncher {
     Write-Host "[*] Executing: $ScriptName"
     Write-Host "============================================================"
 
-    $ScriptContent = Get-Content -Path $ScriptPath -Raw
+    $ScriptContent = [System.IO.File]::ReadAllText($ScriptPath, [System.Text.UTF8Encoding]::new($true))
     # Strip UTF-8 BOM if present (prevents comment block parsing issues)
-    if ($ScriptContent.StartsWith([char]0xFEFF)) {
+    if ($ScriptContent.Length -gt 0 -and ($ScriptContent[0] -eq [char]0xFEFF -or $ScriptContent[0] -eq '?')) {
         $ScriptContent = $ScriptContent.Substring(1)
     }
 
@@ -7066,7 +7073,7 @@ $ScriptContent
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.01.21.01"
+$script:ModuleVersion = "2026.01.30.01"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================
