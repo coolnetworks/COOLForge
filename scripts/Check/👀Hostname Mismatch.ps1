@@ -278,13 +278,20 @@ Invoke-LevelScript -ScriptBlock {
         return
     }
 
-    # Mismatch detected
-    Write-Host "[Alert] Hostname mismatch: Windows='$WindowsHostname' Level='$LevelHostname'" -ForegroundColor Yellow
-    Write-LevelLog "Hostname mismatch: Windows='$WindowsHostname' Level='$LevelHostname'" -Level "WARN"
-
-    # Check for action tags
+    # Mismatch detected - check for action tags before alerting
     $HasRenameLevelTag = Find-TagInList -TagList $TagSource -SearchTag $TagRenameLevel
     $HasRenameWindowsTag = Find-TagInList -TagList $TagSource -SearchTag $TagRenameWindows
+
+    if ($HasRenameLevelTag -or $HasRenameWindowsTag -or $PolicyMode -ne "Monitor") {
+        # Action tag or auto mode will handle this - informational only
+        Write-Host ""
+        Write-Host "  Windows Hostname:  $WindowsHostname"
+        Write-Host "  Level.io Name:     $LevelHostname"
+        Write-LevelLog "Hostname mismatch: Windows='$WindowsHostname' Level='$LevelHostname' (resolving)" -Level "INFO"
+    } else {
+        Write-Host "[Alert] Hostname mismatch: Windows='$WindowsHostname' Level='$LevelHostname'" -ForegroundColor Yellow
+        Write-LevelLog "Hostname mismatch: Windows='$WindowsHostname' Level='$LevelHostname'" -Level "WARN"
+    }
 
     if ($HasRenameLevelTag) {
         # Rename Level.io device to match Windows hostname
