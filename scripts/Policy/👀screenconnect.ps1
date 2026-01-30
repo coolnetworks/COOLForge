@@ -646,7 +646,9 @@ $InvokeParams = @{ ScriptBlock = {
         # Use $TagName for tags (creates SC tags) but create custom fields manually
         $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
             -SoftwareName $TagName `
-            -RequireUrl $false
+            -RequireUrl $false `
+            -CustomFieldName "policy_$SoftwareName" `
+            -PolicyFieldValue $CustomFieldPolicy
 
         # Create ScreenConnect-specific custom fields (using "screenconnect" not "sc")
         # Use launcher variable values to detect if fields exist (no API calls needed)
@@ -876,6 +878,11 @@ $InvokeParams = @{ ScriptBlock = {
                 $ActionSuccess = $true
             }
         }
+    }
+    else {
+        # Policy says don't process (GlobalPin, Excluded, NotVerified) - not an error
+        Write-LevelLog "$($Policy.SkipReason)" -Level "INFO"
+        $ActionSuccess = $true
     }
 
     # ============================================================
