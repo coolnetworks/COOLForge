@@ -18,7 +18,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.31.01"
+$LauncherVersion = "2026.01.31.02"
 $LauncherName = "Test/👀Test Show Versions.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -225,17 +225,15 @@ if ($NeedsUpdate) {
 $ModuleContent = Get-Content -Path $LibraryPath -Raw
 New-Module -Name "COOLForge-Common" -ScriptBlock ([scriptblock]::Create($ModuleContent)) | Import-Module -Force
 
-# Check launcher version
+# Check launcher version (display at end of script)
+$LauncherOutdatedMsg = $null
 try {
     $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
     if ($RepoVersion -and ([version]$RepoVersion -gt [version]$LauncherVersion)) {
-        Write-Host ""
-        Write-Host "[!] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion"
-        Write-Host "[!] Update this script in Level.io from: launchers/$LauncherName"
-        Write-Host ""
+        $LauncherOutdatedMsg = "[Alert] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion - Update this script in Level.io from: launchers/$LauncherName"
     }
 } catch {
     if ($DebugScripts) { Write-Host "[DEBUG] Version check failed: $_" }
@@ -278,4 +276,5 @@ $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -LauncherVariables $LauncherVars `
                                    -DebugMode $DebugScripts
 
+if ($LauncherOutdatedMsg) { Write-Host $LauncherOutdatedMsg }
 exit $ExitCode
