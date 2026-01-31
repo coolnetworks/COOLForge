@@ -4679,6 +4679,7 @@ function Initialize-SoftwarePolicyInfrastructure {
     $FieldsCreated = 0
 
     Write-LevelLog "Initializing policy infrastructure for '$SoftwareName'..." -Level "INFO"
+    Write-LevelLog "CustomFieldName='$CustomFieldName' PolicyFieldValue='$PolicyFieldValue'" -Level "DEBUG"
 
     # NOTE: Global infrastructure (coolforge_* fields) should be set up via Setup-COOLForge.ps1
     # This function only handles software-specific tags and fields
