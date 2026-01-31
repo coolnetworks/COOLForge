@@ -28,7 +28,7 @@
     - policy_meshcentral = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.19.01
+    Version:          2026.01.31.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -52,7 +52,7 @@
 #>
 
 # Software Policy - MeshCentral
-# Version: 2026.01.19.01
+# Version: 2026.01.31.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -373,6 +373,25 @@ function Install-Meshcentral {
 
     # Remove Mark of the Web so Windows doesn't block execution
     Unblock-File -Path $InstallerPath -ErrorAction SilentlyContinue
+
+    # Verify downloaded file is a valid PE executable
+    try {
+        $HeaderBytes = [System.IO.File]::ReadAllBytes($InstallerPath)[0..1]
+        $Header = [System.Text.Encoding]::ASCII.GetString($HeaderBytes)
+        Write-LevelLog "Installer header: $Header (bytes: $($HeaderBytes[0]), $($HeaderBytes[1]))" -Level "DEBUG"
+        if ($Header -ne "MZ") {
+            Write-Host "Alert: Downloaded file is not a valid Windows executable (header: $Header)"
+            Write-LevelLog "Invalid PE header - file may be corrupted or not an EXE" -Level "ERROR"
+            Remove-Item $InstallerPath -Force -ErrorAction SilentlyContinue
+            return $false
+        }
+    }
+    catch {
+        Write-LevelLog "Could not verify installer header: $($_.Exception.Message)" -Level "WARN"
+    }
+
+    Write-LevelLog "Installer path: $InstallerPath" -Level "DEBUG"
+
     $maxAttempts = 2
     $installSuccess = $false
 
@@ -528,7 +547,7 @@ function Remove-Meshcentral {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.19.01"
+$ScriptVersion = "2026.01.31.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
