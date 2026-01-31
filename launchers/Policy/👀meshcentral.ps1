@@ -3,6 +3,9 @@
 # ============================================================
 $ScriptToRun = "👀meshcentral.ps1"
 $policy_meshcentral = "{{cf_policy_meshcentral}}"
+$policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
+$policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
+$policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
