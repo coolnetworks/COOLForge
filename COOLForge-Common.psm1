@@ -489,6 +489,39 @@ function Test-LevelAdmin {
 
 <#
 .SYNOPSIS
+    Returns the path to the binaries subfolder in the scratch folder.
+
+.DESCRIPTION
+    Creates and returns a 'binaries' directory under the MSP scratch folder.
+    Use this for storing downloaded installers and executables. The folder
+    is created if it does not already exist.
+
+.PARAMETER ScratchFolder
+    The MSP scratch folder path. If not provided, uses the module-level
+    $script:ScratchFolder set by Initialize-LevelScript.
+
+.OUTPUTS
+    String path to the binaries folder.
+
+.EXAMPLE
+    $BinFolder = Get-BinariesFolder
+    $InstallerPath = Join-Path $BinFolder "installer.exe"
+#>
+function Get-BinariesFolder {
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$ScratchFolder = $script:ScratchFolder
+    )
+
+    $BinFolder = Join-Path $ScratchFolder "binaries"
+    if (-not (Test-Path $BinFolder)) {
+        New-Item -Path $BinFolder -ItemType Directory -Force | Out-Null
+    }
+    return $BinFolder
+}
+
+<#
+.SYNOPSIS
     Returns a hashtable of common device information.
 
 .DESCRIPTION

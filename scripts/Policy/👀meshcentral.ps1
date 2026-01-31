@@ -334,11 +334,7 @@ function Install-Meshcentral {
     }
 
     # Determine installer path - use scratch folder binaries dir
-    $BinFolder = Join-Path $ScratchFolder "binaries"
-    if (-not (Test-Path $BinFolder)) {
-        New-Item -Path $BinFolder -ItemType Directory -Force | Out-Null
-    }
-    $InstallerPath = Join-Path $BinFolder $InstallerName
+    $InstallerPath = Join-Path (Get-BinariesFolder -ScratchFolder $ScratchFolder) $InstallerName
 
     # Ensure TLS 1.2+
     try {
