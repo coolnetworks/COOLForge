@@ -3,6 +3,8 @@
 # ============================================================
 $ScriptToRun = "👀screenconnect.ps1"
 $policy_screenconnect = "{{cf_policy_screenconnect}}"
+$policy_screenconnect_instance = "{{cf_policy_screenconnect_instance}}"
+$policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.

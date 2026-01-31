@@ -3,6 +3,7 @@
 # ============================================================
 $ScriptToRun = "👀unchecky.ps1"
 $policy_unchecky = "{{cf_policy_unchecky}}"
+$policy_unchecky_url = "{{cf_policy_unchecky_url}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
