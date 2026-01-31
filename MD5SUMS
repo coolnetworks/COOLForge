@@ -19,7 +19,7 @@ d56e58ecff167c2bb794dae881eee554  scripts/Fix/🔧Prevent Sleep.ps1
 63c547479b61ddab57e5851c5aee3cba  scripts/Policy/Chrome/👀Chrome Location Services.ps1
 ce39c9d1b13a8ec8be52262da7669fb4  scripts/Policy/Windows/👀Windows Location Services.ps1
 ffe2fdaba57a7ebc81171cad024da0a4  scripts/Policy/👀chrome.ps1
-0e3dd2d075eed44db794364ce3944ae7  scripts/Policy/👀dns.ps1
+0ba4fa943a9a669edef425be17b59c16  scripts/Policy/👀dns.ps1
 d5df12ce913fde9d03b655936bd3a336  scripts/Policy/👀dnsfilter.ps1
 4917bba723dee3f2d40124242e458830  scripts/Policy/👀huntress.ps1
 d4f343888822fcea7f465ed09f768dec  scripts/Policy/👀meshcentral.ps1

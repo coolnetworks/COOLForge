@@ -310,15 +310,11 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
-        Write-Host ""
-        Write-Host "Alert: DNS non-compliance detected"
-        Write-Host "  Non-compliant adapters: $($NonCompliantAdapters.Count)"
-        Write-Host "  Adapters: $AdapterNames"
-        Write-Host "  Unauthorized DNS: $($AllNonCompliant -join ', ')"
-
         Write-LevelLog "DNS non-compliance: $($NonCompliantAdapters.Count) adapter(s) using unauthorized DNS" -Level "ERROR"
         $script:ExitCode = 1
-        Complete-LevelScript -ExitCode 1 -Message "DNS non-compliant on $($NonCompliantAdapters.Count) adapter(s)"
+
+        Write-Host ""
+        Write-Host "Alert: DNS non-compliant - $($NonCompliantAdapters.Count) adapter(s) using unauthorized DNS: $($AllNonCompliant -join ', ')"
     }
 }}
 if ($RunningFromLauncher) { $InvokeParams.NoExit = $true }
