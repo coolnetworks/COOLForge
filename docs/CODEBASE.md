@@ -501,9 +501,37 @@ Scripts in `pre-release/` for release preparation:
 
 ---
 
-## Testing
+## Validation (`validation/`)
 
-Test scripts in `testing/`:
+Tracked validation checks and code generators shared via git.
+
+### Checks
+
+| Script | Description | Critical |
+|--------|-------------|----------|
+| `check-syntax.ps1` | Parse all PS1 files for syntax errors | Yes |
+| `check-bom.ps1` | Verify UTF-8 BOM on PS1/PSM1 files | Yes |
+| `check-emoji-corruption.ps1` | Detect `??` and garbled emoji patterns | Yes |
+| `check-launcher-fields.ps1` | Verify launchers declare needed policy vars | Yes |
+| `check-orphans.ps1` | Find scripts without launchers and vice versa | No |
+| `check-definitions.ps1` | Cross-ref `{{cf_*}}` usage against definitions | No |
+| `check-psscriptanalyzer.ps1` | Run PSScriptAnalyzer linting | No |
+| `check-all.ps1` | Orchestrator that runs all checks | - |
+
+### Code Generators
+
+| Script | Description |
+|--------|-------------|
+| `Generate-MD5SUMS.ps1` | Generate MD5SUMS file |
+| `Update-Launchers.ps1` | Rebuild launchers from template |
+| `Generate-CustomFieldsConfig.ps1` | Scan for `{{cf_*}}` usage, build config |
+| `Create-New-Script.ps1` | Scaffold new script + launcher |
+
+---
+
+## Testing (`testing/`, gitignored)
+
+Local-only test harnesses (require live API access/secrets):
 
 | Script | Description |
 |--------|-------------|
@@ -645,7 +673,8 @@ COOLForge/
 ├── tools/                            # Administrative tools
 │   └── how-i-got-here/              # Development/research tools
 ├── pre-release/                      # Release preparation scripts
-├── testing/                          # Test scripts
+├── validation/                       # Validation checks & code generators
+├── testing/                          # Local-only test scripts (gitignored)
 ├── definitions/
 │   └── custom-fields.json           # Custom field definitions
 ├── docs/                            # Documentation
