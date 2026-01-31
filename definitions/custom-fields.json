@@ -97,6 +97,13 @@
       "prerequisites": [
         "DNSFilter site key (NKEY) from your DNSFilter portal"
       ]
+    },
+    "dns_compliance": {
+      "displayName": "DNS Compliance",
+      "description": "DNS server compliance monitoring. Checks adapters against allowed DNS server list. Triggers DNSFilter reinstall if agent present but DNS wrong.",
+      "prerequisites": [
+        "List of approved DNS server IPs for your environment"
+      ]
     }
   },
   "fields": {
@@ -429,6 +436,17 @@
         "adminOnly": true,
         "required": false,
         "prompt": "DNSFilter site key (NKEY from portal)"
+      }
+    ],
+    "dns_compliance": [
+      {
+        "name": "policy_allowed_dns_servers",
+        "description": "Comma-separated list of allowed DNS server IPs. Default includes Google, OpenDNS, and DNSFilter. 127.0.0.1/127.0.0.2 auto-added when DNSFilter agent is running.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": true,
+        "default": "8.8.8.8, 8.8.4.4, 1.1.1.1, 1.0.0.1, 208.67.222.222, 208.67.220.220, 103.247.36.36, 103.247.37.37",
+        "prompt": "Allowed DNS server IPs (comma-separated)"
       }
     ]
   }
