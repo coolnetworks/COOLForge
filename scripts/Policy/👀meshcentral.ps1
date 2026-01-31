@@ -379,7 +379,7 @@ function Install-Meshcentral {
     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
         Write-LevelLog "Installing MeshCentral (attempt $attempt of $maxAttempts)..."
         try {
-            $proc = Start-Process $InstallerPath -ArgumentList "-fullinstall" -PassThru -Wait -NoNewWindow
+            $proc = Start-Process -FilePath $InstallerPath -ArgumentList "-fullinstall" -Wait -PassThru -ErrorAction Stop
 
             # Check if process exited
             Write-LevelLog "Installer exit code: $($proc.ExitCode)"
@@ -491,7 +491,7 @@ function Remove-Meshcentral {
         if (Test-Path $Path) {
             Write-LevelLog "Running MeshCentral uninstaller at $Path..."
             try {
-                $proc = Start-Process $Path -ArgumentList "-uninstall" -PassThru -Wait -NoNewWindow
+                $proc = Start-Process -FilePath $Path -ArgumentList "-uninstall" -Wait -PassThru -ErrorAction Stop
                 Write-LevelLog "Uninstaller exit code: $($proc.ExitCode)"
             }
             catch {
