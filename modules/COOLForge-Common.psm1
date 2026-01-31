@@ -4809,6 +4809,26 @@ function Initialize-SoftwarePolicyInfrastructure {
         }
     }
 
+    # ================================================================
+    # STEP 4: Clean up stale fields from tag/name mismatch
+    # ================================================================
+    # When TagName differs from SoftwareName (e.g. sc vs screenconnect), the old code
+    # may have created policy_$TagName (e.g. policy_sc). Find and remove it.
+    if ($TagName -ne $SoftwareName) {
+        $StaleFieldName = "policy_$TagName"
+        $StaleField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $StaleFieldName -BaseUrl $BaseUrl
+        if ($StaleField) {
+            Write-LevelLog "Removing stale field '$StaleFieldName' (replaced by '$PolicyFieldName')" -Level "INFO"
+            $Removed = Remove-LevelCustomField -ApiKey $ApiKey -FieldId $StaleField.id -FieldName $StaleFieldName -BaseUrl $BaseUrl
+            if ($Removed) {
+                Write-LevelLog "Removed stale field '$StaleFieldName'" -Level "SUCCESS"
+            }
+            else {
+                Write-LevelLog "Failed to remove stale field '$StaleFieldName' - may need manual cleanup" -Level "WARN"
+            }
+        }
+    }
+
     # One-shot debug tag cleanup (runs once per bootstrap, uses module-scoped hostname)
     Invoke-DebugTagCleanup -ApiKey $ApiKey -DeviceHostname $script:DeviceHostname -BaseUrl $BaseUrl
 
