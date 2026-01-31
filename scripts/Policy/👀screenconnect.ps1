@@ -596,7 +596,7 @@ function Remove-ScreenConnect {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.19.01"
+$ScriptVersion = "2026.01.31.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -649,11 +649,11 @@ $InvokeParams = @{ ScriptBlock = {
         $KeyPreview = if ($KeyLength -gt 4) { $LevelApiKey.Substring(0, 4) + "****" } else { "(invalid)" }
         Write-LevelLog "API key: $KeyPreview (length: $KeyLength)" -Level "DEBUG"
 
-        # Use $TagName for tags (creates SC tags) but create custom fields manually
+        # SoftwareName = "screenconnect" for fields, TagName = "sc" for tags
         $InfraResult = Initialize-SoftwarePolicyInfrastructure -ApiKey $LevelApiKey `
-            -SoftwareName $TagName `
+            -SoftwareName $SoftwareName `
+            -TagName $TagName `
             -RequireUrl $false `
-            -CustomFieldName "policy_$SoftwareName" `
             -PolicyFieldValue $CustomFieldPolicy
 
         # Create ScreenConnect-specific custom fields (using "screenconnect" not "sc")

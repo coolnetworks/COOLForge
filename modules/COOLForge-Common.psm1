@@ -4654,6 +4654,9 @@ function Initialize-SoftwarePolicyInfrastructure {
         [string]$SoftwareName,
 
         [Parameter(Mandatory = $false)]
+        [string]$TagName = "",
+
+        [Parameter(Mandatory = $false)]
         [bool]$RequireUrl = $false,
 
         [Parameter(Mandatory = $false)]
@@ -4674,12 +4677,14 @@ function Initialize-SoftwarePolicyInfrastructure {
     )
 
     $SoftwareName = $SoftwareName.ToLower()
-    $SoftwareNameUpper = $SoftwareName.ToUpper()
+    # TagName defaults to SoftwareName if not provided (e.g. screenconnect uses "sc" for tags)
+    if ([string]::IsNullOrWhiteSpace($TagName)) { $TagName = $SoftwareName }
+    $TagName = $TagName.ToLower()
+    $TagNameUpper = $TagName.ToUpper()
     $TagsCreated = 0
     $FieldsCreated = 0
 
-    Write-LevelLog "Initializing policy infrastructure for '$SoftwareName'..." -Level "INFO"
-    Write-LevelLog "CustomFieldName='$CustomFieldName' PolicyFieldValue='$PolicyFieldValue'" -Level "DEBUG"
+    Write-LevelLog "Initializing policy infrastructure for '$SoftwareName' (tags: $TagNameUpper)..." -Level "INFO"
 
     # NOTE: Global infrastructure (coolforge_* fields) should be set up via Setup-COOLForge.ps1
     # This function only handles software-specific tags and fields
@@ -4708,7 +4713,7 @@ function Initialize-SoftwarePolicyInfrastructure {
     $ExistingTagNames = @($ExistingTags | ForEach-Object { $_.name })
 
     foreach ($Prefix in $PolicyTagPrefixes) {
-        $FullTagName = "$($Prefix.Emoji)$SoftwareNameUpper"
+        $FullTagName = "$($Prefix.Emoji)$TagNameUpper"
 
         if ($ExistingTagNames -contains $FullTagName) {
             Write-LevelLog "Tag '$FullTagName' already exists" -Level "DEBUG"
@@ -4753,9 +4758,9 @@ function Initialize-SoftwarePolicyInfrastructure {
     # ================================================================
     # STEP 3: Create custom fields (only if missing)
     # ================================================================
-    # Use launcher variable values to determine if fields exist (no API call needed)
-    # If variable is unexpanded (contains {{) or empty, field may not exist
-    $PolicyFieldName = if ([string]::IsNullOrWhiteSpace($CustomFieldName)) { "policy_$SoftwareName" } else { $CustomFieldName }
+    # Field name always derives from SoftwareName (e.g. "screenconnect" -> "policy_screenconnect")
+    # CustomFieldName override kept for backwards compat but SoftwareName is the primary source
+    $PolicyFieldName = if (-not [string]::IsNullOrWhiteSpace($CustomFieldName)) { $CustomFieldName } else { "policy_$SoftwareName" }
 
     # Check if policy field exists based on launcher variable
     $PolicyFieldExists = -not [string]::IsNullOrWhiteSpace($PolicyFieldValue) -and $PolicyFieldValue -notlike "{{*}}"

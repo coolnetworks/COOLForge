@@ -1,4 +1,4 @@
-95e31088a86e6b3f70ac9b7036d599d1  modules/COOLForge-Common.psm1
+d5d992be8a32f697828dbbab5add8153  modules/COOLForge-Common.psm1
 2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
 e87fcd8a1bbf55c287ece1ea57ddb721  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 63a4c3c4e9ad5f1a16c405dac23f803d  scripts/Check/👀Hostname Mismatch.ps1
@@ -23,7 +23,7 @@ ffe2fdaba57a7ebc81171cad024da0a4  scripts/Policy/👀chrome.ps1
 d5df12ce913fde9d03b655936bd3a336  scripts/Policy/👀dnsfilter.ps1
 4917bba723dee3f2d40124242e458830  scripts/Policy/👀huntress.ps1
 e4ad0e8c77b86d8bb9f8707a8b4ef591  scripts/Policy/👀meshcentral.ps1
-8daac6381f28a6f9dcc93099aa2f72c5  scripts/Policy/👀screenconnect.ps1
+ef00a96437d68f88890627a594a31afa  scripts/Policy/👀screenconnect.ps1
 32787c4a9c96f67e6339f6352fc59ad2  scripts/Policy/👀unchecky.ps1
 18c19ee777d4ddc589f69b56d80a5c23  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 4bb86c1f1b8f641be29b36ff847fe693  scripts/Remove/⛔Force Remove Anydesk.ps1
