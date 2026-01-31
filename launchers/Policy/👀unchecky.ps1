@@ -2,7 +2,7 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀unchecky.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
+$policy_unchecky = "{{cf_policy_unchecky}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
@@ -19,7 +19,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 #>
 
 $LauncherVersion = "2026.01.31.02"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀unchecky.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

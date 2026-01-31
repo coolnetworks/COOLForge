@@ -2,7 +2,6 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "⚙️Universal Disk Cleaner.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
@@ -19,7 +18,7 @@ $policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 #>
 
 $LauncherVersion = "2026.01.31.02"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Utility/⚙️Universal Disk Cleaner.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
