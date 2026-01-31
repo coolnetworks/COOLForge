@@ -1,36 +1,36 @@
-﻿e38b8feb5f8b9c4a2b6fdc473c4b7fef  modules/COOLForge-Common.psm1
-cda4191fc0c4a28af66c8049474c604d  scripts/Check/👀Check DNS Server Compliance.ps1
-bcbfba4832ca9c87befbb0399490bc9d  scripts/Check/👀Check Windows Location Services.ps1
-bd44ddfc7e8f91e6d0e0457c0371a513  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-2e69e96cda314af1ffc56adc99fb89b6  scripts/Check/👀Hostname Mismatch.ps1
-41e6dc1d4d44fe96917f0e438bcc8d08  scripts/Check/👀Test Show Versions.ps1
-0194abc3e6340f36b072d35568c6c42f  scripts/Check/👀Test Variable Output.ps1
-072892310afd2e0112929820bc4c33dd  scripts/Check/👀debug.ps1
-91317d2da2cf6ea934807bb3f598496b  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
-aa0f5353b40c07c2b91606810d67b946  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-b1356c760039d2beb48a6667c3a346d0  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-4cc314c7527b1710d20fdb707dd7146e  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
-5cdac7ecfcd93d15a09892cf0fb34561  scripts/Fix/🔧Fix Windows 10 Services.ps1
-997b61fef81e8b9e6d2014223158b044  scripts/Fix/🔧Fix Windows 11 Services.ps1
-2b87fec41256cd53dd359fb3b0ce9e7d  scripts/Fix/🔧Fix Windows 7 Services.ps1
-c6bd76f462b894a8ff1e6d90aadea3cf  scripts/Fix/🔧Fix Windows 8 Services.ps1
-d79a398d1be20cc5d13293e3a132b12b  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-5f6f06b26e35a72a3840ea68c3a78494  scripts/Fix/🔧Fix Windows Location Services.ps1
-0acd004efe2ad665a5deac011bd4e4be  scripts/Fix/🔧Prevent Sleep.ps1
-24ac5c491a75dcfad1f018e9615a199d  scripts/Policy/Chrome/👀Chrome Location Services.ps1
-47ea2a01958a8afe61164ce7b5b5a7b4  scripts/Policy/Windows/👀Windows Location Services.ps1
-5db93541269222fa9c43cf9ee8789578  scripts/Policy/👀chrome.ps1
-eba3003ff1c232d5cbba60fc05342c7c  scripts/Policy/👀dnsfilter.ps1
-2a97ab5a97088c6d004347545fd91107  scripts/Policy/👀huntress.ps1
-04656904a17d292e3092c853e019f74c  scripts/Policy/👀meshcentral.ps1
-dfe26c9f00c1b0c7410e59b27fdc6f87  scripts/Policy/👀screenconnect.ps1
-49777d37d2e9fc72aa3ae577c9fb8642  scripts/Policy/👀unchecky.ps1
-3690edf3e85254bf784db853a852b214  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-9938672219844b70c8a6847e6cf94b1b  scripts/Remove/⛔Force Remove Anydesk.ps1
-54b5fc74cf101429ad1676f80e8530a7  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-46eb342b297808c30d0bc11bb5e9af00  scripts/Utility/⚙️COOLForge Cache Sync.ps1
-7bcbd40987a43887b57ac83762124429  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-03891a4be820144a5dc2906c35713821  scripts/Utility/⚙️Universal Disk Cleaner.ps1
-faa150673ca157c758c43d87a234ebe7  scripts/Utility/🔔Technician Alert Monitor.ps1
-e4070647d12d8709b889fd82c1bb0790  scripts/Utility/🔔Wake tagged devices.ps1
-a31213ee050acd0b92cfd95449341978  scripts/Utility/🙏Wake all devices in Level group.ps1
+55e83175a103e9901e1848c5be97f68a  modules/COOLForge-Common.psm1
+8524bbc7bbd1ab24e505e7a3fafb4420  scripts/Check/👀Check DNS Server Compliance.ps1
+2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
+e87fcd8a1bbf55c287ece1ea57ddb721  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+63a4c3c4e9ad5f1a16c405dac23f803d  scripts/Check/👀Hostname Mismatch.ps1
+883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
+a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
+66dee256530be177a1fe5293bc8298be  scripts/Check/👀debug.ps1
+98a6f30aebccfe2e05f6ba7708865b07  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
+c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
+4b51c03078884653dc96c81483bd97fa  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+9e71bc81c1222cf9ede68b5f6f033d72  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
+2fac18f824de904e741007e6c9757e83  scripts/Fix/🔧Fix Windows 10 Services.ps1
+700e7d7153585ac93d22c73a446690f8  scripts/Fix/🔧Fix Windows 11 Services.ps1
+81661b4b31d5e2ec13ba91c102fe54d8  scripts/Fix/🔧Fix Windows 7 Services.ps1
+a7615ff10c4636a86d00bf8e2950f912  scripts/Fix/🔧Fix Windows 8 Services.ps1
+89c5b5fa66ed2c0c875c4cdd64d20616  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+09185ac0299ea9a803415b7086398e95  scripts/Fix/🔧Fix Windows Location Services.ps1
+d56e58ecff167c2bb794dae881eee554  scripts/Fix/🔧Prevent Sleep.ps1
+63c547479b61ddab57e5851c5aee3cba  scripts/Policy/Chrome/👀Chrome Location Services.ps1
+ce39c9d1b13a8ec8be52262da7669fb4  scripts/Policy/Windows/👀Windows Location Services.ps1
+ffe2fdaba57a7ebc81171cad024da0a4  scripts/Policy/👀chrome.ps1
+d5df12ce913fde9d03b655936bd3a336  scripts/Policy/👀dnsfilter.ps1
+4917bba723dee3f2d40124242e458830  scripts/Policy/👀huntress.ps1
+d4f343888822fcea7f465ed09f768dec  scripts/Policy/👀meshcentral.ps1
+8daac6381f28a6f9dcc93099aa2f72c5  scripts/Policy/👀screenconnect.ps1
+32787c4a9c96f67e6339f6352fc59ad2  scripts/Policy/👀unchecky.ps1
+18c19ee777d4ddc589f69b56d80a5c23  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+4bb86c1f1b8f641be29b36ff847fe693  scripts/Remove/⛔Force Remove Anydesk.ps1
+820a376a20cc24a80df12cc85d312f8c  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+01123ee5e8b4a330e8be72688c27208c  scripts/Utility/⚙️COOLForge Cache Sync.ps1
+fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+83caf93fbbb7060d66389e64a97f0805  scripts/Utility/⚙️Universal Disk Cleaner.ps1
+2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
+a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
+b3d1a58f2f8a7b84d0cfd52e08dfdcf8  scripts/Utility/🙏Wake all devices in Level group.ps1
