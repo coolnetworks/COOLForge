@@ -441,7 +441,7 @@ $InvokeParams = @{ ScriptBlock = {
     if ($DebugScripts) {
         Write-Host ""
         Write-Host "============================================================" -ForegroundColor Magenta
-        Write-Host " DEBUG MODE ENABLED (cf_debug_scripts = true)" -ForegroundColor Magenta
+        Write-Host " DEBUG MODE ENABLED (debug_coolforge = verbose)" -ForegroundColor Magenta
         Write-Host " Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Magenta
         Write-Host " Computer:  $env:COMPUTERNAME" -ForegroundColor Magenta
         Write-Host "============================================================" -ForegroundColor Magenta

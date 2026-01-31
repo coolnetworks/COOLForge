@@ -11,7 +11,7 @@ Parameters:
   -WhatIf           Preview changes without applying
   -ShowDiagnostics  Show verbose diagnostic output (GPO, MDM, Azure AD, etc.)
 
-  When run via Level.io, $DebugScripts (from cf_debug_scripts) also enables
+  When run via Level.io, $DebugScripts (from cf_debug_coolforge) also enables
   verbose diagnostics.
 
 Root Causes Handled:

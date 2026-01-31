@@ -381,7 +381,7 @@ if ([string]::IsNullOrWhiteSpace(`$LibraryUrl) -or `$LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=`$LibraryUrl"
 
-`$DebugScripts = "{{cf_debug_scripts}}"
+`$DebugScripts = "{{cf_debug_coolforge}}"
 if ([string]::IsNullOrWhiteSpace(`$DebugScripts) -or `$DebugScripts -like "{{*}}") {
     `$DebugScripts = `$false
 } else {
@@ -590,7 +590,7 @@ This script was scaffolded and requires implementation of:
 
 ### Debug Mode
 
-Set ``debug_scripts = true`` on the device for verbose output.
+Set ``debug_coolforge = verbose`` on the device for verbose output.
 
 ### Common Issues
 

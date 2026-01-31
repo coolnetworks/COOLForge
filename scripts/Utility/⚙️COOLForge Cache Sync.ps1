@@ -46,6 +46,12 @@ $Init = Initialize-LevelScript -ScriptName "COOLForge-CacheSync" `
                                -DeviceHostname $DeviceHostname `
                                -DeviceTags $DeviceTags
 
+# Sync script-level debug variables if a debug tag overrode the custom field
+if ($Init.DebugTagDetected) {
+    $DebugLevel = $Init.DebugLevel
+    $DebugScripts = $Init.DebugMode
+}
+
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================

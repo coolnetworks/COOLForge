@@ -101,7 +101,7 @@ if ([string]::IsNullOrWhiteSpace(`$LibraryUrl) -or `$LibraryUrl -like "{{*}}") {
 }
 Write-Host "[DEBUG] LibraryUrl=`$LibraryUrl"
 
-`$DebugScripts = "{{cf_debug_scripts}}"
+`$DebugScripts = "{{cf_debug_coolforge}}"
 if ([string]::IsNullOrWhiteSpace(`$DebugScripts) -or `$DebugScripts -like "{{*}}") {
     `$DebugScripts = `$false
 } else {

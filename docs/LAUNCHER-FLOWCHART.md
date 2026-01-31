@@ -63,6 +63,7 @@ START: Level.io triggers launcher
 │   ├─ cf_coolforge_msp_scratch_folder → $MspScratchFolder
 │   ├─ cf_coolforge_ps_module_library_source → $LibraryUrl (optional)
 │   ├─ cf_coolforge_pin_psmodule_to_version → $PinnedVersion (optional)
+│   ├─ cf_debug_coolforge → $DebugLevel (normal/verbose/veryverbose)
 │   ├─ level_device_hostname → $DeviceHostname
 │   └─ level_tag_names → $DeviceTags
 │
@@ -118,14 +119,23 @@ START: Level.io triggers launcher
 │   │  ├─ $MspScratchFolder
 │   │  ├─ $LibraryUrl
 │   │  ├─ $DeviceHostname
-│   │  └─ $DeviceTags
+│   │  ├─ $DeviceTags
+│   │  ├─ $DebugScripts (boolean)
+│   │  ├─ $DebugLevel (normal/verbose/veryverbose)
+│   │  └─ $LevelApiKey
 │   │
 │   └─ Import library functions into script scope
 │
 ├─► Execute script
-│   ├─ Run script content via Invoke-Expression or dot-sourcing
-│   ├─ Script uses library functions (Initialize-LevelScript, etc.)
-│   ├─ Script performs its task
+│   ├─ Script calls Initialize-LevelScript
+│   │  ├─ Sets up lockfile, logging, global checks
+│   │  ├─ Checks debug tags (✅DEBUG, ✅DEBUGVV, ⛔DEBUG)
+│   │  └─ Returns DebugTagDetected, DebugLevel, DebugMode
+│   │
+│   ├─ Script syncs debug overrides from Init result
+│   │  └─ If tag detected: $DebugLevel and $DebugScripts updated
+│   │
+│   ├─ Script uses library functions for its task
 │   └─ Script calls Complete-LevelScript or exits
 │
 ├─► Capture exit code
@@ -304,6 +314,53 @@ Script Execution Failure:
 ```
 
 **Key Point:** Change `$ScriptToRun` = different script runs. Update GitHub = all scripts update automatically.
+
+---
+
+## Debug Tag Override Flow
+
+When a device has debug control tags, they override the `debug_coolforge` custom field:
+
+```
+Launcher sets $DebugLevel from cf_debug_coolforge
+  (extracts value before pipe: "normal | normal, verbose, veryverbose" -> "normal")
+         |
+         v
+Script calls Initialize-LevelScript
+         |
+         v
+Parse $DeviceTags for debug tags
+         |
+    +----+----+----+
+    |         |         |
+    v         v         v
+✅DEBUGVV  ✅DEBUG   ⛔DEBUG
+    |         |         |
+    v         v         v
+veryverbose verbose   normal
+(persistent)(persistent)(one-shot)
+    |         |         |
+    +----+----+----+
+         |
+         v
+Return {DebugTagDetected, DebugLevel, DebugMode}
+         |
+         v
+Script syncs local $DebugLevel, $DebugScripts
+         |
+         v
+    ⛔DEBUG detected?
+    |           |
+   YES          NO
+    |           |
+    v           v
+Invoke-DebugTagCleanup   (no cleanup needed)
+    |
+    +-> Remove ⛔DEBUG tag
+    +-> Remove ✅DEBUG tag (if present)
+    +-> Remove ✅DEBUGVV tag (if present)
+    +-> PATCH debug_coolforge=normal on device
+```
 
 ---
 

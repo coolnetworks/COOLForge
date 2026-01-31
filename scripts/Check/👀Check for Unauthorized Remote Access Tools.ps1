@@ -108,6 +108,12 @@ if (-not $Init.Success) {
     exit 0
 }
 
+# Sync script-level debug variables if a debug tag overrode the custom field
+if ($Init.DebugTagDetected) {
+    $DebugLevel = $Init.DebugLevel
+    $DebugScripts = $Init.DebugMode
+}
+
 # Check if policy says to skip
 if ($PolicyRatRemoval -eq "skip") {
     Write-LevelLog "Policy is 'skip' - RAT detection disabled for this device" -Level "INFO"

@@ -162,12 +162,68 @@ This makes it easy to scan a device list and immediately understand:
 - **Red tags** = frozen/protected
 - **Gray tags** = just showing current state
 
+## Debug Control Tags
+
+Tags that control debug output level. These operate independently from the software policy tag system.
+
+| Tag | Level | Persistent | Purpose |
+|-----|-------|------------|---------|
+| `✅DEBUG` | verbose | Yes | Enable verbose debug output on every run |
+| `✅DEBUGVV` | veryverbose | Yes | Enable veryverbose debug output on every run |
+| `⛔DEBUG` | force-off | No (one-shot) | Force debug off, remove all debug tags, set `debug_coolforge=normal` on device |
+
+### How Debug Tags Work
+
+Debug tags always override the `debug_coolforge` custom field value. Priority: tag > custom field.
+
+**Enable tags** (`✅DEBUG`, `✅DEBUGVV`) are persistent - they stay on the device and activate debug output on every script run until an admin applies `⛔DEBUG` to clear them.
+
+**Stop tag** (`⛔DEBUG`) is one-shot:
+1. Overrides debug level to `normal` for the current run
+2. Removes itself from the device
+3. Removes `✅DEBUG` and `✅DEBUGVV` if present
+4. PATCHes `debug_coolforge=normal` at the device level (breaks inherited debug from group/org)
+
+### Debug Level Resolution
+
+```
+START: Determine debug level
+|
++-> Read debug_coolforge custom field
+|   (normal / verbose / veryverbose)
+|
++-> Check device tags for debug overrides
+|   |
+|   +-> Has ✅DEBUGVV tag?
+|   |   YES -> level = veryverbose (overrides field)
+|   |
+|   +-> Has ✅DEBUG tag?
+|   |   YES -> level = verbose (overrides field)
+|   |
+|   +-> Has ⛔DEBUG tag?
+|       YES -> level = normal (force off)
+|             + remove all debug tags
+|             + set debug_coolforge=normal on device
+|
++-> Final debug level used for script execution
+```
+
+### Requirements
+
+- **Tag removal** requires an API key (`cf_apikey`). Without API key, tags override for the current run only but are not removed.
+- Debug tags are auto-created by `Initialize-SoftwarePolicyInfrastructure` alongside the global `✅` and `❌` tags.
+
+> **Note:** `✅DEBUG` also exists as a software status tag for the debug policy test script (`👀debug.ps1`). Context determines meaning: debug control tags are checked during `Initialize-LevelScript`, while software status tags are checked during `Invoke-SoftwarePolicyCheck`.
+
+---
+
 ## Unicode Reference
 
 | Emoji | Name | Unicode | Code Point | PowerShell |
 |-------|------|---------|------------|------------|
 | ✅ | Checkmark | U+2705 | 0x2705 | `[char]0x2705` |
 | ❌ | Cross | U+274C | 0x274C | `[char]0x274C` |
+| ⛔ | No Entry | U+26D4 | 0x26D4 | `[char]::ConvertFromUtf32(0x26D4)` |
 | 🙏 | Pray | U+1F64F | 0x1F64F | `[char]::ConvertFromUtf32(0x1F64F)` |
 | 🚫 | Prohibit | U+1F6AB | 0x1F6AB | `[char]::ConvertFromUtf32(0x1F6AB)` |
 | 📌 | Pushpin | U+1F4CC | 0x1F4CC | `[char]::ConvertFromUtf32(0x1F4CC)` |

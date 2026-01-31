@@ -790,6 +790,50 @@ function Initialize-LevelScript {
         $script:DebugLevel = "normal"
     }
     $script:DebugMode = ($script:DebugLevel -ne "normal")
+
+    # Debug tag override: tags always win over custom field
+    # U+2705 = Checkmark, U+26D4 = NoEntry
+    $script:DebugTagDetected = $null
+    $script:DebugTagForceOff = $false
+    if (-not [string]::IsNullOrWhiteSpace($DeviceTags)) {
+        $E = Get-EmojiBytePatterns
+        # Build match patterns for clean and corrupted emoji forms
+        $CheckClean = $E.Check          # U+2705
+        $CheckCorr  = $E.CorruptedCheck # Corrupted U+2705
+        $StopClean  = $E.NoEntry        # U+26D4
+        $StopCorr   = $E.CorruptedNoEntry # Corrupted U+26D4
+
+        $TagList = $DeviceTags -split ',' | ForEach-Object { $_.Trim() }
+
+        # Match debug tags (check both clean and corrupted emoji prefixes)
+        $HasDebugVV = $TagList | Where-Object {
+            $_ -ieq "${CheckClean}DEBUGVV" -or $_ -ieq "${CheckCorr}DEBUGVV"
+        }
+        $HasDebug = $TagList | Where-Object {
+            $_ -ieq "${CheckClean}DEBUG" -or $_ -ieq "${CheckCorr}DEBUG"
+        }
+        $HasDebugOff = $TagList | Where-Object {
+            $_ -ieq "${StopClean}DEBUG" -or $_ -ieq "${StopCorr}DEBUG"
+        }
+
+        if ($HasDebugVV) {
+            $script:DebugLevel = "veryverbose"
+            $script:DebugMode = $true
+            $script:DebugTagDetected = "veryverbose"
+        }
+        elseif ($HasDebug) {
+            $script:DebugLevel = "verbose"
+            $script:DebugMode = $true
+            $script:DebugTagDetected = "verbose"
+        }
+        elseif ($HasDebugOff) {
+            $script:DebugLevel = "normal"
+            $script:DebugMode = $false
+            $script:DebugTagDetected = "off"
+            $script:DebugTagForceOff = $true
+        }
+    }
+
     $script:DeviceHostname = $DeviceHostname
     $script:ScratchFolder = $MspScratchFolder
     $script:LockFilePath = Join-Path -Path $MspScratchFolder -ChildPath "lockfiles"
@@ -889,7 +933,13 @@ function Initialize-LevelScript {
     }
 
     $script:Initialized = $true
-    return @{ Success = $true; Reason = "Initialized" }
+    return @{
+        Success          = $true
+        Reason           = "Initialized"
+        DebugTagDetected = $script:DebugTagDetected   # "verbose", "veryverbose", "off", or $null
+        DebugLevel       = $script:DebugLevel          # Effective debug level after tag override
+        DebugMode        = $script:DebugMode           # Effective debug mode after tag override
+    }
 }
 
 # ============================================================
@@ -4449,9 +4499,10 @@ function Initialize-COOLForgeInfrastructure {
             Description  = "GitHub PAT for private repositories (admin-only)"
         }
         @{
-            Name         = "debug_scripts"
-            DefaultValue = "false"
-            Description  = "Enable verbose debug output (true/false)"
+            Name         = "debug_coolforge"
+            DefaultValue = "normal | normal, verbose, veryverbose"
+            Description  = "Debug output level (normal/verbose/veryverbose)"
+            LegacyNames  = @("debug_scripts")
         }
     )
 
@@ -4644,8 +4695,11 @@ function Initialize-SoftwarePolicyInfrastructure {
     # STEP 2: Create required system tags (checkmark and cross)
     # ================================================================
     $SystemTags = @(
-        [char]0x2705  # Checkmark - device verified/managed
-        [char]0x274C  # Cross - device excluded
+        [char]0x2705                              # Checkmark - device verified/managed
+        [char]0x274C                              # Cross - device excluded
+        "$([char]0x2705)DEBUG"                    # Debug verbose (one-shot)
+        "$([char]0x2705)DEBUGVV"                  # Debug veryverbose (one-shot)
+        "$([char]::ConvertFromUtf32(0x26D4))DEBUG"  # Debug force-off (one-shot)
     )
 
     foreach ($SystemTag in $SystemTags) {
@@ -4715,6 +4769,9 @@ function Initialize-SoftwarePolicyInfrastructure {
             Write-LevelLog "Custom field '$UrlFieldName' exists (from launcher)" -Level "DEBUG"
         }
     }
+
+    # One-shot debug tag cleanup (runs once per bootstrap, uses module-scoped hostname)
+    Invoke-DebugTagCleanup -ApiKey $ApiKey -DeviceHostname $script:DeviceHostname -BaseUrl $BaseUrl
 
     Write-LevelLog "Policy infrastructure ready: $TagsCreated tags created, $FieldsCreated fields created" -Level "SUCCESS"
 
@@ -5838,9 +5895,98 @@ function Read-YesNo {
 }
 
 # ============================================================
+# DEBUG TAG CLEANUP
+# ============================================================
+
+<#
+.SYNOPSIS
+    Handles debug tag cleanup when U+26D4 DEBUG (stop) tag is detected.
+
+.DESCRIPTION
+    U+2705 DEBUG and U+2705 DEBUGVV are persistent tags - they stay on the device and
+    enable debug on every run until explicitly removed by U+26D4 DEBUG.
+
+    U+26D4 DEBUG is the only one-shot tag. When detected, it:
+    1. Removes itself from the device
+    2. Removes U+2705 DEBUG and U+2705 DEBUGVV if present (clears all debug tags)
+    3. PATCHes debug_coolforge=normal on the device (breaks inherited debug)
+
+    Graceful no-op if no API key is available or no debug tag was detected.
+
+.PARAMETER ApiKey
+    Level.io API key for authentication.
+
+.PARAMETER DeviceHostname
+    The hostname of the current device (used to find device ID for tag removal).
+
+.PARAMETER BaseUrl
+    Base URL for the Level.io API. Default: "https://api.level.io/v2"
+#>
+function Invoke-DebugTagCleanup {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$ApiKey,
+
+        [Parameter(Mandatory = $false)]
+        [string]$DeviceHostname,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    # Only act on the force-off tag - enable tags are persistent
+    if (-not $script:DebugTagForceOff) { return }
+
+    # No-op if no API key (tag still overrides debug level for this run)
+    if ([string]::IsNullOrWhiteSpace($ApiKey)) {
+        Write-LevelLog "Debug stop tag detected but no API key - tags will not be removed" -Level "DEBUG"
+        return
+    }
+
+    # Find the device
+    $Device = Find-LevelDevice -ApiKey $ApiKey -Hostname $DeviceHostname -BaseUrl $BaseUrl
+    if (-not $Device) {
+        Write-LevelLog "Debug tag cleanup: could not find device '$DeviceHostname'" -Level "WARN"
+        return
+    }
+
+    $E = Get-EmojiBytePatterns
+
+    # Remove all debug tags (stop tag removes itself + any enable tags)
+    $TagNamesToRemove = @(
+        "$($E.NoEntry)DEBUG"    # The stop tag itself
+        "$($E.Check)DEBUG"      # Verbose enable tag
+        "$($E.Check)DEBUGVV"    # Very verbose enable tag
+    )
+
+    foreach ($TagName in $TagNamesToRemove) {
+        $Tag = Find-LevelTag -ApiKey $ApiKey -TagName $TagName -BaseUrl $BaseUrl
+        if ($Tag) {
+            $Removed = Remove-LevelTagFromDevice -ApiKey $ApiKey -TagId $Tag.id -DeviceId $Device.id -TagName $TagName -BaseUrl $BaseUrl
+            if ($Removed) {
+                Write-LevelLog "Removed debug tag: $TagName" -Level "SUCCESS"
+            }
+            else {
+                Write-LevelLog "Failed to remove debug tag: $TagName" -Level "WARN"
+            }
+        }
+    }
+
+    # Set debug_coolforge=normal on the device (breaks group/org inheritance)
+    $SetResult = Set-LevelCustomFieldValue -ApiKey $ApiKey -EntityType "device" -EntityId $Device.id -FieldReference "debug_coolforge" -Value "normal" -BaseUrl $BaseUrl
+    if ($SetResult) {
+        Write-LevelLog "Set debug_coolforge=normal on device (breaking inherited debug)" -Level "SUCCESS"
+    }
+    else {
+        Write-LevelLog "Failed to set debug_coolforge=normal on device" -Level "WARN"
+    }
+}
+
+# ============================================================
 # DEBUG OUTPUT HELPERS (Policy Scripts)
 # ============================================================
-# When $DebugScripts is true (from cf_debug_scripts custom field),
+# When $DebugScripts is true (from cf_debug_coolforge custom field),
 # outputs verbose diagnostic information for troubleshooting.
 
 function Write-DebugSection {
@@ -7177,6 +7323,9 @@ Export-ModuleMember -Function @(
     'Write-LevelError',
     'Read-UserInput',
     'Read-YesNo',
+
+    # Debug Tag Cleanup (Policy Scripts)
+    'Invoke-DebugTagCleanup',
 
     # Debug Output Helpers (Policy Scripts)
     'Write-DebugSection',

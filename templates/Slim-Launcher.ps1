@@ -50,7 +50,7 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
 # Parse debug level: normal, verbose, veryverbose
-$DebugScriptsRaw = "{{cf_debug_scripts}}"
+$DebugScriptsRaw = "{{cf_debug_coolforge}}"
 if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
     $DebugLevel = "normal"
 } elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {

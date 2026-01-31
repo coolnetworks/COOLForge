@@ -17,7 +17,7 @@ $ScriptToRun = "⛔Force Remove Adobe Creative Cloud.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.27.01"
+$LauncherVersion = "2026.01.31.01"
 $LauncherName = "Remove/⛔Force Remove Adobe Creative Cloud.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -49,7 +49,9 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
 # Parse debug level: normal, verbose, veryverbose
-$DebugScriptsRaw = "{{cf_debug_scripts}}"
+$DebugScriptsRaw = "{{cf_debug_coolforge}}"
+# Extract value before pipe delimiter (e.g., "normal | normal, verbose, veryverbose" -> "normal")
+if ($DebugScriptsRaw -match "\|") { $DebugScriptsRaw = ($DebugScriptsRaw -split "\|")[0].Trim() }
 if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
     $DebugLevel = "normal"
 } elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {

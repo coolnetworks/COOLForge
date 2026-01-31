@@ -134,6 +134,12 @@ if (-not $Init.Success) {
     exit 0
 }
 
+# Sync script-level debug variables if a debug tag overrode the custom field
+if ($Init.DebugTagDetected) {
+    $DebugLevel = $Init.DebugLevel
+    $DebugScripts = $Init.DebugMode
+}
+
 # ============================================================
 # LOCKFILE MANAGEMENT
 # ============================================================
@@ -533,7 +539,7 @@ $InvokeParams = @{ ScriptBlock = {
     if ($DebugScripts) {
         Write-Host ""
         Write-Host "============================================================" -ForegroundColor Magenta
-        Write-Host " DEBUG MODE ENABLED (cf_debug_scripts = true)" -ForegroundColor Magenta
+        Write-Host " DEBUG MODE ENABLED (debug_coolforge = verbose)" -ForegroundColor Magenta
         Write-Host " Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Magenta
         Write-Host " Computer:  $env:COMPUTERNAME" -ForegroundColor Magenta
         Write-Host "============================================================" -ForegroundColor Magenta

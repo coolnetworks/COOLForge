@@ -293,12 +293,12 @@
     ],
     "debugging": [
       {
-        "name": "debug_scripts",
+        "name": "debug_coolforge",
         "description": "Debug output level for COOLForge scripts. 'normal' (or empty/false): basics only. 'verbose' (or true/1): policy decisions, actions. 'veryverbose' (or 2): full trace with API calls, variable dumps.",
-        "legacyNames": [],
+        "legacyNames": ["debug_scripts"],
         "adminOnly": false,
         "required": false,
-        "default": "normal",
+        "default": "normal | normal, verbose, veryverbose",
         "valueOptions": ["normal", "verbose", "veryverbose"],
         "valueFormat": "{value} | normal=basics, verbose=debug, veryverbose=full trace",
         "prompt": "Debug output level (normal/verbose/veryverbose)"

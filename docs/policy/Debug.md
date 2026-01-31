@@ -94,7 +94,9 @@ Debug script for testing software policy enforcement logic. Demonstrates the COO
 | ✅DEBUG | Has (verify installed) |
 | ❌DEBUG | Skip (hands off) |
 
-> **Note:** `⛔DEBUG` also works for Remove but is **deprecated**. Use `🚫DEBUG` instead.
+> **Note:** `⛔DEBUG` also works for Remove but is **deprecated** for the software policy context. Use `🚫DEBUG` instead. However, `⛔DEBUG` is also used as a **debug control tag** (force debug off) - see [TAGS.md](TAGS.md#debug-control-tags).
+>
+> **Naming overlap:** `✅DEBUG` serves double duty: as a software status tag (debug policy script installed) and as a debug control tag (enable verbose debug). The debug control tag check happens first during `Initialize-LevelScript`. This overlap only matters if you use the debug test script on the same device as debug control tags.
 
 ## Exit Codes
 

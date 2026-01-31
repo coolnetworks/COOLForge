@@ -118,7 +118,7 @@ if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
 }
 
 # Debug mode - enables verbose output for troubleshooting (define early so we can use it)
-$DebugScripts = "{{cf_debug_scripts}}"
+$DebugScripts = "{{cf_debug_coolforge}}"
 if ([string]::IsNullOrWhiteSpace($DebugScripts) -or $DebugScripts -like "{{*}}") {
     $DebugScripts = $false
 } else {

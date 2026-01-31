@@ -18,7 +18,7 @@ export DEVICE_TAGS="{{level_tag_names}}"
 
 GITHUB_PAT="{{cf_coolforge_pat}}"
 PINNED_VERSION="{{cf_coolforge_pin_psmodule_to_version}}"
-DEBUG_SCRIPTS="{{cf_debug_scripts}}"
+DEBUG_SCRIPTS="{{cf_debug_coolforge}}"
 MSP_SCRATCH_FOLDER="{{cf_coolforge_msp_scratch_folder}}"
 
 # ============================================================

@@ -5,7 +5,7 @@
 .DESCRIPTION
     This script reads an answer file backup and restores field values to Level.io.
 
-    CORE FIELDS (apikey, coolforge_*, debug_scripts):
+    CORE FIELDS (apikey, coolforge_*):
     - If field exists: Compare values, prompt if different
     - If field doesn't exist: Create it with backup value
 

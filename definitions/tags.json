@@ -40,6 +40,44 @@
       }
     ]
   },
+  "debugTags": {
+    "description": "Debug control tags. Enable tags are persistent; stop tag is one-shot and clears all debug tags.",
+    "tags": [
+      {
+        "tag": "\u2705DEBUG",
+        "emoji": "\u2705",
+        "unicode": "U+2705",
+        "suffix": "DEBUG",
+        "level": "verbose",
+        "transient": false,
+        "purpose": "Enable verbose debug output on every run (persistent until removed by \u26d4DEBUG)"
+      },
+      {
+        "tag": "\u2705DEBUGVV",
+        "emoji": "\u2705",
+        "unicode": "U+2705",
+        "suffix": "DEBUGVV",
+        "level": "veryverbose",
+        "transient": false,
+        "purpose": "Enable veryverbose debug output on every run (persistent until removed by \u26d4DEBUG)"
+      },
+      {
+        "tag": "\u26d4DEBUG",
+        "emoji": "\u26d4",
+        "unicode": "U+26D4",
+        "suffix": "DEBUG",
+        "level": "force-off",
+        "transient": true,
+        "purpose": "Force debug off: removes all debug tags, sets debug_coolforge=normal on device (breaks inherited debug)"
+      }
+    ],
+    "notes": [
+      "Tag always wins over custom field debug_coolforge value",
+      "Enable tags (\u2705DEBUG, \u2705DEBUGVV) are persistent - stay on device until \u26d4DEBUG removes them",
+      "Stop tag (\u26d4DEBUG) is one-shot: removes itself, removes enable tags, and PATCHes debug_coolforge=normal",
+      "Requires API key for tag removal; without API key, tag overrides for current run only"
+    ]
+  },
   "softwareTags": {
     "description": "Tags with software suffix (e.g., HUNTRESS, UNCHECKY) that control individual software",
     "prefixes": [

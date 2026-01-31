@@ -147,6 +147,12 @@ if (-not $Init.Success) {
     exit 0
 }
 
+# Sync script-level debug variables if a debug tag overrode the custom field
+if ($Init.DebugTagDetected) {
+    $DebugLevel = $Init.DebugLevel
+    $DebugScripts = $Init.DebugMode
+}
+
 # ============================================================
 # LOCKFILE MANAGEMENT
 # ============================================================
@@ -601,7 +607,7 @@ $InvokeParams = @{ ScriptBlock = {
     if ($DebugScripts) {
         Write-Host ""
         Write-Host "============================================================" -ForegroundColor Magenta
-        Write-Host " DEBUG MODE ENABLED (cf_debug_scripts = true)" -ForegroundColor Magenta
+        Write-Host " DEBUG MODE ENABLED (debug_coolforge = verbose)" -ForegroundColor Magenta
         Write-Host " Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Magenta
         Write-Host " Computer:  $env:COMPUTERNAME" -ForegroundColor Magenta
         Write-Host "============================================================" -ForegroundColor Magenta
@@ -697,6 +703,69 @@ $InvokeParams = @{ ScriptBlock = {
         }
 
         $TotalFieldsCreated = $InfraResult.FieldsCreated + $ScFieldsCreated
+
+        # ============================================================
+        # MIGRATION: Copy policy_sc values to policy_screenconnect and remove policy_sc
+        # The field was originally created with the wrong name (policy_sc instead of
+        # policy_screenconnect). This block migrates any existing values and cleans up.
+        # Safe to remove this block once all environments have been migrated.
+        # ============================================================
+        $AllFields = Get-LevelCustomFields -ApiKey $LevelApiKey
+        $OldPolicySc = $AllFields | Where-Object { $_.name -eq "policy_sc" }
+        if ($OldPolicySc) {
+            Write-LevelLog "Found legacy policy_sc field - migrating to policy_screenconnect" -Level "WARN"
+            $NewPolicyField = $AllFields | Where-Object { $_.name -eq "policy_screenconnect" }
+
+            if ($NewPolicyField) {
+                # Fetch all values assigned to policy_sc
+                $AllValues = @()
+                $ValCursor = $null
+                do {
+                    $ValUrl = "https://api.level.io/v2/custom_field_values?limit=100"
+                    if ($ValCursor) { $ValUrl += "&starting_after=$ValCursor" }
+                    $ValResult = Invoke-LevelApiCall -Uri $ValUrl -ApiKey $LevelApiKey -Method "GET"
+                    if (-not $ValResult.Success) { break }
+                    $ValItems = if ($ValResult.Data.data) { $ValResult.Data.data } else { @($ValResult.Data) }
+                    if ($ValItems.Count -eq 0) { break }
+                    $AllValues += $ValItems
+                    $ValCursor = $ValItems[-1].id
+                    if ($ValItems.Count -lt 100) { break }
+                } while ($true)
+
+                $OldValues = @($AllValues | Where-Object { $_.custom_field_id -eq $OldPolicySc.id })
+                $MigratedCount = 0
+
+                foreach ($Val in $OldValues) {
+                    $Body = @{
+                        custom_field_id = $NewPolicyField.id
+                        value           = $Val.value
+                    }
+                    if (-not [string]::IsNullOrEmpty($Val.assigned_to_id)) {
+                        $Body.assigned_to_id = $Val.assigned_to_id
+                    }
+                    $PatchResult = Invoke-LevelApiCall -Uri "https://api.level.io/v2/custom_field_values" -ApiKey $LevelApiKey -Method "PATCH" -Body $Body
+                    if ($PatchResult.Success) { $MigratedCount++ }
+                }
+
+                if ($OldValues.Count -gt 0) {
+                    Write-LevelLog "Migrated $MigratedCount/$($OldValues.Count) value(s) from policy_sc to policy_screenconnect" -Level "INFO"
+                }
+            }
+
+            # Delete the old field only if all values migrated successfully
+            if ($OldValues.Count -eq 0 -or $MigratedCount -eq $OldValues.Count) {
+                $DeleteResult = Remove-LevelCustomField -ApiKey $LevelApiKey -FieldId $OldPolicySc.id -FieldName "policy_sc"
+                if ($DeleteResult) {
+                    Write-LevelLog "Removed legacy policy_sc field" -Level "SUCCESS"
+                }
+                else {
+                    Write-LevelLog "Failed to remove legacy policy_sc field" -Level "WARN"
+                }
+            }
+            else {
+                Write-LevelLog "Skipping policy_sc deletion - only $MigratedCount/$($OldValues.Count) values migrated" -Level "WARN"
+            }
+        }
 
         if ($InfraResult.Success) {
             if ($InfraResult.TagsCreated -gt 0 -or $TotalFieldsCreated -gt 0) {
