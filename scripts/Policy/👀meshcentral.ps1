@@ -107,7 +107,7 @@ $LockFileName = "MeshCentral_Deployment.lock"
 
 # MeshCentral paths and service names
 $MeshAgentServiceNames = @("Mesh Agent", "MeshAgent")
-$InstallerName = "meshagent.msh"
+$InstallerName = "meshagent.exe"
 
 # MeshCentral configuration from custom fields
 $ServerUrlVar = "policy_meshcentral_server_url"
@@ -378,7 +378,6 @@ function Install-Meshcentral {
     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
         Write-LevelLog "Installing MeshCentral (attempt $attempt of $maxAttempts)..."
         try {
-            # MSH files are run directly - they contain the agent and config
             $proc = Start-Process $InstallerPath -ArgumentList "-fullinstall" -PassThru -Wait -WindowStyle Hidden
 
             # Check if process exited
