@@ -371,7 +371,8 @@ function Install-Meshcentral {
     $FileSize = (Get-Item $InstallerPath).Length
     Write-LevelLog "Downloaded installer: $FileSize bytes"
 
-    # Run installer (MSH file is self-installing)
+    # Remove Mark of the Web so Windows doesn't block execution
+    Unblock-File -Path $InstallerPath -ErrorAction SilentlyContinue
     $maxAttempts = 2
     $installSuccess = $false
 
