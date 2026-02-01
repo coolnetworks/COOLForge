@@ -7,6 +7,26 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 
 ## [Unreleased]
 
+## [2026.02.01.01] - 2026-02-01
+
+### Added
+- **CIPP browser extension policy** (`👀cipp.ps1`) — manages CyberDrain CIPP extension for Chrome and Edge via ExtensionSettings registry policies, 3rdparty managed storage with custom branding, and tenant ID binding via `policy_cipp_tenantid`
+- **Bitwarden browser extension policy** (`👀bitwarden.ps1`) — manages Bitwarden extension for Chrome and Edge, cleans up user-installed duplicates from ExtensionInstallForcelist
+- **Force Remove Dropbox** (`⛔Force Remove Dropbox.ps1`) — standalone removal script
+- **Force Remove Foxit** (`⛔Force Remove Foxit.ps1`) — standalone removal script
+- **Force Remove McAfee** (`⛔Force Remove McAfee.ps1`) — standalone removal script
+- **`policy_ok_rats` whitelist** — RAT detection script now supports auto-baseline on first run, storing approved tools in a custom field
+- **`policy_other_msp_screenconnect`** field for whitelisting partner ScreenConnect instances in Non MSP removal script
+- **Field self-bootstrapping** for CIPP (`policy_cipp_tenantid`), RAT detection (`policy_ok_rats`), and Non MSP ScreenConnect removal (`policy_other_msp_screenconnect`)
+- Launchers for all new scripts
+
+### Changed
+- **RAT detection script** upgraded with comprehensive removal capabilities for AnyDesk, TeamViewer, RustDesk, Splashtop, and Chrome Remote Desktop
+- **Non MSP ScreenConnect removal** now supports partner instance whitelisting
+
+### Removed
+- **Standalone AnyDesk removal script** — consolidated into the RAT detection script
+
 ## [2026.01.31] - 2026-01-31
 
 ### Added
