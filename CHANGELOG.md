@@ -7,6 +7,24 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 
 ## [Unreleased]
 
+## [2026.01.31] - 2026-01-31
+
+### Added
+- **`TagName` parameter** on `Initialize-SoftwarePolicyInfrastructure` — allows scripts to use a different name for tags vs custom fields (e.g. ScreenConnect uses `SC` tags but `policy_screenconnect` fields)
+- **Stale field cleanup** — when `TagName` differs from `SoftwareName`, any leftover `policy_$TagName` field (e.g. `policy_sc`) is automatically detected and deleted
+- **`Get-BinariesFolder`** function in library — shared installer storage under the scratch folder's `binaries/` directory
+- **PE header validation** in MeshCentral script — verifies downloaded `.exe` starts with `MZ` before attempting install
+
+### Changed
+- **ScreenConnect script** now passes `-SoftwareName "screenconnect" -TagName "sc"` to `Initialize-SoftwarePolicyInfrastructure`, fixing the `policy_sc` vs `policy_screenconnect` field name mismatch
+- **ScreenConnect script** version bumped to `2026.01.31.01`
+- **MeshCentral script** installer changed from `.msh` to `.exe` with `-fullinstall` flag, added `Unblock-File` for MOTW, uses `Get-BinariesFolder` for storage
+- **MeshCentral script** version bumped to `2026.01.31.01`
+
+### Fixed
+- **`tools/Update-MD5Sums.ps1`** now strips UTF-8 BOM before hashing, matching the launcher's `Get-ContentMD5` verification method — previously generated incorrect hashes for BOM files causing perpetual library re-downloads
+- **MD5SUMS** recomputed with BOM-stripped method for all files
+
 ## [v2025.12.30] - 2025-12-30
 
 ### Added

@@ -1041,23 +1041,60 @@ Initialize-COOLForgeInfrastructure -ApiKey "your-api-key"
 
 ### Initialize-SoftwarePolicyInfrastructure
 
-Creates the custom field and tags for a specific software policy script.
+Creates the custom field and tags for a specific software policy script. Handles the full lifecycle: creates tags, creates the policy field, and cleans up stale fields from previous naming conventions.
 
 ```powershell
-Initialize-SoftwarePolicyInfrastructure -ApiKey "your-api-key" -SoftwareName "unchecky"
+# Standard usage (tag name = software name)
+Initialize-SoftwarePolicyInfrastructure -ApiKey $ApiKey -SoftwareName "unchecky"
+
+# Custom tag name (tags use "SC", field uses "policy_screenconnect")
+Initialize-SoftwarePolicyInfrastructure -ApiKey $ApiKey -SoftwareName "screenconnect" -TagName "sc"
+
+# With launcher variable shortcut (skips API call for field existence check)
+Initialize-SoftwarePolicyInfrastructure -ApiKey $ApiKey -SoftwareName "huntress" `
+    -PolicyFieldValue $PolicyFieldValue
 ```
 
 ### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `-ApiKey` | String | Yes | Level.io API key |
-| `-SoftwareName` | String | Yes | Name of the software (e.g., "unchecky", "huntress") |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | Yes | — | Level.io API key |
+| `-SoftwareName` | String | Yes | — | Canonical software name used for field names (e.g. `"screenconnect"` creates `policy_screenconnect`) |
+| `-TagName` | String | No | Same as `SoftwareName` | Override for tag names. When different from `SoftwareName`, tags use this value (e.g. `"sc"` creates `SC` tags) and the stale field `policy_$TagName` is auto-deleted |
+| `-RequireUrl` | Bool | No | `$false` | If `$true`, also creates a `policy_{softwarename}_url` field |
+| `-DefaultPolicyValue` | String | No | `"pin \| uses pin/install/remove..."` | Default value for the policy field |
+| `-CustomFieldName` | String | No | `""` | Explicit field name override (backwards compat — prefer using `SoftwareName` instead) |
+| `-PolicyFieldValue` | String | No | `""` | Launcher variable value — if populated and not `{{...}}`, skips API check for field existence |
+| `-UrlFieldValue` | String | No | `""` | Launcher variable value for URL field — same skip logic as above |
+| `-BaseUrl` | String | No | `"https://api.level.io/v2"` | Level.io API base URL |
 
-### Created Resources
+### Execution Steps
 
-- Policy custom field: `policy_{softwarename}`
-- Tags: Install, Remove, Has, Pin prefixed with emojis
+1. **Create 5-tag model** — `INSTALL`, `REMOVE`, `PIN`, `REINSTALL`, `HAS` tags with emoji prefixes, using `TagName` (uppercased)
+2. **Create system tags** — `CHECKMARK`, `CROSS`, `DEBUG`, `DEBUGVV`, `NO_ENTRY DEBUG`
+3. **Create policy field** — `policy_{SoftwareName}` with self-documenting default value
+4. **Create URL field** — `policy_{SoftwareName}_url` (only if `RequireUrl = $true`)
+5. **Clean up stale fields** — When `TagName != SoftwareName`, finds and deletes `policy_{TagName}` if it exists
+6. **Debug tag cleanup** — One-shot debug tag cleanup via `Invoke-DebugTagCleanup`
+
+### Returns
+
+```powershell
+@{ Success = $true; TagsCreated = 5; FieldsCreated = 1 }
+@{ Success = $false; Error = "Failed to create policy custom field" }
+```
+
+### TagName vs SoftwareName
+
+Most scripts use the same name for tags and fields (e.g. `huntress` creates `HUNTRESS` tags and `policy_huntress` field). ScreenConnect is the exception:
+
+| | SoftwareName | TagName | Tags Created | Field Created |
+|---|---|---|---|---|
+| **Standard** | `"huntress"` | (defaults to `"huntress"`) | `HUNTRESS` | `policy_huntress` |
+| **ScreenConnect** | `"screenconnect"` | `"sc"` | `SC` | `policy_screenconnect` |
+
+When `TagName` differs from `SoftwareName`, the function also checks for and removes the stale `policy_{TagName}` field (e.g. `policy_sc`) that may have been created by earlier versions of the script.
 
 ---
 

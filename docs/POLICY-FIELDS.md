@@ -75,6 +75,7 @@ Tags (emojis on devices in Level.io) override custom field policies:
 |-------|----------|--------|
 | `policy_chrome` | Google Chrome Enterprise | pin/install/remove |
 | `policy_meshcentral` | MeshCentral Agent | pin/install/remove |
+| `policy_screenconnect` | ScreenConnect (Control) | pin/install/remove |
 | `policy_unchecky` | Unchecky | pin/install/remove |
 | `policy_huntress` | Huntress Agent | pin/install/remove |
 | `policy_dnsfilter` | DNSFilter | pin/install/remove |
@@ -93,6 +94,7 @@ Some policies require additional fields:
 | Policy | Additional Fields |
 |--------|-------------------|
 | `policy_meshcentral` | `policy_meshcentral_server_url`, `policy_meshcentral_download_url` |
+| `policy_screenconnect` | `policy_screenconnect_instance_id`, `policy_screenconnect_baseurl`, `policy_screenconnect_instance`, `policy_screenconnect_api_user`, `policy_screenconnect_api_password`, `policy_screenconnect_device_url` |
 | `policy_unchecky` | `policy_unchecky_url` |
 
 ## Inheritance
@@ -148,6 +150,22 @@ Each policy field is created with a self-documenting default value:
 | Chrome location | `pin \| uses pin/install/remove (install=allow, remove=block)` |
 | Device blocking | `block \| uses block/unblock (change to enable/disable policies)` |
 | Readme | `COOLForge Policies \| Format: value \| docs. Values: pin/install/remove...` |
+
+### Tag Name vs Field Name
+
+Most scripts use the same name for both tags and fields (e.g. `huntress` creates `HUNTRESS` tags and `policy_huntress` field). ScreenConnect is an exception — it uses `SC` for tags but `screenconnect` for fields. This is controlled by the `TagName` parameter on `Initialize-SoftwarePolicyInfrastructure`:
+
+```powershell
+# Standard (tag name = software name)
+Initialize-SoftwarePolicyInfrastructure -SoftwareName "huntress"
+# Tags: HUNTRESS  |  Field: policy_huntress
+
+# Split naming (tag name != software name)
+Initialize-SoftwarePolicyInfrastructure -SoftwareName "screenconnect" -TagName "sc"
+# Tags: SC  |  Field: policy_screenconnect
+```
+
+When `TagName` differs from `SoftwareName`, any stale `policy_{TagName}` field (e.g. `policy_sc`) is automatically deleted.
 
 ### Why Self-Documenting Values?
 
