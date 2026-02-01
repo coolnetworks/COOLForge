@@ -196,6 +196,20 @@
       "description": "Chrome geolocation policy (DefaultGeolocationSetting). Auto-enables Windows location if needed.",
       "tags": ["🙏CHROME_LOCATIONSERVICES", "🚫CHROME_LOCATIONSERVICES", "📌CHROME_LOCATIONSERVICES", "🔄CHROME_LOCATIONSERVICES", "✅CHROME_LOCATIONSERVICES"],
       "customFields": ["policy_chrome_locationservices"]
+    },
+    "cipp": {
+      "displayName": "CIPP Browser Extension",
+      "category": "extension",
+      "description": "CIPP phishing protection extension for Chrome and Edge. Uses ExtensionSettings registry policy.",
+      "tags": ["🙏CIPP", "🚫CIPP", "📌CIPP", "🔄CIPP", "✅CIPP"],
+      "customFields": ["policy_cipp", "policy_cipp_tenantid"]
+    },
+    "bitwarden": {
+      "displayName": "Bitwarden Browser Extension",
+      "category": "extension",
+      "description": "Bitwarden password manager extension for Chrome and Edge. Uses ExtensionInstallForcelist registry policy.",
+      "tags": ["🙏BITWARDEN", "🚫BITWARDEN", "📌BITWARDEN", "🔄BITWARDEN", "✅BITWARDEN"],
+      "customFields": ["policy_bitwarden"]
     }
   }
 }

@@ -104,6 +104,23 @@
       "prerequisites": [
         "List of approved DNS server IPs for your environment"
       ]
+    },
+    "rat_detection": {
+      "displayName": "RAT Detection",
+      "description": "Remote Access Tool detection and removal policies. Auto-populates a whitelist of sanctioned tools on first run.",
+      "prerequisites": []
+    },
+    "cipp": {
+      "displayName": "CIPP Browser Extension",
+      "description": "CIPP (CyberDrain Improved Partner Portal) phishing protection browser extension for Chrome and Edge.",
+      "prerequisites": [
+        "CIPP tenant ID for your organization"
+      ]
+    },
+    "bitwarden": {
+      "displayName": "Bitwarden Browser Extension",
+      "description": "Bitwarden password manager browser extension force-installed via Chrome and Edge ExtensionSettings policy.",
+      "prerequisites": []
     }
   },
   "fields": {
@@ -228,6 +245,14 @@
         "adminOnly": false,
         "required": false,
         "prompt": "ScreenConnect server URL"
+      },
+      {
+        "name": "policy_other_msp_screenconnect",
+        "description": "Comma-separated list of other allowed ScreenConnect instance IDs. Use this to whitelist partner MSP or vendor ScreenConnect instances that should not be removed by the Non MSP removal script.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "Other allowed ScreenConnect instance IDs (comma-separated)"
       }
     ],
     "huntress": [
@@ -447,6 +472,50 @@
         "required": true,
         "default": "8.8.8.8, 8.8.4.4, 1.1.1.1, 1.0.0.1, 208.67.222.222, 208.67.220.220, 103.247.36.36, 103.247.37.37",
         "prompt": "Allowed DNS server IPs (comma-separated)"
+      }
+    ],
+    "rat_detection": [
+      {
+        "name": "policy_ok_rats",
+        "description": "Comma-separated whitelist of sanctioned remote access tools. Auto-populated on first run with detected tools as a baseline. Remove entries to flag tools for removal.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "autoCreate": true
+      }
+    ],
+    "cipp": [
+      {
+        "name": "policy_cipp",
+        "description": "CIPP browser extension policy: install, remove, pin. Uses 5-tag model.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "CIPP extension policy (install/remove/pin)"
+      },
+      {
+        "name": "policy_cipp_tenantid",
+        "description": "CIPP tenant ID or domain for your organization. Required for CIPP reporting features.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "CIPP tenant ID or domain"
+      }
+    ],
+    "bitwarden": [
+      {
+        "name": "policy_bitwarden",
+        "description": "Bitwarden browser extension policy: install, remove, pin. Uses 5-tag model with ExtensionSettings.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "pin",
+        "valueOptions": ["pin", "install", "remove"],
+        "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
+        "prompt": "Bitwarden extension policy (install/remove/pin)"
       }
     ]
   }

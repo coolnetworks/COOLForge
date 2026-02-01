@@ -30,8 +30,9 @@
     - $DeviceTags        : Comma-separated list of device tags
 
     Additional Custom Fields Required:
-    - $ScreenConnectInstanceId : Your MSP's ScreenConnect instance ID to whitelist
-    - $IsScreenConnectServer   : Set to "true" if device hosts ScreenConnect server
+    - $ScreenConnectInstanceId       : Your MSP's ScreenConnect instance ID to whitelist
+    - $IsScreenConnectServer         : Set to "true" if device hosts ScreenConnect server
+    - $policy_other_msp_screenconnect : Comma-separated list of other allowed ScreenConnect instance IDs
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -54,6 +55,22 @@
 # These should be passed from the launcher or set here
 # $ScreenConnectInstanceId - Your MSP's instance ID to whitelist
 # $IsScreenConnectServer - Set to "true" if this device hosts the server
+# $policy_other_msp_screenconnect - Comma-separated list of other allowed instance IDs
+
+# Parse other MSP ScreenConnect whitelist from launcher variables or direct variable
+$OtherMspScreenConnect = if ($LauncherVariables) {
+    $LauncherVariables.OtherMspScreenConnect
+} else {
+    $policy_other_msp_screenconnect
+}
+$WhitelistedInstances = @()
+if ($OtherMspScreenConnect -and $OtherMspScreenConnect -ne "" -and $OtherMspScreenConnect -notlike "{{*}}") {
+    $WhitelistedInstances = $OtherMspScreenConnect -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+}
+# Always include primary MSP instance in the whitelist
+if (-not [string]::IsNullOrWhiteSpace($ScreenConnectInstanceId)) {
+    $WhitelistedInstances = @($ScreenConnectInstanceId) + $WhitelistedInstances
+}
 
 # ============================================================
 # INITIALIZE
@@ -69,21 +86,40 @@ if (-not $Init.Success) {
 }
 
 # ============================================================
+# AUTO-BOOTSTRAP: Ensure policy_other_msp_screenconnect field exists
+# ============================================================
+if ($LevelApiKey) {
+    $OtherMspFieldName = "policy_other_msp_screenconnect"
+    $OtherMspFieldExists = -not [string]::IsNullOrWhiteSpace($OtherMspScreenConnect) -and $OtherMspScreenConnect -notlike "{{*}}"
+    if (-not $OtherMspFieldExists) {
+        $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $OtherMspFieldName -DefaultValue ""
+        if ($NewField) {
+            Write-LevelLog "Created custom field: $OtherMspFieldName" -Level "SUCCESS"
+        }
+    }
+}
+
+# ============================================================
 # HELPER FUNCTIONS
 # ============================================================
 
 function Test-ScreenConnectWhitelisted {
     param([string]$Name)
 
-    if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId)) {
-        return $false
-    }
-
     if ([string]::IsNullOrWhiteSpace($Name)) {
         return $false
     }
 
-    return $Name -like "*$ScreenConnectInstanceId*"
+    if ($WhitelistedInstances.Count -eq 0) {
+        return $false
+    }
+
+    foreach ($Instance in $WhitelistedInstances) {
+        if ($Name -like "*$Instance*") {
+            return $true
+        }
+    }
+    return $false
 }
 
 function Test-ScreenConnectInstalled {
@@ -149,7 +185,14 @@ Invoke-LevelScript -ScriptBlock {
         Complete-LevelScript -ExitCode 0 -Message "ScreenConnect server host - skipped"
     }
 
-    Write-LevelLog "Whitelisted Instance ID: $ScreenConnectInstanceId"
+    if ($WhitelistedInstances.Count -gt 0) {
+        Write-LevelLog "Whitelisted instances ($($WhitelistedInstances.Count)):"
+        foreach ($Instance in $WhitelistedInstances) {
+            Write-LevelLog "  - $Instance"
+        }
+    } else {
+        Write-LevelLog "No whitelisted instances - ALL ScreenConnect installations will be removed" -Level "WARN"
+    }
 
     # Initial check
     if (-not (Test-ScreenConnectInstalled)) {

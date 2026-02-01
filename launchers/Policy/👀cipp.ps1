@@ -1,13 +1,15 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
+$ScriptToRun = "👀cipp.ps1"
+$policy_cipp = "{{cf_policy_cipp}}"
+$policy_cipp_tenantid = "{{cf_policy_cipp_tenantid}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.02.01.02
+    Launcher Version: 2026.02.01.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -17,8 +19,8 @@ $ScriptToRun = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.02.01.02"
-$LauncherName = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
+$LauncherVersion = "2026.02.01.01"
+$LauncherName = "Policy/👀cipp.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -28,16 +30,6 @@ $ErrorActionPreference = "SilentlyContinue"
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
-
-# ScreenConnect removal-specific variables
-$ScreenConnectInstanceId = "{{cf_policy_screenconnect_instance_id}}"
-if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") { $ScreenConnectInstanceId = "" }
-
-$IsScreenConnectServer = "{{cf_policy_screenconnect_machine_hosts_screenconnect_server}}"
-if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") { $IsScreenConnectServer = "" }
-
-$policy_other_msp_screenconnect = "{{cf_policy_other_msp_screenconnect}}"
-if ([string]::IsNullOrWhiteSpace($policy_other_msp_screenconnect) -or $policy_other_msp_screenconnect -like "{{*}}") { $policy_other_msp_screenconnect = "" }
 
 $GitHubPAT = @'
 {{cf_coolforge_pat}}
@@ -264,16 +256,13 @@ Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
 Write-Host "[*] Slim Launcher v$LauncherVersion"
 
 $LauncherVars = @{
-    MspScratchFolder       = $MspScratchFolder
-    DeviceHostname         = $DeviceHostname
-    DeviceTags             = $DeviceTags
-    LevelApiKey            = $LevelApiKey
-    DebugScripts           = $DebugScripts
-    DebugLevel             = $DebugLevel
-    LibraryUrl             = $LibraryUrl
-    ScreenConnectInstanceId = $ScreenConnectInstanceId
-    IsScreenConnectServer  = $IsScreenConnectServer
-    OtherMspScreenConnect  = $policy_other_msp_screenconnect
+    MspScratchFolder = $MspScratchFolder
+    DeviceHostname   = $DeviceHostname
+    DeviceTags       = $DeviceTags
+    LevelApiKey      = $LevelApiKey
+    DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
+    LibraryUrl       = $LibraryUrl
 }
 
 # Add policy variables

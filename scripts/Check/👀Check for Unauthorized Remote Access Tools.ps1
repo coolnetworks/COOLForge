@@ -14,15 +14,21 @@
     The script supports whitelisting for authorized tools:
     - ScreenConnect: Whitelist by instance ID
     - Meshcentral: Whitelist by server URL (e.g., mc.cool.net.au)
+    - Any tool: Whitelist via policy_ok_rats custom field (comma-separated names)
+
+    On first run, if policy_ok_rats is empty, the script populates it with all
+    currently detected tools as a baseline whitelist. This prevents unintended
+    removal of sanctioned tools when auto-remove is later enabled.
 
     When auto-remove is enabled, the script will attempt to uninstall detected
-    unauthorized RATs using their native uninstallers or force removal.
+    unauthorized RATs using comprehensive removal logic including registry cleanup,
+    service removal, firewall rules, scheduled tasks, and file deletion.
 
     When run via Script Launcher, this script inherits all Level.io variables
     and the library is already loaded.
 
 .NOTES
-    Version:          2026.01.27.01
+    Version:          2026.02.01.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success (No unauthorized RATs) | 1 = Alert (RATs detected/removed)
 
@@ -37,6 +43,7 @@
     - $IsScreenConnectServer   : Set to "true" if device is a ScreenConnect server
     - $MeshcentralServerUrl    : Whitelisted Meshcentral server URL (e.g., mc.cool.net.au)
     - $AutoRemoveRATs          : Set to "true" to auto-remove detected RATs
+    - $PolicyOkRats            : Comma-separated list of whitelisted RAT names
 
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
@@ -45,8 +52,8 @@
     https://github.com/coolnetworks/COOLForge
 #>
 
-# 👀Check for Unauthorized Remote Access Tools
-# Version: 2026.01.27.01
+# Check for Unauthorized Remote Access Tools (U+1F440)
+# Version: 2026.02.01.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success (No unauthorized RATs) | Exit 1 = Alert (RATs detected)
 #
@@ -70,6 +77,7 @@ if ($RunningFromLauncher) {
     $IsScreenConnectServer = $LauncherVariables.IsScreenConnectServer
     $MeshcentralServerUrl = $LauncherVariables.MeshcentralServerUrl
     $AutoRemoveRATs = $LauncherVariables.AutoRemoveRATs
+    $PolicyOkRats = $LauncherVariables.PolicyOkRats
 } else {
     # Standalone mode defaults
     $MspScratchFolder = if ($env:CF_SCRATCH) { $env:CF_SCRATCH } else { "C:\ProgramData\MSP" }
@@ -83,6 +91,7 @@ if ($RunningFromLauncher) {
     $IsScreenConnectServer = ""
     $MeshcentralServerUrl = ""
     $AutoRemoveRATs = ""
+    $PolicyOkRats = ""
 }
 
 # Normalize policy values
@@ -93,6 +102,12 @@ $PolicyRatRemoval = $PolicyRatRemoval.ToLower().Trim()
 
 # Normalize auto-remove setting (set by launcher based on policy)
 $EnableAutoRemove = ($AutoRemoveRATs -eq "true" -or $PolicyRatRemoval -eq "remove")
+
+# Parse whitelisted RATs from policy field
+$WhitelistedRats = @()
+if (-not [string]::IsNullOrWhiteSpace($PolicyOkRats) -and $PolicyOkRats -notlike "{{*}}") {
+    $WhitelistedRats = $PolicyOkRats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+}
 
 # ============================================================
 # INITIALIZE
@@ -112,6 +127,20 @@ if (-not $Init.Success) {
 if ($Init.DebugTagDetected) {
     $DebugLevel = $Init.DebugLevel
     $DebugScripts = $Init.DebugMode
+}
+
+# ============================================================
+# AUTO-BOOTSTRAP: Ensure policy_ok_rats field exists
+# ============================================================
+if ($LevelApiKey) {
+    $OkRatsFieldName = "policy_ok_rats"
+    $OkRatsFieldExists = -not [string]::IsNullOrWhiteSpace($PolicyOkRats) -and $PolicyOkRats -notlike "{{*}}"
+    if (-not $OkRatsFieldExists) {
+        $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $OkRatsFieldName -DefaultValue ""
+        if ($NewField) {
+            Write-LevelLog "Created custom field: $OkRatsFieldName" -Level "SUCCESS"
+        }
+    }
 }
 
 # Check if policy says to skip
@@ -470,21 +499,12 @@ function Test-ToolPresence {
 # ============================================================
 
 function Remove-RATool {
-    <#
-    .SYNOPSIS
-        Attempts to remove a detected remote access tool.
-    .PARAMETER ToolName
-        Name of the tool to remove.
-    .RETURNS
-        Hashtable with Success (bool) and Message (string).
-    #>
     param([string]$ToolName)
 
     $Result = @{ Success = $false; Message = "" }
 
     Write-LevelLog "Attempting to remove: $ToolName" -Level "INFO"
 
-    # Tool-specific removal logic
     switch ($ToolName) {
         "AnyDesk" {
             $Result = Remove-AnyDesk
@@ -499,7 +519,10 @@ function Remove-RATool {
             $Result = Remove-Meshcentral
         }
         "Splashtop" {
-            $Result = Remove-GenericRAT -Name "Splashtop" -ProcessPatterns @("Splashtop*", "strwinclt*") -ServicePatterns @("Splashtop*")
+            $Result = Remove-Splashtop
+        }
+        "Chrome Remote Desktop" {
+            $Result = Remove-ChromeRemoteDesktop
         }
         "LogMeIn" {
             $Result = Remove-GenericRAT -Name "LogMeIn" -ProcessPatterns @("LogMeIn*", "LMI*") -ServicePatterns @("LogMeIn*", "LMI*")
@@ -529,7 +552,6 @@ function Remove-RATool {
             $Result = Remove-GenericRAT -Name "Radmin" -ProcessPatterns @("radmin*", "rserver*") -ServicePatterns @("radmin*", "rserver*")
         }
         default {
-            # Try generic removal for unknown tools
             $Result = Remove-GenericRAT -Name $ToolName -ProcessPatterns @("$ToolName*") -ServicePatterns @("$ToolName*")
         }
     }
@@ -540,51 +562,160 @@ function Remove-RATool {
 function Remove-AnyDesk {
     $Result = @{ Success = $false; Message = "" }
 
-    # Stop processes
+    Write-LevelLog "=== AnyDesk Comprehensive Removal ===" -Level "INFO"
+
+    # Phase 1: Stop processes and services
     Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
 
-    # Stop and remove service
-    $Service = Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue
-    if ($Service) {
-        Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
-        & sc.exe delete $Service.Name 2>$null
+    Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue | ForEach-Object {
+        Stop-Service -Name $_.Name -Force -ErrorAction SilentlyContinue
+        Set-Service -Name $_.Name -StartupType Disabled -ErrorAction SilentlyContinue
     }
 
-    # Run uninstaller if exists
-    $UninstallPaths = @(
+    # Phase 2: Registry uninstall string parsing
+    $regPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    )
+
+    foreach ($regPath in $regPaths) {
+        $entries = Get-ItemProperty $regPath -ErrorAction SilentlyContinue |
+                   Where-Object { $_.DisplayName -like "*AnyDesk*" }
+
+        foreach ($entry in $entries) {
+            $uninstallString = $entry.UninstallString
+            if ($uninstallString) {
+                Write-LevelLog "Found uninstaller: $uninstallString"
+                if ($uninstallString -match '^"(.+)"(.*)$') {
+                    $exe = $Matches[1]
+                    $uninstallArgs = $Matches[2].Trim()
+                }
+                elseif ($uninstallString -match '^(.+\.exe)(.*)$') {
+                    $exe = $Matches[1]
+                    $uninstallArgs = $Matches[2].Trim()
+                }
+                else {
+                    $exe = $uninstallString
+                    $uninstallArgs = ""
+                }
+                if ($uninstallArgs -notmatch '/S|--silent|--remove') {
+                    $uninstallArgs = "$uninstallArgs --remove --silent"
+                }
+                try {
+                    Start-Process -FilePath $exe -ArgumentList $uninstallArgs -Wait -PassThru -ErrorAction Stop | Out-Null
+                    Start-Sleep -Seconds 3
+                } catch {
+                    Write-LevelLog "Uninstall failed: $($_.Exception.Message)" -Level "WARN"
+                }
+            }
+        }
+    }
+
+    # Phase 2b: Direct uninstaller
+    $anyDeskPaths = @(
         "$env:ProgramFiles\AnyDesk\AnyDesk.exe",
         "${env:ProgramFiles(x86)}\AnyDesk\AnyDesk.exe",
-        "$env:APPDATA\AnyDesk\AnyDesk.exe"
+        "$env:LOCALAPPDATA\AnyDesk\AnyDesk.exe"
     )
-    foreach ($Path in $UninstallPaths) {
-        if (Test-Path $Path) {
-            Write-LevelLog "Running AnyDesk uninstaller..."
-            Start-Process $Path -ArgumentList "--remove" -Wait -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 3
+    foreach ($adPath in $anyDeskPaths) {
+        if (Test-Path $adPath) {
+            try {
+                Start-Process -FilePath $adPath -ArgumentList "--remove --silent" -Wait -PassThru -ErrorAction Stop | Out-Null
+                Start-Sleep -Seconds 3
+            } catch {
+                Write-LevelLog "Direct uninstall failed: $($_.Exception.Message)" -Level "WARN"
+            }
         }
     }
 
-    # Force remove directories
-    $RemovePaths = @(
+    # Phase 3: Force remove files (including all user profiles)
+    $paths = @(
         "$env:ProgramFiles\AnyDesk",
         "${env:ProgramFiles(x86)}\AnyDesk",
+        "$env:LOCALAPPDATA\AnyDesk",
+        "$env:ProgramData\AnyDesk",
         "$env:APPDATA\AnyDesk",
-        "$env:ProgramData\AnyDesk"
+        "$env:TEMP\AnyDesk*",
+        "$env:PUBLIC\Desktop\AnyDesk*.lnk",
+        "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\AnyDesk*.lnk"
     )
-    foreach ($Path in $RemovePaths) {
-        if (Test-Path $Path) {
-            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+    foreach ($path in $paths) {
+        Get-Item -Path $path -ErrorAction SilentlyContinue | ForEach-Object {
+            Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 
-    # Verify removal
-    $StillPresent = Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue
+    # All user profiles
+    Get-ChildItem -Path "C:\Users" -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        @(
+            "$($_.FullName)\AppData\Local\AnyDesk",
+            "$($_.FullName)\AppData\Roaming\AnyDesk",
+            "$($_.FullName)\Desktop\AnyDesk*.lnk",
+            "$($_.FullName)\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\AnyDesk*.lnk"
+        ) | ForEach-Object {
+            Get-Item -Path $_ -ErrorAction SilentlyContinue | ForEach-Object {
+                Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    # Phase 4: Registry cleanup
+    $anyDeskKeys = @(
+        "HKLM:\SOFTWARE\AnyDesk",
+        "HKLM:\SOFTWARE\WOW6432Node\AnyDesk",
+        "HKCU:\SOFTWARE\AnyDesk",
+        "HKLM:\SYSTEM\CurrentControlSet\Services\AnyDesk"
+    )
+    foreach ($key in $anyDeskKeys) {
+        if (Test-Path $key) {
+            Remove-Item -Path $key -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # Clean uninstall entries
+    foreach ($regPath in @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall", "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall")) {
+        Get-ChildItem -Path $regPath -ErrorAction SilentlyContinue | ForEach-Object {
+            $props = Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue
+            if ($props.DisplayName -like "*AnyDesk*") {
+                Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    # Clean Run keys
+    foreach ($runKey in @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run")) {
+        $props = Get-ItemProperty -Path $runKey -ErrorAction SilentlyContinue
+        if ($props) {
+            $props.PSObject.Properties | Where-Object { $_.Value -like "*AnyDesk*" } | ForEach-Object {
+                Remove-ItemProperty -Path $runKey -Name $_.Name -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    # Delete services
+    Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue | ForEach-Object {
+        & sc.exe delete $_.Name 2>$null
+    }
+
+    # Phase 5: Firewall rules and scheduled tasks
+    Get-NetFirewallRule -DisplayName "*AnyDesk*" -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+    Get-ScheduledTask -TaskName "*AnyDesk*" -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+    # Verification
+    Start-Sleep -Seconds 3
+    $StillPresent = (Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue) -or (Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue)
     if (-not $StillPresent) {
         $Result.Success = $true
         $Result.Message = "AnyDesk removed successfully"
     } else {
-        $Result.Message = "AnyDesk removal incomplete - processes still running"
+        $remaining = @()
+        $procs = Get-Process -Name "AnyDesk*" -ErrorAction SilentlyContinue
+        if ($procs) { $remaining += "Processes: $($procs.Name -join ', ')" }
+        $svcs = Get-Service -Name "AnyDesk*" -ErrorAction SilentlyContinue
+        if ($svcs) { $remaining += "Services: $($svcs.Name -join ', ')" }
+        $Result.Message = "AnyDesk removal incomplete - $($remaining -join '; ')"
     }
 
     return $Result
@@ -593,47 +724,163 @@ function Remove-AnyDesk {
 function Remove-TeamViewer {
     $Result = @{ Success = $false; Message = "" }
 
-    # Stop processes
-    Get-Process -Name "TeamViewer*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Write-LevelLog "=== TeamViewer Comprehensive Removal ===" -Level "INFO"
+
+    # Phase 1: Stop services (versioned) and processes
+    $tvServices = @("TeamViewer", "TeamViewer7", "TeamViewer8", "TeamViewer9", "TeamViewer10", "TeamViewer11", "TeamViewer12", "TeamViewer13", "TeamViewer14", "TeamViewer15")
+    foreach ($svcName in $tvServices) {
+        $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+        if ($svc) {
+            Stop-Service -Name $svcName -Force -ErrorAction SilentlyContinue
+            Set-Service -Name $svcName -StartupType Disabled -ErrorAction SilentlyContinue
+        }
+    }
+
+    $tvProcesses = @("TeamViewer", "TeamViewer_Service", "tv_w32", "tv_x64", "TeamViewer_Desktop", "TeamViewer_Note")
+    foreach ($proc in $tvProcesses) {
+        Get-Process -Name $proc -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    }
     Start-Sleep -Seconds 2
 
-    # Stop and remove service
-    $Service = Get-Service -Name "TeamViewer*" -ErrorAction SilentlyContinue
-    if ($Service) {
-        Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
-        & sc.exe delete $Service.Name 2>$null
+    # Phase 2: Winget uninstall
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if ($winget) {
+        & winget uninstall --id "TeamViewer.TeamViewer" --silent --force 2>$null
+        & winget uninstall --id "TeamViewer.TeamViewer.Host" --silent --force 2>$null
+        & winget uninstall --name "TeamViewer" --silent --force 2>$null
     }
 
-    # Find and run uninstaller from registry
-    $UninstallString = Get-SoftwareUninstallString -SoftwareName "TeamViewer"
-    if ($UninstallString) {
-        Write-LevelLog "Running TeamViewer uninstaller..."
-        if ($UninstallString -match 'msiexec') {
-            Start-Process msiexec.exe -ArgumentList ($UninstallString -replace 'msiexec.exe\s*', '') + " /qn" -Wait -ErrorAction SilentlyContinue
-        } else {
-            Start-Process cmd.exe -ArgumentList "/c `"$UninstallString`" /S" -Wait -ErrorAction SilentlyContinue
-        }
-        Start-Sleep -Seconds 5
-    }
-
-    # Force remove directories
-    $RemovePaths = @(
-        "$env:ProgramFiles\TeamViewer",
-        "${env:ProgramFiles(x86)}\TeamViewer",
-        "$env:APPDATA\TeamViewer"
+    # Phase 3: MSI uninstall from registry
+    $uninstallPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
     )
-    foreach ($Path in $RemovePaths) {
-        if (Test-Path $Path) {
-            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+    foreach ($path in $uninstallPaths) {
+        if (Test-Path $path) {
+            Get-ChildItem -Path $path | ForEach-Object {
+                $displayName = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).DisplayName
+                if ($displayName -like "*TeamViewer*") {
+                    $uninstallString = (Get-ItemProperty -Path $_.PSPath).UninstallString
+                    $quietUninstall = (Get-ItemProperty -Path $_.PSPath).QuietUninstallString
+                    if ($quietUninstall) {
+                        cmd /c $quietUninstall 2>$null
+                    } elseif ($uninstallString) {
+                        if ($uninstallString -match "msiexec") {
+                            $uninstallString = $uninstallString -replace "/I", "/X"
+                            cmd /c "$uninstallString /qn /norestart" 2>$null
+                        } elseif ($uninstallString -match "uninstall.exe") {
+                            cmd /c "`"$uninstallString`" /S" 2>$null
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Start-Sleep -Seconds 5
+
+    # Phase 4: Direct uninstaller execution
+    $tvFolders = @(
+        Get-ChildItem "${env:ProgramFiles}" -Filter "TeamViewer*" -Directory -ErrorAction SilentlyContinue
+        Get-ChildItem "${env:ProgramFiles(x86)}" -Filter "TeamViewer*" -Directory -ErrorAction SilentlyContinue
+    )
+    foreach ($folder in $tvFolders) {
+        $uninstaller = Join-Path $folder.FullName "uninstall.exe"
+        if (Test-Path $uninstaller) {
+            Start-Process -FilePath $uninstaller -ArgumentList "/S" -Wait -ErrorAction SilentlyContinue
+        }
+    }
+    Start-Sleep -Seconds 3
+
+    # Phase 5: Cleanup files
+    $foldersToRemove = @(
+        "${env:ProgramFiles}\TeamViewer",
+        "${env:ProgramFiles(x86)}\TeamViewer",
+        "${env:ProgramData}\TeamViewer",
+        "${env:LOCALAPPDATA}\TeamViewer",
+        "${env:APPDATA}\TeamViewer",
+        "C:\Users\Public\Desktop\TeamViewer.lnk"
+    )
+    foreach ($folder in $tvFolders) {
+        $foldersToRemove += $folder.FullName
+    }
+
+    Get-ChildItem "C:\Users" -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        $foldersToRemove += "$($_.FullName)\AppData\Local\TeamViewer"
+        $foldersToRemove += "$($_.FullName)\AppData\Roaming\TeamViewer"
+        $foldersToRemove += "$($_.FullName)\Desktop\TeamViewer*.lnk"
+    }
+    foreach ($folder in $foldersToRemove) {
+        if (Test-Path $folder) {
+            Remove-Item -Path $folder -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 
-    $StillPresent = Get-Process -Name "TeamViewer*" -ErrorAction SilentlyContinue
-    if (-not $StillPresent) {
+    # Phase 6: Registry cleanup
+    $registryPaths = @(
+        "HKLM:\SOFTWARE\TeamViewer",
+        "HKLM:\SOFTWARE\WOW6432Node\TeamViewer",
+        "HKCU:\SOFTWARE\TeamViewer",
+        "HKLM:\SOFTWARE\TeamViewer GmbH",
+        "HKLM:\SOFTWARE\WOW6432Node\TeamViewer GmbH"
+    )
+    foreach ($regPath in $registryPaths) {
+        if (Test-Path $regPath) {
+            Remove-Item -Path $regPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # Run keys
+    foreach ($runKey in @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run")) {
+        if (Test-Path $runKey) {
+            $props = Get-ItemProperty -Path $runKey -ErrorAction SilentlyContinue
+            if ($props) {
+                $props.PSObject.Properties | Where-Object { $_.Name -like "*TeamViewer*" } | ForEach-Object {
+                    Remove-ItemProperty -Path $runKey -Name $_.Name -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    }
+
+    # Clean uninstall entries
+    foreach ($path in $uninstallPaths) {
+        Get-ChildItem -Path $path -ErrorAction SilentlyContinue | ForEach-Object {
+            $displayName = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).DisplayName
+            if ($displayName -like "*TeamViewer*") {
+                Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    # Delete services, firewall, tasks
+    Get-NetFirewallRule -DisplayName "*TeamViewer*" -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+    foreach ($svcName in $tvServices) {
+        if (Get-Service -Name $svcName -ErrorAction SilentlyContinue) {
+            & sc.exe delete $svcName 2>$null
+        }
+    }
+    Get-ScheduledTask -TaskName "*TeamViewer*" -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+    # Remove printers and drivers
+    Get-Printer -Name "*TeamViewer*" -ErrorAction SilentlyContinue | Remove-Printer -ErrorAction SilentlyContinue
+    Get-PrinterDriver -Name "*TeamViewer*" -ErrorAction SilentlyContinue | Remove-PrinterDriver -ErrorAction SilentlyContinue
+
+    # Verification
+    $remainingInstalls = @()
+    foreach ($path in $uninstallPaths) {
+        Get-ChildItem -Path $path -ErrorAction SilentlyContinue | ForEach-Object {
+            $displayName = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).DisplayName
+            if ($displayName -like "*TeamViewer*") {
+                $remainingInstalls += $displayName
+            }
+        }
+    }
+
+    if ($remainingInstalls.Count -eq 0) {
         $Result.Success = $true
         $Result.Message = "TeamViewer removed successfully"
     } else {
-        $Result.Message = "TeamViewer removal incomplete"
+        $Result.Message = "TeamViewer removal incomplete - remaining: $($remainingInstalls -join ', ')"
     }
 
     return $Result
@@ -642,48 +889,129 @@ function Remove-TeamViewer {
 function Remove-RustDesk {
     $Result = @{ Success = $false; Message = "" }
 
-    # Stop processes
-    Get-Process -Name "rustdesk*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Write-LevelLog "=== RustDesk Comprehensive Removal ===" -Level "INFO"
+
+    # Stop services and processes
+    @("RustDesk", "rustdesk", "rustdesk_service") | ForEach-Object {
+        $svc = Get-Service -Name $_ -ErrorAction SilentlyContinue
+        if ($svc) {
+            Stop-Service -Name $_ -Force -ErrorAction SilentlyContinue
+            Set-Service -Name $_ -StartupType Disabled -ErrorAction SilentlyContinue
+        }
+    }
+    @("rustdesk", "rustdesk_service") | ForEach-Object {
+        Get-Process -Name $_ -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    }
     Start-Sleep -Seconds 2
 
-    # Stop and remove service
-    $Service = Get-Service -Name "rustdesk*" -ErrorAction SilentlyContinue
-    if ($Service) {
-        Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
-        & sc.exe delete $Service.Name 2>$null
-    }
-
-    # Run uninstaller
-    $UninstallPaths = @(
-        "$env:ProgramFiles\RustDesk\rustdesk.exe",
-        "${env:ProgramFiles(x86)}\RustDesk\rustdesk.exe"
+    # Registry-based uninstall
+    $uninstallPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
     )
-    foreach ($Path in $UninstallPaths) {
-        if (Test-Path $Path) {
-            Write-LevelLog "Running RustDesk uninstaller..."
-            Start-Process $Path -ArgumentList "--uninstall" -Wait -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 3
+    foreach ($path in $uninstallPaths) {
+        if (Test-Path $path) {
+            Get-ChildItem -Path $path | ForEach-Object {
+                $displayName = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).DisplayName
+                $uninstallString = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).UninstallString
+                $quietUninstall = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).QuietUninstallString
+                if ($displayName -like "*RustDesk*") {
+                    if ($quietUninstall) {
+                        cmd /c $quietUninstall 2>&1 | Out-Null
+                    } elseif ($uninstallString) {
+                        if ($uninstallString -match "msiexec") {
+                            $uninstallString = $uninstallString -replace "/I", "/X"
+                            cmd /c "$uninstallString /qn /norestart" 2>&1 | Out-Null
+                        } else {
+                            cmd /c "$uninstallString --silent" 2>&1 | Out-Null
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Start-Sleep -Seconds 3
+
+    # Direct uninstaller
+    @("$env:ProgramFiles\RustDesk\rustdesk.exe", "${env:ProgramFiles(x86)}\RustDesk\rustdesk.exe") | ForEach-Object {
+        if (Test-Path $_) {
+            Start-Process -FilePath $_ -ArgumentList "--uninstall" -Wait -ErrorAction SilentlyContinue
         }
     }
 
-    # Force remove
-    $RemovePaths = @(
+    # Delete services
+    @("RustDesk", "rustdesk", "rustdesk_service") | ForEach-Object {
+        if (Get-Service -Name $_ -ErrorAction SilentlyContinue) {
+            & sc.exe delete $_ 2>&1 | Out-Null
+        }
+    }
+
+    # Remove directories (including user profiles and .rustdesk)
+    $directories = @(
         "$env:ProgramFiles\RustDesk",
         "${env:ProgramFiles(x86)}\RustDesk",
-        "$env:APPDATA\RustDesk"
+        "$env:LOCALAPPDATA\RustDesk",
+        "$env:APPDATA\RustDesk",
+        "$env:ProgramData\RustDesk",
+        "$env:PUBLIC\Documents\RustDesk"
     )
-    foreach ($Path in $RemovePaths) {
-        if (Test-Path $Path) {
-            Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue
+    Get-ChildItem -Path "C:\Users" -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        $directories += "$($_.FullName)\AppData\Local\RustDesk"
+        $directories += "$($_.FullName)\AppData\Roaming\RustDesk"
+        $directories += "$($_.FullName)\.rustdesk"
+    }
+    foreach ($dir in $directories) {
+        if (Test-Path $dir) {
+            Remove-Item -Path $dir -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 
-    $StillPresent = Get-Process -Name "rustdesk*" -ErrorAction SilentlyContinue
-    if (-not $StillPresent) {
+    # Registry cleanup
+    @("HKLM:\SOFTWARE\RustDesk", "HKLM:\SOFTWARE\WOW6432Node\RustDesk", "HKCU:\SOFTWARE\RustDesk") | ForEach-Object {
+        if (Test-Path $_) { Remove-Item -Path $_ -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    # Clean uninstall entries
+    foreach ($path in $uninstallPaths) {
+        Get-ChildItem -Path $path -ErrorAction SilentlyContinue | ForEach-Object {
+            $displayName = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).DisplayName
+            if ($displayName -like "*RustDesk*") {
+                Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    # Firewall, tasks, shortcuts
+    Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like "*RustDesk*" } | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+    Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -like "*RustDesk*" } | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+    $shortcutLocations = @("$env:PUBLIC\Desktop\RustDesk*.lnk", "$env:ALLUSERSPROFILE\Microsoft\Windows\Start Menu\Programs\RustDesk*.lnk")
+    Get-ChildItem -Path "C:\Users" -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        $shortcutLocations += "$($_.FullName)\Desktop\RustDesk*.lnk"
+        $shortcutLocations += "$($_.FullName)\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\RustDesk*.lnk"
+    }
+    foreach ($shortcut in $shortcutLocations) {
+        Get-Item -Path $shortcut -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+    }
+
+    # Verification
+    $remainingItems = @()
+    @("RustDesk", "rustdesk") | ForEach-Object {
+        if (Get-Service -Name $_ -ErrorAction SilentlyContinue) { $remainingItems += "Service: $_" }
+    }
+    @("rustdesk", "rustdesk_service") | ForEach-Object {
+        if (Get-Process -Name $_ -ErrorAction SilentlyContinue) { $remainingItems += "Process: $_" }
+    }
+    @("$env:ProgramFiles\RustDesk", "${env:ProgramFiles(x86)}\RustDesk") | ForEach-Object {
+        if (Test-Path $_) { $remainingItems += "Directory: $_" }
+    }
+
+    if ($remainingItems.Count -eq 0) {
         $Result.Success = $true
         $Result.Message = "RustDesk removed successfully"
     } else {
-        $Result.Message = "RustDesk removal incomplete"
+        $Result.Message = "RustDesk removal incomplete - $($remainingItems -join '; ')"
     }
 
     return $Result
@@ -692,31 +1020,26 @@ function Remove-RustDesk {
 function Remove-Meshcentral {
     $Result = @{ Success = $false; Message = "" }
 
-    # Stop processes
     Get-Process -Name "MeshAgent*", "meshagent*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
 
-    # Stop and remove service
     $Services = Get-Service -Name "Mesh Agent*", "MeshAgent*" -ErrorAction SilentlyContinue
     foreach ($Service in $Services) {
         Stop-Service -Name $Service.Name -Force -ErrorAction SilentlyContinue
         & sc.exe delete $Service.Name 2>$null
     }
 
-    # Run uninstaller
     $UninstallPaths = @(
         "$env:ProgramFiles\Mesh Agent\MeshAgent.exe",
         "${env:ProgramFiles(x86)}\Mesh Agent\MeshAgent.exe"
     )
     foreach ($Path in $UninstallPaths) {
         if (Test-Path $Path) {
-            Write-LevelLog "Running Meshcentral uninstaller..."
             Start-Process $Path -ArgumentList "-uninstall" -Wait -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 3
         }
     }
 
-    # Force remove directories
     $RemovePaths = @(
         "$env:ProgramFiles\Mesh Agent",
         "${env:ProgramFiles(x86)}\Mesh Agent",
@@ -739,17 +1062,174 @@ function Remove-Meshcentral {
     return $Result
 }
 
+function Remove-Splashtop {
+    $Result = @{ Success = $false; Message = "" }
+
+    Write-LevelLog "=== Splashtop Comprehensive Removal ===" -Level "INFO"
+
+    # Stop services and processes
+    @("SplashtopRemoteService", "SSUService") | ForEach-Object {
+        $svc = Get-Service -Name $_ -ErrorAction SilentlyContinue
+        if ($svc) {
+            Stop-Service -Name $_ -Force -ErrorAction SilentlyContinue
+            Set-Service -Name $_ -StartupType Disabled -ErrorAction SilentlyContinue
+        }
+    }
+    @("SRManager", "SRService", "SRFeature", "SRAgent", "strwinclt", "SplashtopStreamer") | ForEach-Object {
+        Get-Process -Name $_ -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    }
+    Start-Sleep -Seconds 2
+
+    # Winget
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if ($winget) {
+        & winget uninstall --id "Splashtop.SplashtopStreamer" --silent --force 2>$null
+        & winget uninstall --name "Splashtop Streamer" --silent --force 2>$null
+    }
+
+    # MSI uninstall from registry
+    $uninstallPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+    )
+    foreach ($path in $uninstallPaths) {
+        if (Test-Path $path) {
+            Get-ChildItem -Path $path | ForEach-Object {
+                $displayName = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).DisplayName
+                if ($displayName -like "*Splashtop*Streamer*" -or $displayName -like "*Splashtop*Remote*") {
+                    $uninstallString = (Get-ItemProperty -Path $_.PSPath).UninstallString
+                    $quietUninstall = (Get-ItemProperty -Path $_.PSPath).QuietUninstallString
+                    if ($quietUninstall) {
+                        cmd /c $quietUninstall 2>$null
+                    } elseif ($uninstallString) {
+                        if ($uninstallString -match "msiexec") {
+                            $uninstallString = $uninstallString -replace "/I", "/X"
+                            cmd /c "$uninstallString /qn /norestart" 2>$null
+                        } elseif ($uninstallString -notmatch "/S|/silent|/quiet") {
+                            cmd /c "`"$uninstallString`" /S" 2>$null
+                        } else {
+                            cmd /c $uninstallString 2>$null
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Start-Sleep -Seconds 5
+
+    # Direct uninstallers
+    @(
+        "${env:ProgramFiles}\Splashtop\Splashtop Remote\Server\uninst.exe",
+        "${env:ProgramFiles(x86)}\Splashtop\Splashtop Remote\Server\uninst.exe",
+        "${env:ProgramFiles}\Splashtop\Splashtop Streamer\uninst.exe",
+        "${env:ProgramFiles(x86)}\Splashtop\Splashtop Streamer\uninst.exe"
+    ) | ForEach-Object {
+        if (Test-Path $_) {
+            Start-Process -FilePath $_ -ArgumentList "/S" -Wait -ErrorAction SilentlyContinue
+        }
+    }
+    Start-Sleep -Seconds 3
+
+    # Remove directories
+    @(
+        "${env:ProgramFiles}\Splashtop",
+        "${env:ProgramFiles(x86)}\Splashtop",
+        "${env:ProgramData}\Splashtop",
+        "${env:LOCALAPPDATA}\Splashtop",
+        "${env:APPDATA}\Splashtop"
+    ) | ForEach-Object {
+        if (Test-Path $_) { Remove-Item -Path $_ -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    # Registry cleanup
+    @("HKLM:\SOFTWARE\Splashtop", "HKLM:\SOFTWARE\WOW6432Node\Splashtop", "HKCU:\SOFTWARE\Splashtop") | ForEach-Object {
+        if (Test-Path $_) { Remove-Item -Path $_ -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    # Delete services
+    @("SplashtopRemoteService", "SSUService") | ForEach-Object {
+        if (Get-Service -Name $_ -ErrorAction SilentlyContinue) {
+            & sc.exe delete $_ 2>$null
+        }
+    }
+
+    # Firewall and tasks
+    Get-NetFirewallRule -DisplayName "*Splashtop*" -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+    Get-ScheduledTask -TaskName "*Splashtop*" -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+    # Verification
+    $remainingInstalls = @()
+    foreach ($path in $uninstallPaths) {
+        if (Test-Path $path) {
+            Get-ChildItem -Path $path | ForEach-Object {
+                $displayName = (Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue).DisplayName
+                if ($displayName -like "*Splashtop*") {
+                    $remainingInstalls += $displayName
+                }
+            }
+        }
+    }
+
+    if ($remainingInstalls.Count -eq 0) {
+        $Result.Success = $true
+        $Result.Message = "Splashtop removed successfully"
+    } else {
+        $Result.Message = "Splashtop removal incomplete - remaining: $($remainingInstalls -join ', ')"
+    }
+
+    return $Result
+}
+
+function Remove-ChromeRemoteDesktop {
+    $Result = @{ Success = $false; Message = "" }
+
+    Write-LevelLog "=== Chrome Remote Desktop Removal ===" -Level "INFO"
+
+    # Stop services
+    @("chromoting", "Chrome Remote Desktop*") | ForEach-Object {
+        Get-Service -Name $_ -ErrorAction SilentlyContinue | ForEach-Object {
+            Stop-Service -Name $_.Name -Force -ErrorAction SilentlyContinue
+            & sc.exe delete $_.Name 2>$null
+        }
+    }
+    Get-Process -Name "remoting_host*", "chromoting*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+
+    # CIM uninstall
+    Get-CimInstance -ClassName Win32_Product -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "*Chrome Remote Desktop*" } | ForEach-Object {
+        Write-LevelLog "Uninstalling CIM: $($_.Name)"
+        $_ | Invoke-CimMethod -MethodName Uninstall -ErrorAction SilentlyContinue | Out-Null
+    }
+
+    # Remove directories
+    @(
+        "$env:ProgramFiles\Google\Chrome Remote Desktop",
+        "${env:ProgramFiles(x86)}\Google\Chrome Remote Desktop",
+        "$env:LOCALAPPDATA\Google\Chrome Remote Desktop",
+        "$env:ProgramData\Google\Chrome Remote Desktop"
+    ) | ForEach-Object {
+        if (Test-Path $_) { Remove-Item -Path $_ -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    # Registry cleanup
+    @("HKLM:\SOFTWARE\Google\Chrome Remote Desktop", "HKCU:\SOFTWARE\Google\Chrome Remote Desktop") | ForEach-Object {
+        if (Test-Path $_) { Remove-Item -Path $_ -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    $StillPresent = Get-Process -Name "remoting_host*", "chromoting*" -ErrorAction SilentlyContinue
+    if (-not $StillPresent) {
+        $Result.Success = $true
+        $Result.Message = "Chrome Remote Desktop removed successfully"
+    } else {
+        $Result.Message = "Chrome Remote Desktop removal incomplete"
+    }
+
+    return $Result
+}
+
 function Get-SoftwareUninstallString {
-    <#
-    .SYNOPSIS
-        Gets the uninstall string for a software product from the registry.
-    .PARAMETER SoftwareName
-        Name or pattern to match against DisplayName.
-    .PARAMETER Quiet
-        If true, don't log when not found.
-    .RETURNS
-        The uninstall string, or $null if not found.
-    #>
     param(
         [string]$SoftwareName,
         [switch]$Quiet
@@ -789,13 +1269,11 @@ function Remove-GenericRAT {
 
     $Result = @{ Success = $false; Message = "" }
 
-    # Stop processes
     foreach ($Pattern in $ProcessPatterns) {
         Get-Process -Name $Pattern -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     }
     Start-Sleep -Seconds 2
 
-    # Stop and remove services
     foreach ($Pattern in $ServicePatterns) {
         $Services = Get-Service -Name $Pattern -ErrorAction SilentlyContinue
         foreach ($Service in $Services) {
@@ -804,7 +1282,6 @@ function Remove-GenericRAT {
         }
     }
 
-    # Try to find and run uninstaller from registry
     $UninstallString = Get-SoftwareUninstallString -SoftwareName $Name -Quiet
     if ($UninstallString) {
         Write-LevelLog "Running $Name uninstaller..."
@@ -819,7 +1296,6 @@ function Remove-GenericRAT {
         Start-Sleep -Seconds 3
     }
 
-    # Force remove common paths
     $CommonPaths = @(
         "$env:ProgramFiles\$Name",
         "${env:ProgramFiles(x86)}\$Name",
@@ -833,7 +1309,6 @@ function Remove-GenericRAT {
         }
     }
 
-    # Check if any processes still running
     $StillRunning = $false
     foreach ($Pattern in $ProcessPatterns) {
         if (Get-Process -Name $Pattern -ErrorAction SilentlyContinue) {
@@ -898,6 +1373,9 @@ Invoke-LevelScript -ScriptBlock {
     if ($MeshcentralServerUrl -and $MeshcentralServerUrl -ne "" -and $MeshcentralServerUrl -notlike "{{*}}") {
         Write-LevelLog "Meshcentral whitelist URL: $MeshcentralServerUrl" -Level "INFO"
     }
+    if ($WhitelistedRats.Count -gt 0) {
+        Write-LevelLog "policy_ok_rats whitelist: $($WhitelistedRats -join ', ')" -Level "INFO"
+    }
     if ($EnableAutoRemove) {
         Write-LevelLog "Auto-remove mode ENABLED - will attempt to remove detected RATs" -Level "WARN"
     }
@@ -911,14 +1389,17 @@ Invoke-LevelScript -ScriptBlock {
             continue
         }
 
+        # Skip tools whitelisted via policy_ok_rats
+        if ($Tool.Name -in $WhitelistedRats) {
+            Write-LevelLog "$($Tool.Name) is in policy_ok_rats whitelist - skipping" -Level "INFO"
+            continue
+        }
+
         # Handle ScreenConnect whitelisting
         if ($Tool.Name -eq "ScreenConnect") {
-            # Skip entirely if this is a ScreenConnect Server
             if ($IsScreenConnectServer -eq "true") {
                 continue
             }
-
-            # Check if installed ScreenConnect matches whitelisted instance ID
             if ($ScreenConnectInstanceId -and $ScreenConnectInstanceId -ne "" -and $ScreenConnectInstanceId -notlike "{{*}}") {
                 $DetectedInstanceID = Get-ScreenConnectInstanceID
                 if ($DetectedInstanceID -and $DetectedInstanceID -eq $ScreenConnectInstanceId) {
@@ -936,10 +1417,8 @@ Invoke-LevelScript -ScriptBlock {
             if ($MeshcentralServerUrl -and $MeshcentralServerUrl -ne "" -and $MeshcentralServerUrl -notlike "{{*}}") {
                 $DetectedMeshUrl = Get-MeshcentralServerUrl
                 if ($DetectedMeshUrl) {
-                    # Normalize URLs for comparison (remove protocol, trailing slashes)
                     $WhitelistUrl = $MeshcentralServerUrl -replace '^https?://', '' -replace '/$', ''
                     $DetectedUrl = $DetectedMeshUrl -replace '^https?://', '' -replace '/$', ''
-
                     if ($DetectedUrl -like "*$WhitelistUrl*" -or $WhitelistUrl -like "*$DetectedUrl*") {
                         Write-LevelLog "Meshcentral server '$DetectedMeshUrl' matches whitelist '$MeshcentralServerUrl' - skipping" -Level "INFO"
                         continue
@@ -962,6 +1441,32 @@ Invoke-LevelScript -ScriptBlock {
         }
     }
 
+    # ============================================================
+    # POPULATE policy_ok_rats ON FIRST RUN
+    # ============================================================
+    # If policy_ok_rats is empty and we detected tools, populate it with the
+    # current baseline so sanctioned tools get whitelisted automatically.
+    if ($WhitelistedRats.Count -eq 0 -and $DetectedTools.Count -gt 0 -and $LevelApiKey) {
+        $BaselineNames = ($DetectedTools | ForEach-Object { $_.Name }) -join ", "
+        Write-LevelLog "First run - populating policy_ok_rats baseline: $BaselineNames" -Level "INFO"
+
+        $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
+        if ($Device) {
+            $SetResult = Set-LevelCustomFieldValue -ApiKey $LevelApiKey -EntityType "device" -EntityId $Device.id -FieldReference "policy_ok_rats" -Value $BaselineNames
+            if ($SetResult) {
+                Write-LevelLog "Set policy_ok_rats = '$BaselineNames'" -Level "SUCCESS"
+                Write-Host ""
+                Write-Host "BASELINE SET: policy_ok_rats populated with $($DetectedTools.Count) tool(s)"
+                Write-Host "  Tools: $BaselineNames"
+                Write-Host "  These tools will be whitelisted on future runs."
+                Write-Host "  Edit policy_ok_rats in Level.io to adjust the whitelist."
+                Write-Host ""
+                # All detected tools are now whitelisted - exit clean on this first run
+                exit 0
+            }
+        }
+    }
+
     # Output results
     Write-Host ""
     Write-LevelLog "========================================" -Level "INFO"
@@ -971,7 +1476,6 @@ Invoke-LevelScript -ScriptBlock {
 
     if ($DetectedTools.Count -eq 0) {
         Write-LevelLog "No unauthorized remote access tools detected" -Level "SUCCESS"
-        # Exit via Invoke-LevelScript completion (exit 0)
     }
     else {
         Write-LevelLog "DETECTED REMOTE ACCESS TOOLS: $($DetectedTools.Count)" -Level "ERROR"
@@ -1030,8 +1534,6 @@ Invoke-LevelScript -ScriptBlock {
                 }
             }
 
-            # Exit code: 1 if any removals failed or any tools detected (even if removed)
-            # This ensures the script alerts on detection even when auto-remove succeeds
             Complete-LevelScript -ExitCode 1 -Message "Detected $($DetectedTools.Count) RAT(s). Removed: $SuccessCount, Failed: $FailCount"
         }
         else {

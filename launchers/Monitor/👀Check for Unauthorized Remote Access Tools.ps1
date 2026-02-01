@@ -70,6 +70,7 @@ $LevelApiKey_Raw = @'
 $LevelApiKey = $LevelApiKey_Raw.Trim()
 
 $policy_auto_remove_rats = "{{cf_policy_auto_remove_rats}}"
+$policy_ok_rats = "{{cf_policy_ok_rats}}"
 
 # ============================================================
 # GITHUB PAT INJECTION
