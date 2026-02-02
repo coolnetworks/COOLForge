@@ -1,4 +1,4 @@
-======================================================================
+﻿======================================================================
   Check for Unauthorized Remote Access Tools
   Version: 2025.12.27.02
   Type: LAUNCHER + SCRIPT (GitHub-hosted)
@@ -428,7 +428,7 @@ CUSTOM FIELDS USED
       Whitelist your org's ScreenConnect instance
       Example: 983fa4f3c185dd21
 
-    cf_policy_screenconnect_machine_hosts_screenconnect_server
+    cf_machine_is_screenconnect_server
       Set to "true" on ScreenConnect server machines
       Excludes all ScreenConnect detection
 

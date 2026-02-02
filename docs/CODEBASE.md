@@ -573,12 +573,17 @@ Defines all COOLForge custom fields for Level.io:
 }
 ```
 
+### Field Naming Conventions
+
+| Prefix | Scope | Description |
+|--------|-------|-------------|
+| `coolforge_` | Org-wide | Global infrastructure fields shared by all scripts |
+| `policy_` | Org-wide | Software policy fields (one per managed software) |
+| `machine_` | Per-device | Fields set to a default (usually `false`) at org level, then overridden on specific devices. Must be configured per-machine in Level.io. |
+
 ### Legacy Field Support
 
-Scripts support both new (`coolforge_*`) and legacy field names for backward compatibility:
-- `coolforge_msp_scratch_folder` ← `msp_scratch_folder`
-- `coolforge_ps_module_library_source` ← `ps_module_library_source`
-- `coolforge_pin_psmodule_to_version` ← `pin_psmodule_to_version`
+Legacy field names are listed in `legacyNames` arrays in `definitions/custom-fields.json`. The library and policy scripts automatically delete legacy fields when the replacement field exists.
 
 ---
 
@@ -612,6 +617,14 @@ Scripts support both new (`coolforge_*`) and legacy field names for backward com
 | Field | Description |
 |-------|-------------|
 | `coolforge_screenconnect_device_url` | Per-device ScreenConnect URL (populated by scripts) |
+
+### Per-Device Fields (`machine_` prefix)
+
+These fields default to `false` at org level and are set to `true` on specific devices that match the condition.
+
+| Field | Description |
+|-------|-------------|
+| `machine_is_screenconnect_server` | Set to `true` on devices that host a ScreenConnect server |
 
 ---
 

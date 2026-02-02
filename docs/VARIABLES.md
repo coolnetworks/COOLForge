@@ -26,7 +26,7 @@ These custom fields are used by COOLForge_Lib scripts:
 | `{{cf_apikey}}` | Level.io API key for API calls (tags, custom fields, etc.) | No |
 | `{{cf_debug_coolforge}}` | Debug level: `normal`, `verbose`, or `veryverbose` (default value includes pipe-delimited options) | No |
 | `{{cf_policy_screenconnect_instance_id}}` | Your MSP's ScreenConnect instance ID | No |
-| `{{cf_policy_screenconnect_machine_hosts_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
+| `{{cf_machine_is_screenconnect_server}}` | Set to "true" on ScreenConnect server devices | No |
 | `{{cf_coolforge_nosleep_duration_min}}` | Duration in minutes to prevent device from sleeping (default: 60) | No |
 
 ---

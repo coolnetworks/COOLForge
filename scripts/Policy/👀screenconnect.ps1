@@ -700,12 +700,20 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
-        # Clean up legacy policy_screenconnect_instance field (replaced by policy_screenconnect_instance_id)
-        $LegacyInstanceField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName "policy_screenconnect_instance"
-        if ($LegacyInstanceField) {
-            $Removed = Remove-LevelCustomField -ApiKey $LevelApiKey -FieldId $LegacyInstanceField.id -FieldName "policy_screenconnect_instance"
-            if ($Removed) {
-                Write-LevelLog "Removed legacy field: policy_screenconnect_instance" -Level "SUCCESS"
+        # Clean up legacy screenconnect fields
+        $LegacyScreenConnectFields = @(
+            "policy_screenconnect_instance",
+            "is_screenconnect_server",
+            "policy_screenconnect_server",
+            "policy_screenconnect_machine_hosts_screenconnect_server"
+        )
+        foreach ($LegacyName in $LegacyScreenConnectFields) {
+            $LegacyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $LegacyName
+            if ($LegacyField) {
+                $Removed = Remove-LevelCustomField -ApiKey $LevelApiKey -FieldId $LegacyField.id -FieldName $LegacyName
+                if ($Removed) {
+                    Write-LevelLog "Removed legacy field: $LegacyName" -Level "SUCCESS"
+                }
             }
         }
 

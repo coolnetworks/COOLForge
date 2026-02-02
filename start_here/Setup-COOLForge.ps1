@@ -1206,22 +1206,22 @@ foreach ($GroupName in $Script:FieldGroups.Keys) {
                 }
             }
 
-            # policy_screenconnect_machine_hosts_screenconnect_server - create with default of false
+            # machine_is_screenconnect_server - create with default of false
             Write-Host ""
-            Write-Host "  policy_screenconnect_machine_hosts_screenconnect_server" -ForegroundColor Cyan
-            Write-Host "  Adding 'policy_screenconnect_machine_hosts_screenconnect_server' field - setting to 'false'" -ForegroundColor DarkGray
+            Write-Host "  machine_is_screenconnect_server" -ForegroundColor Cyan
+            Write-Host "  Adding 'machine_is_screenconnect_server' field - setting to 'false'" -ForegroundColor DarkGray
             Write-Host "  If you have a ScreenConnect server, set this to 'true' at device level" -ForegroundColor DarkGray
-            $IsServerField = Find-CustomField -Name "policy_screenconnect_machine_hosts_screenconnect_server" -ExistingFields $ExistingFields
+            $IsServerField = Find-CustomField -Name "machine_is_screenconnect_server" -ExistingFields $ExistingFields
             if ($IsServerField) {
-                Write-LevelInfo "Field 'policy_screenconnect_machine_hosts_screenconnect_server' already exists"
+                Write-LevelInfo "Field 'machine_is_screenconnect_server' already exists"
             }
             else {
-                $Created = New-CustomField -Name "policy_screenconnect_machine_hosts_screenconnect_server" -DefaultValue "false" -AdminOnly $false
+                $Created = New-CustomField -Name "machine_is_screenconnect_server" -DefaultValue "false" -AdminOnly $false
                 if ($Created) {
                     if ([string]::IsNullOrWhiteSpace($Created.default_value)) {
                         Update-CustomFieldValue -FieldId $Created.id -Value "false" | Out-Null
                     }
-                    Write-LevelSuccess "Created: policy_screenconnect_machine_hosts_screenconnect_server = false"
+                    Write-LevelSuccess "Created: machine_is_screenconnect_server = false"
                     $ExistingFields += $Created
                 }
             }

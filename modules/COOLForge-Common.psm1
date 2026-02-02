@@ -4469,7 +4469,7 @@ function Initialize-LevelSoftwarePolicy {
     - coolforge_nosleep_duration_min: Duration for Prevent Sleep script
     - policy_screenconnect_baseurl: ScreenConnect server base URL
     - policy_screenconnect_instance_id: MSP's ScreenConnect instance ID
-    - policy_screenconnect_machine_hosts_screenconnect_server: Whether device hosts ScreenConnect server
+    - machine_is_screenconnect_server: Whether device hosts ScreenConnect server
     - policy_defender: Windows Defender enforcement policy (default: enforce)
 
     Fields with legacy mappings (e.g., policy_screenconnect_*) will automatically

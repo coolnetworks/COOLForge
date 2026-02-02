@@ -140,7 +140,7 @@ if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectIns
     $ScreenConnectInstanceId = ""
 }
 
-$IsScreenConnectServer = "{{cf_policy_screenconnect_machine_hosts_screenconnect_server}}"
+$IsScreenConnectServer = "{{cf_machine_is_screenconnect_server}}"
 if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") {
     $IsScreenConnectServer = ""
 }

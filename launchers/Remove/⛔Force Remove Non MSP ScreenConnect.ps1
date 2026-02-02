@@ -33,7 +33,7 @@ $DeviceTags = "{{level_tag_names}}"
 $ScreenConnectInstanceId = "{{cf_policy_screenconnect_instance_id}}"
 if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") { $ScreenConnectInstanceId = "" }
 
-$IsScreenConnectServer = "{{cf_policy_screenconnect_machine_hosts_screenconnect_server}}"
+$IsScreenConnectServer = "{{cf_machine_is_screenconnect_server}}"
 if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") { $IsScreenConnectServer = "" }
 
 $policy_other_msp_screenconnect = "{{cf_policy_other_msp_screenconnect}}"

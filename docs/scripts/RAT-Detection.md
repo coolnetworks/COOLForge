@@ -124,7 +124,7 @@ Detects unauthorized remote access tools (RATs) that may be installed without au
 | Field | Required | Description |
 |-------|----------|-------------|
 | `cf_policy_screenconnect_instance_id` | No | Your MSP's ScreenConnect instance ID for whitelisting |
-| `cf_policy_screenconnect_machine_hosts_screenconnect_server` | No | Set to `true` on ScreenConnect server devices to skip detection |
+| `cf_machine_is_screenconnect_server` | No | Set to `true` on ScreenConnect server devices to skip detection |
 
 ## Tag Support
 

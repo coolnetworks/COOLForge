@@ -204,9 +204,9 @@
         "prompt": "ScreenConnect API password (optional)"
       },
       {
-        "name": "policy_screenconnect_machine_hosts_screenconnect_server",
+        "name": "machine_is_screenconnect_server",
         "description": "Set to 'true' on devices hosting ScreenConnect server",
-        "legacyNames": ["is_screenconnect_server", "coolforge_is_screenconnect_server", "policy_screenconnect_is_server", "policy_screenconnect_machine_hosts_screenconnect"],
+        "legacyNames": ["is_screenconnect_server", "coolforge_is_screenconnect_server", "policy_screenconnect_is_server", "policy_screenconnect_machine_hosts_screenconnect", "policy_screenconnect_machine_hosts_screenconnect_server", "policy_screenconnect_machine_is_screenconnect_server"],
         "adminOnly": false,
         "required": false,
         "default": "false"

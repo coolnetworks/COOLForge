@@ -111,7 +111,7 @@ Removes unauthorized ScreenConnect (ConnectWise Control) installations while pre
 | Field | Required | Description |
 |-------|----------|-------------|
 | `cf_policy_screenconnect_instance_id` | Yes | Your MSP's ScreenConnect instance ID to whitelist |
-| `cf_policy_screenconnect_machine_hosts_screenconnect_server` | No | Set to `true` on ScreenConnect server devices |
+| `cf_machine_is_screenconnect_server` | No | Set to `true` on ScreenConnect server devices |
 
 ## Tag Support
 
