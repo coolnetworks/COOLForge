@@ -4224,6 +4224,20 @@ function New-LevelCustomField {
         return $Result.Data
     }
     else {
+        # 422 means field already exists - look it up and return it (idempotent)
+        if ($Result.StatusCode -eq 422) {
+            Write-LevelLog "Custom field '$Name' already exists - looking up existing field" -Level "DEBUG"
+            $AllFields = Get-LevelCustomFields -ApiKey $EffectiveApiKey -BaseUrl $BaseUrl
+            if ($AllFields) {
+                $ExistingField = $AllFields | Where-Object { $_.name -eq $Name }
+                if ($ExistingField) {
+                    Write-LevelLog "Found existing custom field: $Name" -Level "DEBUG"
+                    return $ExistingField
+                }
+            }
+            Write-LevelLog "Custom field '$Name' reported as existing but couldn't be found" -Level "WARN"
+            return $null
+        }
         Write-LevelLog "Failed to create custom field '$Name': $($Result.Error)" -Level "ERROR"
         return $null
     }
