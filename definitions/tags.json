@@ -181,7 +181,7 @@
       "category": "software",
       "description": "ScreenConnect/ConnectWise Control remote access client",
       "tags": ["🙏SC", "🚫SC", "📌SC", "🔄SC", "✅SC"],
-      "customFields": ["policy_screenconnect", "policy_screenconnect_instance", "policy_screenconnect_baseurl"]
+      "customFields": ["policy_screenconnect", "policy_screenconnect_instance_id", "policy_screenconnect_baseurl"]
     },
     "locationservices": {
       "displayName": "Windows Location Services",

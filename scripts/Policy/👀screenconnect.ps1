@@ -39,7 +39,7 @@
 
     Custom Fields:
     - $policy_screenconnect            : Policy action (install/remove/pin)
-    - $policy_screenconnect_instance   : ScreenConnect instance name (service display name)
+    - $policy_screenconnect_instance_id : ScreenConnect instance ID (GUID from service name)
     - $policy_screenconnect_baseurl    : ScreenConnect server base URL (e.g., support.company.com)
 
     Copyright (c) COOLNETWORKS
@@ -70,11 +70,12 @@ $MaxRetries = 3
 $MinMsiSizeKB = 100
 
 # ScreenConnect configuration from custom fields
-$InstanceNameVar = "policy_screenconnect_instance"
-$InstanceName = Get-Variable -Name $InstanceNameVar -ValueOnly -ErrorAction SilentlyContinue
-if ([string]::IsNullOrWhiteSpace($InstanceName) -or $InstanceName -like "{{*}}") {
-    $InstanceName = $null
+$InstanceIdVar = "policy_screenconnect_instance_id"
+$InstanceId = Get-Variable -Name $InstanceIdVar -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($InstanceId) -or $InstanceId -like "{{*}}") {
+    $InstanceId = $null
 }
+$InstanceName = if ($InstanceId) { "ScreenConnect Client ($InstanceId)" } else { $null }
 
 $BaseUrlVar = "policy_screenconnect_baseurl"
 $BaseUrl = Get-Variable -Name $BaseUrlVar -ValueOnly -ErrorAction SilentlyContinue
@@ -107,10 +108,11 @@ function Write-DebugInstallCheck {
     Write-Host "============================================================" -ForegroundColor Cyan
 
     Write-Host "  --- Service Detection ---"
-    if ($InstanceName) {
-        Write-Host "  Expected Instance: $InstanceName" -ForegroundColor Gray
+    if ($InstanceId) {
+        Write-Host "  Instance ID: $InstanceId" -ForegroundColor Gray
+        Write-Host "  Expected Service: $InstanceName" -ForegroundColor Gray
     } else {
-        Write-Host "  Expected Instance: (not configured - checking any ScreenConnect)" -ForegroundColor Yellow
+        Write-Host "  Instance ID: (not configured - checking any ScreenConnect)" -ForegroundColor Yellow
     }
 
     $Services = Get-Service | Where-Object {
@@ -364,14 +366,14 @@ function Install-ScreenConnect {
         return $false
     }
 
-    if ([string]::IsNullOrWhiteSpace($InstanceName)) {
-        Write-Host "Alert: ScreenConnect install failed - policy_screenconnect_instance not configured"
-        Write-LevelLog "Instance name not configured - set policy_screenconnect_instance custom field" -Level "ERROR"
+    if ([string]::IsNullOrWhiteSpace($InstanceId)) {
+        Write-Host "Alert: ScreenConnect install failed - policy_screenconnect_instance_id not configured"
+        Write-LevelLog "Instance ID not configured - set policy_screenconnect_instance_id custom field" -Level "ERROR"
         return $false
     }
 
     Write-LevelLog "Base URL: $BaseUrl"
-    Write-LevelLog "Instance: $InstanceName"
+    Write-LevelLog "Instance ID: $InstanceId (service: $InstanceName)"
     Write-LevelLog "Company: $(if ($CompanyName) { $CompanyName } else { '(not set)' })"
 
     # Ensure TLS 1.2
@@ -619,7 +621,8 @@ $InvokeParams = @{ ScriptBlock = {
         'DeviceHostname' = $DeviceHostname
         'DeviceTags' = $DeviceTags
         'LevelApiKey' = $LevelApiKey
-        'InstanceName' = if ($InstanceName) { $InstanceName } else { '(not set)' }
+        'InstanceId' = if ($InstanceId) { $InstanceId } else { '(not set)' }
+        'InstanceName' = if ($InstanceName) { $InstanceName } else { '(derived from InstanceId)' }
         'BaseUrl' = if ($BaseUrl) { $BaseUrl } else { '(not set)' }
         'CompanyName' = if ($CompanyName) { $CompanyName } else { '(not set)' }
     } -MaskApiKey
@@ -672,28 +675,23 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
-        # Instance field - already checked at script start (lines 74-77)
-        $InstanceFieldName = "policy_screenconnect_instance"
-        $InstanceFieldExists = $null -ne $InstanceName  # Already parsed from launcher
-        if (-not $InstanceFieldExists) {
-            $InstanceRaw = Get-Variable -Name $InstanceNameVar -ValueOnly -ErrorAction SilentlyContinue
-            $InstanceFieldExists = -not [string]::IsNullOrWhiteSpace($InstanceRaw) -and $InstanceRaw -notlike "{{*}}"
-        }
-        if (-not $InstanceFieldExists) {
-            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $InstanceFieldName -DefaultValue ""
+        # Instance ID field - check if launcher expanded the variable (field exists in Level.io)
+        # Field can exist with empty value - only unexpanded {{*}} means it doesn't exist
+        $InstanceIdFieldName = "policy_screenconnect_instance_id"
+        $InstanceIdRaw = Get-Variable -Name $InstanceIdVar -ValueOnly -ErrorAction SilentlyContinue
+        $InstanceIdFieldExists = ($null -ne $InstanceIdRaw) -and ($InstanceIdRaw -notlike "{{*}}")
+        if (-not $InstanceIdFieldExists) {
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $InstanceIdFieldName -DefaultValue ""
             if ($NewField) {
-                Write-LevelLog "Created custom field: $InstanceFieldName" -Level "SUCCESS"
+                Write-LevelLog "Created custom field: $InstanceIdFieldName" -Level "SUCCESS"
                 $ScFieldsCreated++
             }
         }
 
-        # BaseUrl field - already checked at script start (lines 79-87)
+        # BaseUrl field - same check as above
         $BaseUrlFieldName = "policy_screenconnect_baseurl"
-        $BaseUrlFieldExists = $null -ne $BaseUrl  # Already parsed from launcher
-        if (-not $BaseUrlFieldExists) {
-            $BaseUrlRaw = Get-Variable -Name $BaseUrlVar -ValueOnly -ErrorAction SilentlyContinue
-            $BaseUrlFieldExists = -not [string]::IsNullOrWhiteSpace($BaseUrlRaw) -and $BaseUrlRaw -notlike "{{*}}"
-        }
+        $BaseUrlRaw = Get-Variable -Name $BaseUrlVar -ValueOnly -ErrorAction SilentlyContinue
+        $BaseUrlFieldExists = ($null -ne $BaseUrlRaw) -and ($BaseUrlRaw -notlike "{{*}}")
         if (-not $BaseUrlFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $BaseUrlFieldName -DefaultValue ""
             if ($NewField) {
@@ -770,11 +768,15 @@ $InvokeParams = @{ ScriptBlock = {
         if ($InfraResult.Success) {
             if ($InfraResult.TagsCreated -gt 0 -or $TotalFieldsCreated -gt 0) {
                 Write-LevelLog "Created $($InfraResult.TagsCreated) tags, $TotalFieldsCreated fields" -Level "SUCCESS"
+            }
+            # Only exit for configuration if screenconnect-specific fields were newly created
+            # (policy_sc from Initialize-SoftwarePolicyInfrastructure doesn't need user config)
+            if ($ScFieldsCreated -gt 0) {
                 Write-Host ""
                 Write-Host "Alert: Policy infrastructure created - please configure custom fields"
                 Write-Host "  Set the following custom fields in Level.io:"
                 Write-Host "  - policy_screenconnect: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
-                Write-Host "  - policy_screenconnect_instance: The ScreenConnect service display name"
+                Write-Host "  - policy_screenconnect_instance_id: Your ScreenConnect instance ID (GUID)"
                 Write-Host "  - policy_screenconnect_baseurl: Your ScreenConnect server URL (e.g., support.company.com)"
                 Write-Host ""
                 Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"

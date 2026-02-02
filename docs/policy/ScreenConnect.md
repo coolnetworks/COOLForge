@@ -126,11 +126,10 @@ Manages ScreenConnect agent installation and removal based on tag and custom fie
 
 | Field | Description |
 |-------|-------------|
-| `policy_screenconnect_instance_id` | ScreenConnect instance identifier |
+| `policy_screenconnect_instance_id` | ScreenConnect instance ID (GUID). Used for whitelisting and to derive the service display name: `ScreenConnect Client (<id>)` |
 | `policy_screenconnect_api_user` | API username for device URL lookup |
 | `policy_screenconnect_api_password` | API password |
 | `policy_screenconnect_device_url` | Device-specific ScreenConnect URL (auto-populated) |
-| `policy_screenconnect_instance` | Instance name |
 | `policy_screenconnect_baseurl` | Base URL for ScreenConnect server |
 
 ## Tags

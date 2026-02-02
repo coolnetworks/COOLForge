@@ -3,7 +3,7 @@
 # ============================================================
 $ScriptToRun = "👀screenconnect.ps1"
 $policy_screenconnect = "{{cf_policy_screenconnect}}"
-$policy_screenconnect_instance = "{{cf_policy_screenconnect_instance}}"
+$policy_screenconnect_instance_id = "{{cf_policy_screenconnect_instance_id}}"
 $policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"
 <#
 .SYNOPSIS

@@ -94,7 +94,7 @@ Some policies require additional fields:
 | Policy | Additional Fields |
 |--------|-------------------|
 | `policy_meshcentral` | `policy_meshcentral_server_url`, `policy_meshcentral_download_url` |
-| `policy_screenconnect` | `policy_screenconnect_instance_id`, `policy_screenconnect_baseurl`, `policy_screenconnect_instance`, `policy_screenconnect_api_user`, `policy_screenconnect_api_password`, `policy_screenconnect_device_url` |
+| `policy_screenconnect` | `policy_screenconnect_instance_id`, `policy_screenconnect_baseurl`, `policy_screenconnect_api_user`, `policy_screenconnect_api_password`, `policy_screenconnect_device_url` |
 | `policy_unchecky` | `policy_unchecky_url` |
 
 ## Inheritance

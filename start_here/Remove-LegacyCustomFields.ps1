@@ -62,7 +62,8 @@ $Script:LegacyFields = @(
     "ps_module_library_source",
     "pin_psmodule_to_version",
     "screenconnect_instance_id",
-    "is_screenconnect_server"
+    "is_screenconnect_server",
+    "policy_screenconnect_instance"
 )
 
 # ============================================================

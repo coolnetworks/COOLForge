@@ -182,7 +182,7 @@
       {
         "name": "policy_screenconnect_instance_id",
         "description": "Your MSP's ScreenConnect instance ID for whitelisting",
-        "legacyNames": ["screenconnect_instance_id", "screenconnect_instance", "coolforge_screenconnect_instance_id"],
+        "legacyNames": ["screenconnect_instance_id", "screenconnect_instance", "coolforge_screenconnect_instance_id", "policy_screenconnect_instance"],
         "adminOnly": true,
         "required": false,
         "prompt": "ScreenConnect instance ID (for RAT whitelisting)"
@@ -229,14 +229,6 @@
         "valueOptions": ["pin", "install", "remove"],
         "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
         "prompt": "ScreenConnect policy (install/remove/pin)"
-      },
-      {
-        "name": "policy_screenconnect_instance",
-        "description": "ScreenConnect service display name to match/install",
-        "legacyNames": [],
-        "adminOnly": false,
-        "required": false,
-        "prompt": "ScreenConnect service display name"
       },
       {
         "name": "policy_screenconnect_baseurl",
