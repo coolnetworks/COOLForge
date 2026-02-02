@@ -1,4 +1,4 @@
-ea5a92dacf7cb7f743bed07b9064fb8f  modules/COOLForge-Common.psm1
+90acc63bf98dbede80a6d07b5a3ef8f4  modules/COOLForge-Common.psm1
 bcbfba4832ca9c87befbb0399490bc9d  scripts/Check/👀Check Windows Location Services.ps1
 162c7ee09c837a715e358053669e3fce  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 2e69e96cda314af1ffc56adc99fb89b6  scripts/Check/👀Hostname Mismatch.ps1
@@ -23,7 +23,7 @@ c263f6cd8ce6177c19f8b6e075608e1b  scripts/Policy/👀dns.ps1
 eba3003ff1c232d5cbba60fc05342c7c  scripts/Policy/👀dnsfilter.ps1
 2a97ab5a97088c6d004347545fd91107  scripts/Policy/👀huntress.ps1
 ad5113d3fe61d13593719d8848503d8c  scripts/Policy/👀meshcentral.ps1
-7fd225929366adc33a67ef1689dac959  scripts/Policy/👀screenconnect.ps1
+835a8042cb555bc7e05c5de0f07ff203  scripts/Policy/👀screenconnect.ps1
 49777d37d2e9fc72aa3ae577c9fb8642  scripts/Policy/👀unchecky.ps1
 d3c000b0accb16130a00ed8e6f28fb22  scripts/Policy/👀cipp.ps1
 d958a68ea26e23dfa1f5ae558760f4e5  scripts/Policy/👀bitwarden.ps1
