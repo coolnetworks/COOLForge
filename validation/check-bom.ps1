@@ -38,7 +38,8 @@ $foldersToCheck = @(
     "$ProjectRoot\templates",
     "$ProjectRoot\tools",
     "$ProjectRoot\automations",
-    "$ProjectRoot\start_here"
+    "$ProjectRoot\start_here",
+    "$ProjectRoot\bootstrap"
 )
 
 $allFiles = @()
