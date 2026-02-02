@@ -2,12 +2,13 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
+$policy_other_msp_screenconnect = "{{cf_policy_other_msp_screenconnect}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.02.01.02
+    Launcher Version: 2026.01.22.01
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -17,8 +18,8 @@ $ScriptToRun = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.02.01.02"
-$LauncherName = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
+$LauncherVersion = "2026.01.22.01"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -28,16 +29,6 @@ $ErrorActionPreference = "SilentlyContinue"
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
-
-# ScreenConnect removal-specific variables
-$ScreenConnectInstanceId = "{{cf_policy_screenconnect_instance_id}}"
-if ([string]::IsNullOrWhiteSpace($ScreenConnectInstanceId) -or $ScreenConnectInstanceId -like "{{*}}") { $ScreenConnectInstanceId = "" }
-
-$IsScreenConnectServer = "{{cf_machine_is_screenconnect_server}}"
-if ([string]::IsNullOrWhiteSpace($IsScreenConnectServer) -or $IsScreenConnectServer -like "{{*}}") { $IsScreenConnectServer = "" }
-
-$policy_other_msp_screenconnect = "{{cf_policy_other_msp_screenconnect}}"
-if ([string]::IsNullOrWhiteSpace($policy_other_msp_screenconnect) -or $policy_other_msp_screenconnect -like "{{*}}") { $policy_other_msp_screenconnect = "" }
 
 $GitHubPAT = @'
 {{cf_coolforge_pat}}
@@ -60,8 +51,6 @@ Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
 # Parse debug level: normal, verbose, veryverbose
 $DebugScriptsRaw = "{{cf_debug_coolforge}}"
-# Extract value before pipe delimiter (e.g., "normal | normal, verbose, veryverbose" -> "normal")
-if ($DebugScriptsRaw -match "\|") { $DebugScriptsRaw = ($DebugScriptsRaw -split "\|")[0].Trim() }
 if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
     $DebugLevel = "normal"
 } elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
@@ -129,10 +118,12 @@ function Get-StringMD5 {
 $MD5SumsContent = $null
 $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
+# HTTP headers to bypass intermediate proxy caches (ISP, corporate, Fastly edge)
+$NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
 if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl" }
 
 try {
-    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
+    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5 -Headers $NoCacheHeaders).Content
     if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
 } catch {
     if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: $_" }
@@ -189,7 +180,7 @@ if ($NeedsUpdate) {
     if ($DebugScripts) { Write-Host "[DEBUG] Library URL: $LibFetchUrl" }
 
     try {
-        $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
+        $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
         # Strip UTF-8 BOM if present (shows as ? when downloaded via Invoke-WebRequest)
         if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
             $RemoteContent = $RemoteContent.Substring(1)
@@ -203,7 +194,7 @@ if ($NeedsUpdate) {
         if ($ExpectedLibraryHash -and $RemoteHash -ne $ExpectedLibraryHash -and -not $DebugScripts) {
             Write-Host "[*] Hash mismatch - retrying with cache-bust..."
             $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
-            $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
+            $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
             if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
                 $RemoteContent = $RemoteContent.Substring(1)
             }
@@ -239,7 +230,7 @@ $LauncherOutdatedMsg = $null
 try {
     $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
-    $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
+    $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3 -Headers $NoCacheHeaders).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
     if ($RepoVersion -and ([version]$RepoVersion -gt [version]$LauncherVersion)) {
         $LauncherOutdatedMsg = "[Alert] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion - Update this script in Level.io from: launchers/$LauncherName"
@@ -264,16 +255,13 @@ Get-Variable -Name "policy_*" -ErrorAction SilentlyContinue | ForEach-Object {
 Write-Host "[*] Slim Launcher v$LauncherVersion"
 
 $LauncherVars = @{
-    MspScratchFolder       = $MspScratchFolder
-    DeviceHostname         = $DeviceHostname
-    DeviceTags             = $DeviceTags
-    LevelApiKey            = $LevelApiKey
-    DebugScripts           = $DebugScripts
-    DebugLevel             = $DebugLevel
-    LibraryUrl             = $LibraryUrl
-    ScreenConnectInstanceId = $ScreenConnectInstanceId
-    IsScreenConnectServer  = $IsScreenConnectServer
-    OtherMspScreenConnect  = $policy_other_msp_screenconnect
+    MspScratchFolder = $MspScratchFolder
+    DeviceHostname   = $DeviceHostname
+    DeviceTags       = $DeviceTags
+    LevelApiKey      = $LevelApiKey
+    DebugScripts     = $DebugScripts
+    DebugLevel       = $DebugLevel
+    LibraryUrl       = $LibraryUrl
 }
 
 # Add policy variables

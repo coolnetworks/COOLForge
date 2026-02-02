@@ -2,10 +2,7 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀huntress.ps1"
-$policy_huntress = "{{cf_policy_huntress}}"
-$policy_huntress_account_key = "{{cf_policy_huntress_account_key}}"
-$policy_huntress_org_key = "{{cf_policy_huntress_org_key}}"
-$policy_huntress_tags = "{{cf_policy_huntress_tags}}"
+$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
@@ -21,8 +18,8 @@ $policy_huntress_tags = "{{cf_policy_huntress_tags}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.31.02"
-$LauncherName = "Policy/👀huntress.ps1"
+$LauncherVersion = "2026.01.22.01"
+$LauncherName = "Policy/LAUNCHERNAME.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -54,8 +51,6 @@ Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
 
 # Parse debug level: normal, verbose, veryverbose
 $DebugScriptsRaw = "{{cf_debug_coolforge}}"
-# Extract value before pipe delimiter (e.g., "normal | normal, verbose, veryverbose" -> "normal")
-if ($DebugScriptsRaw -match "\|") { $DebugScriptsRaw = ($DebugScriptsRaw -split "\|")[0].Trim() }
 if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
     $DebugLevel = "normal"
 } elseif ($DebugScriptsRaw -eq "true" -or $DebugScriptsRaw -eq "1" -or $DebugScriptsRaw -eq "verbose") {
@@ -123,10 +118,12 @@ function Get-StringMD5 {
 $MD5SumsContent = $null
 $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
+# HTTP headers to bypass intermediate proxy caches (ISP, corporate, Fastly edge)
+$NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
 if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl" }
 
 try {
-    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5).Content
+    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5 -Headers $NoCacheHeaders).Content
     if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
 } catch {
     if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: $_" }
@@ -183,7 +180,7 @@ if ($NeedsUpdate) {
     if ($DebugScripts) { Write-Host "[DEBUG] Library URL: $LibFetchUrl" }
 
     try {
-        $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
+        $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
         # Strip UTF-8 BOM if present (shows as ? when downloaded via Invoke-WebRequest)
         if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
             $RemoteContent = $RemoteContent.Substring(1)
@@ -197,7 +194,7 @@ if ($NeedsUpdate) {
         if ($ExpectedLibraryHash -and $RemoteHash -ne $ExpectedLibraryHash -and -not $DebugScripts) {
             Write-Host "[*] Hash mismatch - retrying with cache-bust..."
             $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
-            $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10).Content
+            $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
             if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
                 $RemoteContent = $RemoteContent.Substring(1)
             }
@@ -233,7 +230,7 @@ $LauncherOutdatedMsg = $null
 try {
     $VersionsUrl = "$RepoBaseUrl/LAUNCHER-VERSIONS.json?t=$CacheBuster"
     if ($GitHubPAT) { $VersionsUrl = Add-GitHubToken -Url $VersionsUrl -Token $GitHubPAT }
-    $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
+    $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3 -Headers $NoCacheHeaders).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
     if ($RepoVersion -and ([version]$RepoVersion -gt [version]$LauncherVersion)) {
         $LauncherOutdatedMsg = "[Alert] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion - Update this script in Level.io from: launchers/$LauncherName"

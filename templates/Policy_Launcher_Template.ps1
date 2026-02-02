@@ -239,10 +239,13 @@ function Get-ExpectedMD5 {
     return $null
 }
 
+# HTTP headers to bypass intermediate proxy caches (ISP, corporate, Fastly edge)
+$NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
+
 # Load MD5SUMS file from repository
 $MD5SumsContent = $null
 try {
-    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5SumsUrl -UseBasicParsing -TimeoutSec 5).Content
+    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5SumsUrl -UseBasicParsing -TimeoutSec 5 -Headers $NoCacheHeaders).Content
 }
 catch {
     Write-Host "[!] Could not download MD5SUMS - checksum verification disabled"
@@ -271,7 +274,7 @@ else {
 
 # Attempt to fetch the latest version from GitHub
 try {
-    $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
+    $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
     # Strip UTF-8 BOM if present (shows as ? when downloaded via Invoke-WebRequest)
     if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
         $RemoteContent = $RemoteContent.Substring(1)
@@ -348,7 +351,7 @@ if (-not (Get-Command -Name "Repair-LevelEmoji" -ErrorAction SilentlyContinue)) 
     Write-Host "[!] Library missing critical functions - forcing redownload"
     Remove-Item -Path $LibraryPath -Force -ErrorAction SilentlyContinue
     try {
-        $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10).Content
+        $RemoteContent = (Invoke-WebRequest -Uri $LibraryUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
         Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop
         $ModuleContent = Get-Content -Path $LibraryPath -Raw
         Remove-Module -Name "COOLForge-Common" -Force -ErrorAction SilentlyContinue
@@ -369,7 +372,7 @@ $ReadmeUrl = "$RepoBaseUrl/templates/What is this folder.md"
 $ReadmeDestPath = Join-Path -Path $MspScratchFolder -ChildPath "What is this folder.md"
 
 try {
-    $ReadmeRemoteContent = (Invoke-WebRequest -Uri $ReadmeUrl -UseBasicParsing -TimeoutSec 5).Content
+    $ReadmeRemoteContent = (Invoke-WebRequest -Uri $ReadmeUrl -UseBasicParsing -TimeoutSec 5 -Headers $NoCacheHeaders).Content
     $NeedsReadmeUpdate = $false
 
     if (Test-Path $ReadmeDestPath) {
@@ -407,7 +410,7 @@ $LicenseUrl = "$RepoBaseUrl/LICENSE"
 $LicenseDestPath = Join-Path -Path $MspScratchFolder -ChildPath "LICENSE"
 
 try {
-    $LicenseRemoteContent = (Invoke-WebRequest -Uri $LicenseUrl -UseBasicParsing -TimeoutSec 5).Content
+    $LicenseRemoteContent = (Invoke-WebRequest -Uri $LicenseUrl -UseBasicParsing -TimeoutSec 5 -Headers $NoCacheHeaders).Content
     $NeedsLicenseUpdate = $false
 
     if (Test-Path $LicenseDestPath) {
@@ -531,7 +534,7 @@ else {
 
 # Download script from GitHub
 try {
-    $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15).Content
+    $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15 -Headers $NoCacheHeaders).Content
     # Strip UTF-8 BOM if present
     if ($RemoteScriptContent.StartsWith([char]0xFEFF) -or $RemoteScriptContent.StartsWith('?')) {
         $RemoteScriptContent = $RemoteScriptContent.Substring(1)

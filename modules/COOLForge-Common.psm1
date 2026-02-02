@@ -7162,8 +7162,9 @@ function Invoke-ScriptLauncher {
     }
 
     # Download script from GitHub
+    $NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
     try {
-        $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15).Content
+        $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15 -Headers $NoCacheHeaders).Content
         # Strip BOM from downloaded content (prevents encoding issues when caching)
         if ($RemoteScriptContent -is [string] -and $RemoteScriptContent.Length -gt 0 -and $RemoteScriptContent[0] -eq [char]0xFEFF) {
             $RemoteScriptContent = $RemoteScriptContent.Substring(1)
