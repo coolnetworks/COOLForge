@@ -600,7 +600,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingAccountKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $AccountKeyFieldName
         if (-not $ExistingAccountKeyField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $AccountKeyFieldName -DefaultValue ""
-            if ($NewField) {
+            if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $AccountKeyFieldName" -Level "SUCCESS"
                 $HuntressFieldsCreated++
             }
@@ -610,7 +610,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingOrgKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $OrgKeyFieldName
         if (-not $ExistingOrgKeyField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $OrgKeyFieldName -DefaultValue ""
-            if ($NewField) {
+            if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $OrgKeyFieldName" -Level "SUCCESS"
                 $HuntressFieldsCreated++
             }
@@ -620,7 +620,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingTagsField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $TagsFieldName
         if (-not $ExistingTagsField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $TagsFieldName -DefaultValue ""
-            if ($NewField) {
+            if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $TagsFieldName (optional)" -Level "SUCCESS"
                 $HuntressFieldsCreated++
             }

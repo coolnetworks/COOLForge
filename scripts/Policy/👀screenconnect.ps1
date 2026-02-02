@@ -669,7 +669,7 @@ $InvokeParams = @{ ScriptBlock = {
         $PolicyFieldExists = -not [string]::IsNullOrWhiteSpace($PolicyFieldLauncherValue) -and $PolicyFieldLauncherValue -notlike "{{*}}"
         if (-not $PolicyFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $PolicyFieldName -DefaultValue "pin | uses pin/install/remove (change to activate policy)"
-            if ($NewField) {
+            if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
                 $ScFieldsCreated++
             }
@@ -682,7 +682,7 @@ $InvokeParams = @{ ScriptBlock = {
         $InstanceIdFieldExists = ($null -ne $InstanceIdRaw) -and ($InstanceIdRaw -notlike "{{*}}")
         if (-not $InstanceIdFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $InstanceIdFieldName -DefaultValue ""
-            if ($NewField) {
+            if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $InstanceIdFieldName" -Level "SUCCESS"
                 $ScFieldsCreated++
             }
@@ -694,7 +694,7 @@ $InvokeParams = @{ ScriptBlock = {
         $BaseUrlFieldExists = ($null -ne $BaseUrlRaw) -and ($BaseUrlRaw -notlike "{{*}}")
         if (-not $BaseUrlFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $BaseUrlFieldName -DefaultValue ""
-            if ($NewField) {
+            if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $BaseUrlFieldName" -Level "SUCCESS"
                 $ScFieldsCreated++
             }
