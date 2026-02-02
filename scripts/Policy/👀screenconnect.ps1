@@ -660,18 +660,14 @@ $InvokeParams = @{ ScriptBlock = {
             -PolicyFieldValue $CustomFieldPolicy
 
         # Create ScreenConnect-specific custom fields (using "screenconnect" not "sc")
-        # Query API once to check which fields actually exist
-        $AllFields = Get-LevelCustomFields -ApiKey $LevelApiKey
-        $ExistingFieldNames = @()
-        if ($AllFields) {
-            $ExistingFieldNames = @($AllFields | ForEach-Object { $_.name })
-        }
-
+        # Launcher variables are expanded by Level.io if the field exists - use that to detect
         $ScFieldsCreated = 0
 
-        # Main policy field
+        # Main policy field - check if launcher expanded it (means field exists)
         $PolicyFieldName = "policy_screenconnect"
-        if ($PolicyFieldName -notin $ExistingFieldNames) {
+        $PolicyFieldLauncherValue = Get-Variable -Name "policy_screenconnect" -ValueOnly -ErrorAction SilentlyContinue
+        $PolicyFieldExists = -not [string]::IsNullOrWhiteSpace($PolicyFieldLauncherValue) -and $PolicyFieldLauncherValue -notlike "{{*}}"
+        if (-not $PolicyFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $PolicyFieldName -DefaultValue "pin | uses pin/install/remove (change to activate policy)"
             if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
@@ -679,9 +675,12 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
-        # Instance ID field
+        # Instance ID field - check if launcher expanded the variable (field exists in Level.io)
+        # Field can exist with empty value - only unexpanded {{*}} means it doesn't exist
         $InstanceIdFieldName = "policy_screenconnect_instance_id"
-        if ($InstanceIdFieldName -notin $ExistingFieldNames) {
+        $InstanceIdRaw = Get-Variable -Name $InstanceIdVar -ValueOnly -ErrorAction SilentlyContinue
+        $InstanceIdFieldExists = ($null -ne $InstanceIdRaw) -and ($InstanceIdRaw -notlike "{{*}}")
+        if (-not $InstanceIdFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $InstanceIdFieldName -DefaultValue ""
             if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $InstanceIdFieldName" -Level "SUCCESS"
@@ -689,9 +688,11 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
-        # BaseUrl field
+        # BaseUrl field - same check as above
         $BaseUrlFieldName = "policy_screenconnect_baseurl"
-        if ($BaseUrlFieldName -notin $ExistingFieldNames) {
+        $BaseUrlRaw = Get-Variable -Name $BaseUrlVar -ValueOnly -ErrorAction SilentlyContinue
+        $BaseUrlFieldExists = ($null -ne $BaseUrlRaw) -and ($BaseUrlRaw -notlike "{{*}}")
+        if (-not $BaseUrlFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $BaseUrlFieldName -DefaultValue ""
             if ($NewField -and $NewField._wasCreated) {
                 Write-LevelLog "Created custom field: $BaseUrlFieldName" -Level "SUCCESS"
@@ -707,7 +708,7 @@ $InvokeParams = @{ ScriptBlock = {
             "policy_screenconnect_machine_hosts_screenconnect_server"
         )
         foreach ($LegacyName in $LegacyScreenConnectFields) {
-            $LegacyField = $AllFields | Where-Object { $_.name -eq $LegacyName }
+            $LegacyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $LegacyName
             if ($LegacyField) {
                 $Removed = Remove-LevelCustomField -ApiKey $LevelApiKey -FieldId $LegacyField.id -FieldName $LegacyName
                 if ($Removed) {
@@ -724,6 +725,7 @@ $InvokeParams = @{ ScriptBlock = {
         # policy_screenconnect). This block migrates any existing values and cleans up.
         # Safe to remove this block once all environments have been migrated.
         # ============================================================
+        $AllFields = Get-LevelCustomFields -ApiKey $LevelApiKey
         $OldPolicySc = $AllFields | Where-Object { $_.name -eq "policy_sc" }
         if ($OldPolicySc) {
             Write-LevelLog "Found legacy policy_sc field - migrating to policy_screenconnect" -Level "WARN"
