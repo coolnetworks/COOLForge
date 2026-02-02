@@ -437,7 +437,6 @@ Administrative tools in `tools/`:
 | `Update-Launchers.ps1` | Update all launchers from template |
 | `Generate-MD5SUMS.ps1` | Regenerate MD5SUMS file |
 | `Generate-WorkflowCharts.ps1` | Generate Mermaid workflow diagrams |
-| `Remove-LegacyCustomFields.ps1` | Clean up legacy custom field names |
 
 ### Analysis
 

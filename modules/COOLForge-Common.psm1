@@ -4590,6 +4590,19 @@ function Initialize-COOLForgeInfrastructure {
                     Write-LevelLog "Created custom field: $($Field.Name) (default: $DefaultToUse)" -Level "SUCCESS"
                 }
                 $FieldsCreated++
+
+                # Delete legacy fields now that the new field exists
+                if ($Field.LegacyNames -and $Field.LegacyNames.Count -gt 0) {
+                    foreach ($LegacyName in $Field.LegacyNames) {
+                        $LegacyField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $LegacyName -BaseUrl $BaseUrl
+                        if ($LegacyField) {
+                            $Removed = Remove-LevelCustomField -ApiKey $ApiKey -FieldId $LegacyField.id -FieldName $LegacyName -BaseUrl $BaseUrl
+                            if ($Removed) {
+                                Write-LevelLog "Removed legacy field: $LegacyName" -Level "SUCCESS"
+                            }
+                        }
+                    }
+                }
             }
             else {
                 Write-LevelLog "Failed to create custom field: $($Field.Name)" -Level "WARN"
@@ -4609,6 +4622,19 @@ function Initialize-COOLForgeInfrastructure {
             }
             else {
                 Write-LevelLog "Custom field '$($Field.Name)' already exists" -Level "DEBUG"
+            }
+
+            # Clean up any lingering legacy fields even if the new field already exists
+            if ($Field.LegacyNames -and $Field.LegacyNames.Count -gt 0) {
+                foreach ($LegacyName in $Field.LegacyNames) {
+                    $LegacyField = Find-LevelCustomField -ApiKey $ApiKey -FieldName $LegacyName -BaseUrl $BaseUrl
+                    if ($LegacyField) {
+                        $Removed = Remove-LevelCustomField -ApiKey $ApiKey -FieldId $LegacyField.id -FieldName $LegacyName -BaseUrl $BaseUrl
+                        if ($Removed) {
+                            Write-LevelLog "Removed legacy field: $LegacyName" -Level "SUCCESS"
+                        }
+                    }
+                }
             }
         }
     }
