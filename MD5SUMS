@@ -1,4 +1,4 @@
-20b2da5315723b1d2624ae6d8adc3d07  modules/COOLForge-Common.psm1
+ea5a92dacf7cb7f743bed07b9064fb8f  modules/COOLForge-Common.psm1
 bcbfba4832ca9c87befbb0399490bc9d  scripts/Check/👀Check Windows Location Services.ps1
 162c7ee09c837a715e358053669e3fce  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 2e69e96cda314af1ffc56adc99fb89b6  scripts/Check/👀Hostname Mismatch.ps1
@@ -23,9 +23,9 @@ c263f6cd8ce6177c19f8b6e075608e1b  scripts/Policy/👀dns.ps1
 eba3003ff1c232d5cbba60fc05342c7c  scripts/Policy/👀dnsfilter.ps1
 2a97ab5a97088c6d004347545fd91107  scripts/Policy/👀huntress.ps1
 ad5113d3fe61d13593719d8848503d8c  scripts/Policy/👀meshcentral.ps1
-09669dc434b0e39975aef10cc43222b8  scripts/Policy/👀screenconnect.ps1
+7fd225929366adc33a67ef1689dac959  scripts/Policy/👀screenconnect.ps1
 49777d37d2e9fc72aa3ae577c9fb8642  scripts/Policy/👀unchecky.ps1
-ceda80f5177da7972cefb53553d5b7ae  scripts/Policy/👀cipp.ps1
+d3c000b0accb16130a00ed8e6f28fb22  scripts/Policy/👀cipp.ps1
 d958a68ea26e23dfa1f5ae558760f4e5  scripts/Policy/👀bitwarden.ps1
 3690edf3e85254bf784db853a852b214  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 5b8361ff3d90874a13942b3ca1a44ce3  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
