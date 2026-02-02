@@ -20,7 +20,7 @@ $policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.31.02"
+$LauncherVersion = "2026.02.02.01"
 $LauncherName = "Policy/👀screenconnect.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
