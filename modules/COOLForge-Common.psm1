@@ -3199,8 +3199,12 @@ function Find-LevelDevice {
     )
 
     $StartingAfter = $null
+    $PageNum = 0
+
+    Write-LevelLog "Searching for device '$Hostname'..." -Level "DEBUG"
 
     do {
+        $PageNum++
         $Uri = "$BaseUrl/devices?limit=100"
         if ($StartingAfter) {
             $Uri += "&starting_after=$StartingAfter"
@@ -3221,9 +3225,14 @@ function Find-LevelDevice {
             return $null
         }
 
+        $DeviceCount = if ($Result.Data.data) { @($Result.Data.data).Count } else { 0 }
+        $HasMore = $Result.Data.has_more
+        Write-LevelLog "Device search page $PageNum`: $DeviceCount devices returned, has_more=$HasMore" -Level "DEBUG"
+
         $Device = $Result.Data.data | Where-Object { $_.hostname -eq $Hostname } | Select-Object -First 1
 
         if ($Device) {
+            Write-LevelLog "Found device '$Hostname' (id: $($Device.id)) on page $PageNum" -Level "DEBUG"
             # Cache device ID and hostname for future use
             Set-LevelCacheValue -Name "DeviceId" -Value $Device.id
             Set-LevelCacheValue -Name "DeviceHostname" -Value $Device.hostname
@@ -3231,13 +3240,14 @@ function Find-LevelDevice {
         }
 
         # Handle pagination
-        $StartingAfter = if ($Result.Data.has_more -and $Result.Data.data.Count -gt 0) {
+        $StartingAfter = if ($HasMore -and $DeviceCount -gt 0) {
             $Result.Data.data[-1].id
         } else {
             $null
         }
     } while ($StartingAfter)
 
+    Write-LevelLog "Device '$Hostname' not found after searching $PageNum page(s)" -Level "WARN"
     return $null
 }
 
