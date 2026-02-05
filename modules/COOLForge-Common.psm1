@@ -3247,7 +3247,7 @@ function Find-LevelDevice {
         }
     } while ($StartingAfter)
 
-    Write-LevelLog "Device '$Hostname' not found after searching $PageNum page(s)" -Level "WARN"
+    Write-LevelLog "Device '$Hostname' not found after searching $PageNum page(s). Alert: possible API key missing or wrong" -Level "WARN"
     return $null
 }
 
