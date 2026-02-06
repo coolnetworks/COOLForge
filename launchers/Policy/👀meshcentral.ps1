@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀meshcentral.ps1"
@@ -23,7 +23,7 @@ $policy_meshcentral_linux_install = "{{cf_policy_meshcentral_linux_install}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀meshcentral.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

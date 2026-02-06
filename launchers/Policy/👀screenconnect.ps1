@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀screenconnect.ps1"
@@ -21,7 +21,7 @@ $policy_screenconnect_baseurl = "{{cf_policy_screenconnect_baseurl}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀screenconnect.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

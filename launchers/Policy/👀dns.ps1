@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀dns.ps1"
@@ -19,7 +19,7 @@ $policy_allowed_dns_servers = "{{cf_policy_allowed_dns_servers}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀dns.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

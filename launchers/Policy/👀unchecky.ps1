@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀unchecky.ps1"
@@ -19,7 +19,7 @@ $policy_unchecky = "{{cf_policy_unchecky}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀unchecky.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

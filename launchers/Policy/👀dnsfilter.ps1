@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀dnsfilter.ps1"
@@ -20,7 +20,7 @@ $policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀dnsfilter.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
@@ -19,7 +19,7 @@ $policy_other_msp_screenconnect = "{{cf_policy_other_msp_screenconnect}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

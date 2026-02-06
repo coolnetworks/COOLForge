@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "Remove/⛔Remove All RATs.ps1"
@@ -18,7 +18,7 @@ $ScriptToRun = "Remove/⛔Remove All RATs.ps1"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Remove/⛔Remove All RATs.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

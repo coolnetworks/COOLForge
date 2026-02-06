@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀huntress.ps1"
@@ -19,7 +19,7 @@ $policy_huntress = "{{cf_policy_huntress}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀huntress.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 

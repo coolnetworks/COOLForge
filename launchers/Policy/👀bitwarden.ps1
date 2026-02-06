@@ -1,4 +1,4 @@
-﻿# ============================================================
+﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀bitwarden.ps1"
@@ -19,7 +19,7 @@ $policy_bitwarden = "{{cf_policy_bitwarden}}"
 #>
 
 $LauncherVersion = "2026.01.22.01"
-$LauncherName = "Policy/LAUNCHERNAME.ps1"
+$LauncherName = "Policy/👀bitwarden.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
