@@ -1,7 +1,7 @@
 ﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Check/👀Check for Unauthorized Remote Access Tools.ps1"
+$ScriptToRun = "👀Check for Unauthorized Remote Access Tools.ps1"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
@@ -276,4 +276,4 @@ $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -DebugMode $DebugScripts
 
 if ($LauncherOutdatedMsg) { Write-Host $LauncherOutdatedMsg }
-exit $ExitCode
+exit $ExitCode

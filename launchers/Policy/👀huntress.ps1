@@ -1,4 +1,4 @@
-﻿﻿# ============================================================
+﻿﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀huntress.ps1"
@@ -277,4 +277,4 @@ $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -DebugMode $DebugScripts
 
 if ($LauncherOutdatedMsg) { Write-Host $LauncherOutdatedMsg }
-exit $ExitCode
+exit $ExitCode

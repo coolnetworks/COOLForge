@@ -1,4 +1,4 @@
-﻿﻿# ============================================================
+﻿﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "🙏Wake all devices in Level group.ps1"
@@ -276,4 +276,4 @@ $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -DebugMode $DebugScripts
 
 if ($LauncherOutdatedMsg) { Write-Host $LauncherOutdatedMsg }
-exit $ExitCode
+exit $ExitCode

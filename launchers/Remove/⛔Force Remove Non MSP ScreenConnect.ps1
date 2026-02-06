@@ -1,7 +1,7 @@
 ﻿﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "Remove/⛔Force Remove Non MSP ScreenConnect.ps1"
+$ScriptToRun = "⛔Force Remove Non MSP ScreenConnect.ps1"
 $policy_other_msp_screenconnect = "{{cf_policy_other_msp_screenconnect}}"
 <#
 .SYNOPSIS
@@ -277,4 +277,4 @@ $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -DebugMode $DebugScripts
 
 if ($LauncherOutdatedMsg) { Write-Host $LauncherOutdatedMsg }
-exit $ExitCode
+exit $ExitCode
