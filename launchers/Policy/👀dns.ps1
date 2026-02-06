@@ -2,7 +2,7 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀dns.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
+$policy_allowed_dns_servers = "{{cf_policy_allowed_dns_servers}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.

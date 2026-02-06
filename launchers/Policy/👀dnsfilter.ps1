@@ -2,7 +2,8 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀dnsfilter.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
+$policy_dnsfilter = "{{cf_policy_dnsfilter}}"
+$policy_dnsfilter_sitekey = "{{cf_policy_dnsfilter_sitekey}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.

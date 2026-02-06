@@ -4231,6 +4231,8 @@ function New-LevelCustomField {
 
     if ($Result.Success) {
         Write-LevelLog "Created custom field: $Name" -Level "SUCCESS"
+        # Add _created property to indicate this was newly created
+        $Result.Data | Add-Member -NotePropertyName '_created' -NotePropertyValue $true -Force
         return $Result.Data
     }
     else {
@@ -4242,6 +4244,8 @@ function New-LevelCustomField {
                 $ExistingField = $AllFields | Where-Object { $_.name -eq $Name }
                 if ($ExistingField) {
                     Write-LevelLog "Found existing custom field: $Name" -Level "DEBUG"
+                    # Add _created property to indicate this was NOT newly created
+                    $ExistingField | Add-Member -NotePropertyName '_created' -NotePropertyValue $false -Force
                     return $ExistingField
                 }
             }
@@ -4824,8 +4828,13 @@ function Initialize-SoftwarePolicyInfrastructure {
             if (-not [string]::IsNullOrWhiteSpace($DefaultPolicyValue) -and $NewField.id) {
                 $null = Set-LevelCustomFieldDefaultValue -ApiKey $ApiKey -FieldId $NewField.id -Value $DefaultPolicyValue -BaseUrl $BaseUrl
             }
-            Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
-            $FieldsCreated++
+            # Only count as created if it was actually newly created (not found existing after 422)
+            if ($NewField._created -eq $true) {
+                Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
+                $FieldsCreated++
+            } else {
+                Write-LevelLog "Custom field '$PolicyFieldName' already exists" -Level "DEBUG"
+            }
         }
         else {
             Write-LevelLog "Failed to create custom field: $PolicyFieldName" -Level "ERROR"
@@ -4847,8 +4856,13 @@ function Initialize-SoftwarePolicyInfrastructure {
             Write-LevelLog "Creating custom field: $UrlFieldName" -Level "INFO"
             $NewField = New-LevelCustomField -ApiKey $ApiKey -Name $UrlFieldName -DefaultValue "" -BaseUrl $BaseUrl
             if ($NewField) {
-                Write-LevelLog "Created custom field: $UrlFieldName" -Level "SUCCESS"
-                $FieldsCreated++
+                # Only count as created if it was actually newly created
+                if ($NewField._created -eq $true) {
+                    Write-LevelLog "Created custom field: $UrlFieldName" -Level "SUCCESS"
+                    $FieldsCreated++
+                } else {
+                    Write-LevelLog "Custom field '$UrlFieldName' already exists" -Level "DEBUG"
+                }
             }
             else {
                 Write-LevelLog "Failed to create custom field: $UrlFieldName" -Level "WARN"

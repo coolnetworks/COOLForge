@@ -2,7 +2,7 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀bitwarden.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
+$policy_bitwarden = "{{cf_policy_bitwarden}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.

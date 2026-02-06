@@ -2,7 +2,7 @@
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
 $ScriptToRun = "👀huntress.ps1"
-$policy_SCRIPTNAME = "{{cf_policy_SCRIPTNAME}}"
+$policy_huntress = "{{cf_policy_huntress}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
