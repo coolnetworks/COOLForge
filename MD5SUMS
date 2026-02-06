@@ -32,6 +32,7 @@ ad5113d3fe61d13593719d8848503d8c  scripts/Policy/👀meshcentral.ps1
 9bb61897c4bcfd3ce1e59e00195f2e3b  scripts/Remove/⛔Force Remove Foxit.ps1
 81da23ceeb23284548377d4c6416693c  scripts/Remove/⛔Force Remove McAfee.ps1
 5b8361ff3d90874a13942b3ca1a44ce3  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+04e0e159f1db435af9eb4569a2ab06e1  scripts/Remove/⛔Remove All RATs.ps1
 7bcbd40987a43887b57ac83762124429  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 46eb342b297808c30d0bc11bb5e9af00  scripts/Utility/⚙️COOLForge Cache Sync.ps1
 faa150673ca157c758c43d87a234ebe7  scripts/Utility/🔔Technician Alert Monitor.ps1
