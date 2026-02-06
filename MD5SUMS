@@ -1,4 +1,4 @@
-65951cdf76c1ea5dd21bafa14f36f177  modules/COOLForge-Common.psm1
+c0304f0fe0419b42b4131992c3d2a115  modules/COOLForge-Common.psm1
 162c7ee09c837a715e358053669e3fce  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 bcbfba4832ca9c87befbb0399490bc9d  scripts/Check/👀Check Windows Location Services.ps1
 072892310afd2e0112929820bc4c33dd  scripts/Check/👀debug.ps1
