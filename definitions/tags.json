@@ -1,6 +1,6 @@
 {
   "$schema": "./tags.schema.json",
-  "version": "2026.01.19",
+  "version": "2026.02.10",
   "description": "COOLForge tag definitions for Level.io policy enforcement",
   "documentation": "See docs/POLICY-TAGS.md for complete policy specification",
   "globalTags": {
@@ -156,7 +156,7 @@
       "displayName": "Huntress",
       "category": "software",
       "tags": ["🙏HUNTRESS", "🚫HUNTRESS", "📌HUNTRESS", "🔄HUNTRESS", "✅HUNTRESS"],
-      "customFields": ["policy_huntress"]
+      "customFields": ["policy_huntress", "policy_huntress_account_key", "policy_huntress_org_key", "policy_huntress_tags"]
     },
     "dnsfilter": {
       "displayName": "DNSFilter",

@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.02.06.07
+    Version:    2026.02.10.01
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -7343,7 +7343,7 @@ $ScriptContent
 # Extract version from header comment (single source of truth)
 # This ensures the displayed version always matches the header
 # Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.02.01.01"
+$script:ModuleVersion = "2026.02.10.01"
 Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
 
 # ============================================================

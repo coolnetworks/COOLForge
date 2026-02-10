@@ -33,7 +33,7 @@
     The policy will retry on the next cycle after TP is disabled.
 
 .NOTES
-    Version:          2026.01.16.01
+    Version:          2026.02.10.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -51,7 +51,7 @@
 #>
 
 # Software Policy - Huntress
-# Version: 2026.01.16.01
+# Version: 2026.02.10.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -532,7 +532,7 @@ function Remove-Huntress {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.16.01"
+$ScriptVersion = "2026.02.10.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -600,7 +600,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingAccountKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $AccountKeyFieldName
         if (-not $ExistingAccountKeyField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $AccountKeyFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $AccountKeyFieldName" -Level "SUCCESS"
                 $HuntressFieldsCreated++
             }
@@ -610,7 +610,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingOrgKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $OrgKeyFieldName
         if (-not $ExistingOrgKeyField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $OrgKeyFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $OrgKeyFieldName" -Level "SUCCESS"
                 $HuntressFieldsCreated++
             }
@@ -620,7 +620,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingTagsField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $TagsFieldName
         if (-not $ExistingTagsField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $TagsFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $TagsFieldName (optional)" -Level "SUCCESS"
                 $HuntressFieldsCreated++
             }

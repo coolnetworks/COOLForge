@@ -3,6 +3,9 @@
 # ============================================================
 $ScriptToRun = "👀huntress.ps1"
 $policy_huntress = "{{cf_policy_huntress}}"
+$policy_huntress_account_key = "{{cf_policy_huntress_account_key}}"
+$policy_huntress_org_key = "{{cf_policy_huntress_org_key}}"
+$policy_huntress_tags = "{{cf_policy_huntress_tags}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.

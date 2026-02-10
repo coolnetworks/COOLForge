@@ -1,6 +1,6 @@
 {
   "$schema": "./custom-fields.schema.json",
-  "version": "2026.01.19",
+  "version": "2026.02.10",
   "description": "COOLForge custom field definitions for Level.io",
   "setup": {
     "prerequisites": [

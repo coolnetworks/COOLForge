@@ -1,12 +1,12 @@
 {
   "$schema": "./definitions/launcher-versions.schema.json",
-  "version": "2026.02.01",
+  "version": "2026.02.10",
   "description": "Current launcher versions - launchers check this to detect when they need updating in Level.io",
   "launchers": {
     "Policy/👀chrome.ps1": "2026.01.31.02",
     "Policy/👀debug.ps1": "2026.01.31.02",
     "Policy/👀dnsfilter.ps1": "2026.01.31.02",
-    "Policy/👀huntress.ps1": "2026.01.31.02",
+    "Policy/👀huntress.ps1": "2026.02.10.01",
     "Policy/👀meshcentral.ps1": "2026.01.31.02",
     "Policy/👀screenconnect.ps1": "2026.02.02.01",
     "Policy/👀unchecky.ps1": "2026.01.31.02",

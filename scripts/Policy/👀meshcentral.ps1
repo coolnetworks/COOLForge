@@ -28,7 +28,7 @@
     - policy_meshcentral = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.31.01
+    Version:          2026.02.10.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -52,7 +52,7 @@
 #>
 
 # Software Policy - MeshCentral
-# Version: 2026.01.31.01
+# Version: 2026.02.10.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -547,7 +547,7 @@ function Remove-Meshcentral {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.31.01"
+$ScriptVersion = "2026.02.10.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -615,7 +615,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingServerUrlField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $ServerUrlFieldName
         if (-not $ExistingServerUrlField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $ServerUrlFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $ServerUrlFieldName" -Level "SUCCESS"
                 $MeshFieldsCreated++
             }
@@ -625,7 +625,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingDownloadUrlField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $DownloadUrlFieldName
         if (-not $ExistingDownloadUrlField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $DownloadUrlFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $DownloadUrlFieldName" -Level "SUCCESS"
                 $MeshFieldsCreated++
             }
@@ -635,7 +635,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingLinuxField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $LinuxInstallFieldName
         if (-not $ExistingLinuxField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $LinuxInstallFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $LinuxInstallFieldName" -Level "SUCCESS"
                 $MeshFieldsCreated++
             }
@@ -645,7 +645,7 @@ $InvokeParams = @{ ScriptBlock = {
         $ExistingMacField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $MacDownloadUrlFieldName
         if (-not $ExistingMacField) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $MacDownloadUrlFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $MacDownloadUrlFieldName" -Level "SUCCESS"
                 $MeshFieldsCreated++
             }

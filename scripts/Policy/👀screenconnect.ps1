@@ -28,7 +28,7 @@
     - policy_screenconnect = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.19.01
+    Version:          2026.02.10.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -50,7 +50,7 @@
 #>
 
 # Software Policy - ScreenConnect
-# Version: 2026.01.19.01
+# Version: 2026.02.10.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -598,7 +598,7 @@ function Remove-ScreenConnect {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.01.31.01"
+$ScriptVersion = "2026.02.10.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -669,7 +669,7 @@ $InvokeParams = @{ ScriptBlock = {
         $PolicyFieldExists = -not [string]::IsNullOrWhiteSpace($PolicyFieldLauncherValue) -and $PolicyFieldLauncherValue -notlike "{{*}}"
         if (-not $PolicyFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $PolicyFieldName -DefaultValue "pin | uses pin/install/remove (change to activate policy)"
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $PolicyFieldName" -Level "SUCCESS"
                 $ScFieldsCreated++
             }
@@ -682,7 +682,7 @@ $InvokeParams = @{ ScriptBlock = {
         $InstanceIdFieldExists = ($null -ne $InstanceIdRaw) -and ($InstanceIdRaw -notlike "{{*}}")
         if (-not $InstanceIdFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $InstanceIdFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $InstanceIdFieldName" -Level "SUCCESS"
                 $ScFieldsCreated++
             }
@@ -694,7 +694,7 @@ $InvokeParams = @{ ScriptBlock = {
         $BaseUrlFieldExists = ($null -ne $BaseUrlRaw) -and ($BaseUrlRaw -notlike "{{*}}")
         if (-not $BaseUrlFieldExists) {
             $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $BaseUrlFieldName -DefaultValue ""
-            if ($NewField -and $NewField._wasCreated) {
+            if ($NewField -and $NewField._created) {
                 Write-LevelLog "Created custom field: $BaseUrlFieldName" -Level "SUCCESS"
                 $ScFieldsCreated++
             }
