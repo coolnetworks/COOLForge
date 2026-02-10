@@ -45,9 +45,7 @@ To create a missing launcher:
 
 ### 3. Update Module Version (if module changed)
 
-Edit `COOLForge-Common.psm1` in two places:
-- Header comment `Version:` (around line 15)
-- `$script:ModuleVersion` variable (near end of file)
+Edit the header comment `Version:` in `COOLForge-Common.psm1` (around line 15). This is the single source of truth for the module version — the launcher reads and displays it.
 
 ### 4. Update CHANGELOG.md
 

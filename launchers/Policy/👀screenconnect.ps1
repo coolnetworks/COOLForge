@@ -124,11 +124,17 @@ $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
 $NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
 if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl" }
 
-try {
-    $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 5 -Headers $NoCacheHeaders).Content
-    if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
-} catch {
-    if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS: $_" }
+for ($attempt = 1; $attempt -le 2; $attempt++) {
+    try {
+        $MD5SumsContent = (Invoke-WebRequest -Uri $MD5FetchUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
+        if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS loaded, length: $($MD5SumsContent.Length)" }
+        break
+    } catch {
+        if ($attempt -eq 2) {
+            if ($DebugScripts) { Write-Host "[DEBUG] Failed to load MD5SUMS after 2 attempts: $_" }
+        } elseif ($DebugScripts) {
+            Write-Host "[DEBUG] MD5SUMS attempt $attempt failed, retrying..." }
+    }
 }
 
 # STEP 2: Parse expected library hash from MD5SUMS
@@ -169,6 +175,9 @@ if ($DebugScripts -and (Test-Path $LibraryPath)) {
         }
     } catch {
         $NeedsUpdate = $true
+    }
+    if (-not $NeedsUpdate -and $LocalVersion) {
+        Write-Host "[*] Library v$LocalVersion"
     }
 } else {
     $NeedsUpdate = $true

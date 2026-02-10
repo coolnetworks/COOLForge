@@ -7340,11 +7340,7 @@ $ScriptContent
 # ============================================================
 # MODULE LOAD MESSAGE
 # ============================================================
-# Extract version from header comment (single source of truth)
-# This ensures the displayed version always matches the header
-# Handles both Import-Module and New-Module loading methods
-$script:ModuleVersion = "2026.02.10.01"
-Write-Host "[*] COOLForge-Common v$script:ModuleVersion loaded"
+Write-Host "[*] COOLForge-Common loaded"
 
 # ============================================================
 # EXPORT MODULE MEMBERS
