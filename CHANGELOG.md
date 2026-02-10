@@ -7,6 +7,21 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 
 ## [Unreleased]
 
+## [2026.02.10.01] - 2026-02-10
+
+### Fixed
+- **Policy infrastructure false alert** — `_wasCreated` → `_created` property mismatch in screenconnect, huntress, and meshcentral policy scripts caused "infrastructure created - please configure" alerts even when fields already existed
+- **ScreenConnect version header mismatch** — header said `2026.01.19.01` but `$ScriptVersion` was `2026.01.31.01`, preventing cache updates on deployed machines
+- **Huntress launcher missing field pass-throughs** — `policy_huntress_account_key`, `policy_huntress_org_key`, `policy_huntress_tags` were not being passed from Level.io to the script
+- **tags.json huntress customFields** — was missing `policy_huntress_account_key`, `policy_huntress_org_key`, `policy_huntress_tags`
+
+### Changed
+- Bumped screenconnect, huntress, meshcentral policy scripts to `2026.02.10.01`
+- Bumped library to `2026.02.10.01`
+
+### Launchers requiring re-upload to Level.io
+- **`launchers/Policy/👀huntress.ps1`** — added 3 missing `{{cf_*}}` field pass-throughs (account_key, org_key, tags)
+
 ## [2026.02.01.01] - 2026-02-01
 
 ### Added
