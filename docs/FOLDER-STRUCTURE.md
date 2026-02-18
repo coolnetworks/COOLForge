@@ -60,16 +60,20 @@ COOLForge/
 │   │   ├── 🔧Fix Windows 8.1 Services.ps1
 │   │   └── 🔧Fix Windows Location Services.ps1
 │   ├── Monitor/         # 👀 Audits, compliance
-│   │   ├── 👀Check DNS Server Compliance.ps1
 │   │   ├── 👀Check for Unauthorized Remote Access Tools.ps1
 │   │   └── 👀Check Windows Location Services.ps1
 │   ├── Policy/          # 👀 Software policy enforcement
+│   │   ├── 👀bitwarden.ps1
 │   │   ├── 👀chrome.ps1
+│   │   ├── 👀cipp.ps1
 │   │   ├── 👀debug.ps1
+│   │   ├── 👀dns.ps1
 │   │   ├── 👀dnsfilter.ps1
 │   │   ├── 👀Hostname Mismatch.ps1
 │   │   ├── 👀huntress.ps1
 │   │   ├── 👀meshcentral.ps1
+│   │   ├── 👀meshcentral-linux.sh
+│   │   ├── 👀meshcentral-mac.sh
 │   │   ├── 👀screenconnect.ps1
 │   │   ├── 👀unchecky.ps1
 │   │   ├── Chrome/
@@ -78,8 +82,11 @@ COOLForge/
 │   │       └── 👀Windows Location Services.ps1
 │   ├── Remove/          # ⛔ Force removal
 │   │   ├── ⛔Force Remove Adobe Creative Cloud.ps1
-│   │   ├── ⛔Force Remove Anydesk.ps1
-│   │   └── ⛔Force Remove Non MSP ScreenConnect.ps1
+│   │   ├── ⛔Force Remove Dropbox.ps1
+│   │   ├── ⛔Force Remove Foxit.ps1
+│   │   ├── ⛔Force Remove McAfee.ps1
+│   │   ├── ⛔Force Remove Non MSP ScreenConnect.ps1
+│   │   └── ⛔Remove All RATs.ps1
 │   ├── Test/            # 👀 Testing, debugging
 │   │   ├── 👀Test Show Versions.ps1
 │   │   └── 👀Test Variable Output.ps1
@@ -96,11 +103,26 @@ COOLForge/
 ├── modules/
 │   └── COOLForge-Common.psm1   # Shared library
 ├── templates/
-│   ├── Slim-Launcher.ps1       # Launcher template
-│   ├── Script_Template.ps1     # Standalone script template
-│   └── SoftwarePolicy-Template.ps1  # Policy script template
+│   ├── Slim-Launcher.ps1              # Slim launcher template
+│   ├── Policy_Launcher_Template.ps1   # Policy launcher template
+│   ├── Script_Template.ps1            # Standalone script template
+│   └── SoftwarePolicy-Template.ps1    # Policy script template
+├── standalone_scripts/          # Scripts that run without Level.io
+│   ├── Check/                   # Standalone check scripts
+│   ├── Fix/                     # Standalone fix scripts
+│   ├── Remove/                  # Standalone removal toolkit (USB-bootable)
+│   └── Utility/                 # Standalone utilities
+├── start_here/                  # Setup and admin tools (run from workstation)
+│   ├── Setup-COOLForge.ps1      # Initial setup wizard
+│   ├── New-LevelClient.ps1     # Create new client group hierarchy
+│   └── ...                      # Backup, restore, field management tools
+├── validation/                  # CI/CD validation scripts
+│   ├── check-all.ps1            # Run all checks
+│   ├── check-bom.ps1            # BOM validation
+│   ├── check-syntax.ps1         # Syntax validation
+│   └── ...                      # Other validators
 ├── tools/
-│   ├── Update-MD5SUMS.ps1      # Regenerate checksums
+│   ├── Update-MD5Sums.ps1      # Regenerate checksums
 │   └── New-PolicyScript.ps1    # Scaffolding tool
 ├── definitions/
 │   ├── custom-fields.json      # Custom field definitions

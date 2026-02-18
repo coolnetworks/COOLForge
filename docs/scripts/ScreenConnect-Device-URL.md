@@ -1,7 +1,7 @@
 # Extract and Set ScreenConnect Device URL
 
 **Script:** `scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1`
-**Launcher:** `launchers/⚙️Extract and Set ScreenConnect Device URL.ps1`
+**Launcher:** `launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1`
 **Version:** 2026.01.10.01
 **Category:** Configure
 

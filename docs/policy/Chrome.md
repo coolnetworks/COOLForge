@@ -2,7 +2,7 @@
 
 **Script:** `scripts/Policy/👀chrome.ps1`
 **Launcher:** `launchers/Policy/👀chrome.ps1`
-**Version:** 2026.01.16.01
+**Version:** 2026.01.18.01
 **Category:** Policy
 
 ## Flow
@@ -183,7 +183,7 @@ These are located in: `scripts/Policy/Chrome/`
 
 | Script | Custom Field | Values | Description |
 |--------|--------------|--------|-------------|
-| `👀locationservices.ps1` | `policy_chrome_locationservices` | `install` / `remove` / `pin` | Chrome geolocation policy |
+| `👀Chrome Location Services.ps1` | `policy_chrome_locationservices` | `install` / `remove` / `pin` | Chrome geolocation policy |
 
 **Tags:** 🙏CHROME_LOCATIONSERVICES, 🚫CHROME_LOCATIONSERVICES, 📌CHROME_LOCATIONSERVICES
 

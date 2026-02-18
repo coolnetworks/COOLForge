@@ -24,6 +24,11 @@ ScreenConnectUrls_*.csv
 /.cache/
 *.cache
 
+# Token/secret cache files
+jwt-token-cache.txt
+jwt-token-cache.dat
+*.token
+
 # Claude Code local settings
 .claude/
 

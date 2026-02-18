@@ -2,7 +2,7 @@
 
 **Script:** `scripts/Policy/👀dnsfilter.ps1`
 **Launcher:** `launchers/Policy/👀dnsfilter.ps1`
-**Version:** 2026.01.16.01
+**Version:** 2026.01.18.01
 **Category:** Policy
 
 ## Flow

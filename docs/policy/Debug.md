@@ -1,8 +1,8 @@
 # Debug Policy Script
 
-**Script:** `scripts/Policy/👀debug.ps1`
+**Script:** `scripts/Check/👀debug.ps1`
 **Launcher:** `launchers/Policy/👀debug.ps1`
-**Version:** 2026.01.01.03
+**Version:** 2026.01.21.01
 **Category:** Policy
 
 ## Flow

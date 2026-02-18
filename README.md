@@ -1,6 +1,6 @@
 # COOLForge_Lib - Level.io PowerShell Automation Library
 
-**Version:** 2026.01.22
+**Version:** 2026.02.10
 
 A standardized PowerShell module for Level.io RMM automation scripts.
 
@@ -343,12 +343,11 @@ Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-
 | Script | Description |
 |--------|-------------|
 | [👀Check for Unauthorized Remote Access Tools](docs/scripts/RAT-Detection.md) | Detects 60+ RATs with whitelisting support |
-| [👀Check DNS Server Compliance](docs/scripts/Check-DNS-Compliance.md) | Validates DNS server settings |
 | [👀Check Windows Location Services](docs/scripts/Check-Windows-Location.md) | Checks Windows location services status |
 | [👀Hostname Mismatch](docs/scripts/Hostname-Mismatch.md) | Detects Level.io vs actual hostname mismatches |
 | [👀Test Show Versions](docs/scripts/Test-Show-Versions.md) | Library test suite and version info |
 | [👀Test Variable Output](docs/scripts/Test-Variable-Output.md) | Level.io automation variable testing |
-| [👀debug](docs/scripts/Debug-Policy.md) | Debug script for policy testing |
+| [👀debug](docs/policy/Debug.md) | Debug script for policy testing |
 
 ### Policy Scripts (👀)
 
@@ -360,6 +359,8 @@ Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-
 | [👀chrome](docs/policy/Chrome.md) | Google Chrome policy enforcement |
 | [👀meshcentral](docs/policy/MeshCentral.md) | MeshCentral agent policy enforcement |
 | [👀screenconnect](docs/policy/ScreenConnect.md) | ScreenConnect/ConnectWise Control policy enforcement |
+| [👀bitwarden](docs/policy/Bitwarden.md) | Bitwarden browser extension policy enforcement |
+| [👀dns](docs/scripts/DNS-Compliance.md) | DNS server compliance enforcement |
 | [👀Windows Location Services](docs/policy/Windows.md) | Windows location services policy |
 | [👀Chrome Location Services](docs/policy/Chrome.md) | Chrome geolocation policy |
 
@@ -384,8 +385,12 @@ Scripts are organized into category folders. See [Folder Structure](docs/FOLDER-
 
 | Script | Description |
 |--------|-------------|
-| [⛔Force Remove Anydesk](docs/scripts/Force-Remove-AnyDesk.md) | Removes AnyDesk with escalating force (5 phases) |
 | [⛔Force Remove Non MSP ScreenConnect](docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md) | Removes non-whitelisted ScreenConnect instances |
+| [⛔Force Remove Adobe Creative Cloud](docs/scripts/Force-Remove-Adobe-CC.md) | 6-phase Adobe CC removal with official cleaner tool |
+| [⛔Force Remove Dropbox](docs/scripts/Force-Remove-Dropbox.md) | Removes Dropbox with escalating force (5 phases) |
+| [⛔Force Remove Foxit](docs/scripts/Force-Remove-Foxit.md) | Removes Foxit PDF Reader with escalating force |
+| [⛔Force Remove McAfee](docs/scripts/Force-Remove-McAfee.md) | Removes McAfee products with MCPR fallback |
+| [⛔Remove All RATs](docs/scripts/Remove-All-RATs.md) | Detects and removes 70+ unauthorized remote access tools |
 
 ### Utility Scripts (🙏 🔔 ⚙️)
 

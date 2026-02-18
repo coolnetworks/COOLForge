@@ -1,7 +1,7 @@
 # Enable System Restore Script
 
 **Script:** `scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1`
-**Launcher:** `launchers/🔧Enable System Restore and Create Restore Point.ps1`
+**Launcher:** `launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1`
 **Version:** 2025.12.29.01
 **Category:** Fix
 

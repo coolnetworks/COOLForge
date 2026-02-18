@@ -326,7 +326,7 @@ These must be set at the account level for the system to work:
 |----------------|-----------------|---------|---------|
 | `coolforge_msp_scratch_folder` | `{{cf_coolforge_msp_scratch_folder}}` | Persistent storage path | `C:\ProgramData\MSP` |
 | `apikey` | `{{cf_apikey}}` | Level.io API key (enables tag management) | Your API key |
-| `debug_scripts` | `{{cf_debug_scripts}}` | Set to `true` for verbose output | `false` |
+| `debug_coolforge` | `{{cf_debug_coolforge}}` | Debug level: `normal`, `verbose`, or `veryverbose` | `normal` |
 
 ---
 
@@ -490,7 +490,7 @@ Organization Level (Level.io tenant)
 
 ### Enable Debug Mode
 
-Set `cf_debug_scripts = true` at the device or group level to get verbose output showing:
+Set `cf_debug_coolforge = verbose` at the device or group level to get verbose output showing:
 - All launcher variables received
 - Tag parsing details
 - Policy resolution steps

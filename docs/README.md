@@ -90,7 +90,10 @@ Complete documentation for the COOLForge PowerShell automation framework for Lev
 | Huntress | [policy/Huntress.md](policy/Huntress.md) |
 | DNSFilter | [policy/DNSFilter.md](policy/DNSFilter.md) |
 | Chrome | [policy/Chrome.md](policy/Chrome.md) |
-| Windows Services | [policy/Windows.md](policy/Windows.md) |
+| MeshCentral | [policy/MeshCentral.md](policy/MeshCentral.md) |
+| ScreenConnect | [policy/ScreenConnect.md](policy/ScreenConnect.md) |
+| Bitwarden | [policy/Bitwarden.md](policy/Bitwarden.md) |
+| Windows Settings | [policy/Windows.md](policy/Windows.md) |
 | Debug | [policy/Debug.md](policy/Debug.md) |
 | Creating New Scripts | [policy/CREATING-SCRIPTS.md](policy/CREATING-SCRIPTS.md) |
 | Tag System | [policy/TAGS.md](policy/TAGS.md) |
@@ -123,7 +126,7 @@ Complete documentation for the COOLForge PowerShell automation framework for Lev
 | [../RELEASING.md](../RELEASING.md) | Release process guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Version history |
 | [../TODO.md](../TODO.md) | Project roadmap |
-| [../NEEDS_TESTING.md](../NEEDS_TESTING.md) | Features requiring validation |
+| [../TODO.md](../TODO.md) | Project roadmap and features requiring validation |
 
 ---
 

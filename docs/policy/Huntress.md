@@ -2,7 +2,7 @@
 
 **Script:** `scripts/Policy/👀huntress.ps1`
 **Launcher:** `launchers/Policy/👀huntress.ps1`
-**Version:** 2026.01.08.03
+**Version:** 2026.02.10.01
 **Category:** Policy
 
 ## Flow
@@ -112,9 +112,9 @@ Tag-based policy enforcement script for Huntress agent management. Handles insta
 
 | Level.io Field | Script Variable | Required | Description |
 |----------------|-----------------|----------|-------------|
-| `huntress_account_key` | `{{cf_huntress_account_key}}` | Yes | Huntress account key (32 characters) |
-| `huntress_organization_key` | `{{cf_huntress_organization_key}}` | Yes | Organization name for Huntress |
-| `huntress_tags` | `{{cf_huntress_tags}}` | No | Comma-separated tags to apply to agent |
+| `policy_huntress_account_key` | `{{cf_policy_huntress_account_key}}` | Yes | Huntress account key (32 characters) |
+| `policy_huntress_org_key` | `{{cf_policy_huntress_org_key}}` | Yes | Organization name for Huntress |
+| `policy_huntress_tags` | `{{cf_policy_huntress_tags}}` | No | Comma-separated tags to apply to agent |
 | `apikey` | `{{cf_apikey}}` | No | Level.io API key for tag auto-management |
 
 > **Note:** Level.io adds `cf_` prefix automatically when referencing in scripts.

@@ -9,17 +9,41 @@ param(
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Token cache file
-$tokenCacheFile = Join-Path $OutputDir "jwt-token-cache.txt"
+# Token cache file (DPAPI-encrypted)
+$tokenCacheFile = Join-Path $OutputDir "jwt-token-cache.dat"
+
+# Helper: encrypt token with DPAPI (machine-bound)
+function Save-EncryptedToken {
+    param([string]$TokenValue, [string]$CachePath)
+    $secureString = ConvertTo-SecureString -String $TokenValue -AsPlainText -Force
+    $encrypted = ConvertFrom-SecureString -SecureString $secureString
+    $encrypted | Out-File $CachePath -Encoding UTF8 -NoNewline
+}
+
+# Helper: decrypt DPAPI-protected token
+function Load-EncryptedToken {
+    param([string]$CachePath)
+    if (-not (Test-Path $CachePath)) { return $null }
+    try {
+        $encrypted = Get-Content $CachePath -Raw
+        if ([string]::IsNullOrWhiteSpace($encrypted)) { return $null }
+        $secureString = ConvertTo-SecureString -String $encrypted
+        $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString)
+        $plain = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+        return $plain
+    } catch {
+        Write-Host "Could not decrypt cached token (user/machine changed?). Will re-prompt." -ForegroundColor Yellow
+        return $null
+    }
+}
 
 # Try to load cached token if not provided
 if (-not $Token) {
-    if (Test-Path $tokenCacheFile) {
-        $cachedToken = Get-Content $tokenCacheFile -Raw
-        if ($cachedToken -match '^eyJ') {
-            Write-Host "Using cached JWT token from: $tokenCacheFile" -ForegroundColor Gray
-            $Token = $cachedToken.Trim()
-        }
+    $cachedToken = Load-EncryptedToken -CachePath $tokenCacheFile
+    if ($cachedToken -and $cachedToken -match '^eyJ') {
+        Write-Host "Using cached JWT token (DPAPI-protected)" -ForegroundColor Gray
+        $Token = $cachedToken.Trim()
     }
 }
 
@@ -48,12 +72,12 @@ if ($Token -notmatch '^eyJ') {
     if ($continue -ne 'y') { exit 1 }
 }
 
-# Cache the token for next time
+# Cache the token for next time (DPAPI-encrypted)
 if (-not (Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 }
-$Token | Out-File $tokenCacheFile -Encoding UTF8 -NoNewline
-Write-Host "Token cached to: $tokenCacheFile" -ForegroundColor Gray
+Save-EncryptedToken -TokenValue $Token -CachePath $tokenCacheFile
+Write-Host "Token cached (DPAPI-encrypted) to: $tokenCacheFile" -ForegroundColor Gray
 
 # Use script-scoped token so it can be refreshed
 $script:CurrentToken = $Token
@@ -78,9 +102,9 @@ function Request-NewToken {
 
     $script:CurrentToken = $newToken.Trim()
 
-    # Cache the new token
-    $script:CurrentToken | Out-File $tokenCacheFile -Encoding UTF8 -NoNewline
-    Write-Host "New token cached." -ForegroundColor Green
+    # Cache the new token (DPAPI-encrypted)
+    Save-EncryptedToken -TokenValue $script:CurrentToken -CachePath $tokenCacheFile
+    Write-Host "New token cached (DPAPI-encrypted)." -ForegroundColor Green
 
     return $script:CurrentToken
 }

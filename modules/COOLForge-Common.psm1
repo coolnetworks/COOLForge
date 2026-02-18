@@ -1659,6 +1659,59 @@ function Get-SoftwareUninstallString {
 
 <#
 .SYNOPSIS
+    Validates an uninstall string points to a real executable before execution.
+
+.DESCRIPTION
+    Extracts the executable path from an uninstall string and verifies it exists
+    on disk before allowing it to be passed to cmd /c. This prevents command
+    injection via crafted registry UninstallString values.
+
+.PARAMETER UninstallString
+    The uninstall string from the registry to validate.
+
+.OUTPUTS
+    Boolean. $true if the uninstall string references a valid executable.
+#>
+function Test-UninstallStringValid {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$UninstallString
+    )
+
+    $trimmed = $UninstallString.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed)) { return $false }
+
+    # Block obvious injection characters
+    if ($trimmed -match '[;&|`$]') {
+        Write-Warning "Uninstall string contains suspicious characters: $trimmed"
+        return $false
+    }
+
+    # Extract executable path (handle quoted and unquoted)
+    if ($trimmed -match '^"([^"]+)"') {
+        $exePath = $Matches[1]
+    } elseif ($trimmed -match '^([^\s]+)') {
+        $exePath = $Matches[1]
+    } else {
+        return $false
+    }
+
+    # For MsiExec, it's a system binary — allow it
+    if ($exePath -match '(?i)^(.*\\)?msiexec(\.exe)?$') {
+        return $true
+    }
+
+    # Verify the executable actually exists on disk
+    if (-not (Test-Path $exePath -PathType Leaf)) {
+        Write-Warning "Uninstall executable not found: $exePath"
+        return $false
+    }
+
+    return $true
+}
+
+<#
+.SYNOPSIS
     Installs software via MSI with automatic retry on error 1603.
 
 .DESCRIPTION
@@ -6288,21 +6341,13 @@ function Write-DebugTagManagement {
 
     Write-Host "  API Key Present:     $(if ($HasApiKey) { '[YES]' } else { '[NO] - Tag updates will be SKIPPED!' })" -ForegroundColor $(if ($HasApiKey) { 'Green' } else { 'Red' })
 
-    # Show API key diagnostics - masked format for security
+    # Show API key diagnostics - fixed mask for security (never reveal key contents)
     if ($ApiKeyValue) {
         $KeyLen = $ApiKeyValue.Length
         $HasWhitespace = $ApiKeyValue -match '^\s|\s$'
         $HasNewline = $ApiKeyValue -match '[\r\n]'
-        # Show first 4 + ... + last 4 chars (or less if key is short)
-        $MaskedKey = if ($KeyLen -gt 12) {
-            $ApiKeyValue.Substring(0, 4) + "..." + $ApiKeyValue.Substring($KeyLen - 4)
-        } elseif ($KeyLen -gt 4) {
-            $ApiKeyValue.Substring(0, 2) + "..." + $ApiKeyValue.Substring($KeyLen - 2)
-        } else {
-            "****"
-        }
         Write-Host "  API Key Length:      $KeyLen chars" -ForegroundColor $(if ($KeyLen -gt 20) { 'Green' } else { 'Yellow' })
-        Write-Host "  API Key (masked):    $MaskedKey" -ForegroundColor Yellow
+        Write-Host "  API Key (masked):    ****...****" -ForegroundColor Yellow
         if ($HasWhitespace) {
             Write-Host "  [WARNING] API key has leading/trailing whitespace!" -ForegroundColor Red
         }
@@ -7366,6 +7411,7 @@ Export-ModuleMember -Function @(
     'Stop-SoftwareProcesses',
     'Stop-SoftwareServices',
     'Get-SoftwareUninstallString',
+    'Test-UninstallStringValid',
     'Test-ServiceExists',
     'Test-ServiceRunning',
 
