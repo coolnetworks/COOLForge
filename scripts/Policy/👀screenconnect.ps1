@@ -329,26 +329,18 @@ function Repair-ScreenConnectService {
         Write-LevelLog "Service restart failed: $($_.Exception.Message)" -Level "WARN"
     }
 
-    # Wait for communication with retries
-    for ($i = 1; $i -le $MaxRetries; $i++) {
-        Write-LevelLog "Checking communication (attempt $i of $MaxRetries)..."
-
-        $service.Refresh()
-        if ($service.Status -eq 'Running') {
-            $svcPid = Get-ServiceProcessId -ServiceDisplayName $service.DisplayName
-            if ($svcPid -gt 0 -and (Test-ScreenConnectCommunicating -SvcPid $svcPid)) {
-                Write-LevelLog "Service is now communicating" -Level "SUCCESS"
-                return $true
-            }
-        }
-
-        if ($i -lt $MaxRetries) {
-            Write-LevelLog "Not communicating yet, waiting $RetryIntervalSeconds seconds..."
-            Start-Sleep -Seconds $RetryIntervalSeconds
+    # Single communication check - if it doesn't communicate immediately, consider it bad
+    Write-LevelLog "Checking communication..."
+    $service.Refresh()
+    if ($service.Status -eq 'Running') {
+        $svcPid = Get-ServiceProcessId -ServiceDisplayName $service.DisplayName
+        if ($svcPid -gt 0 -and (Test-ScreenConnectCommunicating -SvcPid $svcPid)) {
+            Write-LevelLog "Service is now communicating" -Level "SUCCESS"
+            return $true
         }
     }
 
-    Write-LevelLog "Service failed to establish communication after $MaxRetries attempts" -Level "WARN"
+    Write-LevelLog "Service failed to establish communication" -Level "WARN"
     return $false
 }
 
@@ -870,10 +862,23 @@ $InvokeParams = @{ ScriptBlock = {
                             Write-LevelLog "Services repaired successfully" -Level "SUCCESS"
                             $ActionSuccess = $true
                         } else {
-                            Write-Host "Alert: ScreenConnect services unhealthy after repair attempt"
-                            Write-LevelLog "Services still unhealthy after repair" -Level "ERROR"
-                            $script:ExitCode = 1
-                            $ActionSuccess = $false
+                            Write-LevelLog "Repair failed - escalating to reinstall" -Level "WARN"
+                            Write-LevelLog "ACTION: Reinstalling $SoftwareName" -Level "INFO"
+                            $removeOk = Remove-ScreenConnect
+                            if (-not $removeOk) {
+                                Write-LevelLog "FAILED: Could not remove for reinstall" -Level "ERROR"
+                                $script:ExitCode = 1
+                                $ActionSuccess = $false
+                            } else {
+                                $ActionSuccess = Install-ScreenConnect -ScratchFolder $MspScratchFolder
+                                if ($ActionSuccess) {
+                                    Write-LevelLog "Reinstall successful" -Level "SUCCESS"
+                                } else {
+                                    Write-Host "Alert: ScreenConnect reinstall failed after repair failure"
+                                    Write-LevelLog "FAILED: Reinstallation unsuccessful" -Level "ERROR"
+                                    $script:ExitCode = 1
+                                }
+                            }
                         }
                     }
                 }
@@ -939,7 +944,20 @@ $InvokeParams = @{ ScriptBlock = {
                 }
             }
             "Pin" {
-                Write-LevelLog "Pinned - no changes allowed" -Level "INFO"
+                Write-LevelLog "Pinned - no changes allowed (install/remove)" -Level "INFO"
+                if ($IsInstalled) {
+                    if (-not (Test-ScreenConnectHealthy)) {
+                        Write-LevelLog "Installed but unhealthy - attempting repair" -Level "WARN"
+                        $repaired = Repair-ScreenConnectService
+                        if ($repaired) {
+                            Write-LevelLog "Services repaired successfully" -Level "SUCCESS"
+                        } else {
+                            Write-Host "Alert: ScreenConnect services unhealthy after repair attempt"
+                            Write-LevelLog "Services still unhealthy after repair" -Level "ERROR"
+                            $script:ExitCode = 1
+                        }
+                    }
+                }
                 if ($LevelApiKey) {
                     $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
                     if ($Device) {
