@@ -35,6 +35,7 @@ e3cc71bdf2deea62f16dd14c439fdb1e  scripts/Remove/⛔Force Remove Non MSP ScreenC
 04e0e159f1db435af9eb4569a2ab06e1  scripts/Remove/⛔Remove All RATs.ps1
 01123ee5e8b4a330e8be72688c27208c  scripts/Utility/⚙️COOLForge Cache Sync.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+8706accfa29b33f237204118e36ed1f9  scripts/Utility/⚙️Remove COOLForge Scratch Folder.ps1
 83caf93fbbb7060d66389e64a97f0805  scripts/Utility/⚙️Universal Disk Cleaner.ps1
 2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
 a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
