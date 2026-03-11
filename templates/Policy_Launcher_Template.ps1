@@ -241,6 +241,8 @@ function Get-ExpectedMD5 {
 
 # HTTP headers to bypass intermediate proxy caches (ISP, corporate, Fastly edge)
 $NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
+# Force TLS 1.2 — older .NET Framework defaults to TLS 1.0/1.1 which GitHub rejects
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # Load MD5SUMS file from repository
 $MD5SumsContent = $null

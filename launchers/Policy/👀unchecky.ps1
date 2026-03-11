@@ -120,6 +120,8 @@ $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
 # HTTP headers to bypass intermediate proxy caches (ISP, corporate, Fastly edge)
 $NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
+# Force TLS 1.2 — older .NET Framework defaults to TLS 1.0/1.1 which GitHub rejects
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl" }
 
 for ($attempt = 1; $attempt -le 2; $attempt++) {
