@@ -83,6 +83,7 @@ if ([string]::IsNullOrWhiteSpace($BaseUrl) -or $BaseUrl -like "{{*}}") {
     $BaseUrl = $null
 } else {
     # Clean up base URL
+    $BaseUrl = $BaseUrl.Trim()
     $BaseUrl = $BaseUrl -replace '^https?://', ''
     $BaseUrl = $BaseUrl.TrimEnd('/')
 }

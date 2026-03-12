@@ -25,7 +25,7 @@ d3c000b0accb16130a00ed8e6f28fb22  scripts/Policy/👀cipp.ps1
 d5df12ce913fde9d03b655936bd3a336  scripts/Policy/👀dnsfilter.ps1
 cbe0cf75c89082f22dc7340ed296e5aa  scripts/Policy/👀huntress.ps1
 cc38a591f5ca0fe691be14ba13b1533d  scripts/Policy/👀meshcentral.ps1
-0f5274f4128ca0c760b9596edf748a14  scripts/Policy/👀screenconnect.ps1
+794ad7f6c2b579dd053813b87608d53d  scripts/Policy/👀screenconnect.ps1
 32787c4a9c96f67e6339f6352fc59ad2  scripts/Policy/👀unchecky.ps1
 18c19ee777d4ddc589f69b56d80a5c23  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
 f3a01a4026dfc007749e8fa0069a3c22  scripts/Remove/⛔Force Remove Dropbox.ps1
