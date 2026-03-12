@@ -424,20 +424,68 @@ function Install-ScreenConnect {
 
     Write-LevelLog "Downloaded MSI: $fileSize bytes"
 
-    # Install
+    # Install via MSI
+    $installSuccess = $false
     try {
-        Write-LevelLog "Installing ScreenConnect client..."
+        Write-LevelLog "Installing ScreenConnect client (MSI)..."
         $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList @("/i", "`"$downloadPath`"", "/qn", "/norestart") -PassThru -Wait
         Write-LevelLog "Installer exit code: $($proc.ExitCode)"
+        if ($proc.ExitCode -eq 0) {
+            $installSuccess = $true
+        } elseif ($proc.ExitCode -eq 1625) {
+            Write-LevelLog "MSI blocked by Windows Installer policy (1625) - falling back to EXE installer" -Level "WARN"
+        }
     } catch {
-        Write-Host "Alert: Failed to install ScreenConnect client"
-        Write-LevelLog "Installation failed: $($_.Exception.Message)" -Level "ERROR"
-        Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
-        return $false
+        Write-LevelLog "MSI installation failed: $($_.Exception.Message) - falling back to EXE installer" -Level "WARN"
     }
 
-    # Cleanup installer
     Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
+
+    # Fallback: EXE installer (bypasses Windows Installer policy)
+    if (-not $installSuccess) {
+        $exeUrl = "https://$BaseUrl/Bin/ScreenConnect.ClientSetup.exe?e=Access&y=Guest&c=$encodedCompany"
+        $exePath = Join-Path $ScratchFolder "ScreenConnect.ClientSetup.exe"
+        Write-LevelLog "Download URL (EXE): $exeUrl"
+
+        $exeDownloaded = $false
+        for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
+            try {
+                Write-LevelLog "Downloading EXE (attempt $attempt of $MaxRetries)..."
+                if (Test-Path $exePath) { Remove-Item $exePath -Force -ErrorAction SilentlyContinue }
+                Invoke-WebRequest -Uri $exeUrl -OutFile $exePath -TimeoutSec 120 -UseBasicParsing
+                $exeDownloaded = $true
+                break
+            } catch {
+                Write-LevelLog "EXE download attempt $attempt failed: $($_.Exception.Message)" -Level "WARN"
+                if ($attempt -lt $MaxRetries) { Start-Sleep -Seconds 10 }
+            }
+        }
+
+        if (-not $exeDownloaded) {
+            Write-Host "Alert: Failed to download ScreenConnect EXE installer"
+            Write-LevelLog "All EXE download attempts failed" -Level "ERROR"
+            return $false
+        }
+
+        $exeSize = (Get-Item $exePath).Length
+        Write-LevelLog "Downloaded EXE: $exeSize bytes"
+
+        try {
+            Write-LevelLog "Installing ScreenConnect client (EXE)..."
+            $proc = Start-Process -FilePath $exePath -PassThru -Wait
+            Write-LevelLog "EXE installer exit code: $($proc.ExitCode)"
+            if ($proc.ExitCode -eq 0) { $installSuccess = $true }
+        } catch {
+            Write-Host "Alert: Failed to install ScreenConnect client (EXE)"
+            Write-LevelLog "EXE installation failed: $($_.Exception.Message)" -Level "ERROR"
+        }
+
+        Remove-Item $exePath -Force -ErrorAction SilentlyContinue
+
+        if (-not $installSuccess) {
+            return $false
+        }
+    }
 
     # Wait for service to start
     Write-LevelLog "Waiting for service to start..."
