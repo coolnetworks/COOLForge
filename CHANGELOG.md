@@ -7,6 +7,32 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 
 ## [Unreleased]
 
+## [2026.03.14.01] - 2026-03-14
+
+### Added
+- **Launcher template + generator** (`launchers/_template.ps1`, `launchers/_manifest.json`, `tools/generate-launchers.py`) — all 41 launchers are now generated from a single template; future boilerplate changes require editing one file and running `python3 tools/generate-launchers.py`
+
+### Fixed
+- **Launcher debug noise** — `[DEBUG] PinnedVersion=...` and `[DEBUG] LibraryUrl=...` were printing unconditionally on every run because `$DebugScripts` was parsed after those lines; debug level is now parsed first so all debug output is correctly gated
+- **Hostname Mismatch: auto-set blank Level.io device name** — when Level.io has no device name for a device, the script now renames the Level.io device to match the Windows hostname via the API; previously it silently skipped the check. Graceful fallback to assumed-match if no API key or Device ID is available
+- **MD5SUMS stale hash** — `modules/COOLForge-Common.psm1` hash was out of date, causing spurious library re-downloads on every launcher run
+- **MD5SUMS path prefix** — `./` prefix stripping in `Get-ScriptPathFromMD5` and `Get-ExpectedMD5` fixed
+- **ScreenConnect MSI blocked by policy** — falls back to EXE installer when error 1625 (install policy blocked) is returned
+- **ScreenConnect base URL whitespace** — leading whitespace in `policy_screenconnect_baseurl` caused double-scheme URLs (`https://https://...`)
+- **PS4 compatibility** — replaced `::new()` constructor syntax and `-AsHashtable` parameter with PS4-compatible equivalents across all scripts
+- **Double BOM on launcher files** — fixed UTF-8 BOM being written twice on launcher save
+- **TLS 1.2 enforcement** — added `[Net.ServicePointManager]::SecurityProtocol = Tls12` to all launchers and standalone scripts
+- **JWT encryption + API key masking** — security hardening in library
+
+### Changed
+- **All 41 launchers bumped** from `v2026.01.22.01` → `v2026.01.31.02`
+- **Hostname Mismatch script** bumped to `v2026.01.21.15`
+- **LAUNCHER-VERSIONS.json** all entries updated to `v2026.01.31.02`
+
+### Launchers requiring re-upload to Level.io
+- **All launchers** — debug noise fix and version bump require re-upload
+
+
 ## [2026.02.10.01] - 2026-02-10
 
 ### Fixed

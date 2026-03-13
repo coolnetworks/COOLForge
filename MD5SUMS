@@ -9,12 +9,12 @@ d0f75053c91acaf1c034579e6ce31b15  ./.claude/level-io-feature-request-tag-colors.
 305bf9e302cd0133b4315054447f6ef5  ./.gitignore
 14d1ee11f4144b173256e53b165efe9b  ./.local/Reset Level Instance.ps1
 05b98b538a30b8024807018f369684db  ./.local/check-duplicates.ps1
-969010a08a357a7d7c47aac13101b188  ./CHANGELOG.md
+4785c17d1821bb01c82de69d808d9af3  ./CHANGELOG.md
 4db2a7c67e02b67bc4713b76b73d5be2  ./CLA.md
 2572b8cddb722b15e28851b682127d55  ./COOLForge-Common.psm1
-d2dce6b25e1ae681f1f6f99ceaba95e5  ./LAUNCHER-VERSIONS.json
+57d56eca516f90519197ef6218bc6fdc  ./LAUNCHER-VERSIONS.json
 c6ded52b2d61e9d9f2914e5f25a1026b  ./LICENSE
-0c4b21ccd1a4f98127b270b906321d21  ./MD5SUMS
+71aaf80b049ee35bae5ef37728ab9102  ./MD5SUMS
 5746acb006595a0ec8e3e8ccfe2a7131  ./MEETING NOTES - Level.io Demo.md
 07f2114b030950370cf6ac38e64f222f  ./NEEDS_TESTING.md
 c3406e62bb816ce4b55f199f6ca78abd  ./README.md
