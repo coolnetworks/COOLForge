@@ -1,13 +1,13 @@
 ﻿# ============================================================
 # SCRIPT TO RUN - PRE-CONFIGURED
 # ============================================================
-$ScriptToRun = "⚙️Extract and Set ScreenConnect Device URL.ps1"
-<#
+$ScriptToRun = "__SCRIPT_TO_RUN__"
+__EXTRA_FIELDS__<#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.01.31.02
+    Launcher Version: __LAUNCHER_VERSION__
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -20,8 +20,8 @@ $ScriptToRun = "⚙️Extract and Set ScreenConnect Device URL.ps1"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.31.02"
-$LauncherName = "Config/⚙️Extract and Set ScreenConnect Device URL.ps1"
+$LauncherVersion = "__LAUNCHER_VERSION__"
+$LauncherName = "__LAUNCHER_NAME__"
 
 $ErrorActionPreference = "SilentlyContinue"
 

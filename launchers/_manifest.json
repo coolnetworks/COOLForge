@@ -1,0 +1,295 @@
+[
+  {
+    "scriptToRun": "🔔Technician Alert Monitor.ps1",
+    "launcherName": "Alert/🔔Technician Alert Monitor.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔔Wake tagged devices.ps1",
+    "launcherName": "Alert/🔔Wake tagged devices.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🙏Wake all devices in Level group.ps1",
+    "launcherName": "Alert/🙏Wake all devices in Level group.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⚙️COOLForge Cache Sync.ps1",
+    "launcherName": "Config/⚙️COOLForge Cache Sync.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⚙️Configure Wake-on-LAN.ps1",
+    "launcherName": "Config/⚙️Configure Wake-on-LAN.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⚙️Extract and Set ScreenConnect Device URL.ps1",
+    "launcherName": "Config/⚙️Extract and Set ScreenConnect Device URL.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Prevent Sleep.ps1",
+    "launcherName": "Config/🔧Prevent Sleep.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Enable System Restore and Create Restore Point.ps1",
+    "launcherName": "Fix/🔧Enable System Restore and Create Restore Point.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Ensure Windows Defender Enabled.ps1",
+    "launcherName": "Fix/🔧Ensure Windows Defender Enabled.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Fix Windows 10 Services.ps1",
+    "launcherName": "Fix/🔧Fix Windows 10 Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Fix Windows 11 Services.ps1",
+    "launcherName": "Fix/🔧Fix Windows 11 Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Fix Windows 7 Services.ps1",
+    "launcherName": "Fix/🔧Fix Windows 7 Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Fix Windows 8 Services.ps1",
+    "launcherName": "Fix/🔧Fix Windows 8 Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Fix Windows 8.1 Services.ps1",
+    "launcherName": "Fix/🔧Fix Windows 8.1 Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "🔧Fix Windows Location Services.ps1",
+    "launcherName": "Fix/🔧Fix Windows Location Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀Check Windows Location Services.ps1",
+    "launcherName": "Monitor/👀Check Windows Location Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀Check for Unauthorized Remote Access Tools.ps1",
+    "launcherName": "Monitor/👀Check for Unauthorized Remote Access Tools.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀Chrome Location Services.ps1",
+    "launcherName": "Policy/Chrome/👀Chrome Location Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀Windows Location Services.ps1",
+    "launcherName": "Policy/Windows/👀Windows Location Services.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀Hostname Mismatch.ps1",
+    "launcherName": "Policy/👀Hostname Mismatch.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀bitwarden.ps1",
+    "launcherName": "Policy/👀bitwarden.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_bitwarden",
+        "cf": "cf_policy_bitwarden"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "👀chrome.ps1",
+    "launcherName": "Policy/👀chrome.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀cipp.ps1",
+    "launcherName": "Policy/👀cipp.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀debug.ps1",
+    "launcherName": "Policy/👀debug.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀dns.ps1",
+    "launcherName": "Policy/👀dns.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_allowed_dns_servers",
+        "cf": "cf_policy_allowed_dns_servers"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "👀dnsfilter.ps1",
+    "launcherName": "Policy/👀dnsfilter.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_dnsfilter",
+        "cf": "cf_policy_dnsfilter"
+      },
+      {
+        "var": "policy_dnsfilter_sitekey",
+        "cf": "cf_policy_dnsfilter_sitekey"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "👀huntress.ps1",
+    "launcherName": "Policy/👀huntress.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_huntress",
+        "cf": "cf_policy_huntress"
+      },
+      {
+        "var": "policy_huntress_account_key",
+        "cf": "cf_policy_huntress_account_key"
+      },
+      {
+        "var": "policy_huntress_org_key",
+        "cf": "cf_policy_huntress_org_key"
+      },
+      {
+        "var": "policy_huntress_tags",
+        "cf": "cf_policy_huntress_tags"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "👀meshcentral.ps1",
+    "launcherName": "Policy/👀meshcentral.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_meshcentral",
+        "cf": "cf_policy_meshcentral"
+      },
+      {
+        "var": "policy_meshcentral_server_url",
+        "cf": "cf_policy_meshcentral_server_url"
+      },
+      {
+        "var": "policy_meshcentral_download_url",
+        "cf": "cf_policy_meshcentral_download_url"
+      },
+      {
+        "var": "policy_meshcentral_mac_download_url",
+        "cf": "cf_policy_meshcentral_mac_download_url"
+      },
+      {
+        "var": "policy_meshcentral_linux_install",
+        "cf": "cf_policy_meshcentral_linux_install"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "👀screenconnect.ps1",
+    "launcherName": "Policy/👀screenconnect.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_screenconnect",
+        "cf": "cf_policy_screenconnect"
+      },
+      {
+        "var": "policy_screenconnect_instance_id",
+        "cf": "cf_policy_screenconnect_instance_id"
+      },
+      {
+        "var": "policy_screenconnect_baseurl",
+        "cf": "cf_policy_screenconnect_baseurl"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "👀unchecky.ps1",
+    "launcherName": "Policy/👀unchecky.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_unchecky",
+        "cf": "cf_policy_unchecky"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "⛔Force Remove Adobe Creative Cloud.ps1",
+    "launcherName": "Remove/⛔Force Remove Adobe Creative Cloud.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⛔Force Remove Dropbox.ps1",
+    "launcherName": "Remove/⛔Force Remove Dropbox.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⛔Force Remove Foxit.ps1",
+    "launcherName": "Remove/⛔Force Remove Foxit.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⛔Force Remove McAfee.ps1",
+    "launcherName": "Remove/⛔Force Remove McAfee.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⛔Force Remove Non MSP ScreenConnect.ps1",
+    "launcherName": "Remove/⛔Force Remove Non MSP ScreenConnect.ps1",
+    "version": "2026.01.31.02",
+    "extraFields": [
+      {
+        "var": "policy_other_msp_screenconnect",
+        "cf": "cf_policy_other_msp_screenconnect"
+      }
+    ]
+  },
+  {
+    "scriptToRun": "⛔Remove All RATs.ps1",
+    "launcherName": "Remove/⛔Remove All RATs.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀Test Show Versions.ps1",
+    "launcherName": "Test/👀Test Show Versions.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "👀Test Variable Output.ps1",
+    "launcherName": "Test/👀Test Variable Output.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⚙️Cleanup VoyagerPACS Studies.ps1",
+    "launcherName": "Utility/⚙️Cleanup VoyagerPACS Studies.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⚙️Remove COOLForge Scratch Folder.ps1",
+    "launcherName": "Utility/⚙️Remove COOLForge Scratch Folder.ps1",
+    "version": "2026.01.31.02"
+  },
+  {
+    "scriptToRun": "⚙️Universal Disk Cleaner.ps1",
+    "launcherName": "Utility/⚙️Universal Disk Cleaner.ps1",
+    "version": "2026.01.31.02"
+  }
+]

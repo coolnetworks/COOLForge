@@ -7,17 +7,20 @@ $ScriptToRun = "🔧Ensure Windows Defender Enabled.ps1"
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.01.22.01
+    Launcher Version: 2026.01.31.02
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
     Script download/execution is handled by Invoke-ScriptLauncher in the library.
 
+    To regenerate all launchers from this template:
+        python3 tools/generate-launchers.py
+
     Copyright (c) COOLNETWORKS
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.01.22.01"
+$LauncherVersion = "2026.01.31.02"
 $LauncherName = "Fix/🔧Ensure Windows Defender Enabled.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -35,20 +38,7 @@ $GitHubPAT = @'
 $GitHubPAT = $GitHubPAT.Trim()
 if ([string]::IsNullOrWhiteSpace($GitHubPAT) -or $GitHubPAT -like "{{*}}") { $GitHubPAT = $null }
 
-$PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
-$UsePinnedVersion = (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}")
-Write-Host "[DEBUG] PinnedVersion='$PinnedVersion' UsePinnedVersion=$UsePinnedVersion"
-
-$LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
-if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
-    $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
-    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"
-} elseif ($UsePinnedVersion) {
-    $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
-}
-Write-Host "[DEBUG] LibraryUrl=$LibraryUrl"
-
-# Parse debug level: normal, verbose, veryverbose
+# Parse debug level early so all subsequent debug output is correctly gated
 $DebugScriptsRaw = "{{cf_debug_coolforge}}"
 if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{{*}}" -or $DebugScriptsRaw -eq "false" -or $DebugScriptsRaw -eq "normal") {
     $DebugLevel = "normal"
@@ -61,6 +51,19 @@ if ([string]::IsNullOrWhiteSpace($DebugScriptsRaw) -or $DebugScriptsRaw -like "{
 }
 # Keep $DebugScripts boolean for backwards compatibility
 $DebugScripts = ($DebugLevel -ne "normal")
+
+$PinnedVersion = "{{cf_coolforge_pin_psmodule_to_version}}"
+$UsePinnedVersion = (-not [string]::IsNullOrWhiteSpace($PinnedVersion) -and $PinnedVersion -notlike "{{*}}")
+if ($DebugScripts) { Write-Host "[DEBUG] PinnedVersion='$PinnedVersion' UsePinnedVersion=$UsePinnedVersion" }
+
+$LibraryUrl = "{{cf_coolforge_ps_module_library_source}}"
+if ([string]::IsNullOrWhiteSpace($LibraryUrl) -or $LibraryUrl -like "{{*}}") {
+    $Branch = if ($UsePinnedVersion) { $PinnedVersion } else { "main" }
+    $LibraryUrl = "https://raw.githubusercontent.com/coolnetworks/COOLForge/$Branch/modules/COOLForge-Common.psm1"
+} elseif ($UsePinnedVersion) {
+    $LibraryUrl = $LibraryUrl -replace '/COOLForge/[^/]+/', "/COOLForge/$PinnedVersion/"
+}
+if ($DebugScripts) { Write-Host "[DEBUG] LibraryUrl=$LibraryUrl" }
 
 $LevelApiKey_Raw = @'
 {{cf_apikey}}
@@ -119,7 +122,7 @@ $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 $MD5FetchUrl = "$MD5SumsUrl`?t=$CacheBuster"
 # HTTP headers to bypass intermediate proxy caches (ISP, corporate, Fastly edge)
 $NoCacheHeaders = @{ 'Cache-Control' = 'no-cache, no-store'; 'Pragma' = 'no-cache' }
-# Force TLS 1.2 — older .NET Framework defaults to TLS 1.0/1.1 which GitHub rejects
+# Force TLS 1.2 -- older .NET Framework defaults to TLS 1.0/1.1 which GitHub rejects
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if ($DebugScripts) { Write-Host "[DEBUG] MD5SUMS URL: $MD5FetchUrl" }
 
@@ -243,7 +246,7 @@ try {
     $VersionsJson = (Invoke-WebRequest -Uri $VersionsUrl -UseBasicParsing -TimeoutSec 3 -Headers $NoCacheHeaders).Content | ConvertFrom-Json
     $RepoVersion = $VersionsJson.launchers.$LauncherName
     if ($RepoVersion -and ([version]$RepoVersion -gt [version]$LauncherVersion)) {
-        $LauncherOutdatedMsg = "[Alert] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion - Update this script in Level.io from: launchers/$LauncherName"
+        $LauncherOutdatedMsg = "[!] LAUNCHER OUTDATED: v$LauncherVersion -> v$RepoVersion - Update this script in Level.io from: launchers/$LauncherName"
     }
 } catch {
     if ($DebugScripts) { Write-Host "[DEBUG] Version check failed: $_" }
@@ -287,4 +290,4 @@ $ExitCode = Invoke-ScriptLauncher -ScriptName $ScriptToRun `
                                    -DebugMode $DebugScripts
 
 if ($LauncherOutdatedMsg) { Write-Host $LauncherOutdatedMsg }
-exit $ExitCode
+exit $ExitCode
