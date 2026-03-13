@@ -7051,7 +7051,7 @@ function Get-ExpectedMD5 {
         $line = $line.Trim()
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
-            $FilePath = $Matches[2].Trim()
+            $FilePath = ($Matches[2].Trim()) -replace "^\./", ""
             $FileLeaf = Split-Path $FilePath -Leaf
             if ($FilePath -eq $FileName -or $FileLeaf -eq $SearchName -or $FileLeaf -like "*$SearchName") {
                 return $Matches[1].ToLower()
@@ -7088,7 +7088,7 @@ function Get-ScriptPathFromMD5 {
         $line = $line.Trim()
         if ($line -match '^#' -or [string]::IsNullOrWhiteSpace($line)) { continue }
         if ($line -match '^([a-f0-9]{32})\s+(.+)$') {
-            $FilePath = $Matches[2].Trim()
+            $FilePath = ($Matches[2].Trim()) -replace "^\./", ""
             # Only look in scripts/ folder (not launchers/, modules/, etc.)
             if ($FilePath -notlike "scripts/*") { continue }
             $MatchCount++
