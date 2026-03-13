@@ -78,7 +78,7 @@ foreach ($LauncherFile in $LauncherFiles) {
         $NewContent = $NewContent -replace '# SCRIPT TO RUN - CHANGE THIS VALUE', '# SCRIPT TO RUN - PRE-CONFIGURED'
 
         # Write updated launcher with UTF-8 BOM (critical for emoji filenames)
-        [System.IO.File]::WriteAllText($LauncherFile.FullName, $NewContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($LauncherFile.FullName, $NewContent, (New-Object System.Text.UTF8Encoding($true)))
         Write-Host "  [+] Updated successfully" -ForegroundColor Green
     }
     else {

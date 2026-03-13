@@ -1279,7 +1279,7 @@ function Get-LevelUrlEncoded {
     )
 
     $Utf8Bytes = [System.Text.Encoding]::UTF8.GetBytes($Text)
-    $Encoded = [System.Text.StringBuilder]::new()
+    $Encoded = (New-Object System.Text.StringBuilder)
 
     foreach ($byte in $Utf8Bytes) {
         if (($byte -ge 0x30 -and $byte -le 0x39) -or  # 0-9

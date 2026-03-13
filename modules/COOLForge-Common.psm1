@@ -573,7 +573,7 @@ function Get-CachedTagId {
 
     if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
         try {
-            $tagCache = $cacheJson | ConvertFrom-Json -AsHashtable
+            $_tmp = $cacheJson | ConvertFrom-Json; $tagCache = @{}; if ($_tmp) { $_tmp.PSObject.Properties | ForEach-Object { $tagCache[$_.Name] = $_.Value } }
         } catch {
             $tagCache = @{}
         }
@@ -631,7 +631,7 @@ function Get-CachedCustomFieldId {
 
     if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
         try {
-            $fieldCache = $cacheJson | ConvertFrom-Json -AsHashtable
+            $_tmp = $cacheJson | ConvertFrom-Json; $fieldCache = @{}; if ($_tmp) { $_tmp.PSObject.Properties | ForEach-Object { $fieldCache[$_.Name] = $_.Value } }
         } catch {
             $fieldCache = @{}
         }
@@ -3028,7 +3028,7 @@ function Get-LevelUrlEncoded {
     )
 
     $Utf8Bytes = [System.Text.Encoding]::UTF8.GetBytes($Text)
-    $Encoded = [System.Text.StringBuilder]::new()
+    $Encoded = (New-Object System.Text.StringBuilder)
 
     foreach ($byte in $Utf8Bytes) {
         if (($byte -ge 0x30 -and $byte -le 0x39) -or  # 0-9
@@ -3925,7 +3925,7 @@ function Add-LevelPolicyTag {
     $cacheJson = Get-LevelCacheValue -Name "TagIds"
     $tagCache = @{}
     if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
-        try { $tagCache = $cacheJson | ConvertFrom-Json -AsHashtable } catch { $tagCache = @{} }
+        try { $_tmp = $cacheJson | ConvertFrom-Json; $tagCache = @{}; if ($_tmp) { $_tmp.PSObject.Properties | ForEach-Object { $tagCache[$_.Name] = $_.Value } } } catch { $tagCache = @{} }
     }
     if (-not $tagCache.ContainsKey($FullTagName)) {
         $tagCache[$FullTagName] = $Tag.id
@@ -4054,7 +4054,7 @@ function Remove-LevelPolicyTag {
     $cacheJson = Get-LevelCacheValue -Name "TagIds"
     $tagCache = @{}
     if (-not [string]::IsNullOrWhiteSpace($cacheJson)) {
-        try { $tagCache = $cacheJson | ConvertFrom-Json -AsHashtable } catch { $tagCache = @{} }
+        try { $_tmp = $cacheJson | ConvertFrom-Json; $tagCache = @{}; if ($_tmp) { $_tmp.PSObject.Properties | ForEach-Object { $tagCache[$_.Name] = $_.Value } } } catch { $tagCache = @{} }
     }
     if (-not $tagCache.ContainsKey($FullTagName)) {
         $tagCache[$FullTagName] = $Tag.id
@@ -7217,7 +7217,7 @@ function Invoke-ScriptLauncher {
 
     if (Test-Path $ScriptPath) {
         try {
-            $LocalScriptContent = [System.IO.File]::ReadAllText($ScriptPath, [System.Text.UTF8Encoding]::new($true))
+            $LocalScriptContent = [System.IO.File]::ReadAllText($ScriptPath, (New-Object System.Text.UTF8Encoding($true)))
             $LocalScriptVersion = Get-ScriptVersion -Content $LocalScriptContent -Source "local script"
         }
         catch {
@@ -7255,15 +7255,15 @@ function Invoke-ScriptLauncher {
         if ($ScriptNeedsUpdate) {
             # Backup working local copy
             if ($LocalScriptVersion -and $LocalScriptContent) {
-                [System.IO.File]::WriteAllText($ScriptBackupPath, $LocalScriptContent, [System.Text.UTF8Encoding]::new($true))
+                [System.IO.File]::WriteAllText($ScriptBackupPath, $LocalScriptContent, (New-Object System.Text.UTF8Encoding($true)))
             }
 
             # Write new version (UTF-8 with BOM for emoji handling)
-            [System.IO.File]::WriteAllText($ScriptPath, $RemoteScriptContent, [System.Text.UTF8Encoding]::new($true))
+            [System.IO.File]::WriteAllText($ScriptPath, $RemoteScriptContent, (New-Object System.Text.UTF8Encoding($true)))
 
             # Verify
             try {
-                $VerifyScriptContent = [System.IO.File]::ReadAllText($ScriptPath, [System.Text.UTF8Encoding]::new($true))
+                $VerifyScriptContent = [System.IO.File]::ReadAllText($ScriptPath, (New-Object System.Text.UTF8Encoding($true)))
                 if ($VerifyScriptContent.Length -lt 50) {
                     throw "Downloaded script appears to be empty or truncated"
                 }
@@ -7341,7 +7341,7 @@ function Invoke-ScriptLauncher {
     Write-Host "[*] Executing: $ScriptName"
     Write-Host "============================================================"
 
-    $ScriptContent = [System.IO.File]::ReadAllText($ScriptPath, [System.Text.UTF8Encoding]::new($true))
+    $ScriptContent = [System.IO.File]::ReadAllText($ScriptPath, (New-Object System.Text.UTF8Encoding($true)))
     # Strip UTF-8 BOM if present (prevents comment block parsing issues)
     if ($ScriptContent.Length -gt 0 -and ($ScriptContent[0] -eq [char]0xFEFF -or $ScriptContent[0] -eq '?')) {
         $ScriptContent = $ScriptContent.Substring(1)
