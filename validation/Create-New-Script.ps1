@@ -113,7 +113,7 @@ Write-Host "[$ScriptName] Script executed successfully" -ForegroundColor Green
 "@
 
 # Write script file
-[System.IO.File]::WriteAllText($ScriptPath, $ScriptContent, [System.Text.UTF8Encoding]::new($true))
+[System.IO.File]::WriteAllText($ScriptPath, $ScriptContent, (New-Object System.Text.UTF8Encoding($true)))
 Write-Host "[+] Created: $ScriptPath" -ForegroundColor Green
 
 # Create launcher unless skipped
@@ -133,7 +133,7 @@ if (!$SkipLauncher) {
         $LauncherContent = $LauncherContent -replace '# SCRIPT TO RUN - CHANGE THIS VALUE', '# SCRIPT TO RUN - PRE-CONFIGURED'
 
         # Write launcher file
-        [System.IO.File]::WriteAllText($LauncherPath, $LauncherContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($LauncherPath, $LauncherContent, (New-Object System.Text.UTF8Encoding($true)))
         Write-Host "[+] Created: $LauncherPath" -ForegroundColor Green
     }
 }
