@@ -1,6 +1,80 @@
-fb379d47b8c93f515a09dcba66d1b59f  ./.local/Reset Level Instance.ps1
+142531209ad5b586370ec4ff36a70e82  ./.claude/CLAUDE.md
+e2a0baa86c865c52f61f496a9c67e05e  ./.claude/LOCATION-SERVICES-CONTEXT.md
+6427b2be0995f08e1e8d70ffb7ca3b23  ./.claude/SESSIONS.md
+f98f98827f0f04d0bcd149003c0a849f  ./.claude/TAG-FIELD-EVOLUTION.md
+8aafce98e1fc5ebfc046f6c8e27b3ab3  ./.claude/TODO.md
+e09420047508a0c629370691387f6edd  ./.claude/UTF8-ISSUES-HISTORY.md
+d0f75053c91acaf1c034579e6ce31b15  ./.claude/level-io-feature-request-tag-colors.md
+449b2ccd1be2a84bf39867d2730bb65f  ./.claude/settings.local.json
+305bf9e302cd0133b4315054447f6ef5  ./.gitignore
+14d1ee11f4144b173256e53b165efe9b  ./.local/Reset Level Instance.ps1
 05b98b538a30b8024807018f369684db  ./.local/check-duplicates.ps1
+969010a08a357a7d7c47aac13101b188  ./CHANGELOG.md
+4db2a7c67e02b67bc4713b76b73d5be2  ./CLA.md
 2572b8cddb722b15e28851b682127d55  ./COOLForge-Common.psm1
+895eaaca3232d805aefaced7d3403861  ./LAUNCHER-VERSIONS.json
+c6ded52b2d61e9d9f2914e5f25a1026b  ./LICENSE
+ad222533450555bed471f3b4678e632f  ./MD5SUMS
+5746acb006595a0ec8e3e8ccfe2a7131  ./MEETING NOTES - Level.io Demo.md
+07f2114b030950370cf6ac38e64f222f  ./NEEDS_TESTING.md
+c3406e62bb816ce4b55f199f6ca78abd  ./README.md
+7757dd57570925ac882d958bcee992c8  ./RELEASING.md
+93839f89d9067ea0f2b3cff373c2980e  ./TODO.md
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Check/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Configure/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Deploy/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Fix/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Maintain/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Provision/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Remove/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Report/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Secure/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Update/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./automations/Utility/.gitkeep
+7ae468b154e9ad8339a9ba098ac54b8f  ./backups/Level/automations/ADS-2100 Scanner Driver.json
+92ebf0eec1a9a0834d0bc523dd1620da  ./backups/Level/automations/ADS-2200 Scanner Driver.json
+3dae74df0aa0a8be55def41776a85150  ./backups/Level/automations/ADS-3100 Scanner Driver.json
+2374a3e6ddc24f9a3784c0ea80005ad3  ./backups/Level/automations/AMRI Deploy Phonebook.json
+e2628b1f10dd1a751ae8b521ad968926  ./backups/Level/automations/AMRI Deploy Voyager and other system specific tweaks.json
+ece19788b32cacb049fdf07b4fea8293  ./backups/Level/automations/AMRI Initial Onboard Automation.json
+ef7067bc16f0ebe56b195e1420e17800  ./backups/Level/automations/Adelaide MRI Server Updates.json
+27a9cdbae6ace67c0d03cc987f516070  ./backups/Level/automations/BASELINE SOFTWARE FOR MANAGED CLIENTS.json
+e9c6a4ba3e650321dace3066a8e55d5d  ./backups/Level/automations/CLEAN_ Voyager studies.json
+32f65905a10533917a2c78025c24c495  ./backups/Level/automations/Common Windows Applications.json
+19895c56dead120ab8226758069eba0e  ./backups/Level/automations/Delayed Start System File Check.json
+f90156a22676dc593bb6f1ac6ea4a268  ./backups/Level/automations/Deploy Orca Slicer.json
+4b8c9d163f931c5b0c362aaf47902cb9  ./backups/Level/automations/Deploy PhoneBook.json
+4b7ea5f0d59c2e64dee6734f39a4a15f  ./backups/Level/automations/Disk Cleanup.json
+4b724edce28e79a1fa1e335a48196758  ./backups/Level/automations/Download Voyager Defaults.json
+c2da5a57b9198e8d2d280433905e61ba  ./backups/Level/automations/Enable Unlimited System Restore.json
+ac68f0b6792caf1da5b2c6f5fc90433e  ./backups/Level/automations/INSTALL_ Chrome, unchecky, 7zip.json
+d9206d32317f9a91b57faccb0abcb6b0  ./backups/Level/automations/Kyocera M3155DN Printer Driver.json
+7b2f91b634d079bca66c2d07e101a953  ./backups/Level/automations/Kyocera P2235DN Driver.json
+729a6ac4c566bcdb8184ba77e0e21c0d  ./backups/Level/automations/MUST DO ALL MACHINES.json
+1b110b35f60c977a593875673e81bd4b  ./backups/Level/automations/Overnight System File Check with reboot.json
+1fec2c77ea31184c427dbbf01b6bc591  ./backups/Level/automations/Popup.json
+f98437f98047c508af5f65b09fd1c100  ./backups/Level/automations/Remove Foxit and put in sumatra.json
+a3b297a05d8b680227159163c5eb2bba  ./backups/Level/automations/Restart ASAP.json
+27fecb7af1d192cb6d041535227c25d5  ./backups/Level/automations/Restart Tonight With Warning.json
+582521809c0a65125c099dc45a0be8bb  ./backups/Level/automations/Set Default System Restore.json
+e88ca777ce01a0f940a21d0b2f83e34b  ./backups/Level/automations/Set Registry Path for SC.json
+05dd4730494cfc3e287efef30b14a771  ./backups/Level/automations/System File Check.json
+015a14da59a7334234712dda3ae6c42a  ./backups/Level/automations/Toshiba V4 Driver.json
+942bac7372fa2e6719538dfbebefd697  ./backups/Level/automations/UPGRADE WINGET PACKAGES.json
+c8c2fc809f3a7bd132b2383dc1fea08b  ./backups/Level/automations/Unplanned Maintenance Notification.json
+5d6ff9c0158bee74e104e3fa1a9b6824  ./backups/Level/automations/Update Screenconnect URL.json
+f7f6cffc965e74693d63d3dc8bb3f0a8  ./backups/Level/automations/Windows 10 to Windows 11 Upgrade.json
+8a3b79000d1111bce9571b0d32551bb0  ./backups/Level/automations/Windows Defender Management.json
+dea7cc43baf1f436835d6d20e5da1e18  ./backups/Level/automations/Windows Patching.json
+66bc68cd53e950841b18d9228d4799a1  ./backups/Level/automations/Windows Setup GENERAL CLIENT.json
+1ef803932a8f8c9a721fc88ff1760e36  ./backups/Level/automations/👀Verify Device Not Blocked By Tags.json
+dd90bcbf14d01b3e8f7cfaa0deddbd7a  ./backups/Level/automations/🙏BITWARDEN.json
+9072a5ae9e5e1f804a6e9d4d48556672  ./backups/Level/automations/🙏HUNTRESS.json
+07533d71fde10685541500d15ce07379  ./backups/Level/automations/🙏UNCHECKY.json
+30c6b2c5c8116594007bb3a6bed9fe06  ./backups/Level/automations/🛠️TEMPLATE - check device eligibility.json
+0b511cc2a046fafc69bf5a1f8c1e9068  ./backups/Level/custom-fields.json
+01a20f929a32fca17719b2ac5b20aff0  ./backups/Level/full-export.json
+dabcb01c3008388ea90d5a0649cdd8ff  ./backups/Level/jwt-token-cache.txt
 d5cc8d717db9c87f07d5e75d18b56a1f  ./backups/Level/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
 f85f46da3553bc1bfa7645e69cdf1a23  ./backups/Level/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
 1f0196e84a451016be5b3acbe585b557  ./backups/Level/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
@@ -21,16 +95,16 @@ c2206d375255d063f0eb0760fa53023c  ./backups/Level/scripts/BASELINE SOFTWARE/⛔H
 8b09f61d2a1352ca4cafc58bc2ab24bf  ./backups/Level/scripts/Baseline configurations/Create Restore Point.ps1
 c82ce2e849fd3074380b5b453443edc7  ./backups/Level/scripts/Baseline configurations/Create users.ps1
 b349c86642ee3719b28b81eca27c48bd  ./backups/Level/scripts/Can we run_.ps1
-ad9626010958230170dda9d866b37f40  ./backups/Level/scripts/DEBUG.ps1
+5aaed82339faa25bec0c0747fd5599fd  ./backups/Level/scripts/DEBUG.ps1
 19bb99096557986ea2fabf73aefecc79  ./backups/Level/scripts/Debug Script.ps1
 f7dd2500c49cb0913e9ed7639df8f5ec  ./backups/Level/scripts/Debugging/FindHiddenUsers.ps1
 5f5035334a9a4a81518ce38359231a94  ./backups/Level/scripts/Debugging/SET_ Default System Restore.ps1
 3724025399c74570a237ba9df673c64d  ./backups/Level/scripts/Debugging/SET_ Unlimited System Restore.ps1
 2a2f15e7cbfa10b4cda86bf892af2fcd  ./backups/Level/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
-5f508b3b8000c6dbede8c4757f04a487  ./backups/Level/scripts/Debugging/👀Test Variable Output.ps1
+93250424f470ceb1986adb8c7571b8cc  ./backups/Level/scripts/Debugging/👀Test Variable Output.ps1
 8babd90b0c4554f8dc6cf08eea57e17a  ./backups/Level/scripts/Deploy COOLNETWORKS Support tool.ps1
 970e573adcf4976226b3683de1c7368c  ./backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
-2de77aebcb27d2112754e3b12f0c6d4e  ./backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
+42f4b662ed99144e96cfe2ac09bc0619  ./backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
 3636b5d5d8322f917db9ed43e4d8580b  ./backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
 e65dbcb1a08001ee47f58ac1fadaa77a  ./backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
 80485803d623bcd83cd7fd79cca12262  ./backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
@@ -160,7 +234,7 @@ e69d90be26e30358c408a5425e747e98  ./backups/Level/scripts/From Atera/install lev
 3815211c2782f8aa69e5e9fd23b34623  ./backups/Level/scripts/From Atera/uninstall_syncro.ps1
 82a3850b704302d72edbdf082c25faf9  ./backups/Level/scripts/From Atera/windows 11 troubleshoot (copy).ps1
 0da935b7278813000e0848893a05986a  ./backups/Level/scripts/From Atera/wmi-list-shares.ps1
-9e04ef4e5bcbde33432756852c2f0f07  ./backups/Level/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
+55405dc41ded364fcc98d7ed09b00ef6  ./backups/Level/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
 9a5f662417fc25d9610bd083cdae585a  ./backups/Level/scripts/General/CN_Tools Folder.ps1
 d7e0242cf025e7e16327447d91f8c1a9  ./backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
 b15eba497e6b0ce7fde7d961f6a81e61  ./backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
@@ -176,6 +250,7 @@ fd1f24b22a36ada4d5eb820311a0188f  ./backups/Level/scripts/General/Fixes/🙏Wake
 20903e606c99ec2b2406a1d2722b07c3  ./backups/Level/scripts/General/Info Gathering/Get Screenconnect URL.ps1
 a3d9c763d82a1247b5d2ae4c639c7601  ./backups/Level/scripts/General/Info Gathering/Support Request check.ps1
 6f88875c3bf43df4f050ed0e8abadd97  ./backups/Level/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
+abe8d0daf81c5e477ca5471b3df9b745  ./backups/Level/scripts/General/Linux Monitor - DNS Servers.sh
 0b07ad0751e489af76dc2f73019bc7f4  ./backups/Level/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
 996f6923a876b59802d6f28793a66ced  ./backups/Level/scripts/General/POLICY/Deploy Popup Script.ps1
 5f206317e7a179e1e60c2edc54c1d9b3  ./backups/Level/scripts/General/POLICY/Disable Outlook re-open old items.ps1
@@ -203,7 +278,18 @@ c39b0feb4982d7db75c918357412f594  ./backups/Level/scripts/General/Popups/POPUP.p
 77d3f8f5faee046d28db331c97b9d224  ./backups/Level/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
 846344f9508a0d7afe84e4998289eb94  ./backups/Level/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
 9b9673ec9b7e1e3f3018ae7a6f95582d  ./backups/Level/scripts/General/Windows Monitor - DNS Servers.ps1
+1981722202c57d83a0453d2a6b2e928c  ./backups/Level/scripts/General/macOS Monitor - DNS Servers.sh
 af44af9548566b0c2b665ee7c840ed3c  ./backups/Level/scripts/Imported/AMRI Safe debloat.ps1
+7295deb4a03d5e76eee6b04cdd97797b  ./backups/Level/scripts/Imported/Install Huntress.txt
+9b1068cc572ac0e2c487a588e1b98003  ./backups/Level/scripts/Imported/Linux - Cleanup Disk Space.sh
+340371eab084fdfbf2d627c5040187ef  ./backups/Level/scripts/Imported/Linux - Software Installed.sh
+a5343a91e10cd77182fb3c481560e126  ./backups/Level/scripts/Imported/Linux - Software Not Installed.sh
+b2a1b62826b5bb106ffccf247716eae2  ./backups/Level/scripts/Imported/Linux - Unauthorized Admins.sh
+3b7f02f2c2ddad387606b04f63f6cc05  ./backups/Level/scripts/Imported/Linux Monitor - Device Standards.sh
+5fe8a714d75f64726586c02aee62507c  ./backups/Level/scripts/Imported/Linux Monitor - Firewall.sh
+8a590d0b4f133659644fcf29ae741643  ./backups/Level/scripts/Imported/Linux Monitor - SSH Keys.sh
+56834cf595b5a27913557bf8e0f79723  ./backups/Level/scripts/Imported/Linux Monitor - System Time Check.sh
+0614f71e8f68ca046b5dbb0075ef81de  ./backups/Level/scripts/Imported/OsQuery Monitor - Uptime.txt
 4fd1269756f196683f580d30ecbc98f1  ./backups/Level/scripts/Imported/Prompt User.ps1
 772459e40c9dbd24c9a3c53618a651b3  ./backups/Level/scripts/Imported/REMOVE FOXIT.ps1
 439faf9e550d181be59c6e5a5d8c39f1  ./backups/Level/scripts/Imported/Windows - Add Admin.ps1
@@ -224,8 +310,17 @@ cf6928d1d5bc59519db8f47091df6cdd  ./backups/Level/scripts/Imported/Windows Monit
 f0948378d5385e8661a2ce4133f41a7a  ./backups/Level/scripts/Imported/Windows Monitor - Firewall.ps1
 3f6eba7dc5b0406892dbe0d691da5385  ./backups/Level/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
 57d18ce09c6dfec3661253be801d9881  ./backups/Level/scripts/Imported/Windows Monitor - System Time Check.ps1
+d4b2e200af5dbcc95fbe9a7e85a44856  ./backups/Level/scripts/Imported/macOS - Cleanup Disk Space.sh
+dcb2e88a439fb26371f6d7157edd75d4  ./backups/Level/scripts/Imported/macOS - Software Installed.sh
+a0cb5fc770035c538f8aea01891e31df  ./backups/Level/scripts/Imported/macOS - Software Not Installed.sh
+2ad2b1837f78689b5a0647c3e4322221  ./backups/Level/scripts/Imported/macOS - Unauthorized Admins.sh
+1a26aa8fcb3c1d187ee014d18c6a1166  ./backups/Level/scripts/Imported/macOS Monitor - Device Standards.sh
+ace61d52cd67a30247c94a3274783190  ./backups/Level/scripts/Imported/macOS Monitor - Firewall.sh
+4dec143a5ce295b94a029ccbca9fca4e  ./backups/Level/scripts/Imported/macOS Monitor - System Time Check.sh
 02c40d2df5d6a6d370f43f76d56116ed  ./backups/Level/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
 dbb0c5fff3c5cb76fe66bc2e38091aca  ./backups/Level/scripts/Install Bitwarden Extensions to chrome and edge.ps1
+212f095bd4d19dca5e0e5608e2787c5d  ./backups/Level/scripts/Keep Mac Awake.sh
+1cd0b15e60656a715f6ac39c136a1c0b  ./backups/Level/scripts/LINUX RemoveAtera.sh
 abbdb97d85850826db59de43aeb46d02  ./backups/Level/scripts/Low Profile Defender.ps1
 f61ea3678bb665c145855eb3ac1e4c2d  ./backups/Level/scripts/POLICY_ Is Foxit installed_.ps1
 735750942d6cbac69f57f43186c4673f  ./backups/Level/scripts/REMOVE FOXIT.ps1
@@ -236,15 +331,16 @@ f4e368821aeb0740322a620185ce1376  ./backups/Level/scripts/Remove ScreenConnect C
 5f42382b670f1ef094950c89273dda02  ./backups/Level/scripts/Remove Voyager Folders.ps1
 ec3dca416760afeee10fae4a5bb3497b  ./backups/Level/scripts/Set Defender Exclusions.ps1
 770bcc1b6ac25a9a052703b422f9d6d7  ./backups/Level/scripts/Set chrome as default.ps1
-c47d1ca16df48b328e334f6b0bf6ad47  ./backups/Level/scripts/Show Test Versions.ps1
+88344e813b710005f1c1c79e59c3e01e  ./backups/Level/scripts/Show Test Versions.ps1
 6de90e031d654ba87c74a9d707c89904  ./backups/Level/scripts/Sleep after 1800 seconds..ps1
 45c95564881b864280d3037c5cb6b9b4  ./backups/Level/scripts/System Uptime.ps1
-3dc1ac2764fb9612bcf676be73942788  ./backups/Level/scripts/Test PS Module install.ps1
-1d508063441850ccf5eb0acbae492db1  ./backups/Level/scripts/Test Show Versions.ps1
+78a2307084259b43f9ccaa7da29c84c6  ./backups/Level/scripts/Test PS Module install.ps1
+25971eb01331e46c886cbd1f60ed5821  ./backups/Level/scripts/Test Show Versions.ps1
 f2f231262c9288868753d80258b3fb8c  ./backups/Level/scripts/Uninstall Atera.ps1
 50a5dc84f5fefb9c72cef997be00f04f  ./backups/Level/scripts/Verify SC Status.ps1
 fdd8184570f07d0a8d6f01abf200a092  ./backups/Level/scripts/Wake On Lan and Power settings WOL.ps1
 1b665f4b9b486d2b4eb1521472d8e908  ./backups/Level/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
+6544738d7adbedeb72d8950a62f10015  ./backups/Level/scripts/imgsim BACKUP.sh
 278817b15918ded5bfac0659ab3e014c  ./backups/Level/scripts/inside quiet hours_.ps1
 a9f8882f804f8809b66516e86a5e783f  ./backups/Level/scripts/is interactive sign in_.ps1
 6c6ec2b0f565ca69578e3f41baafd1aa  ./backups/Level/scripts/level to screenconnect test.ps1
@@ -253,9 +349,116 @@ ac93a09854d446fd3853183687d2237a  ./backups/Level/scripts/test uninstall for SC.
 6059291621885604bb3fba9795902a5d  ./backups/Level/scripts/uninstall level.ps1
 5095bf93fc13e91c81d8a00d7f7300d5  ./backups/Level/scripts/⛔CIPP CHECK.ps1
 719b4fca685e4b4226f8ea772b499954  ./backups/Level/scripts/⛔DROPBOX.ps1
-4e082ab6b13c71b76f9b03cbdae51c6c  ./backups/Level/scripts/👀DNSFILTER.ps1
-0b8ef81b5705a8acb60b5a05bc85300e  ./backups/Level/scripts/👀unchecky.ps1
+3e7851ca197c2a96a2aab2aa75014c8a  ./backups/Level/scripts/👀DNSFILTER.ps1
+764eb9845b54be4139d905b1c49ef6da  ./backups/Level/scripts/👀unchecky.ps1
 271de26506314db34e3d12bd26cf2a9a  ./backups/Level/scripts/🙏CIPPCHECK.ps1
+337f3e287e1a11d275f416c700b3f721  ./backups/Level/tags.json
+989838af1061c18aebc3f7ea48832bec  ./backups/Level2/AUTOMATION_SUMMARY.txt
+7ae468b154e9ad8339a9ba098ac54b8f  ./backups/Level2/automations/ADS-2100 Scanner Driver.json
+92ebf0eec1a9a0834d0bc523dd1620da  ./backups/Level2/automations/ADS-2200 Scanner Driver.json
+3dae74df0aa0a8be55def41776a85150  ./backups/Level2/automations/ADS-3100 Scanner Driver.json
+2374a3e6ddc24f9a3784c0ea80005ad3  ./backups/Level2/automations/AMRI Deploy Phonebook.json
+e2628b1f10dd1a751ae8b521ad968926  ./backups/Level2/automations/AMRI Deploy Voyager and other system specific tweaks.json
+ece19788b32cacb049fdf07b4fea8293  ./backups/Level2/automations/AMRI Initial Onboard Automation.json
+c4901efc4bfe9aebc4c1bc7c025039a1  ./backups/Level2/automations/Add Acrobat Reader.json
+ef7067bc16f0ebe56b195e1420e17800  ./backups/Level2/automations/Adelaide MRI Server Updates.json
+8cfbf65c5d8b426dfc4e6b49d19af663  ./backups/Level2/automations/Ask User to Reboot ASAP.json
+27a9cdbae6ace67c0d03cc987f516070  ./backups/Level2/automations/BASELINE SOFTWARE FOR MANAGED CLIENTS.json
+d4ba61970bf04bc0f2adaec7e6503bcc  ./backups/Level2/automations/Best Practice TLS Security Update.json
+da61c5b981c06ab136c10e1997f3ee7c  ./backups/Level2/automations/BestPractice-fixtls.json
+e9c6a4ba3e650321dace3066a8e55d5d  ./backups/Level2/automations/CLEAN_ Voyager studies.json
+6d293f7d1c9af17d0730539be37dbb47  ./backups/Level2/automations/Clear Reboot tags.json
+32f65905a10533917a2c78025c24c495  ./backups/Level2/automations/Common Windows Applications.json
+859a69ebbc533d4702370b8cb7b232a3  ./backups/Level2/automations/Debian_UBUNTU UPDATES.json
+19895c56dead120ab8226758069eba0e  ./backups/Level2/automations/Delayed Start System File Check.json
+cfde9bcf8ba7a64b6d6cc0898f158d52  ./backups/Level2/automations/Deploy Configs for Voyager.json
+f90156a22676dc593bb6f1ac6ea4a268  ./backups/Level2/automations/Deploy Orca Slicer.json
+4b8c9d163f931c5b0c362aaf47902cb9  ./backups/Level2/automations/Deploy PhoneBook.json
+309e8a02648a67c3bb7623187e9ff174  ./backups/Level2/automations/Deploy Voyager configs.json
+4b7ea5f0d59c2e64dee6734f39a4a15f  ./backups/Level2/automations/Disk Cleanup.json
+51405e2bd9435c2d3269355db54df84a  ./backups/Level2/automations/Download Voyager Defaults.json
+fdadfa3531fc63fffb07c05b6d6b63cf  ./backups/Level2/automations/EXAMPLE_ Debug automations.json
+c2da5a57b9198e8d2d280433905e61ba  ./backups/Level2/automations/Enable Unlimited System Restore.json
+ab1995ce433162e96bca64c22278b3a9  ./backups/Level2/automations/Encrypt systems volume.json
+26dc57c4a938c1631c215c369e2935b4  ./backups/Level2/automations/Fix Windows Defender if offline.json
+1d5b8391d1b7f41c884d141df4c832f5  ./backups/Level2/automations/Foxit Install.json
+816c7777d2b667da82a21080e03248b3  ./backups/Level2/automations/IMGSIM_Backup_.json
+e2b4692493ea44ce05d21f2315217c3e  ./backups/Level2/automations/INSTALL_ Adobe Acrobat.json
+ac68f0b6792caf1da5b2c6f5fc90433e  ./backups/Level2/automations/INSTALL_ Chrome, unchecky, 7zip.json
+e47b9ed6654ef75eafbd57f85fec3074  ./backups/Level2/automations/Install Microsoft 365.json
+2211ddefed16d8fb071c734e2020af32  ./backups/Level2/automations/Install VLC.json
+5ed17884e262fcc7432af346062b1458  ./backups/Level2/automations/Install sqlite3.json
+7d76a96ea711d535b13db8482a86d76a  ./backups/Level2/automations/Install sqlitestudio.json
+d9206d32317f9a91b57faccb0abcb6b0  ./backups/Level2/automations/Kyocera M3155DN Printer Driver.json
+7b2f91b634d079bca66c2d07e101a953  ./backups/Level2/automations/Kyocera P2235DN Driver.json
+729a6ac4c566bcdb8184ba77e0e21c0d  ./backups/Level2/automations/MUST DO ALL MACHINES.json
+784900e9dbe55e38201d5d8ceb100956  ./backups/Level2/automations/NEED Notepad++.json
+2c470ef939107322f78f6f668c356612  ./backups/Level2/automations/NEED OpenVpn.json
+5af116e53299b945ba45995f8aec4412  ./backups/Level2/automations/NEEDS_ACROBATREADER.json
+af7daa0a8bb56a101d464539060c85e4  ./backups/Level2/automations/NEEDS_CIPPCHECK.json
+fb79654b39969327d3573ec521cdc0d0  ./backups/Level2/automations/NOTIFY ONLINE DEVICES THAT ROUTER IS GOING DOWN.json
+356ba08ae184ba8cb933e0626c021404  ./backups/Level2/automations/Needs VSCODE.json
+1b110b35f60c977a593875673e81bd4b  ./backups/Level2/automations/Overnight System File Check with reboot.json
+49886f36018b1f3f2f350ce3eb01c15d  ./backups/Level2/automations/POPUP - do not sign into your own email.json
+c197078f33e53df51ffbfeb883ce3980  ./backups/Level2/automations/POPUP MASTER (copy).json
+58adfabaca53313959da68109c057ca1  ./backups/Level2/automations/POPUP MASTER.json
+077c6035a9f1c54195ff6636182cfb4b  ./backups/Level2/automations/Policy says windows 10 can upgrade to 11 - set tag. .json
+1fec2c77ea31184c427dbbf01b6bc591  ./backups/Level2/automations/Popup.json
+3bbba5d156cbe92ae67806fd933852d9  ./backups/Level2/automations/REMOVE ScreenConnect Client (236d14eb86050829).json
+651f970763cf66075a976f36699f4ce0  ./backups/Level2/automations/Redeploy DNSFilter.json
+bfdb5b02bd0c6e72e3adf545332d286a  ./backups/Level2/automations/Remove Atera.json
+f98437f98047c508af5f65b09fd1c100  ./backups/Level2/automations/Remove Foxit and put in sumatra.json
+6af0b4de03a97890a7a415a41affec49  ./backups/Level2/automations/Remove McAfee.json
+8a79c5fd968ec00b5300015f712dd6f1  ./backups/Level2/automations/Remove WINSERVER Tag.json
+2c824245ed8c66d48e2303ff371995b0  ./backups/Level2/automations/Remove libre hardwaremonitor.json
+a3b297a05d8b680227159163c5eb2bba  ./backups/Level2/automations/Restart ASAP.json
+04fbd039436765c213eb9a825b5ede48  ./backups/Level2/automations/Restart Apache.json
+27fecb7af1d192cb6d041535227c25d5  ./backups/Level2/automations/Restart Tonight With Warning.json
+38eeee958aa238798a65cfa7d41d0cab  ./backups/Level2/automations/SET INSTALL HWMONITOR Tag.json
+89f6c21289fc1968685e3d45f1ed3b48  ./backups/Level2/automations/SWR MMB Software.json
+7a352d4c4968752269c5da91fcbc31ad  ./backups/Level2/automations/Scheduled Reboot.json
+e157e53c30644805c2edbc25f72744ec  ./backups/Level2/automations/Set All AMRI Hosts to Install Software.json
+582521809c0a65125c099dc45a0be8bb  ./backups/Level2/automations/Set Default System Restore.json
+e88ca777ce01a0f940a21d0b2f83e34b  ./backups/Level2/automations/Set Registry Path for SC.json
+88c0c343c86bcaaf6b2fb184a3fd19f9  ./backups/Level2/automations/Set all Machines as Managed.json
+73462ed7eb1bb9cf09f8a675a6dfd269  ./backups/Level2/automations/Sleep after 1800 seconds.json
+05dd4730494cfc3e287efef30b14a771  ./backups/Level2/automations/System File Check.json
+015a14da59a7334234712dda3ae6c42a  ./backups/Level2/automations/Toshiba V4 Driver.json
+942bac7372fa2e6719538dfbebefd697  ./backups/Level2/automations/UPGRADE WINGET PACKAGES.json
+af22128d5aff46beabb7899ea113f396  ./backups/Level2/automations/Unnassigned Client INITIAL.json
+c8c2fc809f3a7bd132b2383dc1fea08b  ./backups/Level2/automations/Unplanned Maintenance Notification.json
+5d6ff9c0158bee74e104e3fa1a9b6824  ./backups/Level2/automations/Update Screenconnect URL.json
+c2d809021357a65e9577bac4b3b53169  ./backups/Level2/automations/Update Windowa.json
+e68d4eda2702bd6da58ca9dcfadd4b5c  ./backups/Level2/automations/Verify WS version.json
+ee78d33d8b01fd06f058d388cc4c4acd  ./backups/Level2/automations/WINGET Install K-Lite Codec pack.json
+2458780a4e0d9ff74fa747a61e756d4f  ./backups/Level2/automations/WInget Bitwarden.json
+f7f6cffc965e74693d63d3dc8bb3f0a8  ./backups/Level2/automations/Windows 10 to Windows 11 Upgrade.json
+8a3b79000d1111bce9571b0d32551bb0  ./backups/Level2/automations/Windows Defender Management.json
+cb07282575f9c5688131eb1c45f07b6b  ./backups/Level2/automations/Windows Gather Intel.json
+dea7cc43baf1f436835d6d20e5da1e18  ./backups/Level2/automations/Windows Patching.json
+66bc68cd53e950841b18d9228d4799a1  ./backups/Level2/automations/Windows Setup GENERAL CLIENT.json
+69ca485e6e05cdb7efd4a02e8adbfd01  ./backups/Level2/automations/asd.json
+84ad510cd32cd59292dbe532c4892b85  ./backups/Level2/automations/determine if running during quiet hours. (copy).json
+6f13606c07488df56e96dd38b788be80  ./backups/Level2/automations/determine if running during quiet hours..json
+cd0f1b65d75ed7b44a4e374ea4eddb5a  ./backups/Level2/automations/on restart.json
+6605c8703a854ee39dc78e76c86e97af  ./backups/Level2/automations/⛔DNSFILTER.json
+614bbf29a5057fbe9fe98a76f84f5aea  ./backups/Level2/automations/⛔HUNTRESS.json
+389aeaa4310ee72ab09523f7e960b56b  ./backups/Level2/automations/⛔SCREENCONNECT.json
+02e98b27751d246cd39ac61482ea00bb  ./backups/Level2/automations/⛔UNCHECKY.json
+1ef803932a8f8c9a721fc88ff1760e36  ./backups/Level2/automations/👀Verify Device Not Blocked By Tags.json
+dd90bcbf14d01b3e8f7cfaa0deddbd7a  ./backups/Level2/automations/🙏BITWARDEN.json
+32cd6e520de2765485ddb1d6e17c42c0  ./backups/Level2/automations/🙏CHROME.json
+60a2d8efadbbf1e6ac265d5fc4144bd9  ./backups/Level2/automations/🙏CIPPCHECK.json
+5f02ac86eeb367e7bd1b4d42499cc6fd  ./backups/Level2/automations/🙏DNSFILTER current site key (copy).json
+dccc20785b37316cdeee694f8c7c2495  ./backups/Level2/automations/🙏DNSFILTER current site key.json
+9072a5ae9e5e1f804a6e9d4d48556672  ./backups/Level2/automations/🙏HUNTRESS.json
+0b33066db634677ebe2689670d023b87  ./backups/Level2/automations/🙏SCREENCONNECT.json
+07533d71fde10685541500d15ce07379  ./backups/Level2/automations/🙏UNCHECKY.json
+9ba54d1fb6bc39e2273172df1bb6c6ae  ./backups/Level2/automations/🙏WOL.json
+30c6b2c5c8116594007bb3a6bed9fe06  ./backups/Level2/automations/🛠️TEMPLATE - check device eligibility.json
+0b511cc2a046fafc69bf5a1f8c1e9068  ./backups/Level2/custom-fields.json
+da4ecdeec69638a5d0a2ff645623825c  ./backups/Level2/full-export.json
+dabcb01c3008388ea90d5a0649cdd8ff  ./backups/Level2/jwt-token-cache.txt
 d5cc8d717db9c87f07d5e75d18b56a1f  ./backups/Level2/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
 f85f46da3553bc1bfa7645e69cdf1a23  ./backups/Level2/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
 1f0196e84a451016be5b3acbe585b557  ./backups/Level2/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
@@ -276,16 +479,16 @@ c2206d375255d063f0eb0760fa53023c  ./backups/Level2/scripts/BASELINE SOFTWARE/⛔
 8b09f61d2a1352ca4cafc58bc2ab24bf  ./backups/Level2/scripts/Baseline configurations/Create Restore Point.ps1
 c82ce2e849fd3074380b5b453443edc7  ./backups/Level2/scripts/Baseline configurations/Create users.ps1
 b349c86642ee3719b28b81eca27c48bd  ./backups/Level2/scripts/Can we run_.ps1
-ad9626010958230170dda9d866b37f40  ./backups/Level2/scripts/DEBUG.ps1
+5aaed82339faa25bec0c0747fd5599fd  ./backups/Level2/scripts/DEBUG.ps1
 19bb99096557986ea2fabf73aefecc79  ./backups/Level2/scripts/Debug Script.ps1
 f7dd2500c49cb0913e9ed7639df8f5ec  ./backups/Level2/scripts/Debugging/FindHiddenUsers.ps1
 5f5035334a9a4a81518ce38359231a94  ./backups/Level2/scripts/Debugging/SET_ Default System Restore.ps1
 3724025399c74570a237ba9df673c64d  ./backups/Level2/scripts/Debugging/SET_ Unlimited System Restore.ps1
 2a2f15e7cbfa10b4cda86bf892af2fcd  ./backups/Level2/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
-5f508b3b8000c6dbede8c4757f04a487  ./backups/Level2/scripts/Debugging/👀Test Variable Output.ps1
+93250424f470ceb1986adb8c7571b8cc  ./backups/Level2/scripts/Debugging/👀Test Variable Output.ps1
 8babd90b0c4554f8dc6cf08eea57e17a  ./backups/Level2/scripts/Deploy COOLNETWORKS Support tool.ps1
 970e573adcf4976226b3683de1c7368c  ./backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
-2de77aebcb27d2112754e3b12f0c6d4e  ./backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
+42f4b662ed99144e96cfe2ac09bc0619  ./backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
 3636b5d5d8322f917db9ed43e4d8580b  ./backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
 e65dbcb1a08001ee47f58ac1fadaa77a  ./backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
 80485803d623bcd83cd7fd79cca12262  ./backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
@@ -415,7 +618,7 @@ e69d90be26e30358c408a5425e747e98  ./backups/Level2/scripts/From Atera/install le
 3815211c2782f8aa69e5e9fd23b34623  ./backups/Level2/scripts/From Atera/uninstall_syncro.ps1
 82a3850b704302d72edbdf082c25faf9  ./backups/Level2/scripts/From Atera/windows 11 troubleshoot (copy).ps1
 0da935b7278813000e0848893a05986a  ./backups/Level2/scripts/From Atera/wmi-list-shares.ps1
-9e04ef4e5bcbde33432756852c2f0f07  ./backups/Level2/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
+55405dc41ded364fcc98d7ed09b00ef6  ./backups/Level2/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
 9a5f662417fc25d9610bd083cdae585a  ./backups/Level2/scripts/General/CN_Tools Folder.ps1
 d7e0242cf025e7e16327447d91f8c1a9  ./backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
 b15eba497e6b0ce7fde7d961f6a81e61  ./backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
@@ -431,6 +634,7 @@ fd1f24b22a36ada4d5eb820311a0188f  ./backups/Level2/scripts/General/Fixes/🙏Wak
 20903e606c99ec2b2406a1d2722b07c3  ./backups/Level2/scripts/General/Info Gathering/Get Screenconnect URL.ps1
 a3d9c763d82a1247b5d2ae4c639c7601  ./backups/Level2/scripts/General/Info Gathering/Support Request check.ps1
 6f88875c3bf43df4f050ed0e8abadd97  ./backups/Level2/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
+abe8d0daf81c5e477ca5471b3df9b745  ./backups/Level2/scripts/General/Linux Monitor - DNS Servers.sh
 0b07ad0751e489af76dc2f73019bc7f4  ./backups/Level2/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
 996f6923a876b59802d6f28793a66ced  ./backups/Level2/scripts/General/POLICY/Deploy Popup Script.ps1
 5f206317e7a179e1e60c2edc54c1d9b3  ./backups/Level2/scripts/General/POLICY/Disable Outlook re-open old items.ps1
@@ -458,7 +662,18 @@ c39b0feb4982d7db75c918357412f594  ./backups/Level2/scripts/General/Popups/POPUP.
 77d3f8f5faee046d28db331c97b9d224  ./backups/Level2/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
 846344f9508a0d7afe84e4998289eb94  ./backups/Level2/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
 9b9673ec9b7e1e3f3018ae7a6f95582d  ./backups/Level2/scripts/General/Windows Monitor - DNS Servers.ps1
+1981722202c57d83a0453d2a6b2e928c  ./backups/Level2/scripts/General/macOS Monitor - DNS Servers.sh
 af44af9548566b0c2b665ee7c840ed3c  ./backups/Level2/scripts/Imported/AMRI Safe debloat.ps1
+7295deb4a03d5e76eee6b04cdd97797b  ./backups/Level2/scripts/Imported/Install Huntress.txt
+9b1068cc572ac0e2c487a588e1b98003  ./backups/Level2/scripts/Imported/Linux - Cleanup Disk Space.sh
+340371eab084fdfbf2d627c5040187ef  ./backups/Level2/scripts/Imported/Linux - Software Installed.sh
+a5343a91e10cd77182fb3c481560e126  ./backups/Level2/scripts/Imported/Linux - Software Not Installed.sh
+b2a1b62826b5bb106ffccf247716eae2  ./backups/Level2/scripts/Imported/Linux - Unauthorized Admins.sh
+3b7f02f2c2ddad387606b04f63f6cc05  ./backups/Level2/scripts/Imported/Linux Monitor - Device Standards.sh
+5fe8a714d75f64726586c02aee62507c  ./backups/Level2/scripts/Imported/Linux Monitor - Firewall.sh
+8a590d0b4f133659644fcf29ae741643  ./backups/Level2/scripts/Imported/Linux Monitor - SSH Keys.sh
+56834cf595b5a27913557bf8e0f79723  ./backups/Level2/scripts/Imported/Linux Monitor - System Time Check.sh
+0614f71e8f68ca046b5dbb0075ef81de  ./backups/Level2/scripts/Imported/OsQuery Monitor - Uptime.txt
 4fd1269756f196683f580d30ecbc98f1  ./backups/Level2/scripts/Imported/Prompt User.ps1
 772459e40c9dbd24c9a3c53618a651b3  ./backups/Level2/scripts/Imported/REMOVE FOXIT.ps1
 439faf9e550d181be59c6e5a5d8c39f1  ./backups/Level2/scripts/Imported/Windows - Add Admin.ps1
@@ -479,8 +694,17 @@ cf6928d1d5bc59519db8f47091df6cdd  ./backups/Level2/scripts/Imported/Windows Moni
 f0948378d5385e8661a2ce4133f41a7a  ./backups/Level2/scripts/Imported/Windows Monitor - Firewall.ps1
 3f6eba7dc5b0406892dbe0d691da5385  ./backups/Level2/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
 57d18ce09c6dfec3661253be801d9881  ./backups/Level2/scripts/Imported/Windows Monitor - System Time Check.ps1
+d4b2e200af5dbcc95fbe9a7e85a44856  ./backups/Level2/scripts/Imported/macOS - Cleanup Disk Space.sh
+dcb2e88a439fb26371f6d7157edd75d4  ./backups/Level2/scripts/Imported/macOS - Software Installed.sh
+a0cb5fc770035c538f8aea01891e31df  ./backups/Level2/scripts/Imported/macOS - Software Not Installed.sh
+2ad2b1837f78689b5a0647c3e4322221  ./backups/Level2/scripts/Imported/macOS - Unauthorized Admins.sh
+1a26aa8fcb3c1d187ee014d18c6a1166  ./backups/Level2/scripts/Imported/macOS Monitor - Device Standards.sh
+ace61d52cd67a30247c94a3274783190  ./backups/Level2/scripts/Imported/macOS Monitor - Firewall.sh
+4dec143a5ce295b94a029ccbca9fca4e  ./backups/Level2/scripts/Imported/macOS Monitor - System Time Check.sh
 02c40d2df5d6a6d370f43f76d56116ed  ./backups/Level2/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
 dbb0c5fff3c5cb76fe66bc2e38091aca  ./backups/Level2/scripts/Install Bitwarden Extensions to chrome and edge.ps1
+212f095bd4d19dca5e0e5608e2787c5d  ./backups/Level2/scripts/Keep Mac Awake.sh
+1cd0b15e60656a715f6ac39c136a1c0b  ./backups/Level2/scripts/LINUX RemoveAtera.sh
 abbdb97d85850826db59de43aeb46d02  ./backups/Level2/scripts/Low Profile Defender.ps1
 f61ea3678bb665c145855eb3ac1e4c2d  ./backups/Level2/scripts/POLICY_ Is Foxit installed_.ps1
 735750942d6cbac69f57f43186c4673f  ./backups/Level2/scripts/REMOVE FOXIT.ps1
@@ -491,15 +715,16 @@ f4e368821aeb0740322a620185ce1376  ./backups/Level2/scripts/Remove ScreenConnect 
 5f42382b670f1ef094950c89273dda02  ./backups/Level2/scripts/Remove Voyager Folders.ps1
 ec3dca416760afeee10fae4a5bb3497b  ./backups/Level2/scripts/Set Defender Exclusions.ps1
 770bcc1b6ac25a9a052703b422f9d6d7  ./backups/Level2/scripts/Set chrome as default.ps1
-c47d1ca16df48b328e334f6b0bf6ad47  ./backups/Level2/scripts/Show Test Versions.ps1
+88344e813b710005f1c1c79e59c3e01e  ./backups/Level2/scripts/Show Test Versions.ps1
 6de90e031d654ba87c74a9d707c89904  ./backups/Level2/scripts/Sleep after 1800 seconds..ps1
 45c95564881b864280d3037c5cb6b9b4  ./backups/Level2/scripts/System Uptime.ps1
-3dc1ac2764fb9612bcf676be73942788  ./backups/Level2/scripts/Test PS Module install.ps1
-1d508063441850ccf5eb0acbae492db1  ./backups/Level2/scripts/Test Show Versions.ps1
+78a2307084259b43f9ccaa7da29c84c6  ./backups/Level2/scripts/Test PS Module install.ps1
+25971eb01331e46c886cbd1f60ed5821  ./backups/Level2/scripts/Test Show Versions.ps1
 f2f231262c9288868753d80258b3fb8c  ./backups/Level2/scripts/Uninstall Atera.ps1
 50a5dc84f5fefb9c72cef997be00f04f  ./backups/Level2/scripts/Verify SC Status.ps1
 fdd8184570f07d0a8d6f01abf200a092  ./backups/Level2/scripts/Wake On Lan and Power settings WOL.ps1
 1b665f4b9b486d2b4eb1521472d8e908  ./backups/Level2/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
+6544738d7adbedeb72d8950a62f10015  ./backups/Level2/scripts/imgsim BACKUP.sh
 278817b15918ded5bfac0659ab3e014c  ./backups/Level2/scripts/inside quiet hours_.ps1
 a9f8882f804f8809b66516e86a5e783f  ./backups/Level2/scripts/is interactive sign in_.ps1
 6c6ec2b0f565ca69578e3f41baafd1aa  ./backups/Level2/scripts/level to screenconnect test.ps1
@@ -508,151 +733,253 @@ ac93a09854d446fd3853183687d2237a  ./backups/Level2/scripts/test uninstall for SC
 6059291621885604bb3fba9795902a5d  ./backups/Level2/scripts/uninstall level.ps1
 5095bf93fc13e91c81d8a00d7f7300d5  ./backups/Level2/scripts/⛔CIPP CHECK.ps1
 719b4fca685e4b4226f8ea772b499954  ./backups/Level2/scripts/⛔DROPBOX.ps1
-4e082ab6b13c71b76f9b03cbdae51c6c  ./backups/Level2/scripts/👀DNSFILTER.ps1
-0b8ef81b5705a8acb60b5a05bc85300e  ./backups/Level2/scripts/👀unchecky.ps1
+3e7851ca197c2a96a2aab2aa75014c8a  ./backups/Level2/scripts/👀DNSFILTER.ps1
+764eb9845b54be4139d905b1c49ef6da  ./backups/Level2/scripts/👀unchecky.ps1
 271de26506314db34e3d12bd26cf2a9a  ./backups/Level2/scripts/🙏CIPPCHECK.ps1
-53932c3881f920b06d93ba907c32158c  ./launchers/Alert/🔔Technician Alert Monitor.ps1
-e2ce76c206064511ab66abc1698b9a15  ./launchers/Alert/🔔Wake tagged devices.ps1
-362bc63ddf9455558942b013a4bb9a58  ./launchers/Alert/🙏Wake all devices in Level group.ps1
-c6d409011a6660abd5995bfdaa76e754  ./launchers/Config/⚙️COOLForge Cache Sync.ps1
-4fba7bc147f7a47d0aa321a12133ab42  ./launchers/Config/⚙️Configure Wake-on-LAN.ps1
-fd71899534365b2f03231abf413ea283  ./launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
-c54489ce065baa069273322e821da89b  ./launchers/Config/🔧Prevent Sleep.ps1
-e26a239c2da455fe1c70ffd5b140b033  ./launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
-5c3596efe7f536c7ed4a530f59ab8b4f  ./launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
-d93554fa749106cef51f0772556a39e4  ./launchers/Fix/🔧Fix Windows 10 Services.ps1
-321195aa8e03d6be46c7280363887241  ./launchers/Fix/🔧Fix Windows 11 Services.ps1
-47ff8fb5243c19a3b5326d626c470080  ./launchers/Fix/🔧Fix Windows 7 Services.ps1
-069412a73528d7c370b04467403c109a  ./launchers/Fix/🔧Fix Windows 8 Services.ps1
-a8bae2b8aecd1d66b63eec41a05f13c5  ./launchers/Fix/🔧Fix Windows 8.1 Services.ps1
-18e6f06af716a6038bce972bdd51ad54  ./launchers/Fix/🔧Fix Windows Location Services.ps1
-faa4a1579bfe3fcaba708bf62a0c71bb  ./launchers/Monitor/👀Check Windows Location Services.ps1
-14a3121789feb2a4486fbdbdc82bc303  ./launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
-6a721c77142b0af73f50bfd9e987a6e2  ./launchers/Policy/Chrome/👀Chrome Location Services.ps1
-ec534da0d93b5b38784510dc99448279  ./launchers/Policy/Windows/👀Windows Location Services.ps1
-eb26ee7ecf495afcb5f61644d5dbaef0  ./launchers/Policy/👀Hostname Mismatch.ps1
-1c2cdb350616d699d3d7a4057ffd4b48  ./launchers/Policy/👀bitwarden.ps1
-ebdaa6d7aa3ddc272a776542ae8c2794  ./launchers/Policy/👀chrome.ps1
-d43295ae64e756d2f7976aee8843a6c2  ./launchers/Policy/👀cipp.ps1
-903b793e9b73b3e873594dc531c30f83  ./launchers/Policy/👀debug.ps1
-1541c71fa17ffd3b15506ef805505f16  ./launchers/Policy/👀dns.ps1
-9510db81af55993dc7b1226e057c95b7  ./launchers/Policy/👀dnsfilter.ps1
-c27231fa70ad45b87eebbe018839cd39  ./launchers/Policy/👀huntress.ps1
-ad7e071cbb74be3d35857158e96bdcf5  ./launchers/Policy/👀meshcentral.ps1
-35c22f7f01f5753d60773935e63d215d  ./launchers/Policy/👀screenconnect.ps1
-05c8a8eefa1abdc74e06feb368b65ce8  ./launchers/Policy/👀unchecky.ps1
-4f2c75e780b29293b3738b2571f6548a  ./launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-bd3669bd791ca11a3b2c52c4bba9d8f7  ./launchers/Remove/⛔Force Remove Dropbox.ps1
-2801bf4f171fe29924073453b1df1c10  ./launchers/Remove/⛔Force Remove Foxit.ps1
-c66ac2c58512ae64f58230addbc5a212  ./launchers/Remove/⛔Force Remove McAfee.ps1
-c0735db7b70d708187f1d639dae9dfa9  ./launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-b91a875162aed8364853ca205c661a5e  ./launchers/Remove/⛔Remove All RATs.ps1
-0e7b43d5ab3e634ea7cbeff6d144102e  ./launchers/Test/👀Test Show Versions.ps1
-ae11997a0c0bae9a19a0a7ee14003162  ./launchers/Test/👀Test Variable Output.ps1
-59569997bc039cd6cf0f6691f7144a65  ./launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-b54214b3382c02ee5546fe8cb125f721  ./launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
-f74bde64c09f5500af34132541993355  ./launchers/Utility/⚙️Universal Disk Cleaner.ps1
-8664fc54c0e4c3e8ec1ad5069bb78490  ./modules/COOLForge-Common.psm1
+337f3e287e1a11d275f416c700b3f721  ./backups/Level2/tags.json
+8ccc37e72ed4b7ae6af4e1560520715e  ./backups/customfields_2025-12-29_141538.zip
+581082100f3c56089706ae4d500fbd96  ./backups/customfields_2025-12-29_143223.zip
+cf5b33da9e73c66d5d5931d87adf7ed3  ./backups/customfields_2026-01-07_124353.zip
+a43b1b14c03e74b19efb7c78976ca389  ./backups/customfields_2026-01-07_124827.zip
+dd588ff149d2ea2a42b595c0269f0c0d  ./backups/customfields_2026-01-07_133040.zip
+973a26fd3e3d8df7054beb00b4e267fb  ./definitions/custom-fields.json
+809122b78303aa3208556603ebaefdbc  ./definitions/tags.json
+72ca3be41a7d1de55be377f9ee93072b  ./docs/CODEBASE.md
+32b562167021beaac7c3645c223f7d9f  ./docs/EMOJI-HANDLING.md
+cbe708211eda38049a54a6314b910483  ./docs/FOLDER-STRUCTURE.md
+09a93d674ce1ac117cd130f70145463f  ./docs/FUNCTIONS.md
+6728f058af2cb26adf340eca41986832  ./docs/LAUNCHER-FLOWCHART.md
+b93547354d316ff304099e975fd75020  ./docs/LAUNCHER.md
+b23eeee0ced51cb4c52ca0b04e08c3ac  ./docs/LEVEL-API-CUSTOM-FIELDS.md
+6a4367fbca8dade92286e13f43ebecbb  ./docs/POLICY-FIELDS.md
+cad1512fad6b0a8f136994dc75fc3172  ./docs/PRIVATE-FORK.md
+ce84b2f8d7a9c4e84143d059053b4fdd  ./docs/README.md
+55525401827f7c28ba5eb23d5c0e6c00  ./docs/RELEASE-WORKFLOW.md
+228ca2efd2caf11e637c84541e555b7b  ./docs/TECHNICIAN-ALERTS.md
+7061bb15cd52039f926a07db9003e3c3  ./docs/VARIABLES.md
+82df6de5e4414aa846ad0b02b63cc127  ./docs/VERSION-PINNING.md
+cf8abcfa522e91ed1ebdd76d183644f0  ./docs/WHY-COOLFORGE.md
+95e694ffeac9942483bfc94252085936  ./docs/WHY.md
+36f598a5874afebf5ca514c4aa2afb80  ./docs/WOL.md
+b9b45a5d479c3a78d5116cb4e4506d88  ./docs/level-v2-openapi.json
+a7ff24a2664ba39c2df0589c768d7c54  ./docs/policy/Bitwarden.md
+7c0811c41d82153490d57a2b4cae2dab  ./docs/policy/CREATING-SCRIPTS.md
+0b7332401ebdf656a347375234d55cf5  ./docs/policy/Chrome.md
+1c366b4ac7dba24768ba21f8215edb62  ./docs/policy/DNSFilter.md
+0322cd3a5ab1871f707c502b12e2ae80  ./docs/policy/Debug.md
+84be5fc328bca9fe0e1bf3428a1a887a  ./docs/policy/Huntress.md
+4ca737abaea00c2a1e86362ae1160321  ./docs/policy/MeshCentral.md
+a64af805e08a51265a308dd632bfa7d1  ./docs/policy/README.md
+5c3a2bede91c7f4f42f526822ee8ce18  ./docs/policy/ScreenConnect.md
+b07cc6983663b4a118c74154bbb13056  ./docs/policy/TAGS.md
+faeb0e36a664a0d81c471fc2222939cc  ./docs/policy/Unchecky.md
+8f17791ea470443f3a7be97e961fb41a  ./docs/policy/Windows.md
+7c11dfc4a120ce8174e4cee924632bfc  ./docs/scripts/Cache-Sync.md
+8e931d5e401e8da66687afcff01e9337  ./docs/scripts/Check-DNS-Compliance.md
+58227e21441b44cde0e2badcf894e979  ./docs/scripts/Check-Windows-Location.md
+f300ac2e7ada2eb2ba7a727e81f30460  ./docs/scripts/Configure-WOL.md
+c07bce6d929bf1d846e45a76fd4822e4  ./docs/scripts/DNS-Compliance.md
+c9b0aa3e3c19938dd05701a748addae7  ./docs/scripts/Defender-Enabled.md
+2ee6b81a0efca7dd575a40f93c4ebf30  ./docs/scripts/Disk-Cleaner.md
+36bc3a8022a83e4c8cb1b7f77a7474f6  ./docs/scripts/Fix-Location-Services.md
+e04406943b101b278fd1f6de37999c2c  ./docs/scripts/Fix-Windows-Services.md
+68ccd3fe427fc9eba6c36917bd81ad53  ./docs/scripts/Force-Remove-Adobe-CC.md
+be4e38b65adc8bbf498888690c3b195d  ./docs/scripts/Force-Remove-AnyDesk.md
+cf7e2e75d713a97e4546f7d063543120  ./docs/scripts/Force-Remove-Dropbox.md
+5d09ebec2cccccb576af6190c6dd47bd  ./docs/scripts/Force-Remove-Foxit.md
+d1f497859850fb87c346f98d2374468a  ./docs/scripts/Force-Remove-McAfee.md
+83b73f95b272d36f2fe20629e99badfc  ./docs/scripts/Force-Remove-Non-MSP-ScreenConnect.md
+f54d020dc7f77314ec3ad69d2bb82767  ./docs/scripts/Hostname-Mismatch.md
+f1d3e03751a325d40d36b06e01204131  ./docs/scripts/Prevent-Sleep.md
+88569e6f640c3cb451854bcf36606a20  ./docs/scripts/RAT-Detection.md
+757c9c835d80806286a3d0bb743f3c15  ./docs/scripts/README.md
+37b6ee98d47e80464fa0f31c14701275  ./docs/scripts/Remove-All-RATs.md
+42790cd20b8a60c1e02d53c0a362e396  ./docs/scripts/ScreenConnect-Device-URL.md
+99252e86124d9cc15ae5aded31a15e8a  ./docs/scripts/System-Restore.md
+21a097aa9c43a60bd006b33f617f0c3b  ./docs/scripts/Technician-Alert-Monitor.md
+659ba506030ab2a4c7470c67f94d1d5f  ./docs/scripts/Test-Show-Versions.md
+cb16fb0a6fe64366c3e739472f5d8d5c  ./docs/scripts/Test-Variable-Output.md
+3a6bd6ace112d479760e999dd8427604  ./docs/scripts/VoyagerPACS-Cleanup.md
+43829873824a825fbca8a727ac4ab2d9  ./docs/scripts/Wake-Devices.md
+4d34eb344f7f3652fe1d0b89ac17ff5a  ./docs/scripts/Wake-Tagged-Devices.md
+a393a90b41cc21edbda0d5e96012897c  ./exports/FullLevelFields.json
+d83e1c2d7171ae393e34551bd9cebee4  ./launchers/Alert/🔔Technician Alert Monitor.ps1
+1640ca90721b5795e0b9670ff4a319f4  ./launchers/Alert/🔔Wake tagged devices.ps1
+d7bf57da5dfe410cb2c822d1ebe01be6  ./launchers/Alert/🙏Wake all devices in Level group.ps1
+e38466cd93c7bae83b43d8f533b4e31c  ./launchers/Config/⚙️COOLForge Cache Sync.ps1
+c66c0bbc7436bbc27af39e7990c6a2d8  ./launchers/Config/⚙️Configure Wake-on-LAN.ps1
+59ad3529e6e964cc78eac21e00de8fb9  ./launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
+95b7b835c8c47eb7910250486c1b666b  ./launchers/Config/🔧Prevent Sleep.ps1
+91e280e996b1c9a37eb94e086166ae30  ./launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
+dc0a75e1250c5135f7d1bc979e09fda5  ./launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
+bda0ec47961a9a51d7c7fa8b92db652b  ./launchers/Fix/🔧Fix Windows 10 Services.ps1
+09c0fb09946b6a7189ce1abfd32c6f32  ./launchers/Fix/🔧Fix Windows 11 Services.ps1
+fd35ca5a295212ac057e5af5366a49b8  ./launchers/Fix/🔧Fix Windows 7 Services.ps1
+786667ba80b6ff94b0f06f72fe31c526  ./launchers/Fix/🔧Fix Windows 8 Services.ps1
+918b4fa79902952a60aab2f7c6c7615f  ./launchers/Fix/🔧Fix Windows 8.1 Services.ps1
+d2f0900681aa719be7c6ce4555a22d02  ./launchers/Fix/🔧Fix Windows Location Services.ps1
+ed15042c1f07160247f67d063168fe45  ./launchers/Monitor/👀Check Windows Location Services.ps1
+3924023dd75cfeb557d6fbcd795a4be3  ./launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
+9d68fb51a00dc98ac8f36a76266c520a  ./launchers/Policy/Chrome/👀Chrome Location Services.ps1
+85ab1110e98dae71141d5ece9dac2d84  ./launchers/Policy/Windows/👀Windows Location Services.ps1
+57e8a23c60f5fdd18a9e011ae95a409c  ./launchers/Policy/👀Hostname Mismatch.ps1
+22bedeadaabe6b829c970faa051b628c  ./launchers/Policy/👀bitwarden.ps1
+8071ea3a2ebb865cae81f2ad79d1ee85  ./launchers/Policy/👀chrome.ps1
+f2d916f59e515eeffdd099c7795b90fe  ./launchers/Policy/👀cipp.ps1
+be53d417c5ad8b61c865a231176ab20e  ./launchers/Policy/👀debug.ps1
+8504c507fef5dac5482755ea92b68c75  ./launchers/Policy/👀dns.ps1
+4f13cb5fdf2542c590283392d0799605  ./launchers/Policy/👀dnsfilter.ps1
+9220912d6210ca263300a3445454b790  ./launchers/Policy/👀huntress.ps1
+48544859e5f9fb1514bf1fa2995a44bc  ./launchers/Policy/👀meshcentral-linux.sh
+7afe0cdee33e81470b9dc9714c18d349  ./launchers/Policy/👀meshcentral-mac.sh
+c38d3b4b20ffc6a71fb9f3d6992cc0c0  ./launchers/Policy/👀meshcentral.ps1
+35a99aa33753317ad6f9d79f24e082c9  ./launchers/Policy/👀screenconnect.ps1
+13eef94ee643a8f289d04f0801896257  ./launchers/Policy/👀unchecky.ps1
+10b3e43527ced4f506047c916b195443  ./launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+6129de5de24cec1ce8a350518d303c74  ./launchers/Remove/⛔Force Remove Dropbox.ps1
+97b08e0c42209da17219cf9ecbd1e8a9  ./launchers/Remove/⛔Force Remove Foxit.ps1
+22769764403e5088543a7c84ef2925c8  ./launchers/Remove/⛔Force Remove McAfee.ps1
+58501cd97fc36e8f9509938a12e6ebb9  ./launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+f4e3c96fb7a25ac48b3f4aa9291d304d  ./launchers/Remove/⛔Remove All RATs.ps1
+8153c62a487a6fe5213ac8a8ae5b0714  ./launchers/Test/👀Test Show Versions.ps1
+897ab9913a54326390d3ceb83818c66b  ./launchers/Test/👀Test Variable Output.ps1
+edb7fafad53d922832dee9e580eaaa00  ./launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+48371ba7b0dfaa1ce1a9bb3b2b1a97aa  ./launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
+5e98c321f27f5e9d68895e8a2e574d2e  ./launchers/Utility/⚙️Universal Disk Cleaner.ps1
+8e45ed27e2837660ea4dba6b3ee89a5d  ./modules/COOLForge-Common.psm1
+2990bcfd1c35eaf5a88cfa31187e5c1a  ./mynotes/LEVEL-SUPPORT-QUESTIONS.md
+fb47fceddba369c4dba10e2b1d418dd4  ./mynotes/LEVEL-SUPPORT-SUBMITTED.md
+57027943a9ac9e7a6d115ab1ce9beedf  ./mynotes/coolforge-recreation-prompt.md
+3c230ff8cd8b89385d4fb66e136aa10a  ./pre-release/README.md
 e0c78d0af59d223b679a01b6b1c25dd6  ./pre-release/Test-Syntax.ps1
-78949bd185e1d5a1a630282fa2e11e9c  ./pre-release/Update-Launchers.ps1
+e058266dce34c287fcae6c9af89a6cd6  ./pre-release/Update-Launchers.ps1
 9f563c201e62efca1cbbce108dc7d38d  ./pre-release/Update-MD5SUMS.ps1
 dec00fbcc15ae5f1bbd36b2d5e926109  ./pre-release/Update-ScriptInventory.ps1
 474a2ee0a20ae5ed9d280f0fd2a1857f  ./pre-release/Validate-Release.ps1
-bcbfba4832ca9c87befbb0399490bc9d  ./scripts/Check/👀Check Windows Location Services.ps1
-162c7ee09c837a715e358053669e3fce  ./scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-75226d78e30b8639bb2e8994d4c86400  ./scripts/Check/👀Hostname Mismatch.ps1
-41e6dc1d4d44fe96917f0e438bcc8d08  ./scripts/Check/👀Test Show Versions.ps1
-0194abc3e6340f36b072d35568c6c42f  ./scripts/Check/👀Test Variable Output.ps1
-072892310afd2e0112929820bc4c33dd  ./scripts/Check/👀debug.ps1
-c43ed1a69a137a7ba8e65c0d43218458  ./scripts/Configure/⚙️Configure Power Management for Workstation.ps1
-91317d2da2cf6ea934807bb3f598496b  ./scripts/Configure/⚙️Configure Wake-on-LAN.ps1
-aa0f5353b40c07c2b91606810d67b946  ./scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-b1356c760039d2beb48a6667c3a346d0  ./scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-4cc314c7527b1710d20fdb707dd7146e  ./scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
-5cdac7ecfcd93d15a09892cf0fb34561  ./scripts/Fix/🔧Fix Windows 10 Services.ps1
-997b61fef81e8b9e6d2014223158b044  ./scripts/Fix/🔧Fix Windows 11 Services.ps1
-2b87fec41256cd53dd359fb3b0ce9e7d  ./scripts/Fix/🔧Fix Windows 7 Services.ps1
-c6bd76f462b894a8ff1e6d90aadea3cf  ./scripts/Fix/🔧Fix Windows 8 Services.ps1
-d79a398d1be20cc5d13293e3a132b12b  ./scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-5f6f06b26e35a72a3840ea68c3a78494  ./scripts/Fix/🔧Fix Windows Location Services.ps1
-0acd004efe2ad665a5deac011bd4e4be  ./scripts/Fix/🔧Prevent Sleep.ps1
-24ac5c491a75dcfad1f018e9615a199d  ./scripts/Policy/Chrome/👀Chrome Location Services.ps1
-47ea2a01958a8afe61164ce7b5b5a7b4  ./scripts/Policy/Windows/👀Windows Location Services.ps1
-d958a68ea26e23dfa1f5ae558760f4e5  ./scripts/Policy/👀bitwarden.ps1
-5db93541269222fa9c43cf9ee8789578  ./scripts/Policy/👀chrome.ps1
-91d71b295893232cfdf8d2c712e3e9a4  ./scripts/Policy/👀cipp.ps1
-c263f6cd8ce6177c19f8b6e075608e1b  ./scripts/Policy/👀dns.ps1
-eba3003ff1c232d5cbba60fc05342c7c  ./scripts/Policy/👀dnsfilter.ps1
-4af97f48c2d6eeb06baf7f06f23dfa50  ./scripts/Policy/👀huntress.ps1
-28232359a6d814ae7f4c48a35d855931  ./scripts/Policy/👀meshcentral.ps1
-ff753881908639f249ae4a57b10e55a0  ./scripts/Policy/👀screenconnect.ps1
-49777d37d2e9fc72aa3ae577c9fb8642  ./scripts/Policy/👀unchecky.ps1
-3690edf3e85254bf784db853a852b214  ./scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-22ee0c25b57d443fa55467496564db96  ./scripts/Remove/⛔Force Remove Dropbox.ps1
-9bb61897c4bcfd3ce1e59e00195f2e3b  ./scripts/Remove/⛔Force Remove Foxit.ps1
-81da23ceeb23284548377d4c6416693c  ./scripts/Remove/⛔Force Remove McAfee.ps1
-5b8361ff3d90874a13942b3ca1a44ce3  ./scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-3329cf83f0006df0137ac04abcb70d0d  ./scripts/Remove/⛔Remove All RATs.ps1
-46eb342b297808c30d0bc11bb5e9af00  ./scripts/Utility/⚙️COOLForge Cache Sync.ps1
-7bcbd40987a43887b57ac83762124429  ./scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-547fd003e80cb9f80f59967598fc7795  ./scripts/Utility/⚙️Remove COOLForge Scratch Folder.ps1
-03891a4be820144a5dc2906c35713821  ./scripts/Utility/⚙️Universal Disk Cleaner.ps1
-faa150673ca157c758c43d87a234ebe7  ./scripts/Utility/🔔Technician Alert Monitor.ps1
-e4070647d12d8709b889fd82c1bb0790  ./scripts/Utility/🔔Wake tagged devices.ps1
-a31213ee050acd0b92cfd95449341978  ./scripts/Utility/🙏Wake all devices in Level group.ps1
-94706ac52582197a15e653e922639a84  ./standalone_scripts/Check/Check-UnauthorizedRemoteAccessTools-Standalone.ps1
+2be22bf89c31ace89dcc37d901e74b36  ./scripts/Check/👀Check Windows Location Services.ps1
+c6b4f96a451b75553768dba3845492a5  ./scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+617795a3db82ece228b60351c8920cf1  ./scripts/Check/👀Hostname Mismatch.ps1
+883d01cf5c574d69a124dfe4d66eca02  ./scripts/Check/👀Test Show Versions.ps1
+a52c7cf6b860c5f08af3dc9c9cbebce7  ./scripts/Check/👀Test Variable Output.ps1
+66dee256530be177a1fe5293bc8298be  ./scripts/Check/👀debug.ps1
+d41d8cd98f00b204e9800998ecf8427e  ./scripts/Configure/.gitkeep
+be32c5551bb37aae0645ae1da957e117  ./scripts/Configure/⚙️Configure Power Management for Workstation.ps1
+98a6f30aebccfe2e05f6ba7708865b07  ./scripts/Configure/⚙️Configure Wake-on-LAN.ps1
+c21f8188c5d474ca8b5cd78d85d64e05  ./scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
+d41d8cd98f00b204e9800998ecf8427e  ./scripts/Deploy/.gitkeep
+e01c6ff312b3d6aa56d11e0d6abb315b  ./scripts/Fix Windows Services.cmd
+4b51c03078884653dc96c81483bd97fa  ./scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+9e71bc81c1222cf9ede68b5f6f033d72  ./scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
+2fac18f824de904e741007e6c9757e83  ./scripts/Fix/🔧Fix Windows 10 Services.ps1
+700e7d7153585ac93d22c73a446690f8  ./scripts/Fix/🔧Fix Windows 11 Services.ps1
+81661b4b31d5e2ec13ba91c102fe54d8  ./scripts/Fix/🔧Fix Windows 7 Services.ps1
+a7615ff10c4636a86d00bf8e2950f912  ./scripts/Fix/🔧Fix Windows 8 Services.ps1
+89c5b5fa66ed2c0c875c4cdd64d20616  ./scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+09185ac0299ea9a803415b7086398e95  ./scripts/Fix/🔧Fix Windows Location Services.ps1
+d56e58ecff167c2bb794dae881eee554  ./scripts/Fix/🔧Prevent Sleep.ps1
+d41d8cd98f00b204e9800998ecf8427e  ./scripts/Maintain/.gitkeep
+31412ed098c7bfd30362926a06ecdd96  ./scripts/Policy/Chrome/README.md
+63c547479b61ddab57e5851c5aee3cba  ./scripts/Policy/Chrome/👀Chrome Location Services.ps1
+40e098ca771ee0ce0dadc4f460d8c55d  ./scripts/Policy/Windows/README.md
+ce39c9d1b13a8ec8be52262da7669fb4  ./scripts/Policy/Windows/👀Windows Location Services.ps1
+dedc8a802d3010c3b7ba4647dbdd4a3a  ./scripts/Policy/👀bitwarden.ps1
+ffe2fdaba57a7ebc81171cad024da0a4  ./scripts/Policy/👀chrome.ps1
+d3c000b0accb16130a00ed8e6f28fb22  ./scripts/Policy/👀cipp.ps1
+0ba4fa943a9a669edef425be17b59c16  ./scripts/Policy/👀dns.ps1
+d5df12ce913fde9d03b655936bd3a336  ./scripts/Policy/👀dnsfilter.ps1
+cbe0cf75c89082f22dc7340ed296e5aa  ./scripts/Policy/👀huntress.ps1
+34d1b0132f36e13e9e5a62ce96162352  ./scripts/Policy/👀meshcentral-linux.sh
+052f1f42966d486d22642b9a27d6249b  ./scripts/Policy/👀meshcentral-mac.sh
+cc38a591f5ca0fe691be14ba13b1533d  ./scripts/Policy/👀meshcentral.ps1
+c896ddfd52a9c3f863f02a517b3230fb  ./scripts/Policy/👀screenconnect.ps1
+32787c4a9c96f67e6339f6352fc59ad2  ./scripts/Policy/👀unchecky.ps1
+d41d8cd98f00b204e9800998ecf8427e  ./scripts/Provision/.gitkeep
+18c19ee777d4ddc589f69b56d80a5c23  ./scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+f3a01a4026dfc007749e8fa0069a3c22  ./scripts/Remove/⛔Force Remove Dropbox.ps1
+1f4ebfc3f8661d3e3fc0746013497ddb  ./scripts/Remove/⛔Force Remove Foxit.ps1
+577e2f4fba6883502995b8dd19800c04  ./scripts/Remove/⛔Force Remove McAfee.ps1
+e3cc71bdf2deea62f16dd14c439fdb1e  ./scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+04e0e159f1db435af9eb4569a2ab06e1  ./scripts/Remove/⛔Remove All RATs.ps1
+d41d8cd98f00b204e9800998ecf8427e  ./scripts/Report/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./scripts/Secure/.gitkeep
+d41d8cd98f00b204e9800998ecf8427e  ./scripts/Update/.gitkeep
+01123ee5e8b4a330e8be72688c27208c  ./scripts/Utility/⚙️COOLForge Cache Sync.ps1
+fbee41c2eae0cbe70dd4b4860e4ba89b  ./scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+8706accfa29b33f237204118e36ed1f9  ./scripts/Utility/⚙️Remove COOLForge Scratch Folder.ps1
+83caf93fbbb7060d66389e64a97f0805  ./scripts/Utility/⚙️Universal Disk Cleaner.ps1
+2e0ee849610dfc14e5c9269aea0795fe  ./scripts/Utility/🔔Technician Alert Monitor.ps1
+a6e36ed8452d4fd5642525388ae5d64a  ./scripts/Utility/🔔Wake tagged devices.ps1
+b3d1a58f2f8a7b84d0cfd52e08dfdcf8  ./scripts/Utility/🙏Wake all devices in Level group.ps1
+1c9c5a1aca031e9ffbb656ee7bd60008  ./standalone_scripts/Check/Check-UnauthorizedRemoteAccessTools-Standalone.ps1
+6b422ace75e49bc3a515db5b61c7d2e7  ./standalone_scripts/Check/level-debug.cmd
 728a7d5dae1b883415d84c15ac0321ea  ./standalone_scripts/Check/level-debug.ps1
+c2cd99df7dc7abf0a68ee00c042a79b0  ./standalone_scripts/Fix/Install-ScreenConnect-Standalone.cmd
 ee1c7f21643607dff0bce9ffddf147fd  ./standalone_scripts/Fix/Install-ScreenConnect-Standalone.ps1
-8d6d57bc7a10aec54763e1c82ad1a3f4  ./standalone_scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-b4043914615c60d5d663fe860acd182d  ./standalone_scripts/Fix/🔧Fix Windows 10 Services.ps1
-52d145d20e79c9c4d7496bfe930ac3d0  ./standalone_scripts/Fix/🔧Fix Windows 11 Services.ps1
-c1144aeb454922521e405b1469100e1b  ./standalone_scripts/Fix/🔧Fix Windows 7 Services.ps1
-a0c41107846e0f51b2e1ac7d0fc4f5aa  ./standalone_scripts/Fix/🔧Fix Windows 8 Services.ps1
-1a3acda16d7ee149e47faae61c812098  ./standalone_scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-b32a62fb0150bb7f1c68fc5ff5e28fbc  ./standalone_scripts/Fix/🔧Prevent Sleep.ps1
-08cbb600945416e036ed525fa75ed13e  ./standalone_scripts/Remove/Check-SecurityBaseline.ps1
-c1bf592418182e7d7011662062104736  ./standalone_scripts/Remove/Remove-AllRATs-Standalone.ps1
-b3ff7da81066e0cdaf59cbe53bca6c15  ./standalone_scripts/Remove/Remove-AnyDesk-Standalone.ps1
-9eb6c819d62f7f6e415f7f90e1e2f00d  ./standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
-7ee91513ff5576486a6c35931ad83026  ./standalone_scripts/Utility/Wake-AllDevicesInFolder-Standalone.ps1
-818c534be65fdfaa1b291792b2b27aba  ./start_here/Add-COOLForgeCustomField.ps1
-255e42e157d205af9edb71356607a1ef  ./start_here/Backup-COOLForgeCustomFields.ps1
-eb3c64cb604d557c7f27775695354952  ./start_here/Backup-LevelAutomationsAndScripts.ps1
-970f6ba0395bb486c7c971bac358bac2  ./start_here/Backup-LevelGroup.ps1
-4fc8bf78fb8237ff63edd73f79b6feec  ./start_here/Export-AnswerFile.ps1
-9dc41ededa2ce019951110c3a0d4d3e1  ./start_here/Export-DeviceCustomFields.ps1
-c552b761701286225bd560357d316956  ./start_here/Find-Field.ps1
-292842b6b4defc6d7b1a07fdfdf19f11  ./start_here/Get-DeviceScreenConnectUrl.ps1
-fcd5fa3a4c066d1e4e9b2dacc692574f  ./start_here/Get-FullDeviceLevelCustomFields.ps1
-564b848aec1a0f83409e7421de75d5ec  ./start_here/Get-ScreenConnectUrls.ps1
-c3d00739e5cd82792b3b2c8bd8a7f1db  ./start_here/Get-StaleDevices.ps1
-f7481f0a1f73f5153b2126a57590ebcd  ./start_here/List-AllFields.ps1
-5942da4567e71a5ef268c2636c8d74a1  ./start_here/Mark-LegacyFields.ps1
-4b3bfccf5a6b2b964d67285060ccdc63  ./start_here/New-LevelClient.ps1
-a8be83442dda020432f29ad0c0119147  ./start_here/Remove-COOLForgeSetup.ps1
-d9aa910c33f6396ee3b1a6d41b45fbca  ./start_here/Remove-DeprecatedByValue.ps1
-248a26045c05fc4882c5774615d2fe08  ./start_here/Remove-DeprecatedFields.ps1
-83537931e06aeb7ac0d024121434f87f  ./start_here/Remove-LegacyWithPolicyEquiv.ps1
-024379e5b1cc0a72586bb8077625d4a7  ./start_here/Remove-ScratchFolder.ps1
-964194ce043ee36bd85cf73874abd5af  ./start_here/Reset-CustomFields.ps1
-507b6822b66687316371aadd136e43dc  ./start_here/Restore-AnswerFile.ps1
-91995ef8513fa707a6fc520528eea851  ./start_here/Restore-LevelGroup.ps1
-6e382cf9937e9ef3663ddc9169ae02e6  ./start_here/Setup-COOLForge.ps1
-6e74bf5a78e18ab21524487610232d46  ./start_here/Sync-COOLForgeCustomFields.ps1
-7ee91513ff5576486a6c35931ad83026  ./start_here/Wake-AllDevicesInFolder-Standalone.ps1
-c6fef67034d39e98740b2eaa86c6a029  ./templates/Policy_Launcher_Template.ps1
-ce86bc1dcdd34659ba944bc78665b89b  ./templates/Script_Template.ps1
-1dc56d1b7a22c6f91387f04a934bea55  ./templates/Slim-Launcher.ps1
-ea2476b51235b78eb8ee47eae3a6e25c  ./templates/SoftwarePolicy-Template.ps1
+144817adf34224f531a02635a93f4525  ./standalone_scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+9e28b1e1d89c1b2066a2f43d62a237b3  ./standalone_scripts/Fix/🔧Fix Windows 10 Services.ps1
+771fd611422db358c122f1140694a771  ./standalone_scripts/Fix/🔧Fix Windows 11 Services.ps1
+20c1fb2de6431ce9a16761fb4b31d4bc  ./standalone_scripts/Fix/🔧Fix Windows 7 Services.ps1
+13436a03fc48173b7726872f326f3c98  ./standalone_scripts/Fix/🔧Fix Windows 8 Services.ps1
+eb37bf0b6033a9297a2d54054358e424  ./standalone_scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+33a18d5581f997fc88ea09b02d1dbef4  ./standalone_scripts/Fix/🔧Prevent Sleep.ps1
+cbaaa96a20cd7f2892d8766bdac4721e  ./standalone_scripts/Remove/Check-SecurityBaseline.ps1
+aa9cfbff92e6cfaa48ad7d5d48189e50  ./standalone_scripts/Remove/Copy-SecurityToolkit-ToUSB.cmd
+ee600c9b1d2fa62608c8edc20f7cff00  ./standalone_scripts/Remove/Copy-ToUSB.cmd
+171629570665666a568165bf90aeb4ca  ./standalone_scripts/Remove/README.md
+4710f9d56d7592a039bd4a603f67bb20  ./standalone_scripts/Remove/Remove-AllRATs-Launcher.cmd
+c91688ce601b05d062b52143b5c2a798  ./standalone_scripts/Remove/Remove-AllRATs-Standalone.ps1
+2be6e85b3c702d5d2e79bdc1f21f5931  ./standalone_scripts/Remove/Remove-AnyDesk-Standalone.ps1
+114fe162e0561d95553627ec1b88dcea  ./standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
+d670cfb9cf1cbf12d2fa021275fde443  ./standalone_scripts/Remove/Run-AllScanners.cmd
+802a83f31f7bae3242df6f6989e109af  ./standalone_scripts/Remove/Run-MRT.cmd
+5f578ef37af847a3756f684023fe9828  ./standalone_scripts/Remove/Run-SecurityBaseline.cmd
+42093231d68c00eb5f890864bde9f88e  ./standalone_scripts/Remove/install_level.txt
+680b1dae4d451ad858d7165f883b86d0  ./standalone_scripts/Remove/update-usb-scanners.sh
+b438681eb275179cde7d89303879b0b9  ./standalone_scripts/Utility/Wake-AllDevicesInFolder-Standalone.ps1
+773627c91cc41cc4243dda22c1b6140a  ./start_here/.COOLForge_Answers.json
+9179d75abb284d3964e5d55d13e3ecb7  ./start_here/.COOLForge_Lib-setup.json
+2d520fc27f3c5b96d4b1fe701f835644  ./start_here/Add-COOLForgeCustomField.ps1
+8bcecce7fefa2dfaec07d82e0146c4e6  ./start_here/Backup-COOLForgeCustomFields.ps1
+e2c053c73fc66dcb6c4a6c94e0a3248f  ./start_here/Backup-LevelAutomationsAndScripts.ps1
+660b11ed75900cd083f20117b91dc566  ./start_here/Backup-LevelGroup.ps1
+346438b391aaa50e5b80aa40ed395ccf  ./start_here/Export-AnswerFile.ps1
+70ede1aa50b0883a3983a61ecc0090b2  ./start_here/Export-DeviceCustomFields.ps1
+8a9531b29bf3978aaa456acfddcab02d  ./start_here/Find-Field.ps1
+1f72fe85c8ead41cc20fe221bc5fcda6  ./start_here/Get-DeviceScreenConnectUrl.ps1
+65c3d96d60f989f816761fc1b8fe8864  ./start_here/Get-FullDeviceLevelCustomFields.ps1
+499aae2cc1e1b54d9c9682f54f2f9741  ./start_here/Get-ScreenConnectUrls.ps1
+c1f0f25c2f42d66926d2bef0a147a8d2  ./start_here/Get-StaleDevices.ps1
+eabbcfec74a1d2c2ad46a17647c9345b  ./start_here/List-AllFields.ps1
+787113b9d08c405925c78273931e1ca7  ./start_here/Mark-LegacyFields.ps1
+dbfc1629cf02cf59fcb78256c76a9cb8  ./start_here/New-LevelClient.ps1
+fa1c378f96fde03552b003373e5feb1e  ./start_here/Remove-COOLForgeSetup.ps1
+8befb81cb9bdce37609a8118606347d4  ./start_here/Remove-DeprecatedByValue.ps1
+e35a22a3c93fe324a9c0f684f125137c  ./start_here/Remove-DeprecatedFields.ps1
+b4ae359d840e9e369c09be91c26898ad  ./start_here/Remove-LegacyWithPolicyEquiv.ps1
+57acf2eaf53134f977a526422bc976e8  ./start_here/Remove-ScratchFolder.ps1
+79761fd82868d012d860617422bb4975  ./start_here/Reset-CustomFields.ps1
+ab9ee621e593e2f6fcb1e9add8b8a01a  ./start_here/Restore-AnswerFile.ps1
+8338529ea10a24767b2a72a709300b64  ./start_here/Restore-LevelGroup.ps1
+9284d8b6ef011d90b2439900ca637bfb  ./start_here/Setup-COOLForge.ps1
+3765015bf26dc7b42f1f5337cb9913d7  ./start_here/Sync-COOLForgeCustomFields.ps1
+b438681eb275179cde7d89303879b0b9  ./start_here/Wake-AllDevicesInFolder-Standalone.ps1
+4174c5bdb227b7cc81fd2624171d05e6  ./templates/Policy_Launcher_Template.ps1
+bb8eed857ffc5667ce52bc8b321cfbc3  ./templates/Script_Template.ps1
+2cfa94606ae01ed08ac9f44aef1200f5  ./templates/Slim-Launcher.ps1
+ecd72c70970c46e21d0c79e4f787629e  ./templates/SoftwarePolicy-Template.ps1
+6bc693c354bdfcca900f1768645d2145  ./templates/What is this folder.md
+9179d75abb284d3964e5d55d13e3ecb7  ./testing/.COOLForge_Lib-setup.json
+e4dab9247b5e9e4ba6ee5ccb5f9c9e44  ./testing/.levelio-apikey.cache
 a4e8d3753dc94a8ed78c1d216c423893  ./testing/Analyze-LevelBackup.ps1
+2b9cb2c111e86ace7e3c720e355090c3  ./testing/Backup-LevelAutomationsAndScripts.README.md
 42b466e7421a5f8d55d4168dd6b3da48  ./testing/Generate-WorkflowCharts.ps1
 828dbfd533891a2eb532f5d1f5824cbb  ./testing/New-ScriptFolderStructure.ps1
 bcc7c195e0d0261e5673ccf0c58e88a8  ./testing/Test-HuntressOrgProvisioning.ps1
 633631c9954ed495c3fc9cb32dd9c5dd  ./testing/Test-LevelApiCustomFields.ps1
 5ad7dc4a1cf5e36de75a5b96053fc9f6  ./testing/Test-ScreenConnectAPI.ps1
 acfd66a7cc4dcfc3572928260f678904  ./testing/Test_AutoUpdate_Dev.ps1
-d6a887bca3566c668f291b0aa5e34fcb  ./testing/Test_From_Level.ps1
-8e9aa6f87537fc0ebb7e754f2e066b80  ./testing/Test_Local.ps1
+a908689d0d89e3c555d94b9914db8e33  ./testing/Test_From_Level.ps1
+2b9e70b4fb3dfc48901ef4e3dcde1ff8  ./testing/Test_Local.ps1
 f79c4f336317533680e784c22d05c381  ./testing/check-encoding.ps1
 ff9c1079750f4f60d06582f32ea86404  ./testing/check-launchers.ps1
 4e2c11bf415ee6b083ce8cb38022209c  ./testing/check-md5.ps1
@@ -660,6 +987,7 @@ ff9c1079750f4f60d06582f32ea86404  ./testing/check-launchers.ps1
 f2bab17854ab6058894bf2f61ccb81e3  ./testing/how-i-got-here/Download-LevelScripts.ps1
 b2ccb3607790718c793198b1f15e4429  ./testing/how-i-got-here/Extract-LevelAutomationsFromHAR.ps1
 930d949aff100b23d758681bea153b7d  ./testing/how-i-got-here/Extract-LevelScriptsFromHAR.ps1
+02357ad165e308f3e0f5fdc43f1c589f  ./testing/how-i-got-here/README.md
 a01b5a23b1e1362a966cc4f51396d57b  ./testing/how-i-got-here/decode-id.ps1
 470fa0abc57e726cbe2e093fd97bc650  ./testing/how-i-got-here/find-automation-queries.ps1
 05339876223e1c848f3b93434692c222  ./testing/how-i-got-here/get-allowedimport.ps1
@@ -672,17 +1000,17 @@ c149a0e30b9d9f4dd59088b6365e95d9  ./testing/how-i-got-here/get-automation-search
 97765fdaa152b4cf86711b8d07ce9c3f  ./testing/how-i-got-here/test-tags-query.ps1
 08c8659f6ac12557e896c95c53c1ffee  ./testing/regenerate-launchers.ps1
 f40b1c1d2dedc70acda2824b17bc5b36  ./testing/update-md5.ps1
-3690b5462e4d6a64218d5d037a2ecd78  ./tools/Check-DNSFilterSystemPolicy.ps1
-7d43457c18cd4ae7fc24ec575e7b948f  ./tools/Clear-EmptyCustomFields.ps1
-cbecc96d1a25d6f4e4632427d02072bc  ./tools/Convert-LegacyLaunchers.ps1
-55ef3dfdd89260ec24b436d273b649a5  ./tools/New-PolicyScript.ps1
-49a5171420b35621b739431bcc53e4a6  ./tools/Restore-BOM.ps1
-a8b0e6ddca419f6dcc61871b928bd30a  ./tools/Send-LevelSupportQuestions.ps1
-40e8b76cc4d50fb8cfc82a028c8e9dfa  ./tools/Test-CustomFieldCharacters.ps1
-e295db595fde3deb2e8f4c8318e8c6b6  ./tools/Update-LauncherBOMFix.ps1
-95a6d1a5a3e023220bfba0b0edb8d6ca  ./tools/Update-LauncherCaching.ps1
-b84f46f4c561b26ebc0e9e678eefa0ca  ./tools/Update-LauncherVersions.ps1
-ea348f9517589dcba947431698cb7836  ./tools/Update-MD5Sums.ps1
+4e7279f3605a4cfca53205dfc9112d2d  ./tools/Check-DNSFilterSystemPolicy.ps1
+b094d4481ddd206f93a99679330c05c3  ./tools/Clear-EmptyCustomFields.ps1
+10534c552516593df22ba9ad0ed59817  ./tools/Convert-LegacyLaunchers.ps1
+a608fc1808b79d503e1e96314e6a8adb  ./tools/New-PolicyScript.ps1
+a22eac49fde6739697bda5a3148291df  ./tools/Restore-BOM.ps1
+50fcb8e4cbe727452edcc7fab9c3b838  ./tools/Send-LevelSupportQuestions.ps1
+d8d031450a5d8e6306a6c33e53542f79  ./tools/Test-CustomFieldCharacters.ps1
+9886e76db9776f97485deea88d1649e6  ./tools/Update-LauncherBOMFix.ps1
+200539ee3b797777eeb1be1ced3f5bff  ./tools/Update-LauncherCaching.ps1
+24c9ad37e156457925593254a3584bf4  ./tools/Update-LauncherVersions.ps1
+796685f85c46c674cd87666eb0351da6  ./tools/Update-MD5Sums.ps1
 3704f8ab23212c48d132dceb32d90888  ./validation/Create-New-Script.ps1
 b24e5fc2053bf0c258d9cf4d8d4d5766  ./validation/Generate-CustomFieldsConfig.ps1
 1705198b6a35decebca31aebad692d80  ./validation/Generate-MD5SUMS.ps1
@@ -696,3 +1024,45 @@ c8ad58aa96f99bde18c316fa3cb8353c  ./validation/check-orphans.ps1
 278b1de1ec851d35a6cb5d97d9428150  ./validation/check-psscriptanalyzer.ps1
 4967c930b5e564678d04153e40f64d2b  ./validation/check-syntax.ps1
 0b6cba9b410ebdddbf9d6eb5893b6b71  ./wip/Install-ScreenConnect.ps1
+1804f1b02319d34b733574800f3accbe  ./workflows/ADS-2100_Scanner_Driver.txt
+4770aa9bd3642346efb9b20f37e3fadc  ./workflows/ADS-2200_Scanner_Driver.txt
+27929ac499cd8b5bb8c9f28171324960  ./workflows/ADS-3100_Scanner_Driver.txt
+c93e6ad3327535eed38ee247df95f10e  ./workflows/AMRI_Deploy_Phonebook.txt
+d893efd609175dac3c9514b47436d1fc  ./workflows/AMRI_Deploy_Voyager_and_other_system_specific_tweaks.txt
+a870415ccae18eb596768f73c1df61b2  ./workflows/AMRI_Initial_Onboard_Automation.txt
+7ba8366acf9a7c882312765dc7d95179  ./workflows/Adelaide_MRI_Server_Updates.txt
+560cfbbef3f9400cf0c097c5c9b81e46  ./workflows/BASELINE_SOFTWARE_FOR_MANAGED_CLIENTS.txt
+e9318f1ee663ab491ae3e6ddb81b54b1  ./workflows/CLEAN__Voyager_studies.txt
+03f3290d00c06600a2d2babd1045d3d5  ./workflows/Common_Windows_Applications.txt
+eadbd4b0040b77f9c6ead483548d5676  ./workflows/Delayed_Start_System_File_Check.txt
+4d1b8ad3f05e23f3537def7a9fc9b001  ./workflows/Deploy_Orca_Slicer.txt
+c6a474c2f00c27997b57bdfcf124332b  ./workflows/Deploy_PhoneBook.txt
+5369741a471d0d821e2242f15bff0775  ./workflows/Disk_Cleanup.txt
+29ab7c2fc10abc26e82de9fd400607b1  ./workflows/Download_Voyager_Defaults.txt
+852b64224f98cc453e0adbfef879adaa  ./workflows/Enable_Unlimited_System_Restore.txt
+1cdcbe2922479e2007ce08b6e134ce99  ./workflows/INSTALL__Chrome,_unchecky,_7zip.txt
+a47558d42978780cd8e167d767b83944  ./workflows/Kyocera_M3155DN_Printer_Driver.txt
+668877870c9aa8c9913ce6ef28e7e022  ./workflows/Kyocera_P2235DN_Driver.txt
+449f742a79f3a85f383406d68ca8fceb  ./workflows/MUST_DO_ALL_MACHINES.txt
+80fa7e97a1aa453ab0605008a85fda4e  ./workflows/Overnight_System_File_Check_with_reboot.txt
+06558a70c3cdcdcda87fa514dcf57277  ./workflows/Popup.txt
+c7778f2a0dbda398683a8af1ff6904e3  ./workflows/Remove_Foxit_and_put_in_sumatra.txt
+a9e3e34cd7665794f5643e6c2cbf0140  ./workflows/Restart_ASAP.txt
+9e8815b05c8b59adaf23a2cbf235d4e4  ./workflows/Restart_Tonight_With_Warning.txt
+86f4c415abca017c0a5fcd9188b3614f  ./workflows/Set_Default_System_Restore.txt
+542c85d2cdd287358ab7b5a73d7b6d3e  ./workflows/Set_Registry_Path_for_SC.txt
+996507688110f9d0e433cf020150f582  ./workflows/System_File_Check.txt
+065b8f279bffb6e61250610d172d1b31  ./workflows/Toshiba_V4_Driver.txt
+94f1b9cc5d3fe4e5a0ba480ee0575070  ./workflows/UPGRADE_WINGET_PACKAGES.txt
+9ab9bdc7b9cc9291d0e7077f2755ee70  ./workflows/Unplanned_Maintenance_Notification.txt
+c7472fced59acd622ae12ff71b361b4c  ./workflows/Update_Screenconnect_URL.txt
+88e612af98752968c86fb9e1724c0603  ./workflows/Windows_10_to_Windows_11_Upgrade.txt
+38ed1fa8e574be07db897015e79c9f77  ./workflows/Windows_Defender_Management.txt
+b5504f40f43f414ac438901cdd90ca83  ./workflows/Windows_Patching.txt
+f55343bc9750d51f0089b4987ea05c76  ./workflows/Windows_Setup_GENERAL_CLIENT.txt
+4666d19ce515ff07f019556f28334e36  ./workflows/👀Check_for_Unauthorized_Remote_Access_Tools.txt
+8164077cd8be555b13d0467a95ab2e26  ./workflows/👀Verify_Device_Not_Blocked_By_Tags.txt
+a9f8299490b8e2ee02275235a45088cd  ./workflows/🙏BITWARDEN.txt
+a4cc38062f78c5ccedae4e9ea7fa8788  ./workflows/🙏HUNTRESS.txt
+8e90663c328d5e06d9b7950fb61c7ef8  ./workflows/🙏UNCHECKY.txt
+4492b3a5ec122924a99c9adcb8ce90dc  ./workflows/🛠️TEMPLATE_-_check_device_eligibility.txt
