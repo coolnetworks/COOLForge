@@ -18,7 +18,7 @@
     Designed to run as a daily check script.
 
 .NOTES
-    Version:          2026.01.21.13
+    Version:          2026.01.21.14
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
@@ -43,7 +43,7 @@
 #>
 
 # Hostname Mismatch Monitor
-# Version: 2026.01.21.13
+# Version: 2026.01.21.14
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
@@ -251,10 +251,12 @@ Invoke-LevelScript -ScriptBlock {
     Write-Host ""
 
     # Validate we have Level hostname
+    # If Level.io has not yet provided a device name (e.g. new device, cache empty),
+    # assume it matches the Windows hostname so we do not raise a false-positive alert.
     if ([string]::IsNullOrWhiteSpace($LevelHostname)) {
-        Write-LevelLog "Level.io device hostname not available (launcher and cache empty)" -Level "WARN"
-        Write-Host "[Skip] Cannot determine Level.io device name - skipping check"
-        Complete-LevelScript -ExitCode 0 -Message "Level hostname not available"
+        Write-LevelLog "Level.io device hostname not available - assuming match with Windows hostname" -Level "INFO"
+        Write-Host "[OK] Level hostname unavailable - assuming match with Windows hostname ($WindowsHostname)"
+        Complete-LevelScript -ExitCode 0 -Message "Level hostname unavailable, assumed match"
         return
     }
 

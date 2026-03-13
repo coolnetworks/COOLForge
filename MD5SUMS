@@ -14,7 +14,7 @@ d0f75053c91acaf1c034579e6ce31b15  ./.claude/level-io-feature-request-tag-colors.
 2572b8cddb722b15e28851b682127d55  ./COOLForge-Common.psm1
 895eaaca3232d805aefaced7d3403861  ./LAUNCHER-VERSIONS.json
 c6ded52b2d61e9d9f2914e5f25a1026b  ./LICENSE
-ad222533450555bed471f3b4678e632f  ./MD5SUMS
+80beacc7f501c7a85b90f2c7a4c3cbf4  ./MD5SUMS
 5746acb006595a0ec8e3e8ccfe2a7131  ./MEETING NOTES - Level.io Demo.md
 07f2114b030950370cf6ac38e64f222f  ./NEEDS_TESTING.md
 c3406e62bb816ce4b55f199f6ca78abd  ./README.md
@@ -858,7 +858,7 @@ dec00fbcc15ae5f1bbd36b2d5e926109  ./pre-release/Update-ScriptInventory.ps1
 474a2ee0a20ae5ed9d280f0fd2a1857f  ./pre-release/Validate-Release.ps1
 2be22bf89c31ace89dcc37d901e74b36  ./scripts/Check/👀Check Windows Location Services.ps1
 c6b4f96a451b75553768dba3845492a5  ./scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-617795a3db82ece228b60351c8920cf1  ./scripts/Check/👀Hostname Mismatch.ps1
+404570f7d5ba07829d99afba458d40cf  ./scripts/Check/👀Hostname Mismatch.ps1
 883d01cf5c574d69a124dfe4d66eca02  ./scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  ./scripts/Check/👀Test Variable Output.ps1
 66dee256530be177a1fe5293bc8298be  ./scripts/Check/👀debug.ps1
