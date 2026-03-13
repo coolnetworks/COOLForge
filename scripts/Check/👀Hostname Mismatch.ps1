@@ -253,7 +253,7 @@ Invoke-LevelScript -ScriptBlock {
     # Validate we have Level hostname
     if ([string]::IsNullOrWhiteSpace($LevelHostname)) {
         Write-LevelLog "Level.io device hostname not available (launcher and cache empty)" -Level "WARN"
-        Write-Host "[Alert] Cannot determine Level.io device name - skipping check"
+        Write-Host "[Skip] Cannot determine Level.io device name - skipping check"
         Complete-LevelScript -ExitCode 0 -Message "Level hostname not available"
         return
     }
