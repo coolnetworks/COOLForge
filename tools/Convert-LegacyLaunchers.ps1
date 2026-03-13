@@ -250,7 +250,7 @@ exit `$ExitCode
 "@
 
     # Write the new content with UTF8 encoding (with BOM for PowerShell compatibility)
-    [System.IO.File]::WriteAllText($FilePath, $NewContent, [System.Text.UTF8Encoding]::new($true))
+    [System.IO.File]::WriteAllText($FilePath, $NewContent, (New-Object System.Text.UTF8Encoding($true)))
     Write-Host "  [OK] $FileName" -ForegroundColor Green
     $Converted++
 }

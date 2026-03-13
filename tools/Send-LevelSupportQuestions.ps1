@@ -171,11 +171,11 @@ FILE: LEVEL-SUPPORT-SUBMITTED.md (Submitted)
 
 $SubmittedContent
 "@
-[System.IO.File]::WriteAllText($LatestFile, $LatestContent, [System.Text.UTF8Encoding]::new($true))
+[System.IO.File]::WriteAllText($LatestFile, $LatestContent, (New-Object System.Text.UTF8Encoding($true)))
 Write-Host "[*] Backups saved to $BackupPath"
 
 # Write files
-[System.IO.File]::WriteAllText($SubmittedFile, $SubmittedContent, [System.Text.UTF8Encoding]::new($true))
-[System.IO.File]::WriteAllText($QuestionsFile, $NewQuestionsContent, [System.Text.UTF8Encoding]::new($true))
+[System.IO.File]::WriteAllText($SubmittedFile, $SubmittedContent, (New-Object System.Text.UTF8Encoding($true)))
+[System.IO.File]::WriteAllText($QuestionsFile, $NewQuestionsContent, (New-Object System.Text.UTF8Encoding($true)))
 
 Write-Host "Done. Sent $($Questions.Count) question(s) and updated tracking files."

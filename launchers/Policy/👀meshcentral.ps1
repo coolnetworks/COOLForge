@@ -225,7 +225,7 @@ if ($NeedsUpdate) {
         }
 
         # Save with proper UTF-8 BOM for emoji handling
-        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, (New-Object System.Text.UTF8Encoding($true)))
         Write-Host "[+] Library updated to v$RemoteVersion"
     } catch {
         if (!(Test-Path $LibraryPath)) {

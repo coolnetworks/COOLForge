@@ -296,7 +296,7 @@ try {
         }
 
         # Save with proper UTF-8 BOM for emoji handling
-        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, (New-Object System.Text.UTF8Encoding($true)))
 
         try {
             $VerifyContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
@@ -565,7 +565,7 @@ try {
         }
 
         # Write new version with proper UTF-8 BOM for emoji handling
-        [System.IO.File]::WriteAllText($ScriptPath, $RemoteScriptContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($ScriptPath, $RemoteScriptContent, (New-Object System.Text.UTF8Encoding($true)))
 
         # Verify the file was written correctly
         try {

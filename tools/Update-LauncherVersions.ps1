@@ -23,7 +23,7 @@ if (Test-Path $TemplatePath) {
     $content = $content -replace '\$LauncherVersion\s*=\s*"[\d\.]+"', "`$LauncherVersion = `"$NewVersion`""
 
     if (-not $WhatIf) {
-        [System.IO.File]::WriteAllText($TemplatePath, $content, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($TemplatePath, $content, (New-Object System.Text.UTF8Encoding($true)))
     }
     Write-Host " Done" -ForegroundColor Green
 }
@@ -59,7 +59,7 @@ foreach ($Launcher in $Launchers) {
         }
 
         # Write with proper UTF-8 BOM
-        [System.IO.File]::WriteAllText($Launcher.FullName, $content, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($Launcher.FullName, $content, (New-Object System.Text.UTF8Encoding($true)))
         Write-Host " - Updated" -ForegroundColor Green
         $Updated++
     }

@@ -34,7 +34,7 @@ if ($NeedsUpdate) {
         }
 
         # Save with proper UTF-8 BOM for emoji handling
-        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, (New-Object System.Text.UTF8Encoding($true)))
         Write-Host "[+] Library updated to v$RemoteVersion"
     } catch {
         if (!(Test-Path $LibraryPath)) {
@@ -85,7 +85,7 @@ if ($NeedsUpdate) {
         }
 
         # Save with proper UTF-8 BOM for emoji handling
-        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, (New-Object System.Text.UTF8Encoding($true)))
         Write-Host "[+] Library updated to v$RemoteVersion"
     } catch {
         if (!(Test-Path $LibraryPath)) {
@@ -143,7 +143,7 @@ foreach ($Launcher in $Launchers) {
         }
 
         # Write with proper UTF-8 BOM
-        [System.IO.File]::WriteAllText($Launcher.FullName, $NewContent, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($Launcher.FullName, $NewContent, (New-Object System.Text.UTF8Encoding($true)))
         Write-Host " - Updated" -ForegroundColor Green
         $Updated++
     }

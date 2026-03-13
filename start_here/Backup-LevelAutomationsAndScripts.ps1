@@ -351,7 +351,7 @@ foreach ($script in $allScripts) {
     }
 
     $content = ($header -join "`r`n") + $script.command
-    [System.IO.File]::WriteAllText($filePath, $content, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($filePath, $content, (New-Object System.Text.UTF8Encoding($false)))
 }
 
 Write-Host "  Saved to: $scriptsDir" -ForegroundColor Gray

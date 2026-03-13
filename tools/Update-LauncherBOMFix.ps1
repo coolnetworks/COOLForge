@@ -72,7 +72,7 @@ foreach ($Launcher in $Launchers) {
         # Fix 3: Replace Set-Content with WriteAllText for proper UTF-8 BOM
         $OldPattern3 = 'Set-Content -Path $LibraryPath -Value $RemoteContent -Force -ErrorAction Stop'
         $NewPattern3 = '# Save with proper UTF-8 BOM for emoji handling
-        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, [System.Text.UTF8Encoding]::new($true))'
+        [System.IO.File]::WriteAllText($LibraryPath, $RemoteContent, (New-Object System.Text.UTF8Encoding($true)))'
 
         if ($Content -match [regex]::Escape($OldPattern3)) {
             $Content = $Content -replace [regex]::Escape($OldPattern3), $NewPattern3
@@ -95,7 +95,7 @@ foreach ($Launcher in $Launchers) {
         }
 
         # Write with proper UTF-8 BOM
-        [System.IO.File]::WriteAllText($Launcher.FullName, $Content, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($Launcher.FullName, $Content, (New-Object System.Text.UTF8Encoding($true)))
 
         Write-Host " - Applied $($Changes.Count) changes" -ForegroundColor Green
         foreach ($Change in $Changes) {
