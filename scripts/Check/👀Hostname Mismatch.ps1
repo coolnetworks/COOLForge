@@ -18,7 +18,7 @@
     Designed to run as a daily check script.
 
 .NOTES
-    Version:          2026.01.21.14
+    Version:          2026.01.21.15
     Target Platform:  Level.io RMM (via Script Launcher)
     Recommended Timeout: 300 seconds (5 minutes)
     Exit Codes:       0 = Success | 1 = Error
@@ -43,7 +43,7 @@
 #>
 
 # Hostname Mismatch Monitor
-# Version: 2026.01.21.14
+# Version: 2026.01.21.15
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Error
 #
@@ -251,12 +251,46 @@ Invoke-LevelScript -ScriptBlock {
     Write-Host ""
 
     # Validate we have Level hostname
-    # If Level.io has not yet provided a device name (e.g. new device, cache empty),
-    # assume it matches the Windows hostname so we do not raise a false-positive alert.
+    # If Level.io has not provided a device name (new device, cache empty, variable not mapped),
+    # attempt to set the Level.io device name to the Windows hostname automatically.
+    # This fixes devices that have no name in Level.io without operator intervention.
     if ([string]::IsNullOrWhiteSpace($LevelHostname)) {
-        Write-LevelLog "Level.io device hostname not available - assuming match with Windows hostname" -Level "INFO"
-        Write-Host "[OK] Level hostname unavailable - assuming match with Windows hostname ($WindowsHostname)"
-        Complete-LevelScript -ExitCode 0 -Message "Level hostname unavailable, assumed match"
+        Write-LevelLog "Level.io device hostname not available - attempting to set Level device name to Windows hostname" -Level "INFO"
+        Write-Host "  Level.io device has no name - will rename Level to match Windows hostname ($WindowsHostname)"
+
+        if (-not $LevelApiKey) {
+            Write-LevelLog "No API key available - cannot auto-set Level device name, assuming match" -Level "WARN"
+            Write-Host "[OK] No API key - assuming Level hostname matches Windows hostname ($WindowsHostname)"
+            Complete-LevelScript -ExitCode 0 -Message "Level hostname unavailable, no API key, assumed match"
+            return
+        }
+
+        if (-not $DeviceId) {
+            Write-LevelLog "No Device ID available - cannot auto-set Level device name, assuming match" -Level "WARN"
+            Write-Host "[OK] No Device ID - assuming Level hostname matches Windows hostname ($WindowsHostname)"
+            Complete-LevelScript -ExitCode 0 -Message "Level hostname unavailable, no device ID, assumed match"
+            return
+        }
+
+        Write-Host "  Setting Level.io device name to: $WindowsHostname"
+        $RenameResult = Set-LevelDeviceName -ApiKey $LevelApiKey -DeviceId $DeviceId -NewName $WindowsHostname
+
+        if ($RenameResult) {
+            Write-LevelLog "Level.io device name set to $WindowsHostname (was blank)" -Level "SUCCESS"
+            Write-Host "[OK] Level.io device name set to $WindowsHostname"
+
+            # Remove mismatch tag if somehow already applied
+            $MismatchTag = Find-LevelTag -ApiKey $LevelApiKey -TagName $FullTagMismatch
+            if ($MismatchTag) {
+                Remove-LevelTagFromDevice -ApiKey $LevelApiKey -TagId $MismatchTag.id -DeviceId $DeviceId -TagName $FullTagMismatch | Out-Null
+            }
+
+            Complete-LevelScript -ExitCode 0 -Message "Level device name set to $WindowsHostname"
+        } else {
+            Write-LevelLog "Failed to set Level.io device name - assuming match to avoid false alert" -Level "WARN"
+            Write-Host "[!] Failed to set Level device name - assuming match"
+            Complete-LevelScript -ExitCode 0 -Message "Failed to set Level device name, assumed match"
+        }
         return
     }
 
