@@ -1,6 +1,6 @@
 #!/bin/bash
 # MeshCentral Policy Script - macOS
-# Version: 2026.01.19.02
+# Version: 2026.03.14.01
 # Target: Level.io RMM
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -16,6 +16,8 @@ POLICY_MAC_DOWNLOAD_URL="{{cf_policy_meshcentral_mac_download_url}}"
 LEVEL_API_KEY="{{cf_apikey}}"
 LEVEL_DEVICE_ID="{{level_device_id}}"
 DEVICE_TAGS="{{level_tag_names}}"
+LEVEL_GROUP_PATH="{{level_group_path}}"
+POLICY_MESHCENTRAL_GROUP_MESHIDS="{{cf_policy_meshcentral_group_meshids}}"
 
 # ============================================================
 # CONFIGURATION
@@ -295,6 +297,75 @@ remove_level_policy_tag() {
 }
 
 # ============================================================
+# MESHCENTRAL GROUP INSTALLER HELPERS
+# ============================================================
+
+sanitise_group_name() {
+    local raw="$1"
+    local name
+    name="${raw//\//  }"        # slashes to spaces
+    name="${name//\\/  }"       # backslashes to spaces
+    name=$(echo "$name" | sed 's/^[^A-Za-z]*//')  # strip leading non-alpha
+    name=$(echo "$name" | tr -s ' ')              # normalise whitespace
+    echo "${name%% }"
+}
+
+get_mac_arch_id() {
+    # MeshCentral agent type IDs: macOS x64=10, macOS ARM=16
+    local machine
+    machine=$(uname -m)
+    case "$machine" in
+        arm64)  echo 16 ;;
+        x86_64) echo 10 ;;
+        *)      echo 10 ;;  # fallback to x64
+    esac
+}
+
+get_group_installer_url() {
+    if [ -z "$POLICY_MESHCENTRAL_GROUP_MESHIDS" ] || [[ "$POLICY_MESHCENTRAL_GROUP_MESHIDS" == "{{cf_"* ]]; then
+        log_warn "No meshid map (policy_meshcentral_group_meshids not set)"
+        echo ""
+        return 1
+    fi
+
+    if [ -z "$LEVEL_GROUP_PATH" ] || [[ "$LEVEL_GROUP_PATH" == "{{level_"* ]]; then
+        log_warn "No Level.io group path available"
+        echo ""
+        return 1
+    fi
+
+    local sanitised
+    sanitised=$(sanitise_group_name "$LEVEL_GROUP_PATH")
+    log_info "Group lookup: '$LEVEL_GROUP_PATH' -> '$sanitised'"
+
+    local escaped
+    escaped=$(echo "$sanitised" | sed 's/[.*+?^${}()|[\\]]/\\&/g')
+    local meshid
+    meshid=$(echo "$POLICY_MESHCENTRAL_GROUP_MESHIDS" | \
+        grep -oE ""${escaped}"[[:space:]]*:[[:space:]]*"[^"]+"" | \
+        sed 's/.*"\([^"]*\)"[[:space:]]*$/\1/')
+
+    if [ -z "$meshid" ]; then
+        log_warn "Group '$sanitised' not found in meshid map"
+        echo ""
+        return 1
+    fi
+
+    local server
+    server=$(echo "${POLICY_SERVER_URL:-mc.cool.net.au}" | sed 's|^https\?://||; s|/*$||')
+    [ -z "$server" ] && server="mc.cool.net.au"
+
+    local arch_id
+    arch_id=$(get_mac_arch_id)
+
+    local encoded_meshid
+    encoded_meshid=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$meshid" 2>/dev/null || echo "$meshid")
+
+    log_success "Found meshid for group '$sanitised' (arch=$arch_id)"
+    echo "https://${server}/meshagents?id=${arch_id}&meshid=${encoded_meshid}&installflags=0"
+}
+
+# ============================================================
 # MESHCENTRAL FUNCTIONS
 # ============================================================
 
@@ -330,24 +401,33 @@ get_installed_server_url() {
 }
 
 install_meshcentral() {
-    if [ -z "$POLICY_MAC_DOWNLOAD_URL" ] || [[ "$POLICY_MAC_DOWNLOAD_URL" == "{{cf_"* ]]; then
-        log_error "Mac download URL not configured"
-        echo "Alert: MeshCentral install failed - policy_meshcentral_mac_download_url custom field not set"
-        return 1
-    fi
-
     log_info "Installing MeshCentral agent..."
-    log_info "Download URL: $POLICY_MAC_DOWNLOAD_URL"
 
     local installer_path="$TEMP_DIR/$INSTALLER_NAME"
-
     rm -f "$installer_path" 2>/dev/null
 
+    # Priority 1: Group-specific installer URL via meshid map
+    local download_url
+    download_url=$(get_group_installer_url)
+
+    # Priority 2: Static fallback URL from custom field
+    if [ -z "$download_url" ]; then
+        if [ -n "$POLICY_MAC_DOWNLOAD_URL" ] && [[ "$POLICY_MAC_DOWNLOAD_URL" != "{{cf_"* ]]; then
+            download_url="$POLICY_MAC_DOWNLOAD_URL"
+            log_warn "Using static fallback download URL"
+        else
+            log_error "No installer URL - set policy_meshcentral_group_meshids or policy_meshcentral_mac_download_url"
+            echo "Alert: MeshCentral install failed - no installer URL available"
+            return 1
+        fi
+    fi
+
+    log_info "Download URL: $download_url"
     log_info "Downloading installer..."
     if command -v curl &> /dev/null; then
-        curl -sSL -o "$installer_path" "$POLICY_MAC_DOWNLOAD_URL"
+        curl -fsSL --connect-timeout 30 --max-time 120 -o "$installer_path" "$download_url"
     elif command -v wget &> /dev/null; then
-        wget -q -O "$installer_path" "$POLICY_MAC_DOWNLOAD_URL"
+        wget -q -O "$installer_path" "$download_url"
     else
         log_error "Neither curl nor wget available"
         return 1

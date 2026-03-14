@@ -1,6 +1,6 @@
 #!/bin/bash
 # MeshCentral Policy Script - Linux
-# Version: 2026.01.19.02
+# Version: 2026.03.14.01
 # Target: Level.io RMM
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -16,6 +16,8 @@ POLICY_LINUX_INSTALL="{{cf_policy_meshcentral_linux_install}}"
 LEVEL_API_KEY="{{cf_apikey}}"
 LEVEL_DEVICE_ID="{{level_device_id}}"
 DEVICE_TAGS="{{level_tag_names}}"
+LEVEL_GROUP_PATH="{{level_group_path}}"
+POLICY_MESHCENTRAL_GROUP_MESHIDS="{{cf_policy_meshcentral_group_meshids}}"
 
 # ============================================================
 # CONFIGURATION
@@ -315,6 +317,81 @@ remove_level_policy_tag() {
 }
 
 # ============================================================
+# MESHCENTRAL GROUP INSTALLER HELPERS
+# ============================================================
+
+sanitise_group_name() {
+    # "COOLNETWORKS/AJB" -> "COOLNETWORKS AJB"
+    # Matches sanitisation in tools/provision-mesh-groups.js
+    local raw="$1"
+    local name
+    name="${raw//\//  }"          # slashes to spaces
+    name="${name//\\/  }"         # backslashes to spaces
+    name=$(echo "$name" | sed 's/^[^A-Za-z]*//')  # strip leading non-alpha
+    name=$(echo "$name" | tr -s ' ')              # normalise whitespace
+    echo "${name%% }"  # trim trailing space
+}
+
+get_linux_arch_id() {
+    # MeshCentral agent type IDs: x64=6, ARM64=8, ARMhf=7
+    local machine
+    machine=$(uname -m)
+    case "$machine" in
+        x86_64)          echo 6 ;;
+        aarch64|arm64)   echo 8 ;;
+        armv7l|armv6l)   echo 7 ;;
+        *)               echo 6 ;;  # fallback to x64
+    esac
+}
+
+get_group_installer_url() {
+    # Returns group-specific installer URL or empty string on failure
+    if [ -z "$POLICY_MESHCENTRAL_GROUP_MESHIDS" ] || [[ "$POLICY_MESHCENTRAL_GROUP_MESHIDS" == "{{cf_"* ]]; then
+        log_warn "No meshid map (policy_meshcentral_group_meshids not set)"
+        echo ""
+        return 1
+    fi
+
+    if [ -z "$LEVEL_GROUP_PATH" ] || [[ "$LEVEL_GROUP_PATH" == "{{level_"* ]]; then
+        log_warn "No Level.io group path available"
+        echo ""
+        return 1
+    fi
+
+    local sanitised
+    sanitised=$(sanitise_group_name "$LEVEL_GROUP_PATH")
+    log_info "Group lookup: '$LEVEL_GROUP_PATH' -> '$sanitised'"
+
+    # Extract meshid from JSON map using grep+sed (no jq dependency)
+    local escaped
+    escaped=$(echo "$sanitised" | sed 's/[.*+?^${}()|[\\]]/\\&/g')
+    local meshid
+    meshid=$(echo "$POLICY_MESHCENTRAL_GROUP_MESHIDS" | \
+        grep -oP ""${escaped}"\s*:\s*"\K[^"]+") 
+
+    if [ -z "$meshid" ]; then
+        log_warn "Group '$sanitised' not found in meshid map - run tools/provision-mesh-groups.js"
+        echo ""
+        return 1
+    fi
+
+    local server
+    server=$(echo "${POLICY_SERVER_URL:-mc.cool.net.au}" | sed 's|^https?://||; s|/*$||')
+    [ -z "$server" ] && server="mc.cool.net.au"
+
+    local arch_id
+    arch_id=$(get_linux_arch_id)
+
+    local encoded_meshid
+    encoded_meshid=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$meshid" 2>/dev/null \
+        || python3 -c "import urllib,sys; print(urllib.quote(sys.argv[1]))" "$meshid" 2>/dev/null \
+        || echo "$meshid")
+
+    log_success "Found meshid for group '$sanitised' (arch=$arch_id)"
+    echo "https://${server}/meshagents?id=${arch_id}&meshid=${encoded_meshid}&installflags=0"
+}
+
+# ============================================================
 # MESHCENTRAL FUNCTIONS
 # ============================================================
 
@@ -350,22 +427,49 @@ get_installed_server_url() {
 }
 
 install_meshcentral() {
-    if [ -z "$POLICY_LINUX_INSTALL" ] || [[ "$POLICY_LINUX_INSTALL" == "{{cf_"* ]]; then
-        log_error "Linux install command not configured"
-        echo "Alert: MeshCentral install failed - policy_meshcentral_linux_install custom field not set"
-        return 1
+    log_info "Installing MeshCentral agent..."
+
+    # Priority 1: Group-specific installer URL via meshid map
+    local group_url
+    group_url=$(get_group_installer_url)
+
+    if [ -n "$group_url" ]; then
+        log_info "Downloading group-specific installer: $group_url"
+        local tmp_installer
+        tmp_installer=$(mktemp /tmp/meshagent_XXXXXX)
+        if curl -fsSL --connect-timeout 30 --max-time 120 -o "$tmp_installer" "$group_url"; then
+            chmod +x "$tmp_installer"
+            log_info "Running installer..."
+            sudo "$tmp_installer" --install
+            local exit_code=$?
+            rm -f "$tmp_installer"
+            if [ $exit_code -ne 0 ]; then
+                log_warn "Group installer exited with code $exit_code - checking if installed anyway"
+            fi
+        else
+            rm -f "$tmp_installer"
+            log_warn "Failed to download group installer - falling back to install command"
+            group_url=""
+        fi
     fi
 
-    log_info "Installing MeshCentral agent..."
-    log_info "Running install command..."
-
-    eval "$POLICY_LINUX_INSTALL"
-    local exit_code=$?
+    # Priority 2: Static install command from custom field
+    if [ -z "$group_url" ]; then
+        if [ -z "$POLICY_LINUX_INSTALL" ] || [[ "$POLICY_LINUX_INSTALL" == "{{cf_"* ]]; then
+            log_error "No installer URL from meshid map and policy_meshcentral_linux_install not set"
+            echo "Alert: MeshCentral install failed - set policy_meshcentral_group_meshids or policy_meshcentral_linux_install"
+            return 1
+        fi
+        log_info "Running install command from custom field..."
+        eval "$POLICY_LINUX_INSTALL"
+        local exit_code=$?
 
     if [ $exit_code -ne 0 ]; then
         log_error "Install command failed with exit code $exit_code"
         return 1
     fi
+
+    fi  # end install command fallback
 
     sleep 5
 
