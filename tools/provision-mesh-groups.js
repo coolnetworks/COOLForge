@@ -204,27 +204,36 @@ async function main() {
             results.existing.push({ levelPath, mcName, meshid });
         }
 
-        // 5. Write meshid to Level.io group field
+        // 5. Collect meshid for global map (written after all groups processed)
         if (DRY_RUN) {
-            log(`  [DRY-RUN] Would write meshid to Level group: ${group.id}`);
-            continue;
-        }
-
-        const patchResult = await levelPatch('/custom_field_values', {
-            custom_field_id: meshidField.id,
-            assigned_to_id:  group.id,
-            value:           meshid
-        });
-
-        if (patchResult.status === 200 || patchResult.status === 201) {
-            log(`  Wrote meshid to Level group "${group.name}" OK`);
-        } else {
-            warn(`  Failed to write meshid to Level group "${group.name}": HTTP ${patchResult.status} ${JSON.stringify(patchResult.body).slice(0,200)}`);
-            results.failed.push({ levelPath, mcName, meshid, error: `HTTP ${patchResult.status}` });
+            log(`  [DRY-RUN] Would add to global meshid map: ${mcName}`);
         }
     }
 
-    // 6. Summary
+    // 6. Write global meshid map to Level.io as field default value
+    const meshidMap = {};
+    for (const r of [...results.created, ...results.existing]) {
+        meshidMap[r.mcName] = r.meshid;
+    }
+    const mapJson = JSON.stringify(meshidMap);
+
+    if (!DRY_RUN && Object.keys(meshidMap).length > 0) {
+        log('Writing global meshid map to Level.io...');
+        const setResult = await levelPatch('/custom_field_values', {
+            custom_field_id: meshidField.id,
+            assigned_to_id:  null,
+            value:           mapJson
+        });
+        if (setResult.status === 200 || setResult.status === 201) {
+            log('Global meshid map written OK (' + Object.keys(meshidMap).length + ' groups)');
+        } else {
+            warn('Failed to write global map: HTTP ' + setResult.status);
+        }
+    } else if (DRY_RUN) {
+        log('[DRY-RUN] Would write global meshid map: ' + mapJson);
+    }
+
+    // 7. Summary
     console.log('');
     console.log('============================================================');
     console.log(' SUMMARY');
