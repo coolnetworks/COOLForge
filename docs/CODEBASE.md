@@ -215,7 +215,10 @@ $uninstall = Get-SoftwareUninstallString -SoftwareName "AnyDesk" -Quiet
 | `Get-LevelCustomFields` | Fetch all custom fields with pagination |
 | `Find-LevelCustomField` | Find custom field by name |
 | `New-LevelCustomField` | Create new custom field |
-| `Set-LevelCustomFieldValue` | Set custom field value for device |
+| `Set-LevelCustomFieldValue` | Set custom field value for device or group |
+| `Set-LevelCustomFieldValueDirect` | PATCH via correct endpoint (groups use `/groups/<id>`) |
+| `Get-LevelGlobalCustomFieldValues` | Get org-level defaults (assigned_to_id: null) |
+| `Get-LevelEntityCustomFieldOverrides` | Get explicit overrides for a group or device |
 | `Initialize-LevelSoftwarePolicy` | Initialize software policy custom field |
 | `Initialize-COOLForgeInfrastructure` | Create core COOLForge custom fields |
 | `Initialize-SoftwarePolicyInfrastructure` | Create fields and tags for a specific software policy |
@@ -255,7 +258,7 @@ Registry-based caching to reduce API calls and improve performance.
 | `Get-LevelOrganizations` | Get all organizations |
 | `Get-LevelOrganizationFolders` | Get folders within an organization |
 | `Get-LevelFolderDevices` | Get devices in a folder |
-| `Get-LevelEntityCustomFields` | Get custom fields for an entity |
+| `Get-LevelEntityCustomFields` | Get custom fields for an entity (device, group, organization) |
 
 #### Technician Alerts
 
@@ -284,7 +287,7 @@ See [TECHNICIAN-ALERTS.md](TECHNICIAN-ALERTS.md) for detailed usage.
 | **UI Helpers** | `Write-Header`, `Write-LevelSuccess`, `Write-LevelInfo`, `Write-LevelWarning`, `Write-LevelError`, `Read-UserInput`, `Read-YesNo` |
 | **Debug Helpers** | `Write-DebugSection`, `Write-DebugTags`, `Write-DebugPolicy`, `Write-DebugTagManagement` |
 | **Config/Security** | `Get-SavedConfig`, `Save-Config`, `Protect-ApiKey` (DPAPI), `Unprotect-ApiKey`, `Get-CompanyNameFromPath` |
-| **Backup/Restore** | `Backup-AllCustomFields`, `Save-Backup`, `Import-Backup`, `Restore-CustomFields`, `Get-BackupPath`, `Get-LatestBackup`, `Compare-BackupWithCurrent`, `Show-BackupDifferences` |
+| **Backup/Restore** | `Backup-AllCustomFields` (v2.0 format), `Save-Backup`, `Import-Backup`, `Restore-CustomFields` (v2.0 + legacy v1.0), `Get-BackupPath`, `Get-LatestBackup`, `Compare-BackupWithCurrent`, `Show-BackupDifferences` |
 | **GitHub** | `Get-GitHubReleases`, `Show-ReleaseNotes`, `Select-Version` |
 | **Initialization** | `Initialize-LevelApi`, `Initialize-COOLForgeCustomFields` (alias) |
 | **Script Launcher** | `Get-ContentMD5`, `Get-ExpectedMD5`, `Get-ScriptPathFromMD5`, `Get-ScriptVersion`, `Invoke-ScriptLauncher` |
@@ -302,9 +305,18 @@ Launchers are thin wrappers that:
 4. Download and cache the target script
 5. Execute the script with all Level.io variables
 
-### Launcher Template
+### Launcher Template System
 
-**Location**: `templates/Launcher_Template.ps1`
+**Template**: `launchers/_template.ps1`
+**Manifest**: `launchers/_manifest.json`
+**Generator**: `tools/generate-launchers.py`
+
+Launchers are **generated, never hand-edited**. The generator reads `_template.ps1` and `_manifest.json`, then writes every `.ps1` file under `launchers/`. Each manifest entry specifies `scriptToRun`, `launcherName`, `version`, and optional `extraFields` (additional `{{cf_*}}` variables the launcher needs).
+
+To add a new launcher:
+1. Add an entry to `_manifest.json`
+2. Run `python3 tools/generate-launchers.py`
+3. Deploy the generated launcher to Level.io
 
 The template provides:
 - Library auto-update with backup/restore on failure
@@ -318,15 +330,6 @@ The template provides:
 - `$LibraryUrl` - URL to download library
 - `$DeviceHostname` - Device hostname
 - `$DeviceTags` - Comma-separated device tags
-
-### Creating a Launcher
-
-1. Copy `Launcher_Template.ps1`
-2. Change `$ScriptToRun` at the top:
-```powershell
-$ScriptToRun = "👀Check for Unauthorized Remote Access Tools.ps1"
-```
-3. Deploy to Level.io
 
 ### Version Pinning
 
@@ -430,13 +433,20 @@ Administrative tools in `tools/`:
 | `Get-DeviceScreenConnectUrl.ps1` | Get ScreenConnect URL for device |
 | `Get-ScreenConnectUrls.ps1` | Batch get ScreenConnect URLs |
 
-### Maintenance
+### Launcher & Script Maintenance
 
 | Tool | Description |
 |------|-------------|
-| `Update-Launchers.ps1` | Update all launchers from template |
+| `generate-launchers.py` | Regenerate all launchers from `_template.ps1` + `_manifest.json` |
+| `Update-Launchers.ps1` | Legacy launcher updater (prefer `generate-launchers.py`) |
 | `Generate-MD5SUMS.ps1` | Regenerate MD5SUMS file |
 | `Generate-WorkflowCharts.ps1` | Generate Mermaid workflow diagrams |
+
+### MeshCentral Provisioning
+
+| Tool | Description |
+|------|-------------|
+| `provision-mesh-groups.js` | Create MeshCentral groups matching Level.io groups, write meshid back via `PATCH /v2/groups/<id>` |
 
 ### Analysis
 
@@ -698,9 +708,8 @@ COOLForge/
 
 ## Version Information
 
-- **Module Version**: 2026.01.27 (COOLForge-Common)
-- **Launcher Version**: 2026.01.27
-- **Last Documentation Update**: 2026-01-27
+- **Module Version**: 2026.02.10.01 (COOLForge-Common)
+- **Last Documentation Update**: 2026-03-14
 
 ---
 

@@ -74,6 +74,15 @@ This document provides detailed documentation for all functions exported by the 
 - [Get-ScriptVersion](#get-scriptversion)
 - [Invoke-ScriptLauncher](#invoke-scriptlauncher)
 
+### Custom Field Management (Group & Backup)
+- [Get-LevelGlobalCustomFieldValues](#get-levelglobalcustomfieldvalues)
+- [Get-LevelEntityCustomFieldOverrides](#get-levelentitycustomfieldoverrides)
+- [Set-LevelCustomFieldValueDirect](#set-levelcustomfieldvaluedirect)
+- [Get-LevelEntityCustomFields](#get-levelentitycustomfields) (updated)
+- [Set-LevelCustomFieldValue](#set-levelcustomfieldvalue) (updated)
+- [Backup-AllCustomFields](#backup-allcustomfields)
+- [Restore-CustomFields](#restore-customfields)
+
 ### Debug Helper Functions
 - [Write-DebugSection](#write-debugsection)
 - [Write-DebugTags](#write-debugtags)
@@ -1361,6 +1370,171 @@ Invoke-ScriptLauncher -ScriptToRun "unchecky.ps1" `
 | `-DeviceHostname` | String | Yes | Device hostname |
 | `-DeviceTags` | String | No | Comma-separated device tags |
 | Various policy fields | String | No | Policy custom field values |
+
+---
+
+## Custom Field Management (Group & Backup)
+
+### Get-LevelGlobalCustomFieldValues
+
+Returns all global (org-level) custom field values — items where `assigned_to_id` is null. Uses paginated `GET /v2/custom_field_values`.
+
+```powershell
+$GlobalValues = Get-LevelGlobalCustomFieldValues
+$GlobalValues = Get-LevelGlobalCustomFieldValues -BaseUrl "https://api.level.io/v2"
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-BaseUrl` | String | No | `"https://api.level.io/v2"` | Level.io API base URL |
+
+**Returns:** Array of custom field value objects with `custom_field_id`, `custom_field_name`, `value`, and `assigned_to_id` (null for globals).
+
+---
+
+### Get-LevelEntityCustomFieldOverrides
+
+Returns only **explicit** custom field overrides for a specific entity (group or device). Queries each field individually and checks if `assigned_to_id` matches the entity (meaning it is a true override, not an inherited global default).
+
+```powershell
+$Fields = Get-LevelCustomFields -ApiKey $ApiKey
+$Overrides = Get-LevelEntityCustomFieldOverrides -EntityId $Group.id -CustomFields $Fields
+$Overrides = Get-LevelEntityCustomFieldOverrides -EntityId $Group.id -CustomFields $Fields -DelayMs 0
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-EntityId` | String | Yes | — | Level.io group or device ID |
+| `-CustomFields` | Array | Yes | — | Array of custom field definitions (from `Get-LevelCustomFields`) |
+| `-BaseUrl` | String | No | `"https://api.level.io/v2"` | Level.io API base URL |
+| `-DelayMs` | Int | No | `600` | Milliseconds between API calls (rate limit protection) |
+
+**Returns:** Array of custom field value objects that are explicitly set on this entity (not inherited).
+
+---
+
+### Set-LevelCustomFieldValueDirect
+
+Sets a custom field value directly via `PATCH /v2/custom_field_values`. Supports organization (null), group, or device `assigned_to_id`.
+
+```powershell
+Set-LevelCustomFieldValueDirect -FieldId $Field.id -Value "myvalue"
+Set-LevelCustomFieldValueDirect -FieldId $Field.id -AssignedToId $Group.id -Value "override"
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-FieldId` | String | Yes | — | Custom field ID |
+| `-AssignedToId` | String | No | `$null` | Entity ID (null = org-level, group ID, or device ID) |
+| `-Value` | String | Yes | — | Value to set |
+| `-BaseUrl` | String | No | `"https://api.level.io/v2"` | Level.io API base URL |
+
+**Returns:** `$true` on success, `$false` on failure.
+
+> **Warning:** For groups, `PATCH /v2/custom_field_values` with a group `assigned_to_id` silently drops the value (HTTP 200 but not persisted). Use `PATCH /v2/groups/<id>` instead — see [LEVEL-API-GROUP-FIELDS-FINDINGS.md](LEVEL-API-GROUP-FIELDS-FINDINGS.md).
+
+---
+
+### Get-LevelEntityCustomFields (updated 2026-03)
+
+Gets custom fields for an entity. Now supports `"group"` entity type (in addition to `"device"`, `"organization"`, `"folder"`). For groups, internally uses `Get-LevelEntityCustomFieldOverrides` to return only explicit overrides.
+
+```powershell
+$Fields = Get-LevelEntityCustomFields -ApiKey $ApiKey -EntityType "group" -EntityId $Group.id
+$Fields = Get-LevelEntityCustomFields -ApiKey $ApiKey -EntityType "device" -EntityId $Device.id
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | Yes | — | Level.io API key |
+| `-EntityType` | String | Yes | — | `"organization"`, `"folder"`, `"group"`, or `"device"` |
+| `-EntityId` | String | Yes | — | Entity ID |
+| `-BaseUrl` | String | No | `"https://api.level.io/v2"` | Level.io API base URL |
+
+**Returns:** PSCustomObject keyed by field name. For groups, only includes explicit overrides.
+
+---
+
+### Set-LevelCustomFieldValue (updated 2026-03)
+
+Sets a custom field value by field name. Now supports `"group"` entity type — groups are routed through `Set-LevelCustomFieldValueDirect` internally.
+
+```powershell
+Set-LevelCustomFieldValue -ApiKey $ApiKey -EntityType "device" -EntityId $Device.id `
+    -FieldReference "policy_unchecky" -Value "install"
+Set-LevelCustomFieldValue -EntityType "group" -EntityId $Group.id `
+    -FieldReference "policy_meshcentral_meshid" -Value "abc123"
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-ApiKey` | String | No | — | Level.io API key (falls back to stored key from `Initialize-LevelApi`) |
+| `-EntityType` | String | Yes | — | `"organization"`, `"folder"`, `"group"`, or `"device"` |
+| `-EntityId` | String | Yes | — | Entity ID |
+| `-FieldReference` | String | Yes | — | Custom field name (e.g., `"policy_unchecky"`) |
+| `-Value` | String | Yes | — | Value to set |
+| `-BaseUrl` | String | No | `"https://api.level.io/v2"` | Level.io API base URL |
+
+**Returns:** `$true` on success, `$false` on failure.
+
+---
+
+### Backup-AllCustomFields
+
+Creates a complete backup of all custom field values across the hierarchy. Produces backup format v2.0 with `GlobalValues`, `Groups` (explicit overrides only), and optional `Devices`.
+
+```powershell
+$Backup = Backup-AllCustomFields
+$Backup = Backup-AllCustomFields -IncludeDevices
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-IncludeDevices` | Switch | No | `$false` | Include device-level overrides (slow for large fleets) |
+
+#### Returns
+
+Hashtable with:
+- `Timestamp` — ISO 8601 backup timestamp
+- `Version` — `"2.0"`
+- `CustomFields` — Array of field definitions
+- `GlobalValues` — Org-level defaults (non-empty values only)
+- `Groups` — Array of `{ Id, Name, Values }` for groups with explicit overrides
+- `Devices` — Array of `{ Id, Name, Values }` (only if `-IncludeDevices`)
+
+---
+
+### Restore-CustomFields
+
+Restores custom field values from a backup. Supports v2.0 format (`GlobalValues` + `Groups` + `Devices`) and legacy v1.0 format (`Organizations` + `Folders`).
+
+```powershell
+$Backup = Import-Backup -Path "backup.zip"
+Restore-CustomFields -Backup $Backup -DryRun
+Restore-CustomFields -Backup $Backup -IncludeDevices
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `-Backup` | PSObject | Yes | — | Backup object (from `Import-Backup`) |
+| `-DryRun` | Switch | No | `$false` | Preview changes without applying |
+| `-IncludeDevices` | Switch | No | `$false` | Also restore device-level values |
+
+**Returns:** `$true` on success, `$false` on failure.
 
 ---
 

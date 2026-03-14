@@ -258,107 +258,38 @@ See `tools/Get-ScreenConnectUrls.ps1` for a working example that:
 
 ---
 
-## Group-Level Custom Field Values — Full Investigation Findings (2026-03-14)
+## Group-Level Custom Fields
 
-> These findings were established through exhaustive testing against the Level.io primary instance.
-> Do not assume group-level PATCH works without re-reading this section.
+Group-level custom field management has significant API quirks. For the full investigation findings, see **[LEVEL-API-GROUP-FIELDS-FINDINGS.md](LEVEL-API-GROUP-FIELDS-FINDINGS.md)**.
 
-### What Works vs What Doesn't
+### Quick Reference
 
-| Operation | Endpoint | Works? | Notes |
-|-----------|----------|--------|-------|
-| Read global (org) default | `GET /v2/custom_field_values` | ✅ | Returns fields where `assigned_to_id` is null |
-| Read device-level value | `GET /v2/custom_field_values?assigned_to_id=<device_id>` | ✅ | Returns effective value (inherited or overridden) |
-| Read group-level value | `GET /v2/custom_field_values?assigned_to_id=<group_id>` | ⚠️ | Returns INHERITED global value, NOT group-level override |
-| Set global default | `PATCH /v2/custom_field_values` with `assigned_to_id=null` | ✅ | Correct way to set org-level defaults |
-| Set group-level override | `PATCH /v2/custom_field_values` with `assigned_to_id=<group_id>` | ⚠️ | HTTP 200 returned but value is **silently dropped** |
-| Set group-level override | `PATCH /v2/groups/<group_id>` with body `{"custom_fields":{"field_name":"value"}}` | ✅ | **This is the correct method** |
-| Read group-level override | `GET /v2/groups/<group_id>` inspect `custom_fields` | ✅ | **This is the correct method** |
-| Set device-level override | `PATCH /v2/custom_field_values` with `assigned_to_id=<device_id>` | ✅ | Works correctly for devices |
+| Goal | Correct Method |
+|------|---------------|
+| Set group field override | `PATCH /v2/groups/<id>` with `{"custom_fields": {"field_name": "value"}}` |
+| Read group field override | `GET /v2/groups/<id>` — inspect `.custom_fields` |
+| Set device field override | `PATCH /v2/custom_field_values` with device `assigned_to_id` |
+| Set global/org default | `PATCH /v2/custom_field_values` with `assigned_to_id: null` |
 
-### The Silent Drop Bug
+**Key gotcha:** `PATCH /v2/custom_field_values` with a group `assigned_to_id` returns HTTP 200 but **silently drops the value**. Always use `PATCH /v2/groups/<id>` for group-level writes.
 
-When you call `PATCH /v2/custom_field_values` with a group ID as `assigned_to_id`:
-- The API returns HTTP 200 (success)
-- No error message
-- The value is **not persisted** — reading back shows the global default, not your value
+Use field **name** (e.g. `policy_meshcentral_meshid`), not the reference (`cf_policy_meshcentral_meshid`).
 
-**This is a known Level.io API behaviour, not a bug in your code.**
+### COOLForge Functions for Group Fields
 
-### Correct Way to Set a Group-Level Custom Field Override
+| Function | Purpose |
+|----------|---------|
+| `Get-LevelGlobalCustomFieldValues` | Get org-level defaults for all fields |
+| `Get-LevelEntityCustomFieldOverrides` | Get explicit overrides for a group or device (600ms delay per field) |
+| `Set-LevelCustomFieldValueDirect` | PATCH via correct endpoint for groups/devices |
+| `Backup-AllCustomFields` | Full backup in v2.0 format |
+| `Restore-CustomFields` | Restore from v2.0 or legacy v1.0 backup |
+| `Get-LevelEntityCustomFields` | Read fields for entity type "group", "device", etc. |
+| `Set-LevelCustomFieldValue` | Set field value (supports "group" entity type) |
 
-```powershell
-# Use PATCH /v2/groups/<group_id> with field NAME (not reference, not ID)
-$Body = @{
-    custom_fields = @{
-        "policy_meshcentral_meshid" = "abc123meshid..."
-    }
-} | ConvertTo-Json -Depth 5
-
-$Headers = @{ "Authorization" = $ApiKey; "Content-Type" = "application/json" }
-Invoke-RestMethod -Uri "https://api.level.io/v2/groups/$GroupId" -Method Patch -Headers $Headers -Body $Body
-```
-
-Key points:
-- Use `field_name` (e.g. `policy_meshcentral_meshid`), NOT `cf_policy_meshcentral_meshid` (the template reference)
-- Use `PATCH /v2/groups/<id>`, NOT `PATCH /v2/custom_field_values`
-- Group ID is the base64 GID (e.g. `Z2lkOi8vbGV2ZWwvRGV2aWNlR3JvdXAvMTM2OTk`)
-
-### Correct Way to Read a Group-Level Custom Field Override
-
-**Critical finding**: `GET /v2/custom_field_values?assigned_to_id=<group_id>` always returns the INHERITED global value, even if a group-level override exists. You cannot detect overrides this way.
-
-The only reliable methods:
-
-**Method 1 — Read the group object directly:**
-```powershell
-$Group = Invoke-RestMethod -Uri "https://api.level.io/v2/groups/$GroupId" -Headers $Headers
-$Value = $Group.custom_fields.policy_meshcentral_meshid
-```
-
-**Method 2 — Use the override-specific v2 endpoint (if available):**
-```powershell
-# Query each field+entity combination individually
-# Bulk queries always return inherited globals, never group overrides
-GET /v2/custom_field_values?custom_field_id=<field_id>&assigned_to_id=<group_id>
-```
-
-The `Get-LevelEntityCustomFieldOverrides` function in `COOLForge-Common.psm1` implements Method 2 with individual per-field queries and 600ms delay between calls.
-
-### Cascade / Inheritance Behaviour
-
-Values cascade DOWN the hierarchy:
-```
-Org default (global)
-  └── Group override (if set) — overrides org default for devices in this group
-        └── Child group override (if set) — overrides parent
-              └── Device override (if set) — highest priority
-```
-
-Cascade is confirmed by the Level v2 OpenAPI spec and verified by direct API testing.
-
-### Entity Type: "group" not "folder"
-
-The Level.io v2 API uses `"group"` as the entity type for device groups everywhere:
-- `GET /v2/groups` (not `/v2/folders`, not `/v2/organizations`)
-- Entity type string in function calls: `"group"` (not `"folder"`)
-
-**Old code that used `EntityType "folder"` was silently failing.** All COOLForge library functions
-that accept `EntityType` now support `"group"` correctly (fixed in commit `55895f3`).
-
-### API Rate Limits
-
-- **Limit**: 100 calls per minute
-- **Safe delay**: 600ms between calls (not 6000ms — that was 10x too conservative)
-- For bulk operations (e.g. 139 groups × 41 fields = 5,699 calls), use `nohup` or background execution:
-  ```bash
-  nohup pwsh -File start_here/Backup-COOLForgeCustomFields.ps1 -Action Backup -ApiKey <key> > /tmp/backup.log 2>&1 &
-  ```
-  ETA for full backup at 100 calls/min: ~57 minutes
+See [FUNCTIONS.md](FUNCTIONS.md#custom-field-management-group--backup) for full parameter documentation.
 
 ### Backup Format v2.0
-
-The `Backup-COOLForgeCustomFields.ps1` script now produces format version `2.0`:
 
 ```json
 {
@@ -375,35 +306,13 @@ The `Backup-COOLForgeCustomFields.ps1` script now produces format version `2.0`:
 }
 ```
 
-`Groups` contains ONLY groups that have explicit overrides (not inherited-only values).
-`Devices` is optional — only present if device-level values differ from their group.
+- `Groups` contains ONLY groups with explicit overrides (not inherited-only values)
+- `Devices` is optional — only present if device-level values differ from their group
+- Legacy v1.0 format (Organizations/Folders) is still supported by `Restore-CustomFields`
 
-Legacy v1.0 format (Organizations/Folders) is still supported by `Restore-CustomFields`.
+### API Rate Limits
 
-### Authentication (reminder)
-
-```
-Authorization: <api_key>    ← Raw key only, NO "Bearer" prefix
-```
-
-### Primary vs Secondary Instances
-
-COOLNETWORKS has two Level.io instances:
-- **Primary**: API key `GNRdZpcVjyvZbJ6cvVLgU4zf` — 139 groups, field IDs 7806–7829
-- **Secondary (test)**: API key `gTcBnH3fxnPWFp4mX17tFE7D` — 6 groups, field IDs 7806–7827
-
-**Always use the primary key** in scripts and tools. Secondary key is for isolated testing only.
-The same custom field NAME maps to different numeric IDs on each instance.
-
-### COOLForge Functions for Group Fields
-
-| Function | Purpose |
-|----------|---------|
-| `Get-LevelGlobalCustomFieldValues` | Get org-level defaults for all fields |
-| `Get-LevelEntityCustomFieldOverrides` | Get explicit overrides for a group or device (600ms delay per field) |
-| `Set-LevelCustomFieldValueDirect` | PATCH via correct endpoint for groups/devices |
-| `Backup-AllCustomFields` | Full backup in v2.0 format |
-| `Restore-CustomFields` | Restore from v2.0 or legacy v1.0 backup |
-| `Get-LevelEntityCustomFields` | Read fields for entity type "group", "device", etc |
-| `Set-LevelCustomFieldValue` | Set field value (supports "group" entity type) |
+- **Limit**: 100 calls per minute
+- **Safe delay**: 600ms between calls
+- For bulk operations (e.g. 139 groups x 41 fields), use `nohup` or background execution
 

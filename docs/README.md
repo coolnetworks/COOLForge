@@ -2,7 +2,7 @@
 
 Complete documentation for the COOLForge PowerShell automation framework for Level.io RMM.
 
-**Last Updated:** 2026-01-27
+**Last Updated:** 2026-03-14
 
 ---
 
@@ -60,7 +60,8 @@ Complete documentation for the COOLForge PowerShell automation framework for Lev
 
 | Document | Description |
 |----------|-------------|
-| [LEVEL-API-CUSTOM-FIELDS.md](LEVEL-API-CUSTOM-FIELDS.md) | Custom field creation via API |
+| [LEVEL-API-CUSTOM-FIELDS.md](LEVEL-API-CUSTOM-FIELDS.md) | Custom field creation and management via API |
+| [LEVEL-API-GROUP-FIELDS-FINDINGS.md](LEVEL-API-GROUP-FIELDS-FINDINGS.md) | Group-level custom field gotchas and workarounds |
 
 ---
 
@@ -143,7 +144,7 @@ The COOLForge-Common module exports **107 functions** organized into these categ
 | **Software Policy** | 5 | `Get-SoftwarePolicy`, `Get-EmojiMap`, `Invoke-SoftwarePolicyCheck` |
 | **Level.io API** | 10 | `Invoke-LevelApiCall`, `Get-LevelDevices`, `Find-LevelDevice` |
 | **Tag Management** | 8 | `Add-LevelTagToDevice`, `Remove-LevelTagFromDevice`, `New-LevelTag` |
-| **Custom Fields** | 10 | `Get-LevelCustomFields`, `Set-LevelCustomFieldValue`, `Initialize-COOLForgeInfrastructure` |
+| **Custom Fields** | 13 | `Get-LevelCustomFields`, `Set-LevelCustomFieldValue`, `Set-LevelCustomFieldValueDirect`, `Get-LevelGlobalCustomFieldValues`, `Get-LevelEntityCustomFieldOverrides` |
 | **Cache Management** | 18 | `Get-LevelCacheValue`, `Set-LevelCacheValue`, `Get-CachedDeviceTags` |
 | **Hierarchy** | 4 | `Get-LevelOrganizations`, `Get-LevelFolderDevices` |
 | **Technician Alerts** | 5 | `Add-TechnicianAlert`, `Send-TechnicianAlert` |
@@ -175,7 +176,8 @@ docs/
 +-- PRIVATE-FORK.md            # Private repos
 +-- RELEASE-WORKFLOW.md        # Release process
 +-- FOLDER-STRUCTURE.md        # Script organization
-+-- LEVEL-API-CUSTOM-FIELDS.md # API field creation
++-- LEVEL-API-CUSTOM-FIELDS.md # API field creation & management
++-- LEVEL-API-GROUP-FIELDS-FINDINGS.md # Group-level field gotchas
 +-- WHY.md                     # Why COOLForge
 +-- WHY-COOLFORGE.md           # Design philosophy
 +-- policy/                    # Policy system docs
