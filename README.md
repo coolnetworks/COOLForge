@@ -62,7 +62,7 @@ The `modules/COOLForge-Common.psm1` module exports functions organised into thes
 | Category | Description |
 |----------|-------------|
 | **Initialisation** | Script setup, lockfiles, error handling |
-| **Logging** | Timestamped output with severity levels |
+| **Script Logging** | Timestamped output with severity levels (INFO, SUCCESS, ERROR, SKIP) — consistent format across all scripts |
 | **System Info** | Admin check, device properties |
 | **Software Detection** | Generic install detection, process/service control, MSI/EXE installers |
 | **Software Policy** | Tag-based policy enforcement, emoji mapping |
