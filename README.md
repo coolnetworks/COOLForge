@@ -71,7 +71,7 @@ The `modules/COOLForge-Common.psm1` module exports functions organised into thes
 | **Custom Fields** | CRUD operations, group-level overrides, backup/restore |
 | **Technician Alerts** | Toast notifications to tech workstations |
 | **Network** | Wake-on-LAN |
-| **Cache Management** | Registry cache, protected values, tag/field caching |
+| **Cache Management** | Scripts cache device hostname, tags, device ID, and custom field values locally in the Windows registry (`HKLM:\SOFTWARE\COOLForge\Cache`) after first retrieval. Reduces API calls per run and gives scripts a reliable local reference for device identity and state. Sensitive values are encrypted using DPAPI before being written. |
 | **Script Launcher** | MD5 verification, script downloading, execution |
 
 See [Function Reference](docs/FUNCTIONS.md) for complete documentation.
