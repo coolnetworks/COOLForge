@@ -233,6 +233,70 @@ Level.io runs launcher → Launcher downloads library + script from GitHub → S
 
 ---
 
+## Software Policy Enforcement
+
+COOLForge includes a full software lifecycle management system — install, remove, pin, and reinstall software across your fleet using a combination of Level.io tags and custom fields. Every supported software uses the same model so the behaviour is predictable and consistent.
+
+### How It Works
+
+Each software policy script runs on a schedule via a Level.io monitor. The script checks the device's tags and custom fields to determine what to do, acts on it, then updates the tags to reflect the new state. The monitor only alerts when something goes wrong.
+
+```
+Policy runs on schedule
+  └── Script checks device tags and custom fields
+        └── Resolves action (install / remove / pin / reinstall / nothing)
+              └── Acts on it
+                    └── Updates tags to reflect outcome
+                          └── Alerts only on failure
+```
+
+### Policy Resolution — Priority Order
+
+When the script runs, it resolves what to do in this order (first match wins):
+
+| Priority | Source | Example |
+|----------|--------|---------|
+| 1 (highest) | Device tag — Pin | 📌HUNTRESS — freeze this software on this device |
+| 2 | Device tag — Reinstall | 🔄HUNTRESS — force remove and reinstall |
+| 3 | Device tag — Remove | 🚫HUNTRESS — remove from this device |
+| 4 | Device tag — Install | 🙏HUNTRESS — install on this device |
+| 5 | Custom field (device level) | `policy_huntress = install` set directly on device |
+| 6 | Custom field (group level) | `policy_huntress = install` inherited from parent group |
+| 7 (lowest) | Nothing | No policy set — script does nothing |
+
+Tags always override custom fields. Device-level custom fields always override group-level. Set a default for an entire group and override per-device with tags — nothing else needs to change.
+
+### Tag Lifecycle
+
+Action tags (🙏 🚫 🔄) are transient — the script removes them after acting and sets the ✅ status tag automatically. You add a tag, the script acts and cleans up.
+
+```
+Admin adds 🙏HUNTRESS to device
+  → Script runs, installs Huntress
+    → Removes 🙏HUNTRESS, adds ✅HUNTRESS
+      → Sets device custom field to "install" so intent persists
+```
+
+### Infrastructure Bootstrap
+
+On first run with `apikey` configured, the script auto-creates all required tags and custom fields in Level.io. No manual setup — run once and it builds its own infrastructure.
+
+### Supported Software
+
+| Software | Notes |
+|----------|-------|
+| Huntress | Requires account key and org key |
+| DNSFilter | Requires site key |
+| Chrome | Enterprise MSI only |
+| ScreenConnect | MSI with EXE fallback for AppLocker environments |
+| MeshCentral | Group-aware — meshid inherited from Level.io group |
+| Bitwarden | Browser extension |
+| Unchecky | Requires hosted installer URL |
+
+See [Software Policy Guide](docs/policy/README.md) for full setup instructions, flow diagrams, and troubleshooting.
+
+---
+
 ## Available Scripts
 
 ### Policy Scripts (👀)
