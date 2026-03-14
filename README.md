@@ -1,4 +1,4 @@
-# COOLForge_Lib - Level.io PowerShell Automation Library
+﻿# COOLForge_Lib - Level.io PowerShell Automation Library
 
 **Version:** 2026.02.10
 
@@ -27,15 +27,15 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 
 ### Key Features
 
-- **Tag Gate System** — Skip execution on devices with blocking tags
-- **Lockfile Management** — Prevent concurrent script execution with PID-based lockfiles
-- **Standardized Logging** — Timestamped output with severity levels
-- **Error Handling** — Wrapped execution with automatic cleanup
-- **API Helper** — REST API calls with bearer token authentication
-- **Device Info** — Quick access to common system properties
-- **Auto-Update** — Scripts automatically download the latest library from GitHub
-- **Script Launcher** — Manage scripts in Git, deploy once to Level.io, updates happen automatically
-- **Technician Alerts** — Send toast notifications to tech workstations when scripts need attention
+- **Tag Gate System** — Each device has emoji tags in Level.io. Scripts check these before doing anything — if a device is excluded or software is pinned, the script walks away without touching it. No manual filtering needed.
+- **Concurrent Script Lock** — If Level.io fires the same script twice or a previous run is still going, the second run detects it and exits immediately rather than two copies running at the same time and conflicting.
+- **Standardized Logging** — Every script writes output in the same format with timestamps and severity levels (INFO, SUCCESS, ERROR, SKIP). Makes reading Level.io job logs consistent across the whole fleet.
+- **Error Handling** — Scripts run inside a wrapper that catches unhandled errors, cleans up lockfiles and temp files, and exits with the right code so Level.io marks the job correctly as passed or failed.
+- **API Helper** — Shared functions for calling the Level.io API — handles auth, pagination, retries, and rate limiting so individual scripts don not each need to reinvent that.
+- **Device Info** — One-liner functions to get hostname, OS version, group, custom field values, etc. rather than each script doing its own WMI queries and registry reads.
+- **Auto-Update** — The shared library and scripts live in GitHub. When a device runs a launcher, it checks if a newer version exists and downloads it automatically. Push a fix once, every device gets it on next run — no re-uploading to Level.io.
+- **Script Launcher** — A thin wrapper deployed to Level.io once. It downloads and runs the real script from GitHub at execution time. Update a script by pushing to the repo — Level.io never needs touching again.
+- **Technician Alerts** — Scripts can fire toast notifications to a tech workstation when something needs attention. No need to trawl Level.io job logs to find issues.
 
 ### Module Functions (107 exported)
 
