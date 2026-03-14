@@ -7,7 +7,7 @@ $policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
 $policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
 $policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url}}"
 $policy_meshcentral_linux_install = "{{cf_policy_meshcentral_linux_install}}"
-$policy_meshcentral_api_key = "{{cf_policy_meshcentral_api_key}}"
+$policy_meshcentral_group_meshids = "{{cf_policy_meshcentral_group_meshids}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
