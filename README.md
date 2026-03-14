@@ -26,7 +26,25 @@ COOLForge provides a shared set of functions and a launcher system for Level.io 
 
 ### Key Features
 
-- **Tag Gate System** — Each device has emoji tags in Level.io. Scripts check these before doing anything — if a device is excluded or software is pinned, the script walks away without touching it. No manual filtering needed.
+- **Tag Gate System** — Controls whether scripts run on a device at all, and what they do when they run. Devices must be explicitly allowed to run scripts via a tag, and can equally be blocked.
+
+  **Layer 1 — Global device control** (standalone tags, no software name):
+  - ✅ alone = device is permitted — scripts will run
+  - ❌ alone = device is blocked — all scripts skip it entirely, nothing runs
+  - Neither = device is unverified — scripts skip it (safe default, nothing runs until explicitly permitted)
+  - ✅ + ❌ together = device is frozen — scripts run but make no changes to anything
+
+  **Layer 2 — Per-software override tags** (emoji + software name, e.g. `🙏HUNTRESS`):
+  - 🙏 = install this software if missing
+  - 🚫 = remove this software
+  - 🔄 = remove and reinstall
+  - 📌 = pin — do not touch this software regardless of anything else
+
+  If no override tag is present, the script falls back to the group-level custom field (`policy_huntress = install/remove/pin`), which cascades down from parent groups.
+
+  Priority when multiple tags conflict: **Pin wins → Reinstall → Remove → Install → custom field fallback**.
+
+  Action tags (🙏 🚫 🔄) are transient — removed after the script acts. Status tags (✅HUNTRESS) and intent tags (📌) persist.
 - **Concurrent Script Lock** — If Level.io fires the same script twice or a previous run is still going, the second run detects it and exits immediately rather than two copies running at the same time and conflicting.
 - **Standardised Logging** — Every script writes output in the same format with timestamps and severity levels (INFO, SUCCESS, ERROR, SKIP). Makes reading Level.io job logs consistent across the whole fleet.
 - **Error Handling** — Scripts run inside a wrapper that catches unhandled errors, cleans up lockfiles and temp files, and exits with the right code so Level.io marks the job correctly as passed or failed.
