@@ -266,5 +266,5 @@ This should not happen - the script explicitly excludes Reader. Check the logs i
 ## Related Scripts
 
 - [RAT Detection](RAT-Detection.md) - Detect remote access tools
-- [Force Remove AnyDesk](Force-Remove-AnyDesk.md) - Similar removal pattern
+- [Remove All RATs](Remove-All-RATs.md) - Remove detected RATs
 - [Force Remove Non-MSP ScreenConnect](Force-Remove-Non-MSP-ScreenConnect.md) - Similar removal pattern

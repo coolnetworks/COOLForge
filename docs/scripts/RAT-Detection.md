@@ -149,5 +149,5 @@ When RATs are detected, the script outputs:
 
 ## Related Scripts
 
-- [Force Remove AnyDesk](Force-Remove-AnyDesk.md) - Remove detected AnyDesk
+- [Remove All RATs](Remove-All-RATs.md) - Remove detected RATs (including AnyDesk)
 - [Force Remove Non-MSP ScreenConnect](Force-Remove-Non-MSP-ScreenConnect.md) - Remove unauthorized ScreenConnect

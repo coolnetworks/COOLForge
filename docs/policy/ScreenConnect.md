@@ -50,7 +50,10 @@ flowchart TD
     J2 --> K[Build MSI URL from Instance]
     K --> K1[Download MSI]
     K1 --> K2[Install via msiexec]
-    K2 --> L
+    K2 --> K3{Exit code?}
+    K3 -->|0| L
+    K3 -->|1625 AppLocker| K4[Fallback: EXE installer]
+    K4 --> L
 
     J3 --> M[Find Uninstall String]
     M --> M1[Run Uninstaller]
@@ -147,8 +150,18 @@ Manages ScreenConnect agent installation and removal based on tag and custom fie
 ```
 $SoftwareName  = "screenconnect"   # Used for field names
 $TagName       = "sc"              # Used for tag names (short form)
-$ScriptVersion = "2026.01.31.01"   # Bumped for launcher cache invalidation
+$ScriptVersion = "2026.02.10.01"   # Bumped for launcher cache invalidation
 ```
+
+## EXE Fallback for AppLocker Environments
+
+When MSI installation fails with exit code 1625 (blocked by Windows Installer policy/AppLocker), the script automatically falls back to an EXE-based installer:
+
+1. Builds EXE URL from the same ScreenConnect server: `https://<baseurl>/Bin/ScreenConnect.ClientSetup.exe?e=Access&y=Guest&c=<company>`
+2. Downloads and runs the EXE installer (retries up to 3 times)
+3. This bypasses Windows Installer restrictions that block MSI packages
+
+This fallback also triggers if the MSI install throws an exception.
 
 ## Related Scripts
 
