@@ -6551,7 +6551,7 @@ function Get-LevelEntityCustomFieldOverrides {
         [string]$EntityId,
         [array]$CustomFields,
         [string]$BaseUrl = "https://api.level.io/v2",
-        [int]$DelayMs = 6000
+        [int]$DelayMs = 600
     )
 
     $Overrides = @()

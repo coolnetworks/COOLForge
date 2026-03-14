@@ -29,7 +29,7 @@ const { spawnSync } = require('child_process');
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const DRY_RUN    = process.argv.includes('--dry-run');
-const LEVEL_KEY  = process.env.LEVEL_API_KEY  || 'gTcBnH3fxnPWFp4mX17tFE7D';
+const LEVEL_KEY  = process.env.LEVEL_API_KEY  || 'GNRdZpcVjyvZbJ6cvVLgU4zf';
 const LEVEL_URL  = 'https://api.level.io/v2';
 const MESH_URL   = process.env.MESH_URL       || 'wss://mc.cool.net.au';
 const MESH_USER  = process.env.MESH_USER      || 'levelcreation';

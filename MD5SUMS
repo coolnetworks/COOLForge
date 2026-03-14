@@ -551,7 +551,7 @@ acc53b6037c770b500a49887431cad95  launchers/Policy/👀meshcentral.ps1
 4ca0f8d7cc7cd0f828afc29dddfcfcf1  launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
 38db75f1c85109b3106151f9d2cad32b  launchers/Utility/⚙️Universal Disk Cleaner.ps1
 53e904271f29283693dacb783972ad81  launchers/_template.ps1
-75981e2e03471a0ee95637e1de6ea399  modules/COOLForge-Common.psm1
+8a443c2c766d928c800768471a05bd67  modules/COOLForge-Common.psm1
 bf0e05fd60905b4b7df9562defd25cd9  pre-release/Test-Syntax.ps1
 22f4b25eb31423533bcfae0c3dc787e4  pre-release/Update-Launchers.ps1
 3549c3739ef2e3716dfb7bac68e01dd5  pre-release/Update-MD5SUMS.ps1
