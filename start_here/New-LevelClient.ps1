@@ -653,7 +653,7 @@ else {
                 # Get current/inherited value for context
                 $CurrentValue = ""
                 if (-not $DryRun) {
-                    $GroupFields = Get-LevelEntityCustomFields -ApiKey $Script:ResolvedApiKey -EntityType "folder" -EntityId $Group.Id
+                    $GroupFields = Get-LevelEntityCustomFields -ApiKey $Script:ResolvedApiKey -EntityType "group" -EntityId $Group.Id
                     if ($GroupFields -and $GroupFields.PSObject.Properties[$Field.name]) {
                         $CurrentValue = $GroupFields.($Field.name)
                     }
@@ -674,7 +674,7 @@ else {
                     }
                     else {
                         $SetResult = Set-LevelCustomFieldValue -ApiKey $Script:ResolvedApiKey `
-                            -EntityType "folder" -EntityId $Group.Id `
+                            -EntityType "group" -EntityId $Group.Id `
                             -FieldReference $Field.name -Value $NewValue
 
                         if ($SetResult) {

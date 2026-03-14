@@ -4350,7 +4350,7 @@ function Set-LevelCustomFieldValue {
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("organization", "folder", "device")]
+        [ValidateSet("organization", "folder", "group", "device")]
         [string]$EntityType,
 
         [Parameter(Mandatory = $true)]
@@ -4383,6 +4383,19 @@ function Set-LevelCustomFieldValue {
     }
 
     Write-LevelLog "Found custom field '$FieldReference' with ID: $($Field.id)" -Level "DEBUG"
+
+    # Groups and folders use Set-LevelCustomFieldValueDirect (assigned_to_id approach)
+    if ($EntityType -eq "group" -or $EntityType -eq "folder") {
+        $Success = Set-LevelCustomFieldValueDirect -FieldId $Field.id -AssignedToId $EntityId -Value $Value -BaseUrl $BaseUrl
+        if ($Success) {
+            Write-LevelLog "Set group custom field '$FieldReference' = '$Value'" -Level "DEBUG"
+            Set-LevelCacheValue -Name $FieldReference -Value $Value
+            return $true
+        } else {
+            Write-LevelLog "ALERT: Failed to set group custom field '$FieldReference'" -Level "ERROR"
+            return $false
+        }
+    }
 
     # Use the custom_field_values endpoint with assigned_to_id for entity-specific values
     $Body = @{
@@ -5344,7 +5357,7 @@ function Get-LevelEntityCustomFields {
         [string]$ApiKey,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("organization", "folder", "device")]
+        [ValidateSet("organization", "folder", "group", "device")]
         [string]$EntityType,
 
         [Parameter(Mandatory = $true)]
@@ -5354,17 +5367,30 @@ function Get-LevelEntityCustomFields {
         [string]$BaseUrl = "https://api.level.io/v2"
     )
 
+    # Groups use custom_field_values API with assigned_to_id filter
+    # Returns a PSCustomObject keyed by field name for compatibility with callers
+    if ($EntityType -eq "group" -or $EntityType -eq "folder") {
+        # Use GetLevelEntityCustomFieldOverrides to find explicit overrides for this group
+        $AllFields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
+        $Overrides = Get-LevelEntityCustomFieldOverrides -EntityId $EntityId -CustomFields $AllFields -BaseUrl $BaseUrl
+        $Result = [PSCustomObject]@{}
+        foreach ($Item in $Overrides) {
+            $Result | Add-Member -MemberType NoteProperty -Name $Item.custom_field_name -Value $Item.value -Force
+        }
+        return $Result
+    }
+
     $Endpoint = switch ($EntityType) {
         "organization" { "/organizations/$EntityId" }
-        "folder"       { "/folders/$EntityId" }
         "device"       { "/devices/$EntityId" }
+        default        { "/devices/$EntityId" }
     }
 
     $Result = Invoke-LevelApiCall -Uri "$BaseUrl$Endpoint" -ApiKey $ApiKey -Method "GET"
     if ($Result.Success -and $Result.Data.custom_fields) {
         return $Result.Data.custom_fields
     }
-    return @{}
+    return [PSCustomObject]@{}
 }
 
 # ============================================================
@@ -6892,6 +6918,7 @@ function Compare-BackupWithCurrent {
     <#
     .SYNOPSIS
         Compares a backup with current custom field values.
+        Supports v2.0 format (GlobalValues + Groups) and legacy v1.0 (Organizations + Folders).
     #>
     param(
         [PSObject]$Backup,
@@ -6899,62 +6926,128 @@ function Compare-BackupWithCurrent {
     )
 
     $Differences = @()
-    Write-LevelInfo "Comparing backup with current state..."
+    $Version = if ($Backup.Version) { $Backup.Version } else { "1.0" }
+    Write-LevelInfo "Comparing backup (v$Version) with current state..."
 
-    foreach ($OrgBackup in $Backup.Organizations) {
-        $CurrentOrgFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $OrgBackup.Id
+    if ($Version -eq "2.0") {
+        # ── v2.0: GlobalValues + Groups + Devices ──────────────────────────
 
-        foreach ($Field in $OrgBackup.CustomFields.PSObject.Properties) {
-            $BackupValue = $Field.Value
-            $CurrentValue = $CurrentOrgFields.$($Field.Name)
-
-            if ($BackupValue -ne $CurrentValue) {
-                $Differences += @{
-                    EntityType   = "Organization"
-                    EntityName   = $OrgBackup.Name
-                    EntityId     = $OrgBackup.Id
-                    FieldName    = $Field.Name
-                    BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
-                    CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+        # Compare global values
+        if ($Backup.GlobalValues) {
+            $CurrentGlobal = Get-LevelGlobalCustomFieldValues
+            $CurrentMap = @{}
+            foreach ($Item in $CurrentGlobal) {
+                $CurrentMap[$Item.custom_field_id] = $Item.value
+            }
+            foreach ($Item in $Backup.GlobalValues) {
+                $BackupValue  = $Item.value
+                $CurrentValue = $CurrentMap[$Item.custom_field_id]
+                if ($BackupValue -ne $CurrentValue) {
+                    $Differences += @{
+                        EntityType   = "Global"
+                        EntityName   = "Organization"
+                        EntityId     = $null
+                        FieldName    = $Item.custom_field_name
+                        BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                        CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                    }
                 }
             }
         }
 
-        foreach ($FolderBackup in $OrgBackup.Folders) {
-            $CurrentFolderFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $FolderBackup.Id
-
-            foreach ($Field in $FolderBackup.CustomFields.PSObject.Properties) {
-                $BackupValue = $Field.Value
-                $CurrentValue = $CurrentFolderFields.$($Field.Name)
-
+        # Compare group overrides
+        $AllFields = Get-LevelCustomFields -ApiKey $Script:LevelApiKey
+        foreach ($GroupBackup in $Backup.Groups) {
+            if (-not $GroupBackup.Values -or $GroupBackup.Values.Count -eq 0) { continue }
+            $CurrentOverrides = Get-LevelEntityCustomFieldOverrides -EntityId $GroupBackup.Id -CustomFields $AllFields
+            $CurrentMap = @{}
+            foreach ($Item in $CurrentOverrides) {
+                $CurrentMap[$Item.custom_field_id] = $Item.value
+            }
+            foreach ($Item in $GroupBackup.Values) {
+                $BackupValue  = $Item.value
+                $CurrentValue = $CurrentMap[$Item.custom_field_id]
                 if ($BackupValue -ne $CurrentValue) {
                     $Differences += @{
-                        EntityType   = "Folder"
-                        EntityName   = $FolderBackup.Name
-                        EntityId     = $FolderBackup.Id
-                        FieldName    = $Field.Name
+                        EntityType   = "Group"
+                        EntityName   = $GroupBackup.Name
+                        EntityId     = $GroupBackup.Id
+                        FieldName    = $Item.custom_field_name
+                        BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                        CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                    }
+                }
+            }
+        }
+
+        # Compare device overrides
+        if ($IncludeDevices -and $Backup.Devices) {
+            foreach ($DeviceBackup in $Backup.Devices) {
+                if (-not $DeviceBackup.Values -or $DeviceBackup.Values.Count -eq 0) { continue }
+                $CurrentOverrides = Get-LevelEntityCustomFieldOverrides -EntityId $DeviceBackup.Id -CustomFields $AllFields
+                $CurrentMap = @{}
+                foreach ($Item in $CurrentOverrides) { $CurrentMap[$Item.custom_field_id] = $Item.value }
+                foreach ($Item in $DeviceBackup.Values) {
+                    $BackupValue  = $Item.value
+                    $CurrentValue = $CurrentMap[$Item.custom_field_id]
+                    if ($BackupValue -ne $CurrentValue) {
+                        $Differences += @{
+                            EntityType   = "Device"
+                            EntityName   = $DeviceBackup.Name
+                            EntityId     = $DeviceBackup.Id
+                            FieldName    = $Item.custom_field_name
+                            BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                            CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                        }
+                    }
+                }
+            }
+        }
+
+    } else {
+        # ── v1.0 legacy: Organizations + Folders ───────────────────────────
+        foreach ($OrgBackup in $Backup.Organizations) {
+            $CurrentOrgFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $OrgBackup.Id
+
+            foreach ($Field in $OrgBackup.CustomFields.PSObject.Properties) {
+                $BackupValue = $Field.Value
+                $CurrentValue = $CurrentOrgFields.$($Field.Name)
+                if ($BackupValue -ne $CurrentValue) {
+                    $Differences += @{
+                        EntityType = "Organization"; EntityName = $OrgBackup.Name; EntityId = $OrgBackup.Id
+                        FieldName = $Field.Name
                         BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
                         CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
                     }
                 }
             }
 
-            if ($IncludeDevices) {
-                foreach ($DeviceBackup in $FolderBackup.Devices) {
-                    $CurrentDeviceFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $DeviceBackup.Id
-
-                    foreach ($Field in $DeviceBackup.CustomFields.PSObject.Properties) {
-                        $BackupValue = $Field.Value
-                        $CurrentValue = $CurrentDeviceFields.$($Field.Name)
-
-                        if ($BackupValue -ne $CurrentValue) {
-                            $Differences += @{
-                                EntityType   = "Device"
-                                EntityName   = $DeviceBackup.Name
-                                EntityId     = $DeviceBackup.Id
-                                FieldName    = $Field.Name
-                                BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
-                                CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+            foreach ($FolderBackup in $OrgBackup.Folders) {
+                $CurrentFolderFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "group" -EntityId $FolderBackup.Id
+                foreach ($Field in $FolderBackup.CustomFields.PSObject.Properties) {
+                    $BackupValue = $Field.Value
+                    $CurrentValue = $CurrentFolderFields.$($Field.Name)
+                    if ($BackupValue -ne $CurrentValue) {
+                        $Differences += @{
+                            EntityType = "Group"; EntityName = $FolderBackup.Name; EntityId = $FolderBackup.Id
+                            FieldName = $Field.Name
+                            BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                            CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                        }
+                    }
+                }
+                if ($IncludeDevices) {
+                    foreach ($DeviceBackup in $FolderBackup.Devices) {
+                        $CurrentDeviceFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $DeviceBackup.Id
+                        foreach ($Field in $DeviceBackup.CustomFields.PSObject.Properties) {
+                            $BackupValue = $Field.Value; $CurrentValue = $CurrentDeviceFields.$($Field.Name)
+                            if ($BackupValue -ne $CurrentValue) {
+                                $Differences += @{
+                                    EntityType = "Device"; EntityName = $DeviceBackup.Name; EntityId = $DeviceBackup.Id
+                                    FieldName = $Field.Name
+                                    BackupValue  = if ([string]::IsNullOrWhiteSpace($BackupValue)) { "(empty)" } else { $BackupValue }
+                                    CurrentValue = if ([string]::IsNullOrWhiteSpace($CurrentValue)) { "(empty)" } else { $CurrentValue }
+                                }
                             }
                         }
                     }

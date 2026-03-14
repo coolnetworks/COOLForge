@@ -319,7 +319,7 @@ function Restore-GroupHierarchy {
                     $ValueToSet = $Decision.Value
                     if (-not [string]::IsNullOrWhiteSpace($ValueToSet)) {
                         $SetResult = Set-LevelCustomFieldValue -ApiKey $Script:ResolvedApiKey `
-                            -EntityType "folder" -EntityId $NewGroup.id `
+                            -EntityType "group" -EntityId $NewGroup.id `
                             -FieldReference $Prop.Name -Value $ValueToSet
 
                         if ($SetResult) {

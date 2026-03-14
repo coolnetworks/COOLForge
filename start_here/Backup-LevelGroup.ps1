@@ -104,7 +104,7 @@ function Get-GroupHierarchy {
     Write-Host "${Indent}Processing: $($Group.name)" -ForegroundColor DarkGray
 
     # Get custom field values for this group
-    $CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:ResolvedApiKey -EntityType "folder" -EntityId $GroupId
+    $CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:ResolvedApiKey -EntityType "group" -EntityId $GroupId
 
     $GroupBackup = @{
         Id           = $Group.id
