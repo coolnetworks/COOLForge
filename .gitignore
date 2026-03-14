@@ -41,3 +41,4 @@ MEETING*.md
 
 # Personal notes folder
 /mynotes/
+vendor/node_modules
