@@ -4,7 +4,7 @@
  *
  * Iterates all Level.io device groups, creates corresponding MeshCentral
  * device groups, and writes the meshid back to each Level.io group via
- * the custom field: policy_meshcentral_group_meshids
+ * the custom field: policy_meshcentral_meshid (one value per group via assigned_to_id)
  *
  * Run whenever a new Level.io group is created.
  *
@@ -16,7 +16,7 @@
  *   MESH_URL               - MeshCentral server wss:// URL
  *   MESH_USER              - MeshCentral username
  *   MESH_PASS              - MeshCentral password
- *   MESHID_FIELD           - Level.io custom field name (default: policy_meshcentral_group_meshids)
+ *   MESHID_FIELD           - Level.io custom field name (default: policy_meshcentral_meshid)
  */
 
 'use strict';
@@ -34,7 +34,7 @@ const LEVEL_URL  = 'https://api.level.io/v2';
 const MESH_URL   = process.env.MESH_URL       || 'wss://mc.cool.net.au';
 const MESH_USER  = process.env.MESH_USER      || 'levelcreation';
 const MESH_PASS  = process.env.MESH_PASS      || 'r*S2vJIoydUop4F#EKE!wsAL@dOVDpGDpdg9clOLAzWoea!k';
-const MESHID_FIELD = process.env.MESHID_FIELD || 'policy_meshcentral_group_meshids';
+const MESHID_FIELD = process.env.MESHID_FIELD || 'policy_meshcentral_meshid';
 const MESHCTRL   = path.join(__dirname, '..', 'vendor', 'meshctrl.js');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -204,33 +204,23 @@ async function main() {
             results.existing.push({ levelPath, mcName, meshid });
         }
 
-        // 5. Collect meshid for global map (written after all groups processed)
+        // 5. Write meshid to Level.io group via per-group custom field value
         if (DRY_RUN) {
-            log(`  [DRY-RUN] Would add to global meshid map: ${mcName}`);
+            log(`  [DRY-RUN] Would write meshid to Level group "${group.name}" (id=${group.id.slice(-8)})`);
+            continue;
         }
-    }
 
-    // 6. Write global meshid map to Level.io as field default value
-    const meshidMap = {};
-    for (const r of [...results.created, ...results.existing]) {
-        meshidMap[r.mcName] = r.meshid;
-    }
-    const mapJson = JSON.stringify(meshidMap);
-
-    if (!DRY_RUN && Object.keys(meshidMap).length > 0) {
-        log('Writing global meshid map to Level.io...');
         const setResult = await levelPatch('/custom_field_values', {
             custom_field_id: meshidField.id,
-            assigned_to_id:  null,
-            value:           mapJson
+            assigned_to_id:  group.id,
+            value:           meshid
         });
+
         if (setResult.status === 200 || setResult.status === 201) {
-            log('Global meshid map written OK (' + Object.keys(meshidMap).length + ' groups)');
+            log(`  Wrote meshid to Level group "${group.name}" OK`);
         } else {
-            warn('Failed to write global map: HTTP ' + setResult.status);
+            warn(`  Failed to write meshid to Level group "${group.name}": HTTP ${setResult.status}`);
         }
-    } else if (DRY_RUN) {
-        log('[DRY-RUN] Would write global meshid map: ' + mapJson);
     }
 
     // 7. Summary

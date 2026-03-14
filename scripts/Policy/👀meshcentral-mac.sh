@@ -1,6 +1,6 @@
 #!/bin/bash
 # MeshCentral Policy Script - macOS
-# Version: 2026.03.14.01
+# Version: 2026.03.14.02
 # Target: Level.io RMM
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -16,8 +16,7 @@ POLICY_MAC_DOWNLOAD_URL="{{cf_policy_meshcentral_mac_download_url}}"
 LEVEL_API_KEY="{{cf_apikey}}"
 LEVEL_DEVICE_ID="{{level_device_id}}"
 DEVICE_TAGS="{{level_tag_names}}"
-LEVEL_GROUP_PATH="{{level_group_path}}"
-POLICY_MESHCENTRAL_GROUP_MESHIDS="{{cf_policy_meshcentral_group_meshids}}"
+POLICY_MESHCENTRAL_MESHID="{{cf_policy_meshcentral_meshid}}"
 
 # ============================================================
 # CONFIGURATION
@@ -300,16 +299,6 @@ remove_level_policy_tag() {
 # MESHCENTRAL GROUP INSTALLER HELPERS
 # ============================================================
 
-sanitise_group_name() {
-    local raw="$1"
-    local name
-    name="${raw//\//  }"        # slashes to spaces
-    name="${name//\\/  }"       # backslashes to spaces
-    name=$(echo "$name" | sed 's/^[^A-Za-z]*//')  # strip leading non-alpha
-    name=$(echo "$name" | tr -s ' ')              # normalise whitespace
-    echo "${name%% }"
-}
-
 get_mac_arch_id() {
     # MeshCentral agent type IDs: macOS x64=10, macOS ARM=16
     local machine
@@ -317,36 +306,13 @@ get_mac_arch_id() {
     case "$machine" in
         arm64)  echo 16 ;;
         x86_64) echo 10 ;;
-        *)      echo 10 ;;  # fallback to x64
+        *)      echo 10 ;;
     esac
 }
 
 get_group_installer_url() {
-    if [ -z "$POLICY_MESHCENTRAL_GROUP_MESHIDS" ] || [[ "$POLICY_MESHCENTRAL_GROUP_MESHIDS" == "{{cf_"* ]]; then
-        log_warn "No meshid map (policy_meshcentral_group_meshids not set)"
-        echo ""
-        return 1
-    fi
-
-    if [ -z "$LEVEL_GROUP_PATH" ] || [[ "$LEVEL_GROUP_PATH" == "{{level_"* ]]; then
-        log_warn "No Level.io group path available"
-        echo ""
-        return 1
-    fi
-
-    local sanitised
-    sanitised=$(sanitise_group_name "$LEVEL_GROUP_PATH")
-    log_info "Group lookup: '$LEVEL_GROUP_PATH' -> '$sanitised'"
-
-    local escaped
-    escaped=$(echo "$sanitised" | sed 's/[.*+?^${}()|[\\]]/\\&/g')
-    local meshid
-    meshid=$(echo "$POLICY_MESHCENTRAL_GROUP_MESHIDS" | \
-        grep -oE ""${escaped}"[[:space:]]*:[[:space:]]*"[^"]+"" | \
-        sed 's/.*"\([^"]*\)"[[:space:]]*$/\1/')
-
-    if [ -z "$meshid" ]; then
-        log_warn "Group '$sanitised' not found in meshid map"
+    if [ -z "$POLICY_MESHCENTRAL_MESHID" ] || [[ "$POLICY_MESHCENTRAL_MESHID" == "{{cf_"* ]]; then
+        log_warn "No meshid (policy_meshcentral_meshid not set for this group - run provision-mesh-groups.js)"
         echo ""
         return 1
     fi
@@ -359,9 +325,9 @@ get_group_installer_url() {
     arch_id=$(get_mac_arch_id)
 
     local encoded_meshid
-    encoded_meshid=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$meshid" 2>/dev/null || echo "$meshid")
+    encoded_meshid=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$POLICY_MESHCENTRAL_MESHID" 2>/dev/null || echo "$POLICY_MESHCENTRAL_MESHID")
 
-    log_success "Found meshid for group '$sanitised' (arch=$arch_id)"
+    log_info "Group installer URL: arch=$arch_id server=$server"
     echo "https://${server}/meshagents?id=${arch_id}&meshid=${encoded_meshid}&installflags=0"
 }
 

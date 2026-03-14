@@ -536,7 +536,7 @@ e3c5daa00b33e0522f158c7a2b6b6f3f  launchers/Policy/👀chrome.ps1
 c0b688357d3ef5d3e479d60b0178730a  launchers/Policy/👀dns.ps1
 f0269be674d70cd228ef8ec9ad31594b  launchers/Policy/👀dnsfilter.ps1
 ff813cb28d4c66b75eb635971aa64d4b  launchers/Policy/👀huntress.ps1
-442e6e8b19c607c1a01816db109cfe20  launchers/Policy/👀meshcentral.ps1
+acc53b6037c770b500a49887431cad95  launchers/Policy/👀meshcentral.ps1
 435a85678914f119e671850d3ddb4276  launchers/Policy/👀screenconnect.ps1
 8224fe8674d5eee9462b5be82f650da7  launchers/Policy/👀unchecky.ps1
 0a07c16c04edf548c5708d59099b2944  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
@@ -583,7 +583,7 @@ ca9416ece08a12155a9caf845295f6d1  scripts/Policy/👀cipp.ps1
 0ba4fa943a9a669edef425be17b59c16  scripts/Policy/👀dns.ps1
 1b8df665a1ab21b6b36a85bab68018d5  scripts/Policy/👀dnsfilter.ps1
 026062b553f3426618bd6ecf3b9656f8  scripts/Policy/👀huntress.ps1
-6398c0053c29b331bf149385f787365a  scripts/Policy/👀meshcentral.ps1
+d0b9127105b04353cc58a506302f8a4a  scripts/Policy/👀meshcentral.ps1
 b8e4c10a37ea64167efd5f7f5015b5c7  scripts/Policy/👀screenconnect.ps1
 e45eded4d39ccaec89e9c8b5156f9bba  scripts/Policy/👀unchecky.ps1
 ecb2223bec8c1cb48bb69bcc088fc9b6  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1

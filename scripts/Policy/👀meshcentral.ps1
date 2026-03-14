@@ -28,7 +28,7 @@
     - policy_meshcentral = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.03.14.02
+    Version:          2026.03.14.03
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -52,7 +52,7 @@
 #>
 
 # Software Policy - MeshCentral
-# Version: 2026.03.14.02
+# Version: 2026.03.14.03
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -117,36 +117,15 @@ if ([string]::IsNullOrWhiteSpace($ServerUrl) -or $ServerUrl -like "{{*}}") { $Se
 $DownloadUrl = Get-Variable -Name "policy_meshcentral_download_url" -ValueOnly -ErrorAction SilentlyContinue
 if ([string]::IsNullOrWhiteSpace($DownloadUrl) -or $DownloadUrl -like "{{*}}") { $DownloadUrl = $null }
 
-# Group meshid map: JSON keyed by sanitised Level.io group path
-# e.g. {"COOLNETWORKS AJB": "meshid...", "COOLNETWORKS FAMILY": "meshid..."}
+# Per-group meshid — Level.io injects the correct value for this device's group
 # Provisioned by: tools/provision-mesh-groups.js on cnml-ajom01
-$MeshIdMapJson = Get-Variable -Name "policy_meshcentral_group_meshids" -ValueOnly -ErrorAction SilentlyContinue
-if ([string]::IsNullOrWhiteSpace($MeshIdMapJson) -or $MeshIdMapJson -like "{{*}}") { $MeshIdMapJson = $null }
-
-# Level.io group path injected by launcher from {{level_group_path}}
-# e.g. "COOLNETWORKS/AJB" -> sanitised to "COOLNETWORKS AJB" for map lookup
-if ([string]::IsNullOrWhiteSpace($LevelGroupPath) -or $LevelGroupPath -like "{{*}}") { $LevelGroupPath = $null }
+$MeshId = Get-Variable -Name "policy_meshcentral_meshid" -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($MeshId) -or $MeshId -like "{{*}}") { $MeshId = $null }
 
 
 # ============================================================
-# MESHCENTRAL GROUP INSTALLER HELPERS
+# MESHCENTRAL INSTALLER HELPERS
 # ============================================================
-
-function Get-SanitisedGroupName {
-    <#
-    .SYNOPSIS
-        Sanitises a Level.io group path to match a MeshCentral group name.
-    .NOTES
-        "COOLNETWORKS/AJB" -> "COOLNETWORKS AJB"
-        Matches the sanitisation in tools/provision-mesh-groups.js
-    #>
-    param([string]$GroupPath)
-    if ([string]::IsNullOrWhiteSpace($GroupPath)) { return $null }
-    $Name = $GroupPath -replace '[/\\]', ' '
-    $Name = $Name -replace '^[^A-Za-z]+', ''
-    $Name = ($Name -split '\s+' | Where-Object { $_ }) -join ' '
-    return $Name.Trim()
-}
 
 function Get-WindowsArchId {
     <#
@@ -165,50 +144,25 @@ function Get-WindowsArchId {
 function Get-GroupInstallerUrl {
     <#
     .SYNOPSIS
-        Looks up the meshid for this device's Level.io group and returns a
-        group-specific MeshCentral agent installer URL.
-    .NOTES
-        URL format: https://<server>/meshagents?id=<arch_id>&meshid=<meshid>&installflags=0
+        Builds a group-specific MeshCentral installer URL from the per-group meshid.
+        Level.io injects the correct meshid for this device's group via cascade.
+        URL: https://<server>/meshagents?id=<arch_id>&meshid=<meshid>&installflags=0
     #>
     param(
         [string]$ServerUrl,
-        [string]$MeshIdMapJson,
-        [string]$LevelGroupPath
+        [string]$MeshId
     )
 
-    if ([string]::IsNullOrWhiteSpace($MeshIdMapJson)) {
-        Write-LevelLog "No meshid map available (policy_meshcentral_group_meshids not set)" -Level "WARN"
-        return $null
-    }
-
-    if ([string]::IsNullOrWhiteSpace($LevelGroupPath)) {
-        Write-LevelLog "No Level.io group path available - cannot look up meshid" -Level "WARN"
-        return $null
-    }
-
-    try {
-        $MeshIdMap = $MeshIdMapJson | ConvertFrom-Json -ErrorAction Stop
-    }
-    catch {
-        Write-LevelLog "Failed to parse meshid map JSON: $($_.Exception.Message)" -Level "WARN"
-        return $null
-    }
-
-    $SanitisedGroup = Get-SanitisedGroupName -GroupPath $LevelGroupPath
-    Write-LevelLog "Group lookup: '$LevelGroupPath' -> '$SanitisedGroup'"
-
-    $MeshId = $MeshIdMap.$SanitisedGroup
     if ([string]::IsNullOrWhiteSpace($MeshId)) {
-        Write-LevelLog "Group '$SanitisedGroup' not found in meshid map - run tools/provision-mesh-groups.js" -Level "WARN"
+        Write-LevelLog "No meshid available (policy_meshcentral_meshid not set for this group)" -Level "WARN"
         return $null
     }
-
-    Write-LevelLog "Found meshid for group '$SanitisedGroup'" -Level "SUCCESS"
 
     $Server = ($ServerUrl -replace '^https?://', '' -replace '/+$', '').Trim()
     if ([string]::IsNullOrWhiteSpace($Server)) { $Server = "mc.cool.net.au" }
     $ArchId = Get-WindowsArchId
     $EncodedMeshId = [System.Uri]::EscapeDataString($MeshId)
+    Write-LevelLog "Group installer: arch=$ArchId server=$Server" -Level "DEBUG"
     return "https://$Server/meshagents?id=$ArchId&meshid=$EncodedMeshId&installflags=0"
 }
 
@@ -412,33 +366,29 @@ function Install-Meshcentral {
     param([string]$ScratchFolder)
 
     # Resolve installer URL:
-    # Priority 1: Group-specific URL via meshid map (policy_meshcentral_group_meshids)
+    # Priority 1: Group-specific URL via per-group meshid (policy_meshcentral_meshid)
     # Priority 2: Static fallback (policy_meshcentral_download_url)
     $ResolvedDownloadUrl = $DownloadUrl
 
-    $GroupUrl = Get-GroupInstallerUrl -ServerUrl $ServerUrl `
-        -MeshIdMapJson $MeshIdMapJson -LevelGroupPath $LevelGroupPath
+    $GroupUrl = Get-GroupInstallerUrl -ServerUrl $ServerUrl -MeshId $MeshId
     if ($GroupUrl) {
         $ResolvedDownloadUrl = $GroupUrl
-        $SanitisedGroup = Get-SanitisedGroupName -GroupPath $LevelGroupPath
-        $ArchId = Get-WindowsArchId
-        Write-LevelLog "Using group-specific installer (arch=$ArchId, group=$SanitisedGroup)" -Level "SUCCESS"
+        Write-LevelLog "Using group-specific installer (arch=$(Get-WindowsArchId))" -Level "SUCCESS"
     }
     elseif ($DownloadUrl) {
-        Write-LevelLog "Meshid map lookup failed - using static download URL fallback" -Level "WARN"
+        Write-LevelLog "No meshid for this group - using static download URL fallback" -Level "WARN"
     }
 
     if ([string]::IsNullOrWhiteSpace($ResolvedDownloadUrl)) {
         Write-Host "Alert: MeshCentral install failed - no installer URL available"
-        Write-Host "  Set policy_meshcentral_group_meshids (run tools/provision-mesh-groups.js on cnml-ajom01)"
+        Write-Host "  Run tools/provision-mesh-groups.js to provision this group's meshid"
         Write-Host "  OR set policy_meshcentral_download_url as a static fallback"
         Write-LevelLog "No installer URL available" -Level "ERROR"
         return $false
     }
 
     Write-LevelLog "Installer URL: $ResolvedDownloadUrl"
-    if ($ServerUrl)      { Write-LevelLog "Expected Server: $ServerUrl" }
-    if ($LevelGroupPath) { Write-LevelLog "Target Group: $LevelGroupPath" }
+    if ($ServerUrl) { Write-LevelLog "Expected Server: $ServerUrl" }
 
     # Determine installer path - use scratch folder binaries dir
     $InstallerPath = Join-Path (Get-BinariesFolder -ScratchFolder $ScratchFolder) $InstallerName
@@ -654,7 +604,7 @@ function Remove-Meshcentral {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.03.14.02"
+$ScriptVersion = "2026.03.14.03"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -679,8 +629,7 @@ $InvokeParams = @{ ScriptBlock = {
         'LevelApiKey' = $LevelApiKey
         'ServerUrl' = if ($ServerUrl) { $ServerUrl } else { '(not set)' }
         'DownloadUrl' = if ($DownloadUrl) { '(configured)' } else { '(not set)' }
-        'MeshIdMapJson' = if ($MeshIdMapJson) { "(configured, $($MeshIdMapJson.Length) chars)" } else { '(not set)' }
-        'LevelGroupPath' = if ($LevelGroupPath) { $LevelGroupPath } else { '(not set)' }
+        'MeshId' = if ($MeshId) { '(set, ' + $MeshId.Length + ' chars)' } else { '(not set - run provision-mesh-groups.js)' }
     } -MaskApiKey
 
     Write-Host ""
