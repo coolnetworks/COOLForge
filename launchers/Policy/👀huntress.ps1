@@ -169,9 +169,7 @@ if ($DebugScripts -and (Test-Path $LibraryPath)) {
     try {
         $LocalContent = Get-Content -Path $LibraryPath -Raw -ErrorAction Stop
         # Strip BOM for consistent hash comparison
-        if ($LocalContent.StartsWith([char]0xFEFF)) {
-            $LocalContent = $LocalContent.Substring(1)
-        }
+        $LocalContent = $LocalContent.TrimStart([char]0xFEFF)
         $LocalVersion = Get-ModuleVersion -Content $LocalContent
         $LocalHash = Get-StringMD5 -Content $LocalContent
         if ($DebugScripts) { Write-Host "[DEBUG] Local library hash: $LocalHash" }
@@ -200,9 +198,7 @@ if ($NeedsUpdate) {
     try {
         $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
         # Strip UTF-8 BOM if present (shows as ? when downloaded via Invoke-WebRequest)
-        if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
-            $RemoteContent = $RemoteContent.Substring(1)
-        }
+        $RemoteContent = $RemoteContent.TrimStart([char]0xFEFF)
         $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
         $RemoteHash = Get-StringMD5 -Content $RemoteContent
 
@@ -213,9 +209,7 @@ if ($NeedsUpdate) {
             Write-Host "[*] Hash mismatch - retrying with cache-bust..."
             $LibFetchUrl = "$LibraryUrl`?t=$CacheBuster"
             $RemoteContent = (Invoke-WebRequest -Uri $LibFetchUrl -UseBasicParsing -TimeoutSec 10 -Headers $NoCacheHeaders).Content
-            if ($RemoteContent.StartsWith([char]0xFEFF) -or $RemoteContent.StartsWith('?')) {
-                $RemoteContent = $RemoteContent.Substring(1)
-            }
+            $RemoteContent = $RemoteContent.TrimStart([char]0xFEFF)
             $RemoteVersion = Get-ModuleVersion -Content $RemoteContent
             $RemoteHash = Get-StringMD5 -Content $RemoteContent
         }

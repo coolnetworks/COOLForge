@@ -509,49 +509,49 @@ a10120ef9feb15cecf230d752448a032  backups/Level2/scripts/⛔DROPBOX.ps1
 fda9c1094c7961ee68989b22005b8ad0  backups/Level2/scripts/👀DNSFILTER.ps1
 a192dfa8901006316b1e484514ed0209  backups/Level2/scripts/👀unchecky.ps1
 4d2b8fc62d5cf1fcb8448452e08baecd  backups/Level2/scripts/🙏CIPPCHECK.ps1
-9a5b5949e4d8443e144bf79833f3d898  launchers/Alert/🔔Technician Alert Monitor.ps1
-bfaa5cf3c013ebea5e16a821028a70d5  launchers/Alert/🔔Wake tagged devices.ps1
-91e50be37faf35b1fd03ae8a4fc7816d  launchers/Alert/🙏Wake all devices in Level group.ps1
-7c2695d8b97e0d20adb46469615004f7  launchers/Config/⚙️COOLForge Cache Sync.ps1
-8e2d512bf4cae64b4fafc7e3f8a35c1d  launchers/Config/⚙️Configure Wake-on-LAN.ps1
-c8a372da432ff641321a1b452b149c7e  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
-980ab5e4aa0ad7076e074557093b1ddf  launchers/Config/🔧Prevent Sleep.ps1
-71305655f01e5793b40b331798bd644f  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
-c1f5f8849c6ab72fba9ab1fe5bf2f601  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
-843d9ea54b3191038191b4dbcb8a06c2  launchers/Fix/🔧Fix Windows 10 Services.ps1
-53defff30693f8193c9aec88562d1229  launchers/Fix/🔧Fix Windows 11 Services.ps1
-32d21e3bc6b611887ef9dd6407b27b59  launchers/Fix/🔧Fix Windows 7 Services.ps1
-063ac13d13ae2658979e6da4536d44d7  launchers/Fix/🔧Fix Windows 8 Services.ps1
-ef8a5356c56a361e83ce4346747e6b79  launchers/Fix/🔧Fix Windows 8.1 Services.ps1
-fafd7beb4640a5f04ad73fc5529bc64c  launchers/Fix/🔧Fix Windows Location Services.ps1
-32f655c3015a5f756d74613ca64dd239  launchers/Monitor/👀Check Windows Location Services.ps1
-0cf8ce4d161cae2f8d06d5a5e17cbf53  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
-f33a7adb0e778c3d2a7c7df0520c953b  launchers/Policy/Chrome/👀Chrome Location Services.ps1
-5e005790c84898cd2dd80a44464ec0e4  launchers/Policy/Windows/👀Windows Location Services.ps1
-8482a8f6eafd34add358487122e0b363  launchers/Policy/👀Hostname Mismatch.ps1
-37d74623720e4deb343c1f4e272267ec  launchers/Policy/👀bitwarden.ps1
-e3c5daa00b33e0522f158c7a2b6b6f3f  launchers/Policy/👀chrome.ps1
-7a59dde82bb4463ed0e4cdd6bd10694c  launchers/Policy/👀cipp.ps1
-28d5dc3bcb1db96a1d718840b34d83cf  launchers/Policy/👀debug.ps1
-c0b688357d3ef5d3e479d60b0178730a  launchers/Policy/👀dns.ps1
-f0269be674d70cd228ef8ec9ad31594b  launchers/Policy/👀dnsfilter.ps1
-ff813cb28d4c66b75eb635971aa64d4b  launchers/Policy/👀huntress.ps1
-acc53b6037c770b500a49887431cad95  launchers/Policy/👀meshcentral.ps1
-435a85678914f119e671850d3ddb4276  launchers/Policy/👀screenconnect.ps1
-8224fe8674d5eee9462b5be82f650da7  launchers/Policy/👀unchecky.ps1
-0a07c16c04edf548c5708d59099b2944  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-7c424d0274389c6643b0b5135f8f38ec  launchers/Remove/⛔Force Remove Dropbox.ps1
-539d49baf0e9855604d2db82c0b39f04  launchers/Remove/⛔Force Remove Foxit.ps1
-539665f692cb461f0ccee3ca9ff7777e  launchers/Remove/⛔Force Remove McAfee.ps1
-829ebea6d1307072c00b8db204054bdd  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-91ee2cf451e2560accc094d0440ab50c  launchers/Remove/⛔Remove All RATs.ps1
-289665d62a6ff63677ca134336c1795e  launchers/Test/👀Test Show Versions.ps1
-4bb1c88604281f376102b3158868dd0e  launchers/Test/👀Test Variable Output.ps1
-525d8038fc74d4bcb11efc10e7bc8531  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-4ca0f8d7cc7cd0f828afc29dddfcfcf1  launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
-38db75f1c85109b3106151f9d2cad32b  launchers/Utility/⚙️Universal Disk Cleaner.ps1
-53e904271f29283693dacb783972ad81  launchers/_template.ps1
-14922ce336fb90379c6d7e92dfecbb6e  modules/COOLForge-Common.psm1
+f03e574a7191c60da274f7ae9dd62740  launchers/Alert/🔔Technician Alert Monitor.ps1
+67bb4b6fc4bed06e561ab37dcd3cffd0  launchers/Alert/🔔Wake tagged devices.ps1
+04a74de01f26e963787cea5db450f7c1  launchers/Alert/🙏Wake all devices in Level group.ps1
+043fb967ef16c012fcb948945e53be4a  launchers/Config/⚙️COOLForge Cache Sync.ps1
+04e3de37c6f0aab396ef3c1b15950079  launchers/Config/⚙️Configure Wake-on-LAN.ps1
+0e1414bffe46bc9c8a85929184aa542a  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
+cd57ffda3d780ed27375314cc85041f1  launchers/Config/🔧Prevent Sleep.ps1
+8c56e25c883071c2c7237f75844f6fff  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
+587ca98ec29430eb03d165a16b87ae91  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
+1a9baa628db9553858324efc9e32cb2e  launchers/Fix/🔧Fix Windows 10 Services.ps1
+87f7efdeb3a118d8c4d5da16a342f5f3  launchers/Fix/🔧Fix Windows 11 Services.ps1
+8bfd5feb5c3b8f9994c0afee390245a1  launchers/Fix/🔧Fix Windows 7 Services.ps1
+e4b6ac485844b2862013ce2bc0bc6c61  launchers/Fix/🔧Fix Windows 8 Services.ps1
+5a4a02b7ee6ec49914e32e3a2b73f0d2  launchers/Fix/🔧Fix Windows 8.1 Services.ps1
+0d125daf0979df1195b6c484cdf325d9  launchers/Fix/🔧Fix Windows Location Services.ps1
+a04bedbc14bc9a9967630679fe7b1273  launchers/Monitor/👀Check Windows Location Services.ps1
+de0f23b45f08bf222b965ede9c1766eb  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
+fe901c5a4e45b396dbc3b874680d8b1e  launchers/Policy/Chrome/👀Chrome Location Services.ps1
+220005c345bfa583165b548c43de5e19  launchers/Policy/Windows/👀Windows Location Services.ps1
+021bd9a952e68daee73eebb6fe1aaf98  launchers/Policy/👀Hostname Mismatch.ps1
+bcb7582da929754e4439787fc8870bd1  launchers/Policy/👀bitwarden.ps1
+31be337c81aec79dd9ddf05e51a0432d  launchers/Policy/👀chrome.ps1
+3f0643627e0957fc75a3537554969337  launchers/Policy/👀cipp.ps1
+23718ecdf8c22fccef33f6dbd8fe2237  launchers/Policy/👀debug.ps1
+2cb8c2bf38c291040f349091c37e04bd  launchers/Policy/👀dns.ps1
+92a7bec973a9ab89ed0f4a5938cafddd  launchers/Policy/👀dnsfilter.ps1
+dc381d4c0cd9132a7349797a804f08d5  launchers/Policy/👀huntress.ps1
+9c2329479fbfbae498da8473178fa1eb  launchers/Policy/👀meshcentral.ps1
+37d6245cb98b153d7bf9078d80da1ea9  launchers/Policy/👀screenconnect.ps1
+7112c334745a2ebf58092fc81bcea3d4  launchers/Policy/👀unchecky.ps1
+ae4b4388e9ae8e806fdc6753e97c24d6  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+edae231a28333bb08e066c6b0ca202c9  launchers/Remove/⛔Force Remove Dropbox.ps1
+70a00e18221fd34c859820e77393dade  launchers/Remove/⛔Force Remove Foxit.ps1
+3c0e5ff2c6dafb65012d9079d59b8c5f  launchers/Remove/⛔Force Remove McAfee.ps1
+5dad4db87c68ed61353cf12d1616edd3  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+00e9b6e3a9be307ee7a2f0cf933bb405  launchers/Remove/⛔Remove All RATs.ps1
+6b6e14c9229033f9decaab6a35136d17  launchers/Test/👀Test Show Versions.ps1
+7cb23d43eb5bac3b6b25d9f3ac552c90  launchers/Test/👀Test Variable Output.ps1
+72e1f4308c135f7f9f9900e607343867  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+369b5f1e19f4d35712cbcc4ba63eafd1  launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
+bd86d591ac8d550f852d70cf32c03b95  launchers/Utility/⚙️Universal Disk Cleaner.ps1
+a7498e1380bf7ee4f1205f9b640ef171  launchers/_template.ps1
+7e8f94cfce17f2ee3d7ff9ebd082ca32  modules/COOLForge-Common.psm1
 bf0e05fd60905b4b7df9562defd25cd9  pre-release/Test-Syntax.ps1
 22f4b25eb31423533bcfae0c3dc787e4  pre-release/Update-Launchers.ps1
 3549c3739ef2e3716dfb7bac68e01dd5  pre-release/Update-MD5SUMS.ps1

@@ -7471,9 +7471,7 @@ function Invoke-ScriptLauncher {
     try {
         $RemoteScriptContent = (Invoke-WebRequest -Uri $ScriptUrl -UseBasicParsing -TimeoutSec 15 -Headers $NoCacheHeaders).Content
         # Strip BOM from downloaded content (prevents encoding issues when caching)
-        if ($RemoteScriptContent -is [string] -and $RemoteScriptContent.Length -gt 0 -and $RemoteScriptContent[0] -eq [char]0xFEFF) {
-            $RemoteScriptContent = $RemoteScriptContent.Substring(1)
-        }
+        $RemoteScriptContent = $RemoteScriptContent.TrimStart([char]0xFEFF)
         $RemoteScriptVersion = Get-ScriptVersion -Content $RemoteScriptContent -Source "remote script"
 
         if ($RemoteScriptVersion) {
@@ -7516,9 +7514,7 @@ function Invoke-ScriptLauncher {
                             $CacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
                             $CacheBustUrl = "$OriginalScriptUrl`?t=$CacheBuster"
                             $RemoteScriptContent = (Invoke-WebRequest -Uri $CacheBustUrl -UseBasicParsing -TimeoutSec 15).Content
-                            if ($RemoteScriptContent -is [string] -and $RemoteScriptContent.Length -gt 0 -and $RemoteScriptContent[0] -eq [char]0xFEFF) {
-                                $RemoteScriptContent = $RemoteScriptContent.Substring(1)
-                            }
+                            $RemoteScriptContent = $RemoteScriptContent.TrimStart([char]0xFEFF)
                             $ActualScriptMD5 = Get-ContentMD5 -Content $RemoteScriptContent
 
                             if ($ActualScriptMD5 -ne $ExpectedScriptMD5) {
