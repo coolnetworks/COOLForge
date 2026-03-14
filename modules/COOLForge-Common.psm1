@@ -7578,10 +7578,10 @@ function Invoke-ScriptLauncher {
     Write-Host "============================================================"
 
     $ScriptContent = [System.IO.File]::ReadAllText($ScriptPath, (New-Object System.Text.UTF8Encoding($true)))
-    # Strip UTF-8 BOM if present (prevents comment block parsing issues)
-    if ($ScriptContent.Length -gt 0 -and ($ScriptContent[0] -eq [char]0xFEFF -or $ScriptContent[0] -eq '?')) {
-        $ScriptContent = $ScriptContent.Substring(1)
-    }
+    # Strip BOM and any leading non-printable chars that break [scriptblock]::Create()
+    # [scriptblock]::Create() treats ' #' (leading whitespace before #) as a command, not a comment
+    $ScriptContent = $ScriptContent.TrimStart([char]0xFEFF, [char]0xFFFE, [char]0x3F, [char]0x00)
+    $ScriptContent = $ScriptContent.TrimStart()
 
     # Build variable injection block
     $VarsBlock = ""
