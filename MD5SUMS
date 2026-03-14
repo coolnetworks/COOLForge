@@ -1,4 +1,4 @@
-c4d804b3d2f22aef8c469c9cb7217860  COOLForge-Common.psm1
+9e3caaf8dfaeb0b26c38e307686f8ebc  COOLForge-Common.psm1
 ce02849c1b902205791bd0eb45e34fe6  backups/Level/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
 7effff07d553bc5e088bc8e89d44b8a0  backups/Level/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
 da3e53e4dc61e8092df9ef89060636e9  backups/Level/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
@@ -578,7 +578,7 @@ ed2be27a15b764fbc96b192a6610b411  scripts/Fix/🔧Fix Windows Location Services.
 b2c87901c75f4acd1b3e2d6fd976c2b8  scripts/Policy/Chrome/👀Chrome Location Services.ps1
 4f47fd7220e0fb4da9a5c53bc581dea8  scripts/Policy/Windows/👀Windows Location Services.ps1
 2d5e1a22dc05f8935203ea4a36507293  scripts/Policy/👀bitwarden.ps1
-f9c508e61cf51ff3c435813aa1f071ba  scripts/Policy/👀chrome.ps1
+b5c5024b00def564d6e29c12b29537ae  scripts/Policy/👀chrome.ps1
 ca9416ece08a12155a9caf845295f6d1  scripts/Policy/👀cipp.ps1
 0ba4fa943a9a669edef425be17b59c16  scripts/Policy/👀dns.ps1
 1b8df665a1ab21b6b36a85bab68018d5  scripts/Policy/👀dnsfilter.ps1

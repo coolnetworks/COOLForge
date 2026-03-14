@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     COOLForge-Common - Shared PowerShell module for Level.io automation scripts.
 
@@ -12,7 +12,7 @@
     - Device information utilities
 
 .NOTES
-    Version:    2026.01.08.02
+    Version:    2026.01.08.03
     Target:     Level.io RMM
     Location:   {{cf_coolforge_msp_scratch_folder}}\Libraries\COOLForge-Common.psm1
 
@@ -1820,10 +1820,11 @@ function Add-LevelPolicyTag {
         "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
         "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
         "Has"     { [char]0x2705 }                       # U+2705 Check mark
-        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
-        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
-        "Skip"    { [char]0x274C }                       # U+274C Cross mark
-        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Pin"       { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
+        "Block"     { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
+        "Skip"      { [char]0x274C }                       # U+274C Cross mark
+        "Verify"    { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Reinstall" { [char]::ConvertFromUtf32(0x1F504) }  # U+1F504 Clockwise arrows
     }
 
     $FullTagName = "$EmojiChar$TagName"
@@ -1918,10 +1919,11 @@ function Remove-LevelPolicyTag {
         "Install" { [char]::ConvertFromUtf32(0x1F64F) }  # U+1F64F Pray
         "Remove"  { [char]0x26D4 }                       # U+26D4 No entry
         "Has"     { [char]0x2705 }                       # U+2705 Check mark
-        "Pin"     { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
-        "Block"   { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
-        "Skip"    { [char]0x274C }                       # U+274C Cross mark
-        "Verify"  { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Pin"       { [char]::ConvertFromUtf32(0x1F4CC) }  # U+1F4CC Pushpin
+        "Block"     { [char]::ConvertFromUtf32(0x1F6AB) }  # U+1F6AB No entry sign
+        "Skip"      { [char]0x274C }                       # U+274C Cross mark
+        "Verify"    { [char]::ConvertFromUtf32(0x1F440) }  # U+1F440 Eyes
+        "Reinstall" { [char]::ConvertFromUtf32(0x1F504) }  # U+1F504 Clockwise arrows
     }
 
     $FullTagName = "$EmojiChar$TagName"

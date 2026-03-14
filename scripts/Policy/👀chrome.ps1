@@ -31,7 +31,7 @@
     - policy_chrome = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.01.18.01
+    Version:          2026.01.18.02
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -48,7 +48,7 @@
 #>
 
 # Software Policy - Chrome Enterprise
-# Version: 2026.01.18.01
+# Version: 2026.01.18.03
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -661,6 +661,16 @@ $InvokeParams = @{ ScriptBlock = {
             }
             "Reinstall" {
                 Write-LevelLog "ACTION: Reinstalling $DisplayName" -Level "INFO"
+                if ($Policy.ActionSource -eq "Tag" -and $LevelApiKey) {
+                    $Device = Find-LevelDevice -ApiKey $LevelApiKey -Hostname $DeviceHostname
+                    if ($Device) {
+                        $FieldRef = "policy_$SoftwareName"
+                        $SetResult = Set-LevelCustomFieldValue -ApiKey $LevelApiKey -EntityType "device" -EntityId $Device.id -FieldReference $FieldRef -Value "install"
+                        if ($SetResult) {
+                            Write-LevelLog "Set device custom field '$FieldRef' = 'install'" -Level "SUCCESS"
+                        }
+                    }
+                }
                 if ($IsInstalled) {
                     $RemoveSuccess = Remove-Chrome
                     if (-not $RemoveSuccess) {
