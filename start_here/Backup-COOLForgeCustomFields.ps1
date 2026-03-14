@@ -189,19 +189,19 @@ function Invoke-BackupAction {
         Write-LevelSuccess "Backup saved to: $ZipPath"
 
         # Count what was backed up
-        $OrgCount = $Backup.Organizations.Count
-        $FolderCount = ($Backup.Organizations | ForEach-Object { $_.Folders.Count } | Measure-Object -Sum).Sum
-        $DeviceCount = 0
-        if ($IncludeDevices) {
-            $DeviceCount = ($Backup.Organizations | ForEach-Object { $_.Folders | ForEach-Object { $_.Devices.Count } } | Measure-Object -Sum).Sum
-        }
+        $FieldCount    = if ($Backup.CustomFields) { $Backup.CustomFields.Count } else { 0 }
+        $GlobalCount   = if ($Backup.GlobalValues) { $Backup.GlobalValues.Count } else { 0 }
+        $GroupCount    = if ($Backup.Groups)        { $Backup.Groups.Count }       else { 0 }
+        $OverrideCount = if ($Backup.Groups)        { ($Backup.Groups | ForEach-Object { $_.Values.Count } | Measure-Object -Sum).Sum } else { 0 }
+        $DeviceCount   = if ($Backup.Devices)       { $Backup.Devices.Count }      else { 0 }
 
         Write-Host ""
         Write-Host "Backup Summary:" -ForegroundColor Cyan
-        Write-Host "  Organizations: $OrgCount"
-        Write-Host "  Folders: $FolderCount"
+        Write-Host "  Field definitions:   $FieldCount"
+        Write-Host "  Global values:       $GlobalCount"
+        Write-Host "  Groups:              $GroupCount ($OverrideCount explicit overrides)"
         if ($IncludeDevices) {
-            Write-Host "  Devices: $DeviceCount"
+            Write-Host "  Devices with overrides: $DeviceCount"
         }
     }
     else {

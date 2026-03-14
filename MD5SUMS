@@ -551,7 +551,7 @@ acc53b6037c770b500a49887431cad95  launchers/Policy/👀meshcentral.ps1
 4ca0f8d7cc7cd0f828afc29dddfcfcf1  launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
 38db75f1c85109b3106151f9d2cad32b  launchers/Utility/⚙️Universal Disk Cleaner.ps1
 53e904271f29283693dacb783972ad81  launchers/_template.ps1
-8e45ed27e2837660ea4dba6b3ee89a5d  modules/COOLForge-Common.psm1
+88e4aadaaa80e545c7854fa1842e0366  modules/COOLForge-Common.psm1
 bf0e05fd60905b4b7df9562defd25cd9  pre-release/Test-Syntax.ps1
 22f4b25eb31423533bcfae0c3dc787e4  pre-release/Update-Launchers.ps1
 3549c3739ef2e3716dfb7bac68e01dd5  pre-release/Update-MD5SUMS.ps1
@@ -615,7 +615,7 @@ e471a903cd297be6f89c832f9fdbb15c  standalone_scripts/Remove/Remove-AnyDesk-Stand
 af11bd387fb991eb5b5cd58924db738a  standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
 265879657e7062e52317169299c18929  standalone_scripts/Utility/Wake-AllDevicesInFolder-Standalone.ps1
 c7452075d6e8d39a1c4ba221d372f08b  start_here/Add-COOLForgeCustomField.ps1
-fad2ac55a777033734979116503d6400  start_here/Backup-COOLForgeCustomFields.ps1
+4e4b44a17cebafaea8055af2afeb88e0  start_here/Backup-COOLForgeCustomFields.ps1
 9948f9cc13187e28fcf03c63ebc40420  start_here/Backup-LevelAutomationsAndScripts.ps1
 bf521a89ee2cd2049f45fb3b0a1cb26c  start_here/Backup-LevelGroup.ps1
 6511253572a74543f9aec1a429d772f5  start_here/Export-AnswerFile.ps1

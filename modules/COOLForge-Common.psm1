@@ -6483,77 +6483,151 @@ function Unprotect-ApiKey {
 # BACKUP/RESTORE FUNCTIONS (Admin Tools)
 # ============================================================
 
+function Get-LevelGlobalCustomFieldValues {
+    <#
+    .SYNOPSIS
+        Returns all global (org-level) custom field values — items with assigned_to_id: null.
+        Uses GET /v2/custom_field_values with no entity filter.
+    #>
+    param([string]$BaseUrl = "https://api.level.io/v2")
+
+    $Results = @()
+    $Uri = "$BaseUrl/custom_field_values?limit=100"
+
+    do {
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $Script:LevelApiKey -Method "GET"
+        if (-not $Result.Success) { break }
+        $Page = $Result.Data
+        $Items = if ($Page.data) { $Page.data } elseif ($Page -is [array]) { $Page } else { @() }
+        $Results += $Items
+        $HasMore = $Page.has_more
+        if ($HasMore -and $Items.Count -gt 0) {
+            $LastId = $Items[-1].custom_field_id
+            $Uri = "$BaseUrl/custom_field_values?limit=100&starting_after=$LastId"
+        } else { $HasMore = $false }
+    } while ($HasMore)
+
+    return $Results
+}
+
+function Get-LevelEntityCustomFieldOverrides {
+    <#
+    .SYNOPSIS
+        Returns only EXPLICIT custom field overrides for a specific entity (group or device).
+        Queries each field individually and checks if the returned assigned_to_id matches
+        the entity ID (meaning it is an explicit override, not an inherited global default).
+    #>
+    param(
+        [string]$EntityId,
+        [array]$CustomFields,
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Overrides = @()
+    foreach ($Field in $CustomFields) {
+        $Uri = "$BaseUrl/custom_field_values?assigned_to_id=$([System.Uri]::EscapeDataString($EntityId))&custom_field_id=$([System.Uri]::EscapeDataString($Field.id))"
+        $Result = Invoke-LevelApiCall -Uri $Uri -ApiKey $Script:LevelApiKey -Method "GET"
+        if (-not $Result.Success) { continue }
+        $Page = $Result.Data
+        $Items = if ($Page.data) { $Page.data } elseif ($Page -is [array]) { $Page } else { @() }
+        foreach ($Item in $Items) {
+            # Only keep items explicitly set for this entity (not inherited globals)
+            if ($Item.assigned_to_id -eq $EntityId -and -not [string]::IsNullOrWhiteSpace($Item.value)) {
+                $Overrides += $Item
+            }
+        }
+    }
+    return $Overrides
+}
+
+function Set-LevelCustomFieldValueDirect {
+    <#
+    .SYNOPSIS
+        Sets a custom field value directly via PATCH /v2/custom_field_values.
+        Supports organization (null), group, or device assigned_to_id.
+    #>
+    param(
+        [string]$FieldId,
+        [string]$AssignedToId = $null,
+        [string]$Value,
+        [string]$BaseUrl = "https://api.level.io/v2"
+    )
+
+    $Body = @{ custom_field_id = $FieldId; value = $Value }
+    if ($AssignedToId) { $Body.assigned_to_id = $AssignedToId }
+
+    $Result = Invoke-LevelApiCall -Uri "$BaseUrl/custom_field_values" -ApiKey $Script:LevelApiKey -Method "PATCH" -Body $Body
+    return $Result.Success
+}
+
 function Backup-AllCustomFields {
     <#
     .SYNOPSIS
         Creates a complete backup of all custom field values across the hierarchy.
+        Uses GET /v2/custom_field_values with assigned_to_id for global, groups, and devices.
+        Backup format v2.0: GlobalValues + Groups (+ optional Devices).
     #>
     param([switch]$IncludeDevices = $false)
 
     $Backup = @{
-        Timestamp     = (Get-Date).ToString("o")
-        Version       = "1.0"
-        CustomFields  = @()
-        Organizations = @()
+        Timestamp    = (Get-Date).ToString("o")
+        Version      = "2.0"
+        CustomFields = @()
+        GlobalValues = @()
+        Groups       = @()
+        Devices      = @()
     }
 
+    # 1. Field definitions
     Write-LevelInfo "Backing up custom field definitions..."
     $Fields = Get-LevelCustomFields -ApiKey $Script:LevelApiKey
     $Backup.CustomFields = $Fields
+    Write-LevelInfo "Found $($Fields.Count) custom field definition(s)."
 
-    Write-LevelInfo "Fetching organizations..."
-    $Orgs = Get-LevelOrganizations -ApiKey $Script:LevelApiKey
+    # 2. Global (org-level) values — assigned_to_id: null
+    Write-LevelInfo "Backing up global custom field values..."
+    $GlobalVals = Get-LevelGlobalCustomFieldValues
+    $Backup.GlobalValues = @($GlobalVals | Where-Object { -not [string]::IsNullOrWhiteSpace($_.value) })
+    Write-LevelInfo "Found $($Backup.GlobalValues.Count) global value(s)."
 
-    if (-not $Orgs -or $Orgs.Count -eq 0) {
-        Write-LevelWarning "No organizations found."
-        return $Backup
+    # 3. Group-level values
+    Write-LevelInfo "Fetching groups..."
+    $Groups = Get-LevelGroups -ApiKey $Script:LevelApiKey
+    $GroupCount = if ($Groups -is [array]) { $Groups.Count } else { if ($Groups) { 1 } else { 0 } }
+    Write-LevelInfo "Found $GroupCount group(s)."
+
+    foreach ($Group in $Groups) {
+        Write-Host "  Group: $($Group.name)" -ForegroundColor DarkGray
+        # Query each field individually — only collect explicit overrides for this group
+        $Overrides = Get-LevelEntityCustomFieldOverrides -EntityId $Group.id -CustomFields $Fields
+
+        $GroupBackup = @{
+            Id     = $Group.id
+            Name   = $Group.name
+            Values = $Overrides
+        }
+        Write-Host "    $($Overrides.Count) override(s)" -ForegroundColor DarkGray
+        $Backup.Groups += $GroupBackup
     }
 
-    $OrgCount = if ($Orgs -is [array]) { $Orgs.Count } else { 1 }
-    Write-LevelInfo "Found $OrgCount organization(s)."
+    # 4. Device-level values (optional — can be slow for large fleets)
+    if ($IncludeDevices) {
+        Write-LevelInfo "Backing up device-level custom field values..."
+        $Devices = Get-LevelDevices -ApiKey $Script:LevelApiKey
+        $DeviceCount = if ($Devices -is [array]) { $Devices.Count } else { if ($Devices) { 1 } else { 0 } }
+        Write-LevelInfo "Found $DeviceCount device(s)."
 
-    foreach ($Org in $Orgs) {
-        Write-Host "  Processing: $($Org.name)" -ForegroundColor DarkGray
-
-        $OrgBackup = @{
-            Id           = $Org.id
-            Name         = $Org.name
-            CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $Org.id
-            Folders      = @()
-        }
-
-        $Folders = Get-LevelOrganizationFolders -ApiKey $Script:LevelApiKey -OrgId $Org.id
-        $FolderCount = if ($Folders -is [array]) { $Folders.Count } else { if ($Folders) { 1 } else { 0 } }
-
-        if ($FolderCount -gt 0) {
-            Write-Host "    Found $FolderCount folder(s)" -ForegroundColor DarkGray
-        }
-
-        foreach ($Folder in $Folders) {
-            $FolderBackup = @{
-                Id           = $Folder.id
-                Name         = $Folder.name
-                ParentId     = $Folder.parent_id
-                CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $Folder.id
-                Devices      = @()
-            }
-
-            if ($IncludeDevices) {
-                $Devices = Get-LevelFolderDevices -ApiKey $Script:LevelApiKey -OrgId $Org.id -FolderId $Folder.id
-                foreach ($Device in $Devices) {
-                    $DeviceBackup = @{
-                        Id           = $Device.id
-                        Name         = $Device.name
-                        CustomFields = Get-LevelEntityCustomFields -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $Device.id
-                    }
-                    $FolderBackup.Devices += $DeviceBackup
+        foreach ($Device in $Devices) {
+            $Overrides = Get-LevelEntityCustomFieldOverrides -EntityId $Device.id -CustomFields $Fields
+            if ($Overrides.Count -gt 0) {
+                $Backup.Devices += @{
+                    Id     = $Device.id
+                    Name   = $Device.name
+                    Values = $Overrides
                 }
             }
-
-            $OrgBackup.Folders += $FolderBackup
         }
-
-        $Backup.Organizations += $OrgBackup
+        Write-LevelInfo "Backed up device values for $($Backup.Devices.Count) device(s) with overrides."
     }
 
     return $Backup
@@ -6629,6 +6703,8 @@ function Restore-CustomFields {
     <#
     .SYNOPSIS
         Restores custom field values from a backup.
+        Supports v2.0 format (GlobalValues + Groups + Devices) and
+        legacy v1.0 format (Organizations + Folders).
     #>
     param(
         [PSObject]$Backup,
@@ -6642,48 +6718,110 @@ function Restore-CustomFields {
     }
 
     Write-LevelInfo "Restoring from backup created: $($Backup.Timestamp)"
+    $Version = if ($Backup.Version) { $Backup.Version } else { "1.0" }
+    Write-LevelInfo "Backup format: v$Version"
     $Changes = 0
 
-    foreach ($Org in $Backup.Organizations) {
-        Write-Host "  Restoring: $($Org.Name)" -ForegroundColor DarkGray
+    if ($Version -eq "2.0") {
+        # ── v2.0: GlobalValues + Groups + Devices ──────────────────────────
 
-        foreach ($Field in $Org.CustomFields.PSObject.Properties) {
-            if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+        # Restore global (org-level) values
+        if ($Backup.GlobalValues) {
+            Write-Host "  Restoring global values..." -ForegroundColor DarkGray
+            foreach ($Item in $Backup.GlobalValues) {
+                if ([string]::IsNullOrWhiteSpace($Item.value)) { continue }
                 if ($DryRun) {
-                    Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on org" -ForegroundColor Yellow
-                }
-                else {
-                    if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $Org.Id -FieldReference $Field.Name -Value $Field.Value) {
+                    Write-Host "    [DRY-RUN] Global: $($Item.custom_field_name) = $($Item.value)" -ForegroundColor Yellow
+                } else {
+                    if (Set-LevelCustomFieldValueDirect -FieldId $Item.custom_field_id -Value $Item.value) {
                         $Changes++
+                    } else {
+                        Write-LevelWarning "  Failed to restore global: $($Item.custom_field_name)"
                     }
                 }
             }
         }
 
-        foreach ($Folder in $Org.Folders) {
-            foreach ($Field in $Folder.CustomFields.PSObject.Properties) {
+        # Restore group-level values
+        foreach ($Group in $Backup.Groups) {
+            if (-not $Group.Values -or $Group.Values.Count -eq 0) { continue }
+            Write-Host "  Restoring group: $($Group.Name) ($($Group.Values.Count) values)" -ForegroundColor DarkGray
+            foreach ($Item in $Group.Values) {
+                if ([string]::IsNullOrWhiteSpace($Item.value)) { continue }
+                if ($DryRun) {
+                    Write-Host "    [DRY-RUN] Group $($Group.Name): $($Item.custom_field_name) = $($Item.value)" -ForegroundColor Yellow
+                } else {
+                    if (Set-LevelCustomFieldValueDirect -FieldId $Item.custom_field_id -AssignedToId $Group.Id -Value $Item.value) {
+                        $Changes++
+                    } else {
+                        Write-LevelWarning "  Failed to restore group $($Group.Name): $($Item.custom_field_name)"
+                    }
+                }
+            }
+        }
+
+        # Restore device-level values
+        if ($IncludeDevices -and $Backup.Devices) {
+            foreach ($Device in $Backup.Devices) {
+                if (-not $Device.Values -or $Device.Values.Count -eq 0) { continue }
+                Write-Host "  Restoring device: $($Device.Name) ($($Device.Values.Count) values)" -ForegroundColor DarkGray
+                foreach ($Item in $Device.Values) {
+                    if ([string]::IsNullOrWhiteSpace($Item.value)) { continue }
+                    if ($DryRun) {
+                        Write-Host "    [DRY-RUN] Device $($Device.Name): $($Item.custom_field_name) = $($Item.value)" -ForegroundColor Yellow
+                    } else {
+                        if (Set-LevelCustomFieldValueDirect -FieldId $Item.custom_field_id -AssignedToId $Device.Id -Value $Item.value) {
+                            $Changes++
+                        } else {
+                            Write-LevelWarning "  Failed to restore device $($Device.Name): $($Item.custom_field_name)"
+                        }
+                    }
+                }
+            }
+        }
+
+    } else {
+        # ── v1.0 legacy: Organizations + Folders ───────────────────────────
+        Write-LevelInfo "Using legacy restore path (v1.0 backup format)"
+
+        foreach ($Org in $Backup.Organizations) {
+            Write-Host "  Restoring: $($Org.Name)" -ForegroundColor DarkGray
+
+            foreach ($Field in $Org.CustomFields.PSObject.Properties) {
                 if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
                     if ($DryRun) {
-                        Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on folder $($Folder.Name)" -ForegroundColor Yellow
-                    }
-                    else {
-                        if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $Folder.Id -FieldReference $Field.Name -Value $Field.Value) {
+                        Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on org" -ForegroundColor Yellow
+                    } else {
+                        if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "organization" -EntityId $Org.Id -FieldReference $Field.Name -Value $Field.Value) {
                             $Changes++
                         }
                     }
                 }
             }
 
-            if ($IncludeDevices) {
-                foreach ($Device in $Folder.Devices) {
-                    foreach ($Field in $Device.CustomFields.PSObject.Properties) {
-                        if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
-                            if ($DryRun) {
-                                Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on device $($Device.Name)" -ForegroundColor Yellow
+            foreach ($Folder in $Org.Folders) {
+                foreach ($Field in $Folder.CustomFields.PSObject.Properties) {
+                    if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                        if ($DryRun) {
+                            Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on folder $($Folder.Name)" -ForegroundColor Yellow
+                        } else {
+                            if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "folder" -EntityId $Folder.Id -FieldReference $Field.Name -Value $Field.Value) {
+                                $Changes++
                             }
-                            else {
-                                if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $Device.Id -FieldReference $Field.Name -Value $Field.Value) {
-                                    $Changes++
+                        }
+                    }
+                }
+
+                if ($IncludeDevices) {
+                    foreach ($Device in $Folder.Devices) {
+                        foreach ($Field in $Device.CustomFields.PSObject.Properties) {
+                            if (-not [string]::IsNullOrWhiteSpace($Field.Value)) {
+                                if ($DryRun) {
+                                    Write-Host "    [DRY-RUN] Would set $($Field.Name) = $($Field.Value) on device $($Device.Name)" -ForegroundColor Yellow
+                                } else {
+                                    if (Set-LevelCustomFieldValue -ApiKey $Script:LevelApiKey -EntityType "device" -EntityId $Device.Id -FieldReference $Field.Name -Value $Field.Value) {
+                                        $Changes++
+                                    }
                                 }
                             }
                         }
@@ -6695,8 +6833,7 @@ function Restore-CustomFields {
 
     if ($DryRun) {
         Write-LevelInfo "Dry run complete. No changes made."
-    }
-    else {
+    } else {
         Write-LevelSuccess "Restored $Changes custom field value(s)."
     }
 
