@@ -32,6 +32,7 @@ $ErrorActionPreference = "SilentlyContinue"
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
+$LevelGroupPath = "{{level_group_path}}"
 
 $GitHubPAT = @'
 {{cf_coolforge_pat}}
@@ -272,6 +273,7 @@ $LauncherVars = @{
     MspScratchFolder = $MspScratchFolder
     DeviceHostname   = $DeviceHostname
     DeviceTags       = $DeviceTags
+    LevelGroupPath   = $LevelGroupPath
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
     DebugLevel       = $DebugLevel

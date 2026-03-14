@@ -28,7 +28,7 @@
     - policy_meshcentral = "install" | "remove" | "pin" | ""
 
 .NOTES
-    Version:          2026.02.10.01
+    Version:          2026.03.14.01
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -52,7 +52,7 @@
 #>
 
 # Software Policy - MeshCentral
-# Version: 2026.02.10.01
+# Version: 2026.03.14.01
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -120,6 +120,132 @@ $DownloadUrlVar = "policy_meshcentral_download_url"
 $DownloadUrl = Get-Variable -Name $DownloadUrlVar -ValueOnly -ErrorAction SilentlyContinue
 if ([string]::IsNullOrWhiteSpace($DownloadUrl) -or $DownloadUrl -like "{{*}}") {
     $DownloadUrl = $null
+}
+
+# MeshCentral API key for group management (optional)
+$MeshApiKey = Get-Variable -Name "policy_meshcentral_api_key" -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($MeshApiKey) -or $MeshApiKey -like "{{*}}") { $MeshApiKey = $null }
+
+# Level.io group path for group-based installer URLs (e.g. "COOLNETWORKS/infra")
+$LevelGroupPath = Get-Variable -Name "level_group_path" -ValueOnly -ErrorAction SilentlyContinue
+if ([string]::IsNullOrWhiteSpace($LevelGroupPath) -or $LevelGroupPath -like "{{*}}") { $LevelGroupPath = $null }
+
+
+# ============================================================
+# MESHCENTRAL API FUNCTIONS
+# ============================================================
+
+function Invoke-MeshCentralApi {
+    param(
+        [Parameter(Mandatory)][string]$ServerUrl,
+        [Parameter(Mandatory)][string]$ApiKey,
+        [string]$Method = "GET",
+        [Parameter(Mandatory)][string]$Endpoint,
+        [hashtable]$Body
+    )
+    [Net.ServicePointManager]::SecurityProtocol = [Enum]::ToObject([Net.SecurityProtocolType], 3072)
+    $Server = $ServerUrl -replace '^https?://', '' -replace '/+$', ''
+    $Uri = "https://$Server/api/v1/$($Endpoint.TrimStart('/'))"
+    $Headers = @{ 'x-meshcentral-apikey' = $ApiKey }
+    try {
+        if ($Method -eq "GET") {
+            return Invoke-RestMethod -Uri $Uri -Headers $Headers -Method GET -ErrorAction Stop
+        }
+        $Json = $Body | ConvertTo-Json -Compress -Depth 5
+        return Invoke-RestMethod -Uri $Uri -Headers $Headers -Method $Method `
+            -Body $Json -ContentType "application/json" -ErrorAction Stop
+    }
+    catch {
+        Write-LevelLog "MeshCentral API error ($Method $Endpoint): $($_.Exception.Message)" -Level "WARN"
+        return $null
+    }
+}
+
+function Get-MeshCentralMeshes {
+    param([string]$ServerUrl, [string]$ApiKey)
+    $Result = Invoke-MeshCentralApi -ServerUrl $ServerUrl -ApiKey $ApiKey -Endpoint "meshes"
+    if ($null -eq $Result) { return @() }
+    if ($Result.meshes -is [System.Management.Automation.PSCustomObject]) {
+        return $Result.meshes.PSObject.Properties | ForEach-Object { $_.Value }
+    }
+    if ($Result -is [array]) { return $Result }
+    return @()
+}
+
+function Find-MeshCentralMesh {
+    param([string]$ServerUrl, [string]$ApiKey, [string]$Name)
+    $Meshes = Get-MeshCentralMeshes -ServerUrl $ServerUrl -ApiKey $ApiKey
+    return $Meshes | Where-Object { $_.meshname -ieq $Name } | Select-Object -First 1
+}
+
+function New-MeshCentralMesh {
+    param([string]$ServerUrl, [string]$ApiKey, [string]$Name)
+    Write-LevelLog "Creating MeshCentral device group: $Name"
+    $Body = @{ meshname = $Name; meshtype = 2 }
+    return Invoke-MeshCentralApi -ServerUrl $ServerUrl -ApiKey $ApiKey -Method "POST" -Endpoint "meshes" -Body $Body
+}
+
+function Get-MeshCentralInstallerUrl {
+    <#
+    .SYNOPSIS
+        Generates a group-specific MeshCentral agent installer URL.
+    .NOTES
+        meshinstall types: 3=Windows MSI, 6=Windows EXE (recommended), 4=Linux, 5=macOS
+    #>
+    param(
+        [Parameter(Mandatory)][string]$ServerUrl,
+        [Parameter(Mandatory)][string]$MeshId,
+        [ValidateSet("windows","linux","mac")][string]$Platform = "windows"
+    )
+    $InstallType = switch ($Platform) { "windows" { 6 } "linux" { 4 } "mac" { 5 } }
+    $Server = $ServerUrl -replace '^https?://', '' -replace '/+$', ''
+    $EncodedId = [System.Uri]::EscapeDataString($MeshId)
+    return "https://$Server/meshagents?id=$EncodedId&meshinstall=$InstallType"
+}
+
+function Resolve-MeshCentralGroupInstallerUrl {
+    <#
+    .SYNOPSIS
+        Finds or creates the MeshCentral device group matching a Level.io group path,
+        then returns a group-specific installer URL.
+    .NOTES
+        Level.io "COOLNETWORKS/infra" -> MeshCentral group "COOLNETWORKS/infra"
+        Slashes are preserved in the group name. Group is auto-created if missing.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$ServerUrl,
+        [Parameter(Mandatory)][string]$ApiKey,
+        [Parameter(Mandatory)][string]$LevelGroupPath,
+        [string]$Platform = "windows"
+    )
+    $GroupName = ($LevelGroupPath.Trim() -replace '\s*/\s*', '/').TrimEnd('/')
+    if ([string]::IsNullOrWhiteSpace($GroupName)) {
+        Write-LevelLog "Empty group path - cannot resolve MeshCentral group" -Level "WARN"
+        return $null
+    }
+    Write-LevelLog "Resolving MeshCentral group: $GroupName"
+    $Mesh = Find-MeshCentralMesh -ServerUrl $ServerUrl -ApiKey $ApiKey -Name $GroupName
+    if ($Mesh) {
+        Write-LevelLog "Found existing group: $GroupName (id: $($Mesh._id))" -Level "SUCCESS"
+    }
+    else {
+        Write-LevelLog "Group not found - creating: $GroupName"
+        $Mesh = New-MeshCentralMesh -ServerUrl $ServerUrl -ApiKey $ApiKey -Name $GroupName
+        if ($Mesh -and $Mesh._id) {
+            Write-LevelLog "Created group: $GroupName (id: $($Mesh._id))" -Level "SUCCESS"
+        }
+        else {
+            Write-LevelLog "Failed to create group: $GroupName" -Level "WARN"
+            return $null
+        }
+    }
+    if (-not $Mesh._id) {
+        Write-LevelLog "Group has no _id - cannot generate installer URL" -Level "WARN"
+        return $null
+    }
+    $Url = Get-MeshCentralInstallerUrl -ServerUrl $ServerUrl -MeshId $Mesh._id -Platform $Platform
+    Write-LevelLog "Installer URL resolved: $Url" -Level "DEBUG"
+    return $Url
 }
 
 # ============================================================
@@ -321,17 +447,38 @@ function Stop-MeshcentralProcesses {
 function Install-Meshcentral {
     param([string]$ScratchFolder)
 
-    # Validate download URL
-    if ([string]::IsNullOrWhiteSpace($DownloadUrl)) {
-        Write-Host "Alert: MeshCentral install failed - policy_meshcentral_download_url custom field not configured"
-        Write-LevelLog "Download URL not configured - set policy_meshcentral_download_url custom field" -Level "ERROR"
+    # Resolve installer URL:
+    # Priority 1: Dynamic group-based URL (API key + server URL + Level group path)
+    # Priority 2: Static policy_meshcentral_download_url
+    $ResolvedDownloadUrl = $DownloadUrl
+
+    if ($MeshApiKey -and $ServerUrl -and $LevelGroupPath) {
+        Write-LevelLog "Resolving group-specific installer URL from MeshCentral..."
+        $DynamicUrl = Resolve-MeshCentralGroupInstallerUrl -ServerUrl $ServerUrl `
+            -ApiKey $MeshApiKey -LevelGroupPath $LevelGroupPath -Platform "windows"
+        if ($DynamicUrl) {
+            $ResolvedDownloadUrl = $DynamicUrl
+            Write-LevelLog "Using group-specific installer URL" -Level "SUCCESS"
+        }
+        else {
+            Write-LevelLog "Group URL resolution failed - falling back to static download URL" -Level "WARN"
+        }
+    }
+    elseif ($MeshApiKey -and -not $ServerUrl) {
+        Write-LevelLog "API key set but server URL missing - cannot resolve group" -Level "WARN"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($ResolvedDownloadUrl)) {
+        Write-Host "Alert: MeshCentral install failed - no installer URL available"
+        Write-Host "  Option A: Set policy_meshcentral_download_url (static URL)"
+        Write-Host "  Option B: Set policy_meshcentral_api_key + policy_meshcentral_server_url (dynamic group-based URL)"
+        Write-LevelLog "No installer URL - set download URL or API key + server URL" -Level "ERROR"
         return $false
     }
 
-    Write-LevelLog "Download URL: $DownloadUrl"
-    if ($ServerUrl) {
-        Write-LevelLog "Expected Server: $ServerUrl"
-    }
+    Write-LevelLog "Installer URL: $ResolvedDownloadUrl"
+    if ($ServerUrl)      { Write-LevelLog "Expected Server: $ServerUrl" }
+    if ($LevelGroupPath) { Write-LevelLog "Target Group: $LevelGroupPath" }
 
     # Determine installer path - use scratch folder binaries dir
     $InstallerPath = Join-Path (Get-BinariesFolder -ScratchFolder $ScratchFolder) $InstallerName
@@ -353,7 +500,7 @@ function Install-Meshcentral {
 
     try {
         $webClient = New-Object System.Net.WebClient
-        $webClient.DownloadFile($DownloadUrl, $InstallerPath)
+        $webClient.DownloadFile($ResolvedDownloadUrl, $InstallerPath)
     }
     catch {
         Write-Host "Alert: Failed to download MeshCentral installer"
@@ -547,7 +694,7 @@ function Remove-Meshcentral {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.02.10.01"
+$ScriptVersion = "2026.03.14.01"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
@@ -651,6 +798,16 @@ $InvokeParams = @{ ScriptBlock = {
             }
         }
 
+        $ApiKeyFieldName = "policy_meshcentral_api_key"
+        $ExistingApiKeyField = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $ApiKeyFieldName
+        if (-not $ExistingApiKeyField) {
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $ApiKeyFieldName -DefaultValue ""
+            if ($NewField -and $NewField._created) {
+                Write-LevelLog "Created custom field: $ApiKeyFieldName" -Level "SUCCESS"
+                $MeshFieldsCreated++
+            }
+        }
+
         $TotalFieldsCreated = $InfraResult.FieldsCreated + $MeshFieldsCreated
 
         if ($InfraResult.Success) {
@@ -661,9 +818,11 @@ $InvokeParams = @{ ScriptBlock = {
                 Write-Host "  Set the following custom fields in Level.io:"
                 Write-Host "  - policy_meshcentral: Set to 'install', 'remove', or 'pin' at Group/Folder/Device level"
                 Write-Host "  - policy_meshcentral_server_url: Your MeshCentral server (e.g., mc.cool.net.au)"
-                Write-Host "  - policy_meshcentral_download_url: Windows installer download URL from MeshCentral"
+                Write-Host "  - policy_meshcentral_download_url: (Optional if using API key) Windows installer download URL"
                 Write-Host "  - policy_meshcentral_linux_install: (Optional) Linux install command (one-liner)"
                 Write-Host "  - policy_meshcentral_mac_download_url: (Optional) Mac installer download URL"
+        Write-Host "  - policy_meshcentral_api_key: (Optional) MeshCentral API key for auto group creation"
+        Write-Host "    When set, devices are auto-assigned to a MeshCentral group matching their Level.io group"
                 Write-Host ""
                 Write-LevelLog "Infrastructure created - exiting for configuration" -Level "INFO"
                 Remove-Lock

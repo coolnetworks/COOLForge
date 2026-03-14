@@ -198,6 +198,10 @@
       {
         "var": "policy_meshcentral_linux_install",
         "cf": "cf_policy_meshcentral_linux_install"
+      },
+      {
+        "var": "policy_meshcentral_api_key",
+        "cf": "cf_policy_meshcentral_api_key"
       }
     ]
   },

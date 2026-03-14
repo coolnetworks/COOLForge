@@ -14,7 +14,7 @@ d0f75053c91acaf1c034579e6ce31b15  ./.claude/level-io-feature-request-tag-colors.
 2572b8cddb722b15e28851b682127d55  ./COOLForge-Common.psm1
 57d56eca516f90519197ef6218bc6fdc  ./LAUNCHER-VERSIONS.json
 c6ded52b2d61e9d9f2914e5f25a1026b  ./LICENSE
-71aaf80b049ee35bae5ef37728ab9102  ./MD5SUMS
+fd7acbfb0e6c93976277890e9f73f3e9  ./MD5SUMS
 5746acb006595a0ec8e3e8ccfe2a7131  ./MEETING NOTES - Level.io Demo.md
 07f2114b030950370cf6ac38e64f222f  ./NEEDS_TESTING.md
 c3406e62bb816ce4b55f199f6ca78abd  ./README.md
@@ -803,51 +803,51 @@ cb16fb0a6fe64366c3e739472f5d8d5c  ./docs/scripts/Test-Variable-Output.md
 43829873824a825fbca8a727ac4ab2d9  ./docs/scripts/Wake-Devices.md
 4d34eb344f7f3652fe1d0b89ac17ff5a  ./docs/scripts/Wake-Tagged-Devices.md
 a393a90b41cc21edbda0d5e96012897c  ./exports/FullLevelFields.json
-b21d54d0c3c0a483ff62f03cd344f810  ./launchers/Alert/🔔Technician Alert Monitor.ps1
-baecf5d4a842ba08f6a0ba7f850b12cf  ./launchers/Alert/🔔Wake tagged devices.ps1
-1ff44a21a822d52458391fc277f980d3  ./launchers/Alert/🙏Wake all devices in Level group.ps1
-ae4f65db7b891cc1187503de62355440  ./launchers/Config/⚙️COOLForge Cache Sync.ps1
-0257baa99f2e922bfd67e34503adee3d  ./launchers/Config/⚙️Configure Wake-on-LAN.ps1
-6c432c6026b7cb0a1a6f5c1b572a417b  ./launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
-0011bea56055d362c6da4ae6b5f829fa  ./launchers/Config/🔧Prevent Sleep.ps1
-ac2bcc837d7ab7651b7935115ac22ef4  ./launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
-f02f6bd43c7a955818516b6fe44acdde  ./launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
-22e81d90485902eb94ee34635dda1c22  ./launchers/Fix/🔧Fix Windows 10 Services.ps1
-6df9b6884733fa62ea7e76fd93eab285  ./launchers/Fix/🔧Fix Windows 11 Services.ps1
-097b72056ab1ac2ac8ddba7435fcea15  ./launchers/Fix/🔧Fix Windows 7 Services.ps1
-1476630467770f5491cab277c7d1f73a  ./launchers/Fix/🔧Fix Windows 8 Services.ps1
-ec8ac9e84c38555dbbb26729d3bc6b9f  ./launchers/Fix/🔧Fix Windows 8.1 Services.ps1
-b2e5c91daebb56a01168af75dc513c69  ./launchers/Fix/🔧Fix Windows Location Services.ps1
-a9e24dee383e17004a1c9f2976c4aa14  ./launchers/Monitor/👀Check Windows Location Services.ps1
-39fda091a9f62ee3737c44f04e9fa108  ./launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
-fe4c22c4dcbf485e27b8dfebc6fe9067  ./launchers/Policy/Chrome/👀Chrome Location Services.ps1
-a73f4ec72f3912656206b4d0d1d05cea  ./launchers/Policy/Windows/👀Windows Location Services.ps1
-0bfd244d09aff4b13195f4b07583dac6  ./launchers/Policy/👀Hostname Mismatch.ps1
-488ddd2e586d5d060dae6c1f7c1913e4  ./launchers/Policy/👀bitwarden.ps1
-dc35a44f384a73a017367475bf3fb294  ./launchers/Policy/👀chrome.ps1
-6ccfb9666df9fb31a2a7e5fcafcd1319  ./launchers/Policy/👀cipp.ps1
-f53ad77e3f0dce6a1445649b5b158cea  ./launchers/Policy/👀debug.ps1
-8e65da9fabf05d449821fb3e738e0c79  ./launchers/Policy/👀dns.ps1
-26c4acb6b60eab5b8f21672019e9d000  ./launchers/Policy/👀dnsfilter.ps1
-17ee870f32d49ca2a7fc8cfe087505ab  ./launchers/Policy/👀huntress.ps1
+9a5b5949e4d8443e144bf79833f3d898  ./launchers/Alert/🔔Technician Alert Monitor.ps1
+bfaa5cf3c013ebea5e16a821028a70d5  ./launchers/Alert/🔔Wake tagged devices.ps1
+91e50be37faf35b1fd03ae8a4fc7816d  ./launchers/Alert/🙏Wake all devices in Level group.ps1
+7c2695d8b97e0d20adb46469615004f7  ./launchers/Config/⚙️COOLForge Cache Sync.ps1
+8e2d512bf4cae64b4fafc7e3f8a35c1d  ./launchers/Config/⚙️Configure Wake-on-LAN.ps1
+c8a372da432ff641321a1b452b149c7e  ./launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
+980ab5e4aa0ad7076e074557093b1ddf  ./launchers/Config/🔧Prevent Sleep.ps1
+71305655f01e5793b40b331798bd644f  ./launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
+c1f5f8849c6ab72fba9ab1fe5bf2f601  ./launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
+843d9ea54b3191038191b4dbcb8a06c2  ./launchers/Fix/🔧Fix Windows 10 Services.ps1
+53defff30693f8193c9aec88562d1229  ./launchers/Fix/🔧Fix Windows 11 Services.ps1
+32d21e3bc6b611887ef9dd6407b27b59  ./launchers/Fix/🔧Fix Windows 7 Services.ps1
+063ac13d13ae2658979e6da4536d44d7  ./launchers/Fix/🔧Fix Windows 8 Services.ps1
+ef8a5356c56a361e83ce4346747e6b79  ./launchers/Fix/🔧Fix Windows 8.1 Services.ps1
+fafd7beb4640a5f04ad73fc5529bc64c  ./launchers/Fix/🔧Fix Windows Location Services.ps1
+32f655c3015a5f756d74613ca64dd239  ./launchers/Monitor/👀Check Windows Location Services.ps1
+0cf8ce4d161cae2f8d06d5a5e17cbf53  ./launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
+f33a7adb0e778c3d2a7c7df0520c953b  ./launchers/Policy/Chrome/👀Chrome Location Services.ps1
+5e005790c84898cd2dd80a44464ec0e4  ./launchers/Policy/Windows/👀Windows Location Services.ps1
+8482a8f6eafd34add358487122e0b363  ./launchers/Policy/👀Hostname Mismatch.ps1
+37d74623720e4deb343c1f4e272267ec  ./launchers/Policy/👀bitwarden.ps1
+e3c5daa00b33e0522f158c7a2b6b6f3f  ./launchers/Policy/👀chrome.ps1
+7a59dde82bb4463ed0e4cdd6bd10694c  ./launchers/Policy/👀cipp.ps1
+28d5dc3bcb1db96a1d718840b34d83cf  ./launchers/Policy/👀debug.ps1
+c0b688357d3ef5d3e479d60b0178730a  ./launchers/Policy/👀dns.ps1
+f0269be674d70cd228ef8ec9ad31594b  ./launchers/Policy/👀dnsfilter.ps1
+ff813cb28d4c66b75eb635971aa64d4b  ./launchers/Policy/👀huntress.ps1
 48544859e5f9fb1514bf1fa2995a44bc  ./launchers/Policy/👀meshcentral-linux.sh
 7afe0cdee33e81470b9dc9714c18d349  ./launchers/Policy/👀meshcentral-mac.sh
-b307ff6f7b6fe43a0bdc0dbad6d3c7b7  ./launchers/Policy/👀meshcentral.ps1
-ef19fef127774f2bb8ffd2431d5cc6d7  ./launchers/Policy/👀screenconnect.ps1
-8b61016df1354674b6bbc15d93db7234  ./launchers/Policy/👀unchecky.ps1
-ed70e3243472d2ddc87076e138b902fa  ./launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-3bf34a7c8b4cee12986c79982dabb236  ./launchers/Remove/⛔Force Remove Dropbox.ps1
-e8d65c339b48693fd20a4322df37ed72  ./launchers/Remove/⛔Force Remove Foxit.ps1
-a3857dd1dd0943a53607d93b99678c8c  ./launchers/Remove/⛔Force Remove McAfee.ps1
-f59f4adf512abebfe1c786479a929b43  ./launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-118cfe33b8bcee879055a0de37daed19  ./launchers/Remove/⛔Remove All RATs.ps1
-309c0aea1879600a248f70d851c539df  ./launchers/Test/👀Test Show Versions.ps1
-68cd572417079e58f0ce21fc5d9dc0c6  ./launchers/Test/👀Test Variable Output.ps1
-7687630fd6ddd1c3360bc736adcc0052  ./launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-834297d26a08301e9082d0b565e63e4d  ./launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
-39ea785a897142233f0b339925fb1e40  ./launchers/Utility/⚙️Universal Disk Cleaner.ps1
-46663de980a192c30ba0b75739f8f19e  ./launchers/_manifest.json
-6e435ecaee517f3f2f6a0dd8d488c777  ./launchers/_template.ps1
+9e6093b937bddb2c54cc55e3d548c06b  ./launchers/Policy/👀meshcentral.ps1
+435a85678914f119e671850d3ddb4276  ./launchers/Policy/👀screenconnect.ps1
+8224fe8674d5eee9462b5be82f650da7  ./launchers/Policy/👀unchecky.ps1
+0a07c16c04edf548c5708d59099b2944  ./launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+7c424d0274389c6643b0b5135f8f38ec  ./launchers/Remove/⛔Force Remove Dropbox.ps1
+539d49baf0e9855604d2db82c0b39f04  ./launchers/Remove/⛔Force Remove Foxit.ps1
+539665f692cb461f0ccee3ca9ff7777e  ./launchers/Remove/⛔Force Remove McAfee.ps1
+829ebea6d1307072c00b8db204054bdd  ./launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+91ee2cf451e2560accc094d0440ab50c  ./launchers/Remove/⛔Remove All RATs.ps1
+289665d62a6ff63677ca134336c1795e  ./launchers/Test/👀Test Show Versions.ps1
+4bb1c88604281f376102b3158868dd0e  ./launchers/Test/👀Test Variable Output.ps1
+525d8038fc74d4bcb11efc10e7bc8531  ./launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+4ca0f8d7cc7cd0f828afc29dddfcfcf1  ./launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
+38db75f1c85109b3106151f9d2cad32b  ./launchers/Utility/⚙️Universal Disk Cleaner.ps1
+8666c3c8b98f1e98ed524d5c238547f2  ./launchers/_manifest.json
+53e904271f29283693dacb783972ad81  ./launchers/_template.ps1
 8e45ed27e2837660ea4dba6b3ee89a5d  ./modules/COOLForge-Common.psm1
 2990bcfd1c35eaf5a88cfa31187e5c1a  ./mynotes/LEVEL-SUPPORT-QUESTIONS.md
 fb47fceddba369c4dba10e2b1d418dd4  ./mynotes/LEVEL-SUPPORT-SUBMITTED.md
@@ -892,7 +892,7 @@ d5df12ce913fde9d03b655936bd3a336  ./scripts/Policy/👀dnsfilter.ps1
 cbe0cf75c89082f22dc7340ed296e5aa  ./scripts/Policy/👀huntress.ps1
 34d1b0132f36e13e9e5a62ce96162352  ./scripts/Policy/👀meshcentral-linux.sh
 052f1f42966d486d22642b9a27d6249b  ./scripts/Policy/👀meshcentral-mac.sh
-cc38a591f5ca0fe691be14ba13b1533d  ./scripts/Policy/👀meshcentral.ps1
+ebc11abaf8334bce43da260bbc2b8d93  ./scripts/Policy/👀meshcentral.ps1
 c896ddfd52a9c3f863f02a517b3230fb  ./scripts/Policy/👀screenconnect.ps1
 32787c4a9c96f67e6339f6352fc59ad2  ./scripts/Policy/👀unchecky.ps1
 d41d8cd98f00b204e9800998ecf8427e  ./scripts/Provision/.gitkeep

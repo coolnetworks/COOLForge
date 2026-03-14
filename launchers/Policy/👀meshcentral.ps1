@@ -7,6 +7,7 @@ $policy_meshcentral_server_url = "{{cf_policy_meshcentral_server_url}}"
 $policy_meshcentral_download_url = "{{cf_policy_meshcentral_download_url}}"
 $policy_meshcentral_mac_download_url = "{{cf_policy_meshcentral_mac_download_url}}"
 $policy_meshcentral_linux_install = "{{cf_policy_meshcentral_linux_install}}"
+$policy_meshcentral_api_key = "{{cf_policy_meshcentral_api_key}}"
 <#
 .SYNOPSIS
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
@@ -36,6 +37,7 @@ $ErrorActionPreference = "SilentlyContinue"
 $MspScratchFolder = "{{cf_coolforge_msp_scratch_folder}}"
 $DeviceHostname = "{{level_device_hostname}}"
 $DeviceTags = "{{level_tag_names}}"
+$LevelGroupPath = "{{level_group_path}}"
 
 $GitHubPAT = @'
 {{cf_coolforge_pat}}
@@ -276,6 +278,7 @@ $LauncherVars = @{
     MspScratchFolder = $MspScratchFolder
     DeviceHostname   = $DeviceHostname
     DeviceTags       = $DeviceTags
+    LevelGroupPath   = $LevelGroupPath
     LevelApiKey      = $LevelApiKey
     DebugScripts     = $DebugScripts
     DebugLevel       = $DebugLevel
