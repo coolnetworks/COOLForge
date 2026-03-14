@@ -5372,7 +5372,8 @@ function Get-LevelEntityCustomFields {
     if ($EntityType -eq "group" -or $EntityType -eq "folder") {
         # Use GetLevelEntityCustomFieldOverrides to find explicit overrides for this group
         $AllFields = Get-LevelCustomFields -ApiKey $ApiKey -BaseUrl $BaseUrl
-        $Overrides = Get-LevelEntityCustomFieldOverrides -EntityId $EntityId -CustomFields $AllFields -BaseUrl $BaseUrl
+        # Single-entity lookup — no throttle needed
+        $Overrides = Get-LevelEntityCustomFieldOverrides -EntityId $EntityId -CustomFields $AllFields -BaseUrl $BaseUrl -DelayMs 0
         $Result = [PSCustomObject]@{}
         foreach ($Item in $Overrides) {
             $Result | Add-Member -MemberType NoteProperty -Name $Item.custom_field_name -Value $Item.value -Force
@@ -6542,11 +6543,15 @@ function Get-LevelEntityCustomFieldOverrides {
         Returns only EXPLICIT custom field overrides for a specific entity (group or device).
         Queries each field individually and checks if the returned assigned_to_id matches
         the entity ID (meaning it is an explicit override, not an inherited global default).
+    .PARAMETER DelayMs
+        Milliseconds to wait between API calls to respect rate limits.
+        Default: 6000 (10 calls/minute). Pass 0 to disable for single-entity lookups.
     #>
     param(
         [string]$EntityId,
         [array]$CustomFields,
-        [string]$BaseUrl = "https://api.level.io/v2"
+        [string]$BaseUrl = "https://api.level.io/v2",
+        [int]$DelayMs = 6000
     )
 
     $Overrides = @()
@@ -6562,6 +6567,7 @@ function Get-LevelEntityCustomFieldOverrides {
                 $Overrides += $Item
             }
         }
+        if ($DelayMs -gt 0) { Start-Sleep -Milliseconds $DelayMs }
     }
     return $Overrides
 }
