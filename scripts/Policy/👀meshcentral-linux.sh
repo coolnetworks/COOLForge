@@ -1,6 +1,6 @@
 #!/bin/bash
 # MeshCentral Policy Script - Linux
-# Version: 2026.03.14.02
+# Version: 2026.03.14.03
 # Target: Level.io RMM
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -17,6 +17,7 @@ LEVEL_API_KEY="{{cf_apikey}}"
 LEVEL_DEVICE_ID="{{level_device_id}}"
 DEVICE_TAGS="{{level_tag_names}}"
 POLICY_MESHCENTRAL_MESHID="{{cf_policy_meshcentral_meshid}}"
+POLICY_MESHCENTRAL_LINUX_MESHID="{{cf_policy_meshcentral_linux_meshid}}"
 
 # ============================================================
 # CONFIGURATION
@@ -332,8 +333,14 @@ get_linux_arch_id() {
 }
 
 get_group_installer_url() {
+    # Use linux-specific meshid override if set (e.g. AdelaideMRI Linux -> AMRIDEV group)
+    local effective_meshid="$POLICY_MESHCENTRAL_MESHID"
+    if [ -n "$POLICY_MESHCENTRAL_LINUX_MESHID" ] && [[ "$POLICY_MESHCENTRAL_LINUX_MESHID" != "{{cf_"* ]] && [ "$POLICY_MESHCENTRAL_LINUX_MESHID" != "None" ] && [ "$POLICY_MESHCENTRAL_LINUX_MESHID" != "null" ]; then
+        log_info "Using linux-specific meshid override (policy_meshcentral_linux_meshid)"
+        effective_meshid="$POLICY_MESHCENTRAL_LINUX_MESHID"
+    fi
     # Level.io injects the correct meshid for this device's group via cascade
-    if [ -z "$POLICY_MESHCENTRAL_MESHID" ] || [[ "$POLICY_MESHCENTRAL_MESHID" == "{{cf_"* ]]; then
+    if [ -z "$effective_meshid" ] || [[ "$effective_meshid" == "{{cf_"* ]]; then
         log_warn "No meshid (policy_meshcentral_meshid not set for this group - run provision-mesh-groups.js)"
         echo ""
         return 1
@@ -347,8 +354,8 @@ get_group_installer_url() {
     arch_id=$(get_linux_arch_id)
 
     local encoded_meshid
-    encoded_meshid=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$POLICY_MESHCENTRAL_MESHID" 2>/dev/null \
-        || echo "$POLICY_MESHCENTRAL_MESHID")
+    encoded_meshid=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$effective_meshid" 2>/dev/null \
+        || echo "$effective_meshid")
 
     log_info "Group installer URL: arch=$arch_id server=$server"
     echo "https://${server}/meshagents?id=${arch_id}&meshid=${encoded_meshid}&installflags=0"
