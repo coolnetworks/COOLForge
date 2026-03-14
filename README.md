@@ -34,7 +34,7 @@ COOLForge_Lib provides a shared set of functions for Level.io automation scripts
 - **API Helper** — Shared functions for calling the Level.io API — handles auth, pagination, retries, and rate limiting so individual scripts don not each need to reinvent that.
 - **Device Info** — One-liner functions to get hostname, OS version, group, custom field values, etc. rather than each script doing its own WMI queries and registry reads.
 - **Auto-Update** — The shared library and scripts live in GitHub. When a device runs a launcher, it checks if a newer version exists and downloads it automatically. Push a fix once, every device gets it on next run — no re-uploading to Level.io.
-- **Script Launcher** — A thin wrapper deployed to Level.io once. It downloads and runs the real script from GitHub at execution time. Update a script by pushing to the repo — Level.io never needs touching again.
+- **Script Launcher** — A thin wrapper deployed to Level.io once. It downloads and runs the real script from GitHub at execution time. The actual script logic lives in GitHub — push a fix and every device gets it on next run. You only need to re-upload the launcher to Level.io when the launcher itself changes (e.g. new variables added), which is rare.
 - **Technician Alerts** — Scripts can fire toast notifications to a tech workstation when something needs attention. No need to trawl Level.io job logs to find issues.
 
 ### Module Functions (107 exported)
