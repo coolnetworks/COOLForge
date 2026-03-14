@@ -1,4 +1,4 @@
-# Level.io Custom Fields — API Reference Guide
+# Level.io Group Management via API
 
 How to read and write custom field values at every level of the hierarchy via the Level.io v2 REST API.
 
