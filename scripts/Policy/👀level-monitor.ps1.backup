@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Level.io service monitoring and health check policy with automated reporting (alerts only on failures).
+    Level.io service monitoring and health check policy with automated reporting.
 
 .DESCRIPTION
     Implements automated Level.io service monitoring with daily health checks and n8n webhook reporting.
@@ -44,7 +44,6 @@
     - $policy_level_monitor_interval : Check interval in hours (default: 12)
 
     MONITORING FEATURES:
-    - Alert-only reporting: No webhooks sent when Level service is healthy
     - Daily Level.io service health checks
     - n8n webhook reporting every 12 hours
     - Full diagnostics on service failures
@@ -353,24 +352,27 @@ function Test-LevelHealth {
 `$healthStatus = Test-LevelHealth
 `$needsAlert = `$healthStatus.service_status -ne "Running" -or `$healthStatus.connectivity -ne "OK"
 
-# Send report only if there are issues (no reports for healthy status)
-if (`$config.webhook_url -and `$needsAlert) {
+# Send report if webhook configured
+if (`$config.webhook_url) {
     `$payload = @{
         timestamp = (Get-Date).ToString("o")
-        hostname = ""
-        group_path = "" 
-        report_type = "health_alert"
-        script_version = ""
+        hostname = "$Hostname"
+        group_path = "$GroupPath" 
+        report_type = if (`$needsAlert) { "health_alert" } else { "health_check" }
+        script_version = "$ScriptVersion"
         status = `$healthStatus
     } | ConvertTo-Json -Depth 10
     
     try {
         Invoke-RestMethod -Uri `$config.webhook_url -Method POST -Body `$payload -ContentType "application/json" -TimeoutSec 30 | Out-Null
     } catch {
-        # Log error but dont fail
+        # Log error but don't fail
         Add-Content -Path `$LogPath -Value "[`$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [ERROR] Webhook failed: `$(`$_.Exception.Message)" -ErrorAction SilentlyContinue
     }
 }
+
+# Update last check time
+`$config.last_check = (Get-Date).ToString("o")
 `$config | ConvertTo-Json | Set-Content -Path `$ConfigPath -Force
 
 exit 0
@@ -458,31 +460,22 @@ switch ($action) {
         $success = Install-MonitoringTask
         if ($success) {
             # Run initial health check and report
-            # Run initial health check and report only if issues found
             $serviceStatus = Test-LevelService
             $connectivityStatus = Test-LevelConnectivity
             
-            $hasIssues = $serviceStatus.Status -ne "Running" -or $connectivityStatus.Status -ne "OK"
-            
-            if ($hasIssues -and $WebhookUrl) {
-                $statusData = @{
-                    monitoring_installed = $true
-                    service = $serviceStatus
-                    connectivity = $connectivityStatus
-                    installation_time = (Get-Date).ToString("o")
-                    issues_detected = $true
-                }
-                
-                Send-StatusReport -WebhookUrl $WebhookUrl -StatusData $statusData -ReportType "monitoring_installed_with_issues"
+            $statusData = @{
+                monitoring_installed = $true
+                service = $serviceStatus
+                connectivity = $connectivityStatus
+                installation_time = (Get-Date).ToString("o")
             }
+            
+            Send-StatusReport -WebhookUrl $WebhookUrl -StatusData $statusData -ReportType "monitoring_installed"
             
             Write-Log "Level monitoring installed successfully" "SUCCESS"
-            if ($hasIssues) {
-                Write-Log "WARNING: Issues detected during initial check - webhook alert sent" "WARN"
-            } else {
-                Write-Log "Level service is healthy - no alerts needed" "INFO"
-            }
             exit 0
+        } else {
+            Write-Log "Failed to install Level monitoring" "ERROR"
             exit 1
         }
     }

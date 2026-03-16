@@ -523,7 +523,7 @@ ba59e99113bcae0b5dd8d6ff1287a5e5  backups/Level/scripts/⛔CIPP CHECK.ps1
 ba59e99113bcae0b5dd8d6ff1287a5e5  backups/Level2/scripts/⛔CIPP CHECK.ps1
 bacdfac4bfefd5f4603479bf454e921b  backups/Level/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
 bacdfac4bfefd5f4603479bf454e921b  backups/Level2/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
-7b2a810efe46f96d711670f7bb18dbd8  scripts/Policy/👀level-monitor.ps1
+897eea239c857749c6e86e2ffa2004b7  scripts/Policy/👀level-monitor.ps1
 bc65925fa06e8ac0d63d82425de1d849  scripts/Utility/🙏Wake all devices in Level group.ps1
 bcb7582da929754e4439787fc8870bd1  launchers/Policy/👀bitwarden.ps1
 bd67385b2dd3444eb40986605923363d  backups/Level/scripts/From Atera/System Report (copy).ps1
