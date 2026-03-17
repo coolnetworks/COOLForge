@@ -536,6 +536,14 @@ function Remove-ScreenConnect {
     .SYNOPSIS
         Uninstalls ScreenConnect client.
     #>
+    # Safety guard: never remove ScreenConnect from the machine hosting the SC server
+    $IsSCServer = Get-Variable -Name 'machine_is_screenconnect_server' -ValueOnly -ErrorAction SilentlyContinue
+    if ($IsSCServer -eq 'true') {
+        Write-LevelLog "WARNING: This machine is the ScreenConnect server (machine_is_screenconnect_server=true). Removal aborted to prevent loss of remote access." -Level 'WARN'
+        Write-Host "Alert: ScreenConnect removal blocked - this device is the ScreenConnect server host"
+        return $false
+    }
+
     Write-LevelLog "Starting ScreenConnect removal..."
 
     # Stop processes
