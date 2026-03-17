@@ -112,6 +112,7 @@ $Script:RATDefinitions = @(
     @{ Name = "ZeroTier"; Processes = @("zerotier*"); Services = @("ZeroTier*"); Paths = @("ZeroTier"); Priority = "Low" }
     @{ Name = "Tailscale"; Processes = @("tailscale*", "tailscaled*"); Services = @("Tailscale*"); Paths = @("Tailscale"); Priority = "Low" }
     @{ Name = "Ngrok"; Processes = @("ngrok*"); Services = @("ngrok*"); Paths = @("ngrok"); Priority = "Medium" }
+    @{ Name = "UrbanVPN"; Processes = @("UrbanVPN*", "urbanvpn*"); Services = @("UrbanVPN*", "urbanvpn*"); Paths = @("UrbanVPN", "urbanvpn"); Priority = "Medium" }
 
     # RMM Tools
     @{ Name = "Action1"; Processes = @("action1*", "a1agent*"); Services = @("action1*"); Paths = @("Action1"); Priority = "Low" }
