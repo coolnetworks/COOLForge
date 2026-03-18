@@ -6,17 +6,15 @@
     This script reads WiFi SSID and password from Level.io custom fields, creates
     a WPA2PSK/AES WiFi profile, and force-connects the device to that network.
 
-    Steps performed:
-    1. Validates policy_wifi_setup is "yes" (skips otherwise)
-    2. Validates SSID and password are set and not unresolved placeholders
-    3. Creates a WPA2PSK/AES WiFi profile XML
-    4. Adds the profile via netsh wlan add profile
-    5. Disconnects from current WiFi network
-    6. Connects to the target SSID
-    7. Verifies connection after a brief wait
+    Connection logic:
+    - Ethernet active: Adds WiFi profile only, skips connect (profile ready for later)
+    - WiFi active (different SSID): Adds profile, disconnects, connects to new SSID,
+      verifies connection, falls back to previous SSID on failure
+    - WiFi active (already on target): No action needed, exits success
+    - No connection: Adds profile and attempts to connect
 
 .NOTES
-    Version:          2026.03.18.01
+    Version:          2026.03.18.02
     Target Platform:  Windows 10, Windows 11
     Exit Codes:       0 = Success | 1 = Failure (Alert)
 
@@ -29,13 +27,20 @@
 #>
 
 # Set WiFi SSID
-# Version: 2026.03.18.01
+# Version: 2026.03.18.02
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 
 function Test-IsUnresolved {
     param([string]$Value)
     return ($Value -match '^\{\{cf_')
+}
+
+function Get-WlanState {
+    $output = netsh wlan show interfaces 2>&1
+    $ssid = ($output | Select-String -Pattern '^\s+SSID\s+:\s+(.+)$' | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }) | Select-Object -First 1
+    $state = ($output | Select-String -Pattern '^\s+State\s+:\s+(.+)$' | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }) | Select-Object -First 1
+    return @{ State = $state; SSID = $ssid }
 }
 
 Write-Host "========================================"
@@ -71,7 +76,54 @@ $Key = $policy_wifi_ssid_password.Trim()
 
 Write-Host "[INFO] Target SSID: $SSID"
 
-# Build WPA2PSK/AES profile XML
+# ============================================
+# DETECT NETWORK STATE
+# ============================================
+
+Write-Host ""
+Write-Host "[NETWORK STATE]"
+
+# Check for active ethernet connection
+$ethernetUp = Get-NetAdapter -ErrorAction SilentlyContinue |
+    Where-Object { $_.Status -eq 'Up' -and $_.PhysicalMediaType -match 'Ethernet|802\.3' -and $_.InterfaceDescription -notmatch 'Bluetooth|Hyper-V|VMware|VirtualBox|Loopback|WAN Miniport|TAP-Windows|Tunnel|Npcap' }
+
+$hasWifiAdapter = Get-NetAdapter -ErrorAction SilentlyContinue |
+    Where-Object { $_.InterfaceDescription -match 'Wireless|Wi-Fi|WiFi|WLAN|802\.11' }
+
+if (-not $hasWifiAdapter) {
+    Write-Host "[Alert] No WiFi adapter found on this device"
+    exit 1
+}
+
+# Get current WiFi state
+$wlan = Get-WlanState
+$previousSSID = $wlan.SSID
+$onWifi = ($wlan.State -eq 'connected')
+
+if ($onWifi) {
+    Write-Host "  [INFO] WiFi connected to: $previousSSID"
+} else {
+    Write-Host "  [INFO] WiFi not connected"
+}
+
+if ($ethernetUp) {
+    Write-Host "  [INFO] Ethernet active: $($ethernetUp.Name -join ', ')"
+}
+
+# Already on target SSID?
+if ($onWifi -and $previousSSID -eq $SSID) {
+    Write-Host ""
+    Write-Host "[OK] Already connected to target SSID '$SSID'"
+    exit 0
+}
+
+# ============================================
+# ADD WIFI PROFILE
+# ============================================
+
+Write-Host ""
+Write-Host "[WIFI PROFILE]"
+
 $ProfileXml = @"
 <?xml version="1.0"?>
 <WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
@@ -100,19 +152,9 @@ $ProfileXml = @"
 </WLANProfile>
 "@
 
-# Save profile XML to temp file
 $TempProfilePath = [System.IO.Path]::Combine($env:TEMP, "$SSID.xml")
 try {
     $ProfileXml | Out-File -Encoding UTF8 -FilePath $TempProfilePath -Force
-    Write-Host "[OK] Profile XML created"
-}
-catch {
-    Write-Host "[Alert] Failed to create profile XML: $_"
-    exit 1
-}
-
-# Add WiFi profile
-try {
     $addResult = netsh wlan add profile filename="$TempProfilePath" user=all 2>&1
     Write-Host "[OK] WiFi profile added for '$SSID'"
     Write-Host "  $addResult"
@@ -122,42 +164,82 @@ catch {
     Remove-Item $TempProfilePath -Force -ErrorAction SilentlyContinue
     exit 1
 }
+finally {
+    Remove-Item $TempProfilePath -Force -ErrorAction SilentlyContinue
+}
 
-# Clean up temp file
-Remove-Item $TempProfilePath -Force -ErrorAction SilentlyContinue
+# ============================================
+# ETHERNET: PROFILE ONLY, SKIP CONNECT
+# ============================================
 
-# Disconnect from current WiFi
+if ($ethernetUp) {
+    Write-Host ""
+    Write-Host "[OK] Device is on ethernet - profile added, skipping WiFi connect"
+    Write-Host "[INFO] Device will auto-connect to '$SSID' when on WiFi"
+    exit 0
+}
+
+# ============================================
+# CONNECT TO NEW SSID
+# ============================================
+
 Write-Host ""
-Write-Host "[INFO] Disconnecting from current WiFi..."
-$disconnectResult = netsh wlan disconnect 2>&1
-Write-Host "  $disconnectResult"
+Write-Host "[CONNECTING]"
 
-# Connect to target SSID
+if ($onWifi) {
+    Write-Host "[INFO] Disconnecting from '$previousSSID'..."
+    $null = netsh wlan disconnect 2>&1
+    Start-Sleep -Seconds 1
+}
+
 Write-Host "[INFO] Connecting to '$SSID'..."
 $connectResult = netsh wlan connect name="$SSID" 2>&1
 Write-Host "  $connectResult"
 
-# Wait for connection to establish
 Write-Host "[INFO] Waiting 5 seconds for connection..."
 Start-Sleep -Seconds 5
 
-# Verify connection
+# ============================================
+# VERIFY CONNECTION
+# ============================================
+
 Write-Host ""
 Write-Host "[VERIFICATION]"
-$interfaces = netsh wlan show interfaces 2>&1
-$connectedSSID = ($interfaces | Select-String -Pattern '^\s+SSID\s+:\s+(.+)$' | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }) | Select-Object -First 1
-$state = ($interfaces | Select-String -Pattern '^\s+State\s+:\s+(.+)$' | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }) | Select-Object -First 1
+$wlan = Get-WlanState
 
-Write-Host "  State: $state"
-Write-Host "  SSID:  $connectedSSID"
+Write-Host "  State: $($wlan.State)"
+Write-Host "  SSID:  $($wlan.SSID)"
 
-Write-Host ""
-if ($state -eq 'connected' -and $connectedSSID -eq $SSID) {
+if ($wlan.State -eq 'connected' -and $wlan.SSID -eq $SSID) {
+    Write-Host ""
     Write-Host "[OK] Successfully connected to '$SSID'"
     exit 0
 }
-else {
-    Write-Host "[Alert] Failed to connect to '$SSID'"
-    Write-Host "[Alert] State: $state | Connected SSID: $connectedSSID"
-    exit 1
+
+# ============================================
+# FALLBACK: RECONNECT TO PREVIOUS SSID
+# ============================================
+
+Write-Host ""
+Write-Host "[Alert] Failed to connect to '$SSID'"
+
+if ($previousSSID) {
+    Write-Host "[INFO] Attempting to reconnect to previous SSID '$previousSSID'..."
+    $null = netsh wlan disconnect 2>&1
+    Start-Sleep -Seconds 1
+    $fallbackResult = netsh wlan connect name="$previousSSID" 2>&1
+    Write-Host "  $fallbackResult"
+    Start-Sleep -Seconds 5
+
+    $wlan = Get-WlanState
+    if ($wlan.State -eq 'connected' -and $wlan.SSID -eq $previousSSID) {
+        Write-Host "[OK] Restored connection to '$previousSSID'"
+    }
+    else {
+        Write-Host "[Alert] Could not restore previous connection either"
+        Write-Host "[Alert] State: $($wlan.State) | SSID: $($wlan.SSID)"
+    }
 }
+
+Write-Host "[Alert] WiFi switch to '$SSID' failed - check SSID name and password"
+exit 1

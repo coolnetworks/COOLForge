@@ -27,7 +27,7 @@
   {
     "scriptToRun": "⚙️Set WiFi SSID.ps1",
     "launcherName": "Config/⚙️Set WiFi SSID.ps1",
-    "version": "2026.03.18.01",
+    "version": "2026.03.18.02",
     "extraFields": [
       { "var": "policy_wifi_setup", "cf": "cf_policy_wifi_setup" },
       { "var": "policy_wifi_ssid", "cf": "cf_policy_wifi_ssid" },

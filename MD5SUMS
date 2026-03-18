@@ -517,7 +517,7 @@ b45c32def9b7861719d371d1ffb935ef  launchers/Alert/🔔Technician Alert Monitor.p
 de3795e24566b1a6518a18244073092b  launchers/Config/⚙️COOLForge Cache Sync.ps1
 e2294156c4670229674f367b9d403249  launchers/Config/⚙️Configure Wake-on-LAN.ps1
 191764078887380551803402df128f03  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
-f80b8fff521885514079d894041ea023  launchers/Config/⚙️Set WiFi SSID.ps1
+6863b6a43528341d94597b1b8c9d5fe5  launchers/Config/⚙️Set WiFi SSID.ps1
 ae2fed849d91585f998b6f9d922d663b  launchers/Config/🔧Prevent Sleep.ps1
 502ce94695220f6a56164bc6699e46a2  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
 f007a60e25a7c050eca85b9cee737258  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
@@ -570,7 +570,7 @@ a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
 be32c5551bb37aae0645ae1da957e117  scripts/Configure/⚙️Configure Power Management for Workstation.ps1
 98a6f30aebccfe2e05f6ba7708865b07  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-36094c8ebbc6ae8634a2e3cb2b967fc4  scripts/Configure/⚙️Set WiFi SSID.ps1
+f3528fec8b39cdf9e25ad6978587df96  scripts/Configure/⚙️Set WiFi SSID.ps1
 4b51c03078884653dc96c81483bd97fa  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 9e71bc81c1222cf9ede68b5f6f033d72  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
 2fac18f824de904e741007e6c9757e83  scripts/Fix/🔧Fix Windows 10 Services.ps1
@@ -622,7 +622,6 @@ c91688ce601b05d062b52143b5c2a798  standalone_scripts/Remove/Remove-AllRATs-Stand
 2be6e85b3c702d5d2e79bdc1f21f5931  standalone_scripts/Remove/Remove-AnyDesk-Standalone.ps1
 114fe162e0561d95553627ec1b88dcea  standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
 b438681eb275179cde7d89303879b0b9  standalone_scripts/Utility/Wake-AllDevicesInFolder-Standalone.ps1
-bce0c1ea117483f32977ac98ed400e12  standalone_scripts/Utility/copy-family-folder.ps1
 2d520fc27f3c5b96d4b1fe701f835644  start_here/Add-COOLForgeCustomField.ps1
 dd7afc2c8d98c1456aa45547754052f0  start_here/Backup-COOLForgeCustomFields.ps1
 e2c053c73fc66dcb6c4a6c94e0a3248f  start_here/Backup-LevelAutomationsAndScripts.ps1
