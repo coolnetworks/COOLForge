@@ -14,7 +14,7 @@
     - No connection: Adds profile and attempts to connect
 
 .NOTES
-    Version:          2026.03.18.06
+    Version:          2026.03.18.07
     Target Platform:  Windows 10, Windows 11
     Exit Codes:       0 = Success | 1 = Failure (Alert)
 
@@ -27,7 +27,7 @@
 #>
 
 # Set WiFi SSID
-# Version: 2026.03.18.06
+# Version: 2026.03.18.07
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 
@@ -121,8 +121,9 @@ $hasWifiAdapter = Get-NetAdapter -ErrorAction SilentlyContinue |
     Where-Object { $_.InterfaceDescription -match 'Wireless|Wi-Fi|WiFi|WLAN|802\.11' }
 
 if (-not $hasWifiAdapter) {
-    Write-Host "[Alert] No WiFi adapter found on this device"
-    exit 1
+    Write-Host "  [INFO] No WiFi adapter found on this device"
+    Write-Host "[OK] Skipping - device has no WiFi adapter"
+    exit 0
 }
 
 # Get current WiFi state
