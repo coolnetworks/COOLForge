@@ -14,7 +14,7 @@
     - No connection: Adds profile and attempts to connect
 
 .NOTES
-    Version:          2026.03.18.04
+    Version:          2026.03.18.05
     Target Platform:  Windows 10, Windows 11
     Exit Codes:       0 = Success | 1 = Failure (Alert)
 
@@ -27,7 +27,7 @@
 #>
 
 # Set WiFi SSID
-# Version: 2026.03.18.04
+# Version: 2026.03.18.05
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 
@@ -259,7 +259,13 @@ if ($lfsvc) {
     }
 }
 
-if (-not $locationFixed) {
+# If we changed location settings, restart WlanSvc so it picks up the new permissions
+if ($locationFixed) {
+    Write-Host "  [INFO] Restarting WLAN AutoConfig to apply location changes..."
+    Restart-Service -Name WlanSvc -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+    Write-Host "  [OK] WlanSvc restarted"
+} else {
     Write-Host "  [OK] Location services already enabled"
 }
 
