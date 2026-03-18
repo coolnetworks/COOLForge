@@ -14,7 +14,7 @@
     - No connection: Adds profile and attempts to connect
 
 .NOTES
-    Version:          2026.03.18.03
+    Version:          2026.03.18.04
     Target Platform:  Windows 10, Windows 11
     Exit Codes:       0 = Success | 1 = Failure (Alert)
 
@@ -27,7 +27,7 @@
 #>
 
 # Set WiFi SSID
-# Version: 2026.03.18.03
+# Version: 2026.03.18.04
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 
@@ -207,6 +207,60 @@ if ($ethernetUp) {
     Write-Host "[OK] Device is on ethernet - profile added, skipping WiFi connect"
     Write-Host "[INFO] Device will auto-connect to '$SSID' when on WiFi"
     exit 0
+}
+
+# ============================================
+# ENSURE LOCATION SERVICES (required for netsh wlan connect)
+# ============================================
+
+Write-Host ""
+Write-Host "[LOCATION SERVICES]"
+
+$locationFixed = $false
+$masterPath = 'HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration'
+$consentPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location'
+
+# Check and fix master switch
+$masterStatus = $null
+if (Test-Path $masterPath) {
+    $masterStatus = (Get-ItemProperty -Path $masterPath -Name 'Status' -ErrorAction SilentlyContinue).Status
+}
+if ($masterStatus -ne 1) {
+    if (-not (Test-Path $masterPath)) { New-Item -Path $masterPath -Force | Out-Null }
+    New-ItemProperty -Path $masterPath -Name 'Status' -Value 1 -PropertyType DWord -Force | Out-Null
+    Write-Host "  [OK] Location master switch enabled"
+    $locationFixed = $true
+}
+
+# Check and fix device consent
+$consentValue = $null
+if (Test-Path $consentPath) {
+    $consentValue = (Get-ItemProperty -Path $consentPath -Name 'Value' -ErrorAction SilentlyContinue).Value
+}
+if ($consentValue -ne 'Allow') {
+    if (-not (Test-Path $consentPath)) { New-Item -Path $consentPath -Force | Out-Null }
+    New-ItemProperty -Path $consentPath -Name 'Value' -Value 'Allow' -PropertyType String -Force | Out-Null
+    Write-Host "  [OK] Device location consent set to Allow"
+    $locationFixed = $true
+}
+
+# Ensure lfsvc service is running
+$lfsvc = Get-Service -Name lfsvc -ErrorAction SilentlyContinue
+if ($lfsvc) {
+    if ($lfsvc.StartType -eq 'Disabled') {
+        Set-Service -Name lfsvc -StartupType Manual -ErrorAction SilentlyContinue
+        Write-Host "  [OK] lfsvc service set to Manual"
+        $locationFixed = $true
+    }
+    if ($lfsvc.Status -ne 'Running') {
+        Start-Service -Name lfsvc -ErrorAction SilentlyContinue
+        Write-Host "  [OK] lfsvc service started"
+        $locationFixed = $true
+    }
+}
+
+if (-not $locationFixed) {
+    Write-Host "  [OK] Location services already enabled"
 }
 
 # ============================================
