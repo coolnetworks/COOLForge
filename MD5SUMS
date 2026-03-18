@@ -570,7 +570,7 @@ a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
 be32c5551bb37aae0645ae1da957e117  scripts/Configure/⚙️Configure Power Management for Workstation.ps1
 98a6f30aebccfe2e05f6ba7708865b07  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-b864b261d353dadd9498220d97d8c4f1  scripts/Configure/⚙️Set WiFi SSID.ps1
+36094c8ebbc6ae8634a2e3cb2b967fc4  scripts/Configure/⚙️Set WiFi SSID.ps1
 4b51c03078884653dc96c81483bd97fa  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 9e71bc81c1222cf9ede68b5f6f033d72  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
 2fac18f824de904e741007e6c9757e83  scripts/Fix/🔧Fix Windows 10 Services.ps1
