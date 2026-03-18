@@ -1,699 +1,706 @@
-0092c9b8a1666fc06872c594bc722a5b  backups/Level/scripts/Wake On Lan and Power settings WOL.ps1
-0092c9b8a1666fc06872c594bc722a5b  backups/Level2/scripts/Wake On Lan and Power settings WOL.ps1
-00d10bc5252de3ee12617234c93c41cf  backups/Level/scripts/From Atera/get-disk-powershell (copy).ps1
-00d10bc5252de3ee12617234c93c41cf  backups/Level2/scripts/From Atera/get-disk-powershell (copy).ps1
-00d72156320b88bdc796dec611e9f399  backups/Level/scripts/From Atera/level bbb.ps1
-00d72156320b88bdc796dec611e9f399  backups/Level2/scripts/From Atera/level bbb.ps1
-00e9b6e3a9be307ee7a2f0cf933bb405  launchers/Remove/⛔Remove All RATs.ps1
-01d71262c901c3d959d646d915a59368  start_here/Export-DeviceCustomFields.ps1
-0212a0317967605824cb308c54ba0137  testing/check-encoding.ps1
-02176766a48a924cc064aa8dc894b7f3  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-021bd9a952e68daee73eebb6fe1aaf98  launchers/Policy/👀Hostname Mismatch.ps1
-026062b553f3426618bd6ecf3b9656f8  scripts/Policy/👀huntress.ps1
-02a38bc3facb417a0406a4fe56320035  backups/Level/scripts/From Atera/Reboot Device And Notify The User (copy).ps1
-02a38bc3facb417a0406a4fe56320035  backups/Level2/scripts/From Atera/Reboot Device And Notify The User (copy).ps1
-043fb967ef16c012fcb948945e53be4a  launchers/Config/⚙️COOLForge Cache Sync.ps1
-044e5271eff399f13c3975a8438314f4  standalone_scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-04a74de01f26e963787cea5db450f7c1  launchers/Alert/🙏Wake all devices in Level group.ps1
-04e3de37c6f0aab396ef3c1b15950079  launchers/Config/⚙️Configure Wake-on-LAN.ps1
-062a67c16b4c94e72114876a291936b1  backups/Level/scripts/Set chrome as default.ps1
-062a67c16b4c94e72114876a291936b1  backups/Level2/scripts/Set chrome as default.ps1
-0716ae0f32df05e38f363d9cc5698636  backups/Level/scripts/Imported/Windows - Unauthorized Admins.ps1
-0716ae0f32df05e38f363d9cc5698636  backups/Level2/scripts/Imported/Windows - Unauthorized Admins.ps1
-080cf1b941f5aab52357566bf3b28ade  validation/check-emoji-corruption.ps1
-0b2f3f35882954280db8080ec9985087  backups/Level/scripts/From Atera/ScheduledTasksChecker.ps1
-0b2f3f35882954280db8080ec9985087  backups/Level2/scripts/From Atera/ScheduledTasksChecker.ps1
-0ba4fa943a9a669edef425be17b59c16  scripts/Policy/👀dns.ps1
-0bf8b4f15dee5630c15d1099ad292f9e  backups/Level/scripts/From Atera/Set_Sleep_to_45min.ps1
-0bf8b4f15dee5630c15d1099ad292f9e  backups/Level2/scripts/From Atera/Set_Sleep_to_45min.ps1
-0d125daf0979df1195b6c484cdf325d9  launchers/Fix/🔧Fix Windows Location Services.ps1
-0e1414bffe46bc9c8a85929184aa542a  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
-0eb11773270dbd93dce01838d6a376fb  backups/Level/scripts/From Atera/Enable Wake On Lan for All Devices.ps1
-0eb11773270dbd93dce01838d6a376fb  backups/Level2/scripts/From Atera/Enable Wake On Lan for All Devices.ps1
-0ec5a93144bc7e6a616aa3278b6a6059  backups/Level/scripts/From Atera/Current Timezone Reporter.ps1
-0ec5a93144bc7e6a616aa3278b6a6059  backups/Level2/scripts/From Atera/Current Timezone Reporter.ps1
-0f3328751b4e777c57ab1fed82a8a01c  templates/SoftwarePolicy-Template.ps1
-0fbc0bbb4843d516d57efd61e1efa517  start_here/Mark-LegacyFields.ps1
-106f0a6298861e0101c909fdf774de76  backups/Level/scripts/test sc session delete.ps1
-106f0a6298861e0101c909fdf774de76  backups/Level2/scripts/test sc session delete.ps1
-111cc71378dc073f70562cf2cec3639e  testing/how-i-got-here/get-automation-page.ps1
-11970bd3a4344e458609ee1d48d007ee  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _StartComponentCleanup.ps1
-11970bd3a4344e458609ee1d48d007ee  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _StartComponentCleanup.ps1
-123535ae9cecf4394e531fc30470cf19  backups/Level/scripts/From Atera/BISSYCARE DNS Agent reinstallation.ps1
-123535ae9cecf4394e531fc30470cf19  backups/Level2/scripts/From Atera/BISSYCARE DNS Agent reinstallation.ps1
-1294bd7e5931bc95bdc7b03ba1800da1  testing/how-i-got-here/test-tags-query.ps1
-130a59ea1b6c7b1dc21c8ba533e7b35c  testing/regenerate-launchers.ps1
-1402bfb1bebfb5d4f925008d8da5a61e  backups/Level/scripts/General/POLICY/🙏DNSFILTER.ps1
-1402bfb1bebfb5d4f925008d8da5a61e  backups/Level2/scripts/General/POLICY/🙏DNSFILTER.ps1
-1498b3d2438815e31cef5fb57cfe30ff  backups/Level/scripts/Imported/Windows - Software Not Installed.ps1
-1498b3d2438815e31cef5fb57cfe30ff  backups/Level2/scripts/Imported/Windows - Software Not Installed.ps1
-1514d26967bd2cef44235a0d0615ca77  wip/Install-ScreenConnect.ps1
-156e4313268acba7173a971cecfeb1cf  backups/Level/scripts/General/Popups/Generate Popup.ps1
-156e4313268acba7173a971cecfeb1cf  backups/Level2/scripts/General/Popups/Generate Popup.ps1
-158ed0ff435ef4c74f9755ac739266cc  standalone_scripts/Fix/🔧Fix Windows 7 Services.ps1
-164e6bb9cbe5d169d99c2c1b509e6e9c  backups/Level/scripts/General/POLICY/Windows - Set Time Zone.ps1
-164e6bb9cbe5d169d99c2c1b509e6e9c  backups/Level2/scripts/General/POLICY/Windows - Set Time Zone.ps1
-16fb9dd1d34a1ca38014dd1737f3fdac  scripts/Fix/🔧Prevent Sleep.ps1
-171b6d4637460c808d49060744b31016  backups/Level/scripts/General/POLICY/Set Date Format DD_MM_YYYY.ps1
-171b6d4637460c808d49060744b31016  backups/Level2/scripts/General/POLICY/Set Date Format DD_MM_YYYY.ps1
-18ff39c65b1f7d4384bf74ea2024f8bc  backups/Level/scripts/From Atera/Change_taskbar_icons_size_to_small_in_Windows_11.ps1
-18ff39c65b1f7d4384bf74ea2024f8bc  backups/Level2/scripts/From Atera/Change_taskbar_icons_size_to_small_in_Windows_11.ps1
-1a75e388814df36ae8270102c0c58c75  testing/how-i-got-here/test-level-api.ps1
-1a83062b387e7fb7782f4a650ead549b  backups/Level/scripts/From Atera/PowerShell script to output a list of DNS servers being used by the machine.ps1
-1a83062b387e7fb7782f4a650ead549b  backups/Level2/scripts/From Atera/PowerShell script to output a list of DNS servers being used by the machine.ps1
-1a9baa628db9553858324efc9e32cb2e  launchers/Fix/🔧Fix Windows 10 Services.ps1
-1b8df665a1ab21b6b36a85bab68018d5  scripts/Policy/👀dnsfilter.ps1
-1d984f7fbd7d86ef0b35fa520843beb6  backups/Level/scripts/From Atera/freeup (copy).ps1
-1d984f7fbd7d86ef0b35fa520843beb6  backups/Level2/scripts/From Atera/freeup (copy).ps1
-1f07a8cc1286dc8174e27111aec77900  backups/Level/scripts/From Atera/get-bitlocker-recovery.ps1
-1f07a8cc1286dc8174e27111aec77900  backups/Level2/scripts/From Atera/get-bitlocker-recovery.ps1
-20f845f138d8482064c7b51230b5a2e6  backups/Level/scripts/From Atera/Fix Display Name (copy).ps1
-20f845f138d8482064c7b51230b5a2e6  backups/Level2/scripts/From Atera/Fix Display Name (copy).ps1
-21817be83f7e8983ba1ff5032631ef88  scripts/Remove/⛔Force Remove Dropbox.ps1
-220005c345bfa583165b548c43de5e19  launchers/Policy/Windows/👀Windows Location Services.ps1
-220c1c3068bc4f6e32e0d998f9dc640a  backups/Level/scripts/From Atera/Clear All Events.ps1
-220c1c3068bc4f6e32e0d998f9dc640a  backups/Level2/scripts/From Atera/Clear All Events.ps1
-2272f8dc6ab0a96f959efcac0bd59f20  backups/Level/scripts/Imported/Windows - Cleanup Disk Space.ps1
-2272f8dc6ab0a96f959efcac0bd59f20  backups/Level2/scripts/Imported/Windows - Cleanup Disk Space.ps1
-22b513edcd603a630c009a045ef516e3  backups/Level/scripts/From Atera/AteraAlertTime60seconds.ps1
-22b513edcd603a630c009a045ef516e3  backups/Level2/scripts/From Atera/AteraAlertTime60seconds.ps1
-22f4b25eb31423533bcfae0c3dc787e4  pre-release/Update-Launchers.ps1
-2350b03cc3e58dff9124478dcc682290  tools/Update-MD5Sums.ps1
-23718ecdf8c22fccef33f6dbd8fe2237  launchers/Policy/👀debug.ps1
-2448a6fbf60d3d861d3fd7f3022a5108  backups/Level/scripts/General/POLICY/ensure machine wakes up daily to run stuff.ps1
-2448a6fbf60d3d861d3fd7f3022a5108  backups/Level2/scripts/General/POLICY/ensure machine wakes up daily to run stuff.ps1
-25360ec393ad806c4a6afccf65c0a3fb  backups/Level/scripts/From Atera/Hide Atera Folder (copy).ps1
-25360ec393ad806c4a6afccf65c0a3fb  backups/Level2/scripts/From Atera/Hide Atera Folder (copy).ps1
-265879657e7062e52317169299c18929  standalone_scripts/Utility/Wake-AllDevicesInFolder-Standalone.ps1
-265879657e7062e52317169299c18929  start_here/Wake-AllDevicesInFolder-Standalone.ps1
-2692ba16d5b3348a45afe428cd87168b  backups/Level/scripts/From Atera/RA tools.ps1
-2692ba16d5b3348a45afe428cd87168b  backups/Level2/scripts/From Atera/RA tools.ps1
-2876a61268a30dfca23543ec9de5ff46  backups/Level/scripts/From Atera/Burnt_Toast_Installer_System_Template.ps1
-2876a61268a30dfca23543ec9de5ff46  backups/Level2/scripts/From Atera/Burnt_Toast_Installer_System_Template.ps1
-28b8fa31baf5ccc4183e1929a1b6a49c  backups/Level/scripts/General/Fixes/System File Checker.ps1
-28b8fa31baf5ccc4183e1929a1b6a49c  backups/Level2/scripts/General/Fixes/System File Checker.ps1
-28ee974b5febdc9c4a7b19cf066bf64a  backups/Level/scripts/test uninstall for SC.ps1
-28ee974b5febdc9c4a7b19cf066bf64a  backups/Level2/scripts/test uninstall for SC.ps1
-2aab07144b1a3bfa005587d2a1c3de3a  backups/Level/scripts/From Atera/Extract TeamViewer ID (copy).ps1
-2aab07144b1a3bfa005587d2a1c3de3a  backups/Level2/scripts/From Atera/Extract TeamViewer ID (copy).ps1
-2b0e173a7593468bfff4c7a964d75489  backups/Level/scripts/From Atera/Set LAPS Password.ps1
-2b0e173a7593468bfff4c7a964d75489  backups/Level2/scripts/From Atera/Set LAPS Password.ps1
-2b38fc21a3e8f0ad5b2e9a090da53445  backups/Level/scripts/From Atera/Start or Restart Screenconnect.ps1
-2b38fc21a3e8f0ad5b2e9a090da53445  backups/Level2/scripts/From Atera/Start or Restart Screenconnect.ps1
-2b6281c82d646152fc9912746907ba79  backups/Level/scripts/From Atera/InstallHuntressLabs.ps1
-2b6281c82d646152fc9912746907ba79  backups/Level2/scripts/From Atera/InstallHuntressLabs.ps1
-2ba5f179389118ba56d31d66575e1402  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
-2bf9f6421b3fe3d2bc49e2d6ece112ef  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
-2c53621656bd12c3a2c25e553398d96f  backups/Level/scripts/From Atera/Get-List-Of-Deduped-Logons.ps1
-2c53621656bd12c3a2c25e553398d96f  backups/Level2/scripts/From Atera/Get-List-Of-Deduped-Logons.ps1
-2ca827746f2a4451ef5bb18cab201cbb  start_here/Get-DeviceScreenConnectUrl.ps1
-2cb8c2bf38c291040f349091c37e04bd  launchers/Policy/👀dns.ps1
-2d5e1a22dc05f8935203ea4a36507293  scripts/Policy/👀bitwarden.ps1
-2fcad099791c400dbc4daae632595a69  start_here/Get-StaleDevices.ps1
-30af4ba5c10daf1405f946a9b953ec39  testing/Test_From_Level.ps1
-30cc496dc6025a29b501ab15c6ca10e5  testing/update-md5.ps1
-31be337c81aec79dd9ddf05e51a0432d  launchers/Policy/👀chrome.ps1
-3213cf5af507d3d52672bdfaedb08b4c  testing/Generate-WorkflowCharts.ps1
-32a115f3710ca5889ae13a054cc7c366  backups/Level/scripts/Refresh Icon Cache.ps1
-32a115f3710ca5889ae13a054cc7c366  backups/Level2/scripts/Refresh Icon Cache.ps1
-32c19f860994874ffad0363886638006  backups/Level/scripts/Can we run_.ps1
-32c19f860994874ffad0363886638006  backups/Level2/scripts/Can we run_.ps1
-347ea1c53630500f2aa18a2f50e1fbb7  pre-release/Update-ScriptInventory.ps1
-352118d5349484b1d08e0846c2ffd01b  backups/Level/scripts/From Atera/SWR Reconnect Drives.ps1
-352118d5349484b1d08e0846c2ffd01b  backups/Level2/scripts/From Atera/SWR Reconnect Drives.ps1
-3526b08dd965a7594fd8ab32928d80ff  backups/Level/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
-3526b08dd965a7594fd8ab32928d80ff  backups/Level2/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
-3549c3739ef2e3716dfb7bac68e01dd5  pre-release/Update-MD5SUMS.ps1
-364a5fe1d08bfff60004a311bbad621b  backups/Level/scripts/From Atera/stop_cryptoprevent.ps1
-364a5fe1d08bfff60004a311bbad621b  backups/Level2/scripts/From Atera/stop_cryptoprevent.ps1
-369b5f1e19f4d35712cbcc4ba63eafd1  launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
-37202346f6a56c1beba1d8d0ab9c62c3  standalone_scripts/Fix/🔧Fix Windows 11 Services.ps1
-375cfed8733b81535f23086a19d202c1  backups/Level/scripts/From Atera/reset_password_for_local_user (copy).ps1
-375cfed8733b81535f23086a19d202c1  backups/Level2/scripts/From Atera/reset_password_for_local_user (copy).ps1
-3787368d9d7ccf8cc06bf1edeaa6dde4  launchers/Policy/👀level-monitor.ps1
-37d6245cb98b153d7bf9078d80da1ea9  launchers/Policy/👀screenconnect.ps1
-37e6e6d558f97d1968d410837dd688c3  backups/Level/scripts/Remove Teamviewer.ps1
-37e6e6d558f97d1968d410837dd688c3  backups/Level2/scripts/Remove Teamviewer.ps1
-37e7a874b4dc9ad94d0772513c6f1f2c  backups/Level/scripts/From Atera/Windows 11 Upgrade TPM and CPU Validation Bypass (copy).ps1
-37e7a874b4dc9ad94d0772513c6f1f2c  backups/Level2/scripts/From Atera/Windows 11 Upgrade TPM and CPU Validation Bypass (copy).ps1
-387db289a6b2bf32e807533e07a21b84  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
-387db289a6b2bf32e807533e07a21b84  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
-39c9da0bf6728ac70a910c5b0d78c1a4  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
-39c9da0bf6728ac70a910c5b0d78c1a4  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
-3a891a46e411f7318c504c69468f1f76  start_here/Remove-COOLForgeSetup.ps1
-3af7767033b39883dc60540f0d33ae72  backups/Level/scripts/AdelaideMRI/Fixes/Install Radreport Chrome Launcher.ps1
-3af7767033b39883dc60540f0d33ae72  backups/Level2/scripts/AdelaideMRI/Fixes/Install Radreport Chrome Launcher.ps1
-3afdeeeaf5e4284bd76103c14cf53609  backups/Level/scripts/Imported/Windows Monitor - Check Disk Errors.ps1
-3afdeeeaf5e4284bd76103c14cf53609  backups/Level2/scripts/Imported/Windows Monitor - Check Disk Errors.ps1
-3b77a7270fad9037e370621cde58cd2c  scripts/Utility/⚙️Universal Disk Cleaner.ps1
-3bd249b9ef0d89af706e801bcd267028  backups/Level/scripts/From Atera/backup_screenconnect_serverdata.ps1
-3bd249b9ef0d89af706e801bcd267028  backups/Level2/scripts/From Atera/backup_screenconnect_serverdata.ps1
-3c0e5ff2c6dafb65012d9079d59b8c5f  launchers/Remove/⛔Force Remove McAfee.ps1
-3c1ff9cecb31c2be1932f9aa89aac8b9  backups/Level/scripts/From Atera/Get-BitlockerKeys (copy).ps1
-3c1ff9cecb31c2be1932f9aa89aac8b9  backups/Level2/scripts/From Atera/Get-BitlockerKeys (copy).ps1
-3c5b1af3c5a3e0ef95a132ddbbe312f1  backups/Level/scripts/From Atera/Get-StorageSenseStatus.ps1
-3c5b1af3c5a3e0ef95a132ddbbe312f1  backups/Level2/scripts/From Atera/Get-StorageSenseStatus.ps1
-3c78ab79d1ef89767af206522a6d682d  backups/Level/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
-3c78ab79d1ef89767af206522a6d682d  backups/Level2/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
-3c9d818ab6aab63bc522991545f357e0  tools/Update-LauncherBOMFix.ps1
-3d98ed13dc7ef4d4da8fdc8bbc0f9780  scripts/Check/👀Check Windows Location Services.ps1
-3e2d6c91be9930bd03eb6445f3f1fe7b  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-3e40320b48a0a19f8d7ee859219c2ba7  backups/Level/scripts/AdelaideMRI/Recreate Voyager for the Company.ps1
-3e40320b48a0a19f8d7ee859219c2ba7  backups/Level2/scripts/AdelaideMRI/Recreate Voyager for the Company.ps1
-3e563ce27a1df0a80db82b99d4b9d47c  backups/Level/scripts/From Atera/SetAteraAgentName (copy).ps1
-3e563ce27a1df0a80db82b99d4b9d47c  backups/Level2/scripts/From Atera/SetAteraAgentName (copy).ps1
-3e6ef74423b08fb7e78aa8cbdab5bd6e  scripts/Configure/⚙️Configure Power Management for Workstation.ps1
-3f0643627e0957fc75a3537554969337  launchers/Policy/👀cipp.ps1
-3fcd9d87fc9b2f37d8d6fadf24f89ccc  backups/Level/scripts/General/Info Gathering/Support Request check.ps1
-3fcd9d87fc9b2f37d8d6fadf24f89ccc  backups/Level2/scripts/General/Info Gathering/Support Request check.ps1
-402cd8ab2a08c299b10189c992bfcb74  backups/Level/scripts/AdelaideMRI/Fixes/Deploy Voyager Launcher.ps1
-402cd8ab2a08c299b10189c992bfcb74  backups/Level2/scripts/AdelaideMRI/Fixes/Deploy Voyager Launcher.ps1
-412339525c6a420382ce159e5c87f05a  backups/Level/scripts/From Atera/do_ansible_user.ps1
-412339525c6a420382ce159e5c87f05a  backups/Level2/scripts/From Atera/do_ansible_user.ps1
-41e7c43363900c4c8b084ddfd2e0f892  backups/Level/scripts/Debugging/SET_ Unlimited System Restore.ps1
-41e7c43363900c4c8b084ddfd2e0f892  backups/Level2/scripts/Debugging/SET_ Unlimited System Restore.ps1
-42b65e8182be3ce7d2d464a655c84ee9  backups/Level/scripts/From Atera/Network_Printer (copy).ps1
-42b65e8182be3ce7d2d464a655c84ee9  backups/Level2/scripts/From Atera/Network_Printer (copy).ps1
-42f05db9e7c08deee9340963f90cd39a  backups/Level/scripts/From Atera/Discover Wi-Fi Passwords (copy).ps1
-42f05db9e7c08deee9340963f90cd39a  backups/Level2/scripts/From Atera/Discover Wi-Fi Passwords (copy).ps1
-437fc411fa96e4193da8c49cf66cb9f1  testing/how-i-got-here/get-allowedimport.ps1
-441ee63fcc853ee8f8f52ba745b1628e  backups/Level/scripts/General/POLICY/SET_ Sleep to 6 hours.ps1
-441ee63fcc853ee8f8f52ba745b1628e  backups/Level2/scripts/General/POLICY/SET_ Sleep to 6 hours.ps1
-44887d78f2d385e90319b03a7e6470cd  backups/Level/scripts/From Atera/uninstall_syncro.ps1
-44887d78f2d385e90319b03a7e6470cd  backups/Level2/scripts/From Atera/uninstall_syncro.ps1
-452a204cd85fa3d15f351778fb914c65  backups/Level/scripts/From Atera/Delete Temporary Files for All Users.ps1
-452a204cd85fa3d15f351778fb914c65  backups/Level2/scripts/From Atera/Delete Temporary Files for All Users.ps1
-4558544c2a7da8fb2b287cc4327b25d8  backups/Level/scripts/From Atera/Windows Defender Whitelist Atera Agent (copy).ps1
-4558544c2a7da8fb2b287cc4327b25d8  backups/Level2/scripts/From Atera/Windows Defender Whitelist Atera Agent (copy).ps1
-4674162df215bfa32fdf4bb507bc6e66  validation/check-all.ps1
-478a2b3723a36eebda071552a49c8bf7  testing/Test_Local.ps1
-47dc97f35f3998b2ffd79f62c531bdec  backups/Level/scripts/From Atera/Install Level gogreen.ps1
-47dc97f35f3998b2ffd79f62c531bdec  backups/Level2/scripts/From Atera/Install Level gogreen.ps1
-49b1ef69317dad31e1c970c8d8d9c20c  scripts/Check/👀debug.ps1
-49e98d74f60a66b647657e787086df92  backups/Level/scripts/From Atera/as-basic-popup-message.ps1
-49e98d74f60a66b647657e787086df92  backups/Level2/scripts/From Atera/as-basic-popup-message.ps1
-4a52fda74c1960315589b8e8762b816d  templates/Script_Template.ps1
-4a736b7e8d40c961911952298de4c71b  backups/Level/scripts/REMOVE_ Chrome Remote Desktop.ps1
-4a736b7e8d40c961911952298de4c71b  backups/Level2/scripts/REMOVE_ Chrome Remote Desktop.ps1
-4adb9cab3e7f19c0a03fe629a204afa8  validation/Generate-CustomFieldsConfig.ps1
-4b77b64486b3c9b3d8cba675d529db12  testing/how-i-got-here/Extract-LevelScriptsFromHAR.ps1
-4c1b9415e1f1962e19a1d449bea398e0  backups/Level/scripts/General/POLICY/Set Outlook Exchange Connection Limit.ps1
-4c1b9415e1f1962e19a1d449bea398e0  backups/Level2/scripts/General/POLICY/Set Outlook Exchange Connection Limit.ps1
-4c335256478244b1cf014a2809ee4d32  backups/Level/scripts/General/Restart Explorer as current user.ps1
-4c335256478244b1cf014a2809ee4d32  backups/Level2/scripts/General/Restart Explorer as current user.ps1
-4c62cf56e495707c3360666fc98efab3  backups/Level/scripts/is interactive sign in_.ps1
-4c62cf56e495707c3360666fc98efab3  backups/Level2/scripts/is interactive sign in_.ps1
-4d2b8fc62d5cf1fcb8448452e08baecd  backups/Level/scripts/🙏CIPPCHECK.ps1
-4d2b8fc62d5cf1fcb8448452e08baecd  backups/Level2/scripts/🙏CIPPCHECK.ps1
-4d74c7f27c1946ab6821ec2d9174f637  backups/Level/scripts/From Atera/cape divine level.ps1
-4d74c7f27c1946ab6821ec2d9174f637  backups/Level2/scripts/From Atera/cape divine level.ps1
-4e4b44a17cebafaea8055af2afeb88e0  start_here/Backup-COOLForgeCustomFields.ps1
-4eed1c12f96142b57681dc71a48767d9  backups/Level/scripts/From Atera/Reconnect Drives CMD File and Shortcut Creator SWR.ps1
-4eed1c12f96142b57681dc71a48767d9  backups/Level2/scripts/From Atera/Reconnect Drives CMD File and Shortcut Creator SWR.ps1
-4ef2dc3755e7a648a1542691bf9bf5fc  testing/how-i-got-here/Download-LevelScripts.ps1
-4f47fd7220e0fb4da9a5c53bc581dea8  scripts/Policy/Windows/👀Windows Location Services.ps1
-502f7c8846338de13bfe3d94fd52750a  backups/Level/scripts/General/Windows Monitor - DNS Servers.ps1
-502f7c8846338de13bfe3d94fd52750a  backups/Level2/scripts/General/Windows Monitor - DNS Servers.ps1
-50afe37d24348059dd2606ca2af5a0a2  backups/Level/scripts/General/Fixes/SFC _SCANNOW.ps1
-50afe37d24348059dd2606ca2af5a0a2  backups/Level2/scripts/General/Fixes/SFC _SCANNOW.ps1
-528faece9edfcd9858ee7301c1928d0c  backups/Level/scripts/From Atera/High Performance Power Plan (copy).ps1
-528faece9edfcd9858ee7301c1928d0c  backups/Level2/scripts/From Atera/High Performance Power Plan (copy).ps1
-52ddacda8749317229a6cca12c0369d0  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
-5315f5e7e67a9c32023b76bc92a30118  backups/Level/scripts/From Atera/Reset_Browsers_to_Default_Homepage.ps1
-5315f5e7e67a9c32023b76bc92a30118  backups/Level2/scripts/From Atera/Reset_Browsers_to_Default_Homepage.ps1
-534a3d02350a1077790bae93115b0aed  backups/Level/scripts/From Atera/AMRI Dowload Install Voyager Launcher.ps1
-534a3d02350a1077790bae93115b0aed  backups/Level2/scripts/From Atera/AMRI Dowload Install Voyager Launcher.ps1
-536dd86c83153f2893009c727de0810f  backups/Level/scripts/From Atera/Burnt_Toast_Notification_Template.ps1
-536dd86c83153f2893009c727de0810f  backups/Level2/scripts/From Atera/Burnt_Toast_Notification_Template.ps1
+14d1ee11f4144b173256e53b165efe9b  .local/Reset Level Instance.ps1
+05b98b538a30b8024807018f369684db  .local/check-duplicates.ps1
+c16fabee05c8a92e052025ceffa24248  COOLForge-Common.psm1
+d5cc8d717db9c87f07d5e75d18b56a1f  backups/Level/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
+f85f46da3553bc1bfa7645e69cdf1a23  backups/Level/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
+1f0196e84a451016be5b3acbe585b557  backups/Level/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
+9f3734a0423070477eee036a53b10279  backups/Level/scripts/AdelaideMRI/Extract Voyager to Programdata.ps1
+b301c8e4120ec879e650015c65b591d8  backups/Level/scripts/AdelaideMRI/Extract Webviewer.ps1
+fbeef821f4ccb9d110830bdea58eb964  backups/Level/scripts/AdelaideMRI/Fixes/Create Link to Voyager WebViewer on desktop.ps1
+9aa17a2af475b34f9a6dc5e4a153f13d  backups/Level/scripts/AdelaideMRI/Fixes/Debloat for AMRI.ps1
+fa41ee52a43b7935aca353c3758e5b6a  backups/Level/scripts/AdelaideMRI/Fixes/Deploy Voyager Launcher.ps1
+1177cd16ec9d5ca2b47da1fb42d30de8  backups/Level/scripts/AdelaideMRI/Fixes/Fix the VoyagerWorkstationConfig.txt files.ps1
+5f1de07bfd2c0a3ec2928963934a1561  backups/Level/scripts/AdelaideMRI/Fixes/Install Radreport Chrome Launcher.ps1
+93fe11c112f0ff93eed109446b19a913  backups/Level/scripts/AdelaideMRI/Recreate Voyager for the Company.ps1
+b1d932b9dd2329aa4086352a24946cfe  backups/Level/scripts/AdelaideMRI/SET_  background to phonebook.ps1
+06f2ad08c77a86249c29b5f0e314ee5d  backups/Level/scripts/AdelaideMRI/Set Hosts file for AdelaideMRI.ps1
+57a51ec86225eea84e63df2639323316  backups/Level/scripts/AdelaideMRI/extract voyager config files.ps1
+125afc4810f01c8ae87669d04a7455da  backups/Level/scripts/AdelaideMRI/get host details from voyager installs.ps1
+c2206d375255d063f0eb0760fa53023c  backups/Level/scripts/BASELINE SOFTWARE/⛔Huntress.ps1
+8d92a519ff9fb13a9abe055a48f4bd42  backups/Level/scripts/BASELINE SOFTWARE/🙏Huntress.ps1
+8b09f61d2a1352ca4cafc58bc2ab24bf  backups/Level/scripts/Baseline configurations/Create Restore Point.ps1
+c82ce2e849fd3074380b5b453443edc7  backups/Level/scripts/Baseline configurations/Create users.ps1
+b349c86642ee3719b28b81eca27c48bd  backups/Level/scripts/Can we run_.ps1
+5aaed82339faa25bec0c0747fd5599fd  backups/Level/scripts/DEBUG.ps1
+19bb99096557986ea2fabf73aefecc79  backups/Level/scripts/Debug Script.ps1
+f7dd2500c49cb0913e9ed7639df8f5ec  backups/Level/scripts/Debugging/FindHiddenUsers.ps1
+5f5035334a9a4a81518ce38359231a94  backups/Level/scripts/Debugging/SET_ Default System Restore.ps1
+3724025399c74570a237ba9df673c64d  backups/Level/scripts/Debugging/SET_ Unlimited System Restore.ps1
+2a2f15e7cbfa10b4cda86bf892af2fcd  backups/Level/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
+93250424f470ceb1986adb8c7571b8cc  backups/Level/scripts/Debugging/👀Test Variable Output.ps1
+8babd90b0c4554f8dc6cf08eea57e17a  backups/Level/scripts/Deploy COOLNETWORKS Support tool.ps1
+970e573adcf4976226b3683de1c7368c  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
+42f4b662ed99144e96cfe2ac09bc0619  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
+3636b5d5d8322f917db9ed43e4d8580b  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
+e65dbcb1a08001ee47f58ac1fadaa77a  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
+80485803d623bcd83cd7fd79cca12262  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
+73c9a7696578655a781ff84b27e09a0c  backups/Level/scripts/EXPORT_ Level folder path to registry.ps1
+0e163942999819856505a5ee3abd03bb  backups/Level/scripts/Fix .net TLS versions.ps1
+27f5efc697c463d191de58083db779cc  backups/Level/scripts/From Atera/# Change the computer name in Windows Rename-Computer -newname _{[new_name]}_  # Restart the computer for rename to take effect if ($ToRestartTypeYes -eq 'yes') {     Restart-Computer -Force }.ps1
+ad8bbd224de883957745b4df63570833  backups/Level/scripts/From Atera/AMRI Delete Old Files in 'Studies' Folders.ps1
+8309e045910cf92c371e15a415a89fa6  backups/Level/scripts/From Atera/AMRI Dowload Install Voyager Launcher.ps1
+6f43a2cf68834ce741e5265deae12ad0  backups/Level/scripts/From Atera/AteraAlertTime60seconds.ps1
+1e6268d636d6b368a345678a988dfaf5  backups/Level/scripts/From Atera/BISSYCARE DNS Agent reinstallation.ps1
+e38a48bb48c8eb7bcff7ba6e2e2dc89d  backups/Level/scripts/From Atera/Branded Restart.ps1
+c1d4acc51767bba3fe37bdaa1683973a  backups/Level/scripts/From Atera/Burnt_Toast_Installer_System_Template.ps1
+18fb6e87e008525ab7a8fc04f6861ca4  backups/Level/scripts/From Atera/Burnt_Toast_Notification_Template.ps1
+d1e2bece3bcfe537580b6fea94ead1db  backups/Level/scripts/From Atera/Change_AteraAgent_Service_to_Auto (copy).ps1
+2e3c9604138492602a4606c8725c88c0  backups/Level/scripts/From Atera/Change_taskbar_icons_size_to_small_in_Windows_11.ps1
+077992bd6902ec67bc0fb7ba82682489  backups/Level/scripts/From Atera/Check For and Remove Malwarebytes.ps1
+95942d881e29c8303fcbbaad5b9e7333  backups/Level/scripts/From Atera/Cleanup Print Queue.ps1
+4ecc9cf7f91ed6ae85cdcbce345fd23a  backups/Level/scripts/From Atera/Clear All Events.ps1
+c21590fb3767b29c88967788cc23d2e4  backups/Level/scripts/From Atera/Configure Power Settings for WIFI Network Adapters.ps1
+0e1a3db342b1dfb45068d69f68edf1aa  backups/Level/scripts/From Atera/Copy_Pristine_to_Sites_VoyagerWorkstationConfig.ps1
+db58a2a4e20fa444a32f0dc86edc05bf  backups/Level/scripts/From Atera/Create group for Level.ps1
+afc0f224a1832e01ef2cc0e5ae7aa186  backups/Level/scripts/From Atera/Current Timezone Reporter.ps1
+13565d2f67f01aee66af0acc3cf403c5  backups/Level/scripts/From Atera/Delete Old Print Jobs (copy).ps1
+881f85d8da413160a195444536004973  backups/Level/scripts/From Atera/Delete Temporary Files for All Users.ps1
+6cd1964d7d5a8928c306cb60082bfc96  backups/Level/scripts/From Atera/DeployPhonebookScript.ps1
+7b84252893f3546de581ea74521b587f  backups/Level/scripts/From Atera/Disable All User and Admin Accounts.ps1
+127ca6ba6af135b43925a100f00b01a7  backups/Level/scripts/From Atera/Discover Wi-Fi Passwords (copy).ps1
+95f7f3b05d91b59086fca308387cfec7  backups/Level/scripts/From Atera/Download and Install Google Chrome.ps1
+533662ee8531b8136eb52e711a2406c2  backups/Level/scripts/From Atera/Download and Install ScreenConnect Client to Company.ps1
+216ead77a3284746f1489a8b8545915c  backups/Level/scripts/From Atera/Download_Install_MSI_As_Administrator.ps1
+80ac640636adfcf4c71cd4eb222c4b28  backups/Level/scripts/From Atera/Dr JA COOK LEVEL.ps1
+29528aba2ff3b077deba705eb9932858  backups/Level/scripts/From Atera/Empty Recycle Bin.ps1
+9a4c24212c0f629ca50834fd4b1a29d2  backups/Level/scripts/From Atera/Enable Wake On Lan for All Devices.ps1
+c3a66c6b3ecb10d515656d44155fcbb9  backups/Level/scripts/From Atera/Enable right click classic menu on Windows11 (copy).ps1
+407b260efaec45ef5fdb30c5e8a2cf5e  backups/Level/scripts/From Atera/Extend Outlook Storage Capabilities (copy).ps1
+922f1746df8fbcfe26fed39e3c05db52  backups/Level/scripts/From Atera/Extract TeamViewer ID (copy).ps1
+cd4f455a08e23615822d25b8146d5333  backups/Level/scripts/From Atera/Fix Display Name (copy).ps1
+67953f88c38343ffb128354001e541da  backups/Level/scripts/From Atera/Flush Cache (copy).ps1
+1e47c43d0887f1b7c1775e4714fb348c  backups/Level/scripts/From Atera/Fully Remove any Malwarebytes install.ps1
+ffc2a7f60017f0e058ea7217c84dd52b  backups/Level/scripts/From Atera/Get-BitlockerKeys (copy).ps1
+888eaf9d41a0ecfd6dda0df10dd00061  backups/Level/scripts/From Atera/Get-List-Of-Deduped-Logons.ps1
+8995a63909f7c8f3727df0023d506d8a  backups/Level/scripts/From Atera/Get-StorageSenseStatus.ps1
+022966aa630e9a8942ff42243ada3ab0  backups/Level/scripts/From Atera/Get-recent-logins.ps1
+8fb3a4c3379704134ce316840b08d92c  backups/Level/scripts/From Atera/Get_system_info.ps1
+fcaf831646929c14a50dad61cefe1a51  backups/Level/scripts/From Atera/Hide Atera Folder (copy).ps1
+fdd716c7ed8923ff69fdce96d7fa8c4a  backups/Level/scripts/From Atera/High Performance Power Plan (copy).ps1
+d67d0dd2df145223b001f16c002fd67e  backups/Level/scripts/From Atera/Increase Exchange Mailbox Access for Outlook 365.ps1
+823050b8f7f75aca26d51f87286d6ba3  backups/Level/scripts/From Atera/Install Chocolatey (copy).ps1
+2bb804a853aff4e53a3017fb261d7f26  backups/Level/scripts/From Atera/Install FoxitReader from Chocolaty.ps1
+3c85d2a8764808abf98e13c14fad8c31  backups/Level/scripts/From Atera/Install Level gogreen.ps1
+4325ae5fcaab0999840ef9c736e50f9b  backups/Level/scripts/From Atera/InstallHuntressLabs.ps1
+84221ff659617ddf261595241eed7f38  backups/Level/scripts/From Atera/Kill RobloxPlayerBeta Process.ps1
+55c5c886b4d91fc0fcb10206457fa1a6  backups/Level/scripts/From Atera/Level for BISSYCARE.ps1
+baaece57b833335e1137702bc9c71035  backups/Level/scripts/From Atera/List all printers on local machine with port names.ps1
+1ee511699a777a5f5f7afd9dcf4ddb15  backups/Level/scripts/From Atera/MAC - Install Huntress.ps1
+f403075ba02d53ca598eca8806b297c0  backups/Level/scripts/From Atera/MHS level.ps1
+c14c23e7902aa7b8c5c138cf1a90ce7e  backups/Level/scripts/From Atera/Network_Printer (copy).ps1
+0336ef5712d4a4e6483d14283a0d67c1  backups/Level/scripts/From Atera/Populate Agent Custom Field with Customer Custom Field DNS1.ps1
+216bd1cde209a64dddc4b2555fbd0a55  backups/Level/scripts/From Atera/Populate Agent DNS1 Custom Field with Customer DNS1 Custom Field.ps1
+94cc0b182c1fbe5f3ccc83929783aad8  backups/Level/scripts/From Atera/PowerShell script to change every network adapter DNS to Google DNS.ps1
+c0c5f28df8e69c5201a2d808589c5220  backups/Level/scripts/From Atera/PowerShell script to output a list of DNS servers being used by the machine.ps1
+663d727468560c64745f9b48981c27c6  backups/Level/scripts/From Atera/PreventIndexingOutlook (copy).ps1
+0daad9895ae128956d03c64691f4d15b  backups/Level/scripts/From Atera/Proper Whitelabel Atera Agent script.ps1
+22e24d9e67f2e4adacd5b1e2b64024a6  backups/Level/scripts/From Atera/RA tools.ps1
+1176a3526affefd05b1c85ef67a4468b  backups/Level/scripts/From Atera/RADPAY Shortcut Creator.ps1
+1086edcd8594fcf90af1ae6ef163adeb  backups/Level/scripts/From Atera/Reboot Device And Notify The User (copy).ps1
+4e84a4fd61d021ed9ec83c3e6c051445  backups/Level/scripts/From Atera/Reconnect Drives CMD File and Shortcut Creator SWR.ps1
+08351e47119643e44c4409498f249c2b  backups/Level/scripts/From Atera/Recreate Voyager from Pristine.ps1
+87e388c3c00245b2be64bfc08a5497b8  backups/Level/scripts/From Atera/Registry logging.ps1
+5c8a447ae85ec6d3ae8be2476359797e  backups/Level/scripts/From Atera/Reinstall Microsoft 365 and System Health Check.ps1
+aa1965979e553a2b76a70d33d3e49539  backups/Level/scripts/From Atera/Remove Firefox.ps1
+9893bb0a9c79594fbd0448bff2554ab7  backups/Level/scripts/From Atera/Remove MalwareBytes.ps1
+a1aef727c9c5797e5302131ba1127399  backups/Level/scripts/From Atera/Remove McAfee Agent.ps1
+094256104d560a9e541c9f4785bc6507  backups/Level/scripts/From Atera/Remove_Voyager_TempFiles2days.ps1
+8351574be434017208ebb423bd5dd823  backups/Level/scripts/From Atera/Rename Computer (copy).ps1
+36a2a6d3c3e0791bdd926354a57a3b74  backups/Level/scripts/From Atera/Reset Choco When not working.ps1
+3a22d22ba561f64d730a410370b2ccef  backups/Level/scripts/From Atera/Reset_Browsers_to_Default_Homepage.ps1
+7237f05a3a8d195c71c2fc4cabe0c7d1  backups/Level/scripts/From Atera/Resync Time (copy).ps1
+4cc2c7537a21689bc109039f630a6af2  backups/Level/scripts/From Atera/Retrieve Wi-Fi Passwords using PowerShell.ps1
+928ff1f596126741f04844aa9e0f8099  backups/Level/scripts/From Atera/Run Backblaze Uninstaller.ps1
+7d473a3b074b6a0bc8e837bc409f5d58  backups/Level/scripts/From Atera/Run Windows Cleanup (copy).ps1
+1589a901e36949c9b9edccc531282232  backups/Level/scripts/From Atera/SWR - SET HOMEPAGE TO SHAREPOINT.ps1
+b030c48c4c96cb256387393858a02a30  backups/Level/scripts/From Atera/SWR Level.ps1
+bba3911105301a15fbbee40c70f9663d  backups/Level/scripts/From Atera/SWR Printer Driver Downloads.ps1
+e0f6e114bb33630938ca21600c7b776c  backups/Level/scripts/From Atera/SWR Reconnect Drives.ps1
+eaccb98e3e593b4c9f0331b0aa3b8cf5  backups/Level/scripts/From Atera/SWR_Deploy_DNSFILTER.ps1
+b6102da79a4a444affdbbb0b73a49309  backups/Level/scripts/From Atera/ScheduledTasksChecker.ps1
+c729edf985ef9d8708a8fd44273f37fa  backups/Level/scripts/From Atera/Sending action to CNAJMSILT The action has timed out..ps1
+d47f65f5837b2afeab5e2caca631d04d  backups/Level/scripts/From Atera/Set LAPS Password.ps1
+53b69348834aeef7c4eae62913cb4f1e  backups/Level/scripts/From Atera/Set Time Zone to SA and Time Format.ps1
+c0f171f948e427965e2f5ffc075fe6a3  backups/Level/scripts/From Atera/Set Timezone to Central Australia Standard Time.ps1
+b747871a0089496946f3739c40219677  backups/Level/scripts/From Atera/Set screenconnect restart level for service.ps1
+2e18867b34777d76ef668ecbf5b72b6f  backups/Level/scripts/From Atera/SetAtera to Start in safemode.ps1
+eaa71806cad99d4b98c0b21696b20f51  backups/Level/scripts/From Atera/SetAteraAgentName (copy).ps1
+576740694688aac84df1b3742629b09d  backups/Level/scripts/From Atera/Set_Sleep_to_45min.ps1
+dcaac107dbe262c993dc64d5d0bac449  backups/Level/scripts/From Atera/SplashTop Restart (copy).ps1
+15aba2ed4269f1b792fda71bfdaba6d0  backups/Level/scripts/From Atera/Start or Restart Screenconnect.ps1
+3f892954cf117df2424bb3ec74eeda08  backups/Level/scripts/From Atera/System Report (copy).ps1
+0746f132a2afba3ea12282f751a5d145  backups/Level/scripts/From Atera/USB CHECK.ps1
+18524b6011535f9b054cf976eaf73058  backups/Level/scripts/From Atera/Uninstall Malwarebytes (copy).ps1
+4555c88895fa599031b3324857121e70  backups/Level/scripts/From Atera/Uninstall Malwarebytes AMRI.ps1
+945caca03cc3437b0c4fc31694f24764  backups/Level/scripts/From Atera/Unpin 'Mail' App (copy).ps1
+b2c23d061548dac5e9b1063a584d6a76  backups/Level/scripts/From Atera/Weekly Maintenance (copy).ps1
+69e0aeb506cef5e86977951e9a08a122  backups/Level/scripts/From Atera/Whitelabel Atera Agent on Add or Remove Programs (appwiz.cpl) (copy).ps1
+45b93568db9771e55756e50a13a2acb5  backups/Level/scripts/From Atera/Whitelist Atera in Windows Defender (copy).ps1
+76db549f7aa2913aa1c710b481fe068f  backups/Level/scripts/From Atera/Windows 11 Upgrade TPM and CPU Validation Bypass (copy).ps1
+f75d0e9f190d7a65b89da260fea8f185  backups/Level/scripts/From Atera/Windows Defender Whitelist Atera Agent (copy).ps1
+0149991af1118d257719307c4b5052ac  backups/Level/scripts/From Atera/Windows11-Taskbar-Left.ps1
+71a527a7ab2ff63f742dbb996e86d9e0  backups/Level/scripts/From Atera/as-basic-popup-message.ps1
+00be6c805a3b33edb9510d1662a06ac9  backups/Level/scripts/From Atera/backup_screenconnect_serverdata.ps1
+8201f940e48385571bd7cc6072eb5b2a  backups/Level/scripts/From Atera/bitlocker_get_encryption_status (copy).ps1
+52827a25df47339cdf070f67651c09c5  backups/Level/scripts/From Atera/cape divine level.ps1
+6153adf058580a5a66a6fb0c67b35a94  backups/Level/scripts/From Atera/deny_windows11_upgrade_disable.ps1
+bc104f5dc9d4a78d41591e26e2ff2c44  backups/Level/scripts/From Atera/deny_windows11_upgrade_enable (copy).ps1
+21458a8cfc1cf28cc602af9596b6c81b  backups/Level/scripts/From Atera/do_ansible_user.ps1
+9b5659e6e141dc94e61b72bec3231bba  backups/Level/scripts/From Atera/freeup (copy).ps1
+a3fd8b886e55903c18763b42e6f2d749  backups/Level/scripts/From Atera/get-bitlocker-recovery.ps1
+e910eec0a60bf56c8840807d6007cb11  backups/Level/scripts/From Atera/get-disk-powershell (copy).ps1
+b5e46a33005b302561bba4a306688953  backups/Level/scripts/From Atera/install dns filter yattalunga.ps1
+e69d90be26e30358c408a5425e747e98  backups/Level/scripts/From Atera/install level fracken.ps1
+7016ea29c180f157dacd8a99a1b7dee8  backups/Level/scripts/From Atera/intex level install.ps1
+585d9b6b892f30e286fa326e7061582a  backups/Level/scripts/From Atera/level bbb.ps1
+1edd7a4bc09a7e236c0fb620f477726c  backups/Level/scripts/From Atera/ps7wrapper.ps1
+58856604405e69b7aabacb18fc1ba004  backups/Level/scripts/From Atera/radrerp launche 25.ps1
+09ea4c7c5c042068684528805ed389c3  backups/Level/scripts/From Atera/reset_password_for_local_user (copy).ps1
+4858838aa6b7e331945fa2c6593e8967  backups/Level/scripts/From Atera/stop_cryptoprevent.ps1
+3815211c2782f8aa69e5e9fd23b34623  backups/Level/scripts/From Atera/uninstall_syncro.ps1
+82a3850b704302d72edbdf082c25faf9  backups/Level/scripts/From Atera/windows 11 troubleshoot (copy).ps1
+0da935b7278813000e0848893a05986a  backups/Level/scripts/From Atera/wmi-list-shares.ps1
+55405dc41ded364fcc98d7ed09b00ef6  backups/Level/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
+9a5f662417fc25d9610bd083cdae585a  backups/Level/scripts/General/CN_Tools Folder.ps1
+d7e0242cf025e7e16327447d91f8c1a9  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
+b15eba497e6b0ce7fde7d961f6a81e61  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
+c374e35b74da5a7112d356101bfffa4c  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _ScanHealth.ps1
+42bd1e6387363c18c4e2d544d4171798  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _StartComponentCleanup.ps1
+51c06e2afd2325dbd49f9b9518f664c6  backups/Level/scripts/General/Fixes/Remove-McAfee.ps1
+d4ecd953a851f56ddab5cd65998df811  backups/Level/scripts/General/Fixes/Repair Windows Defender.ps1
+910593fa8980f57b2e5488da4ca44a67  backups/Level/scripts/General/Fixes/SFC _SCANNOW.ps1
+320a6ccba15681d5d35ca40aea841a54  backups/Level/scripts/General/Fixes/System File Checker.ps1
+606129626bda6cf2b826c897df82d02d  backups/Level/scripts/General/Fixes/Windows 10 1909 Iterative updates.ps1
+fd1f24b22a36ada4d5eb820311a0188f  backups/Level/scripts/General/Fixes/🙏Wake all devices in parent to level.io folder.ps1
+4fdde0051c0a3d35dbb0cfca6aef2a80  backups/Level/scripts/General/Info Gathering/Check System Temperatures.ps1
+20903e606c99ec2b2406a1d2722b07c3  backups/Level/scripts/General/Info Gathering/Get Screenconnect URL.ps1
+a3d9c763d82a1247b5d2ae4c639c7601  backups/Level/scripts/General/Info Gathering/Support Request check.ps1
+6f88875c3bf43df4f050ed0e8abadd97  backups/Level/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
+0b07ad0751e489af76dc2f73019bc7f4  backups/Level/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
+996f6923a876b59802d6f28793a66ced  backups/Level/scripts/General/POLICY/Deploy Popup Script.ps1
+5f206317e7a179e1e60c2edc54c1d9b3  backups/Level/scripts/General/POLICY/Disable Outlook re-open old items.ps1
+4b7d20e8f318e2585704eca7930f01a9  backups/Level/scripts/General/POLICY/Enable Logon_Logoff Audit logging.ps1
+25698797d09488c0b9f2ae60be7f822a  backups/Level/scripts/General/POLICY/Enable WOL.ps1
+e9609b1b5a5d6878a157ef33deaf2510  backups/Level/scripts/General/POLICY/INSTALL_ C__CN_Tools_unchecky_setup.exe.ps1
+8ba95a14588e7c31f62fb3b81d123dbb  backups/Level/scripts/General/POLICY/NEEDS_CHECKPLUGINFROMCIPP.ps1
+a2071006549b70779105d6191991a9c9  backups/Level/scripts/General/POLICY/Remove_ unchecky.ps1
+be6a33c0b8965dbc0a357c4ae7c6c735  backups/Level/scripts/General/POLICY/SET_ Sleep revert.ps1
+a8e34579df0df9e752a62470a7623c67  backups/Level/scripts/General/POLICY/SET_ Sleep to 6 hours.ps1
+d2df63fdda17940220b52469f929efd4  backups/Level/scripts/General/POLICY/Set Date Format DD_MM_YYYY.ps1
+a604c27d8f9d367dc68ff16c907e2ddb  backups/Level/scripts/General/POLICY/Set Outlook Exchange Connection Limit.ps1
+94534f2341570d0546f601f031cf10ed  backups/Level/scripts/General/POLICY/Windows - Set Time Zone.ps1
+abe4d5f26de313a90b85f56409c34a36  backups/Level/scripts/General/POLICY/Windows Monitor - Restart Required.ps1
+4281dc2433e27ee90b18010e41bcf1d3  backups/Level/scripts/General/POLICY/ensure machine wakes up daily to run stuff.ps1
+f5504470ed93a8373ceaa056f6048ba1  backups/Level/scripts/General/POLICY/⛔DNSFILTER.ps1
+9c98d517535fc53c8f01f106f51ac5a2  backups/Level/scripts/General/POLICY/⛔SCREENCONNECT.ps1
+b2dd0f2d89df5459e2947190a01bcf81  backups/Level/scripts/General/POLICY/🙏DNSFILTER.ps1
+d7d3129d6d59885546465d9439bd9434  backups/Level/scripts/General/POLICY/🙏SCREENCONNECT.ps1
+90087166821383e3476a837005906787  backups/Level/scripts/General/Popups/Generate Popup.ps1
+c39b0feb4982d7db75c918357412f594  backups/Level/scripts/General/Popups/POPUP.ps1
+48a105d3b20cbbdb5d767779d4652080  backups/Level/scripts/General/Restart Explorer as current user.ps1
+2512c2953da562611cb72b73c8aedcce  backups/Level/scripts/General/Set up CN_Tools Folder.ps1
+085307be65d2df125906f47c261dcb78  backups/Level/scripts/General/TESTING/Revert to First Restore Point.ps1
+77d3f8f5faee046d28db331c97b9d224  backups/Level/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
+846344f9508a0d7afe84e4998289eb94  backups/Level/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
+9b9673ec9b7e1e3f3018ae7a6f95582d  backups/Level/scripts/General/Windows Monitor - DNS Servers.ps1
+af44af9548566b0c2b665ee7c840ed3c  backups/Level/scripts/Imported/AMRI Safe debloat.ps1
+4fd1269756f196683f580d30ecbc98f1  backups/Level/scripts/Imported/Prompt User.ps1
+772459e40c9dbd24c9a3c53618a651b3  backups/Level/scripts/Imported/REMOVE FOXIT.ps1
+439faf9e550d181be59c6e5a5d8c39f1  backups/Level/scripts/Imported/Windows - Add Admin.ps1
+141e07c8b55aca085932aba9fe6df4a8  backups/Level/scripts/Imported/Windows - Cleanup Disk Space.ps1
+7e620e881a923e3dbc1c5d22c92d0b51  backups/Level/scripts/Imported/Windows - Disable Sleep on AC Power.ps1
+c5c23396f666caef22ab2f80c916d87d  backups/Level/scripts/Imported/Windows - Failed Admin Login.ps1
+8ab92983ef5af19b31333eb719fb5cfb  backups/Level/scripts/Imported/Windows - Gather Intel.ps1
+114f941ae7030ef635f5a23a16688db5  backups/Level/scripts/Imported/Windows - Join Company Domain.ps1
+07f3f2c7ab0bff51b31e06480a7ce973  backups/Level/scripts/Imported/Windows - Remove Bloatware.ps1
+6d85210013c5ef9d908babf620c17a65  backups/Level/scripts/Imported/Windows - Set SSID.ps1
+b54308370a6ca5b788748e1fc68d8338  backups/Level/scripts/Imported/Windows - Software Not Installed.ps1
+6cc53174286f3b1d672704ffddab157d  backups/Level/scripts/Imported/Windows - Unauthorized Admins.ps1
+3def2e457a07616c8ab52b36c1daeebc  backups/Level/scripts/Imported/Windows - Upgrade to Windows 11.ps1
+174bc791ef6123f51bcdbba7c2b9e67d  backups/Level/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
+0f914f0fb7085d969478210c63cbb8b8  backups/Level/scripts/Imported/Windows Monitor - Check Disk Errors.ps1
+de2bf0c6f75653ec64efbc527c3ed008  backups/Level/scripts/Imported/Windows Monitor - Device Standards.ps1
+cf6928d1d5bc59519db8f47091df6cdd  backups/Level/scripts/Imported/Windows Monitor - Event Log.ps1
+f0948378d5385e8661a2ce4133f41a7a  backups/Level/scripts/Imported/Windows Monitor - Firewall.ps1
+3f6eba7dc5b0406892dbe0d691da5385  backups/Level/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
+57d18ce09c6dfec3661253be801d9881  backups/Level/scripts/Imported/Windows Monitor - System Time Check.ps1
+02c40d2df5d6a6d370f43f76d56116ed  backups/Level/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
+dbb0c5fff3c5cb76fe66bc2e38091aca  backups/Level/scripts/Install Bitwarden Extensions to chrome and edge.ps1
+abbdb97d85850826db59de43aeb46d02  backups/Level/scripts/Low Profile Defender.ps1
+f61ea3678bb665c145855eb3ac1e4c2d  backups/Level/scripts/POLICY_ Is Foxit installed_.ps1
+735750942d6cbac69f57f43186c4673f  backups/Level/scripts/REMOVE FOXIT.ps1
+8e8c21752843350149090e559252fef0  backups/Level/scripts/REMOVE_ Chrome Remote Desktop.ps1
+79b20e4580683b32a0da79f9f34f3b34  backups/Level/scripts/Refresh Icon Cache.ps1
+f4e368821aeb0740322a620185ce1376  backups/Level/scripts/Remove ScreenConnect Client (236d14eb86050829).ps1
+8770e81c1ea0aed3d7bf1eb431ba2cae  backups/Level/scripts/Remove Teamviewer.ps1
+5f42382b670f1ef094950c89273dda02  backups/Level/scripts/Remove Voyager Folders.ps1
+ec3dca416760afeee10fae4a5bb3497b  backups/Level/scripts/Set Defender Exclusions.ps1
+770bcc1b6ac25a9a052703b422f9d6d7  backups/Level/scripts/Set chrome as default.ps1
+88344e813b710005f1c1c79e59c3e01e  backups/Level/scripts/Show Test Versions.ps1
+6de90e031d654ba87c74a9d707c89904  backups/Level/scripts/Sleep after 1800 seconds..ps1
+45c95564881b864280d3037c5cb6b9b4  backups/Level/scripts/System Uptime.ps1
+78a2307084259b43f9ccaa7da29c84c6  backups/Level/scripts/Test PS Module install.ps1
+25971eb01331e46c886cbd1f60ed5821  backups/Level/scripts/Test Show Versions.ps1
+f2f231262c9288868753d80258b3fb8c  backups/Level/scripts/Uninstall Atera.ps1
+50a5dc84f5fefb9c72cef997be00f04f  backups/Level/scripts/Verify SC Status.ps1
+fdd8184570f07d0a8d6f01abf200a092  backups/Level/scripts/Wake On Lan and Power settings WOL.ps1
+1b665f4b9b486d2b4eb1521472d8e908  backups/Level/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
+278817b15918ded5bfac0659ab3e014c  backups/Level/scripts/inside quiet hours_.ps1
+a9f8882f804f8809b66516e86a5e783f  backups/Level/scripts/is interactive sign in_.ps1
+6c6ec2b0f565ca69578e3f41baafd1aa  backups/Level/scripts/level to screenconnect test.ps1
+d1a5df4a51ac566b30fb8b6062446977  backups/Level/scripts/test sc session delete.ps1
+ac93a09854d446fd3853183687d2237a  backups/Level/scripts/test uninstall for SC.ps1
+6059291621885604bb3fba9795902a5d  backups/Level/scripts/uninstall level.ps1
+5095bf93fc13e91c81d8a00d7f7300d5  backups/Level/scripts/⛔CIPP CHECK.ps1
+719b4fca685e4b4226f8ea772b499954  backups/Level/scripts/⛔DROPBOX.ps1
+3e7851ca197c2a96a2aab2aa75014c8a  backups/Level/scripts/👀DNSFILTER.ps1
+764eb9845b54be4139d905b1c49ef6da  backups/Level/scripts/👀unchecky.ps1
+271de26506314db34e3d12bd26cf2a9a  backups/Level/scripts/🙏CIPPCHECK.ps1
+d5cc8d717db9c87f07d5e75d18b56a1f  backups/Level2/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
+f85f46da3553bc1bfa7645e69cdf1a23  backups/Level2/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
+1f0196e84a451016be5b3acbe585b557  backups/Level2/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
+9f3734a0423070477eee036a53b10279  backups/Level2/scripts/AdelaideMRI/Extract Voyager to Programdata.ps1
+b301c8e4120ec879e650015c65b591d8  backups/Level2/scripts/AdelaideMRI/Extract Webviewer.ps1
+fbeef821f4ccb9d110830bdea58eb964  backups/Level2/scripts/AdelaideMRI/Fixes/Create Link to Voyager WebViewer on desktop.ps1
+9aa17a2af475b34f9a6dc5e4a153f13d  backups/Level2/scripts/AdelaideMRI/Fixes/Debloat for AMRI.ps1
+fa41ee52a43b7935aca353c3758e5b6a  backups/Level2/scripts/AdelaideMRI/Fixes/Deploy Voyager Launcher.ps1
+1177cd16ec9d5ca2b47da1fb42d30de8  backups/Level2/scripts/AdelaideMRI/Fixes/Fix the VoyagerWorkstationConfig.txt files.ps1
+5f1de07bfd2c0a3ec2928963934a1561  backups/Level2/scripts/AdelaideMRI/Fixes/Install Radreport Chrome Launcher.ps1
+93fe11c112f0ff93eed109446b19a913  backups/Level2/scripts/AdelaideMRI/Recreate Voyager for the Company.ps1
+b1d932b9dd2329aa4086352a24946cfe  backups/Level2/scripts/AdelaideMRI/SET_  background to phonebook.ps1
+06f2ad08c77a86249c29b5f0e314ee5d  backups/Level2/scripts/AdelaideMRI/Set Hosts file for AdelaideMRI.ps1
+57a51ec86225eea84e63df2639323316  backups/Level2/scripts/AdelaideMRI/extract voyager config files.ps1
+125afc4810f01c8ae87669d04a7455da  backups/Level2/scripts/AdelaideMRI/get host details from voyager installs.ps1
+c2206d375255d063f0eb0760fa53023c  backups/Level2/scripts/BASELINE SOFTWARE/⛔Huntress.ps1
+8d92a519ff9fb13a9abe055a48f4bd42  backups/Level2/scripts/BASELINE SOFTWARE/🙏Huntress.ps1
+8b09f61d2a1352ca4cafc58bc2ab24bf  backups/Level2/scripts/Baseline configurations/Create Restore Point.ps1
+c82ce2e849fd3074380b5b453443edc7  backups/Level2/scripts/Baseline configurations/Create users.ps1
+b349c86642ee3719b28b81eca27c48bd  backups/Level2/scripts/Can we run_.ps1
+5aaed82339faa25bec0c0747fd5599fd  backups/Level2/scripts/DEBUG.ps1
+19bb99096557986ea2fabf73aefecc79  backups/Level2/scripts/Debug Script.ps1
+f7dd2500c49cb0913e9ed7639df8f5ec  backups/Level2/scripts/Debugging/FindHiddenUsers.ps1
+5f5035334a9a4a81518ce38359231a94  backups/Level2/scripts/Debugging/SET_ Default System Restore.ps1
+3724025399c74570a237ba9df673c64d  backups/Level2/scripts/Debugging/SET_ Unlimited System Restore.ps1
+2a2f15e7cbfa10b4cda86bf892af2fcd  backups/Level2/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
+93250424f470ceb1986adb8c7571b8cc  backups/Level2/scripts/Debugging/👀Test Variable Output.ps1
+8babd90b0c4554f8dc6cf08eea57e17a  backups/Level2/scripts/Deploy COOLNETWORKS Support tool.ps1
+970e573adcf4976226b3683de1c7368c  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
+42f4b662ed99144e96cfe2ac09bc0619  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
+3636b5d5d8322f917db9ed43e4d8580b  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
+e65dbcb1a08001ee47f58ac1fadaa77a  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Splashtop.ps1
+80485803d623bcd83cd7fd79cca12262  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Teamviewer.ps1
+73c9a7696578655a781ff84b27e09a0c  backups/Level2/scripts/EXPORT_ Level folder path to registry.ps1
+0e163942999819856505a5ee3abd03bb  backups/Level2/scripts/Fix .net TLS versions.ps1
+27f5efc697c463d191de58083db779cc  backups/Level2/scripts/From Atera/# Change the computer name in Windows Rename-Computer -newname _{[new_name]}_  # Restart the computer for rename to take effect if ($ToRestartTypeYes -eq 'yes') {     Restart-Computer -Force }.ps1
+ad8bbd224de883957745b4df63570833  backups/Level2/scripts/From Atera/AMRI Delete Old Files in 'Studies' Folders.ps1
+8309e045910cf92c371e15a415a89fa6  backups/Level2/scripts/From Atera/AMRI Dowload Install Voyager Launcher.ps1
+6f43a2cf68834ce741e5265deae12ad0  backups/Level2/scripts/From Atera/AteraAlertTime60seconds.ps1
+1e6268d636d6b368a345678a988dfaf5  backups/Level2/scripts/From Atera/BISSYCARE DNS Agent reinstallation.ps1
+e38a48bb48c8eb7bcff7ba6e2e2dc89d  backups/Level2/scripts/From Atera/Branded Restart.ps1
+c1d4acc51767bba3fe37bdaa1683973a  backups/Level2/scripts/From Atera/Burnt_Toast_Installer_System_Template.ps1
+18fb6e87e008525ab7a8fc04f6861ca4  backups/Level2/scripts/From Atera/Burnt_Toast_Notification_Template.ps1
+d1e2bece3bcfe537580b6fea94ead1db  backups/Level2/scripts/From Atera/Change_AteraAgent_Service_to_Auto (copy).ps1
+2e3c9604138492602a4606c8725c88c0  backups/Level2/scripts/From Atera/Change_taskbar_icons_size_to_small_in_Windows_11.ps1
+077992bd6902ec67bc0fb7ba82682489  backups/Level2/scripts/From Atera/Check For and Remove Malwarebytes.ps1
+95942d881e29c8303fcbbaad5b9e7333  backups/Level2/scripts/From Atera/Cleanup Print Queue.ps1
+4ecc9cf7f91ed6ae85cdcbce345fd23a  backups/Level2/scripts/From Atera/Clear All Events.ps1
+c21590fb3767b29c88967788cc23d2e4  backups/Level2/scripts/From Atera/Configure Power Settings for WIFI Network Adapters.ps1
+0e1a3db342b1dfb45068d69f68edf1aa  backups/Level2/scripts/From Atera/Copy_Pristine_to_Sites_VoyagerWorkstationConfig.ps1
+db58a2a4e20fa444a32f0dc86edc05bf  backups/Level2/scripts/From Atera/Create group for Level.ps1
+afc0f224a1832e01ef2cc0e5ae7aa186  backups/Level2/scripts/From Atera/Current Timezone Reporter.ps1
+13565d2f67f01aee66af0acc3cf403c5  backups/Level2/scripts/From Atera/Delete Old Print Jobs (copy).ps1
+881f85d8da413160a195444536004973  backups/Level2/scripts/From Atera/Delete Temporary Files for All Users.ps1
+6cd1964d7d5a8928c306cb60082bfc96  backups/Level2/scripts/From Atera/DeployPhonebookScript.ps1
+7b84252893f3546de581ea74521b587f  backups/Level2/scripts/From Atera/Disable All User and Admin Accounts.ps1
+127ca6ba6af135b43925a100f00b01a7  backups/Level2/scripts/From Atera/Discover Wi-Fi Passwords (copy).ps1
+95f7f3b05d91b59086fca308387cfec7  backups/Level2/scripts/From Atera/Download and Install Google Chrome.ps1
+533662ee8531b8136eb52e711a2406c2  backups/Level2/scripts/From Atera/Download and Install ScreenConnect Client to Company.ps1
+216ead77a3284746f1489a8b8545915c  backups/Level2/scripts/From Atera/Download_Install_MSI_As_Administrator.ps1
+80ac640636adfcf4c71cd4eb222c4b28  backups/Level2/scripts/From Atera/Dr JA COOK LEVEL.ps1
+29528aba2ff3b077deba705eb9932858  backups/Level2/scripts/From Atera/Empty Recycle Bin.ps1
+9a4c24212c0f629ca50834fd4b1a29d2  backups/Level2/scripts/From Atera/Enable Wake On Lan for All Devices.ps1
+c3a66c6b3ecb10d515656d44155fcbb9  backups/Level2/scripts/From Atera/Enable right click classic menu on Windows11 (copy).ps1
+407b260efaec45ef5fdb30c5e8a2cf5e  backups/Level2/scripts/From Atera/Extend Outlook Storage Capabilities (copy).ps1
+922f1746df8fbcfe26fed39e3c05db52  backups/Level2/scripts/From Atera/Extract TeamViewer ID (copy).ps1
+cd4f455a08e23615822d25b8146d5333  backups/Level2/scripts/From Atera/Fix Display Name (copy).ps1
+67953f88c38343ffb128354001e541da  backups/Level2/scripts/From Atera/Flush Cache (copy).ps1
+1e47c43d0887f1b7c1775e4714fb348c  backups/Level2/scripts/From Atera/Fully Remove any Malwarebytes install.ps1
+ffc2a7f60017f0e058ea7217c84dd52b  backups/Level2/scripts/From Atera/Get-BitlockerKeys (copy).ps1
+888eaf9d41a0ecfd6dda0df10dd00061  backups/Level2/scripts/From Atera/Get-List-Of-Deduped-Logons.ps1
+8995a63909f7c8f3727df0023d506d8a  backups/Level2/scripts/From Atera/Get-StorageSenseStatus.ps1
+022966aa630e9a8942ff42243ada3ab0  backups/Level2/scripts/From Atera/Get-recent-logins.ps1
+8fb3a4c3379704134ce316840b08d92c  backups/Level2/scripts/From Atera/Get_system_info.ps1
+fcaf831646929c14a50dad61cefe1a51  backups/Level2/scripts/From Atera/Hide Atera Folder (copy).ps1
+fdd716c7ed8923ff69fdce96d7fa8c4a  backups/Level2/scripts/From Atera/High Performance Power Plan (copy).ps1
+d67d0dd2df145223b001f16c002fd67e  backups/Level2/scripts/From Atera/Increase Exchange Mailbox Access for Outlook 365.ps1
+823050b8f7f75aca26d51f87286d6ba3  backups/Level2/scripts/From Atera/Install Chocolatey (copy).ps1
+2bb804a853aff4e53a3017fb261d7f26  backups/Level2/scripts/From Atera/Install FoxitReader from Chocolaty.ps1
+3c85d2a8764808abf98e13c14fad8c31  backups/Level2/scripts/From Atera/Install Level gogreen.ps1
+4325ae5fcaab0999840ef9c736e50f9b  backups/Level2/scripts/From Atera/InstallHuntressLabs.ps1
+84221ff659617ddf261595241eed7f38  backups/Level2/scripts/From Atera/Kill RobloxPlayerBeta Process.ps1
+55c5c886b4d91fc0fcb10206457fa1a6  backups/Level2/scripts/From Atera/Level for BISSYCARE.ps1
+baaece57b833335e1137702bc9c71035  backups/Level2/scripts/From Atera/List all printers on local machine with port names.ps1
+1ee511699a777a5f5f7afd9dcf4ddb15  backups/Level2/scripts/From Atera/MAC - Install Huntress.ps1
+f403075ba02d53ca598eca8806b297c0  backups/Level2/scripts/From Atera/MHS level.ps1
+c14c23e7902aa7b8c5c138cf1a90ce7e  backups/Level2/scripts/From Atera/Network_Printer (copy).ps1
+0336ef5712d4a4e6483d14283a0d67c1  backups/Level2/scripts/From Atera/Populate Agent Custom Field with Customer Custom Field DNS1.ps1
+216bd1cde209a64dddc4b2555fbd0a55  backups/Level2/scripts/From Atera/Populate Agent DNS1 Custom Field with Customer DNS1 Custom Field.ps1
+94cc0b182c1fbe5f3ccc83929783aad8  backups/Level2/scripts/From Atera/PowerShell script to change every network adapter DNS to Google DNS.ps1
+c0c5f28df8e69c5201a2d808589c5220  backups/Level2/scripts/From Atera/PowerShell script to output a list of DNS servers being used by the machine.ps1
+663d727468560c64745f9b48981c27c6  backups/Level2/scripts/From Atera/PreventIndexingOutlook (copy).ps1
+0daad9895ae128956d03c64691f4d15b  backups/Level2/scripts/From Atera/Proper Whitelabel Atera Agent script.ps1
+22e24d9e67f2e4adacd5b1e2b64024a6  backups/Level2/scripts/From Atera/RA tools.ps1
+1176a3526affefd05b1c85ef67a4468b  backups/Level2/scripts/From Atera/RADPAY Shortcut Creator.ps1
+1086edcd8594fcf90af1ae6ef163adeb  backups/Level2/scripts/From Atera/Reboot Device And Notify The User (copy).ps1
+4e84a4fd61d021ed9ec83c3e6c051445  backups/Level2/scripts/From Atera/Reconnect Drives CMD File and Shortcut Creator SWR.ps1
+08351e47119643e44c4409498f249c2b  backups/Level2/scripts/From Atera/Recreate Voyager from Pristine.ps1
+87e388c3c00245b2be64bfc08a5497b8  backups/Level2/scripts/From Atera/Registry logging.ps1
+5c8a447ae85ec6d3ae8be2476359797e  backups/Level2/scripts/From Atera/Reinstall Microsoft 365 and System Health Check.ps1
+aa1965979e553a2b76a70d33d3e49539  backups/Level2/scripts/From Atera/Remove Firefox.ps1
+9893bb0a9c79594fbd0448bff2554ab7  backups/Level2/scripts/From Atera/Remove MalwareBytes.ps1
+a1aef727c9c5797e5302131ba1127399  backups/Level2/scripts/From Atera/Remove McAfee Agent.ps1
+094256104d560a9e541c9f4785bc6507  backups/Level2/scripts/From Atera/Remove_Voyager_TempFiles2days.ps1
+8351574be434017208ebb423bd5dd823  backups/Level2/scripts/From Atera/Rename Computer (copy).ps1
+36a2a6d3c3e0791bdd926354a57a3b74  backups/Level2/scripts/From Atera/Reset Choco When not working.ps1
+3a22d22ba561f64d730a410370b2ccef  backups/Level2/scripts/From Atera/Reset_Browsers_to_Default_Homepage.ps1
+7237f05a3a8d195c71c2fc4cabe0c7d1  backups/Level2/scripts/From Atera/Resync Time (copy).ps1
+4cc2c7537a21689bc109039f630a6af2  backups/Level2/scripts/From Atera/Retrieve Wi-Fi Passwords using PowerShell.ps1
+928ff1f596126741f04844aa9e0f8099  backups/Level2/scripts/From Atera/Run Backblaze Uninstaller.ps1
+7d473a3b074b6a0bc8e837bc409f5d58  backups/Level2/scripts/From Atera/Run Windows Cleanup (copy).ps1
+1589a901e36949c9b9edccc531282232  backups/Level2/scripts/From Atera/SWR - SET HOMEPAGE TO SHAREPOINT.ps1
+b030c48c4c96cb256387393858a02a30  backups/Level2/scripts/From Atera/SWR Level.ps1
+bba3911105301a15fbbee40c70f9663d  backups/Level2/scripts/From Atera/SWR Printer Driver Downloads.ps1
+e0f6e114bb33630938ca21600c7b776c  backups/Level2/scripts/From Atera/SWR Reconnect Drives.ps1
+eaccb98e3e593b4c9f0331b0aa3b8cf5  backups/Level2/scripts/From Atera/SWR_Deploy_DNSFILTER.ps1
+b6102da79a4a444affdbbb0b73a49309  backups/Level2/scripts/From Atera/ScheduledTasksChecker.ps1
+c729edf985ef9d8708a8fd44273f37fa  backups/Level2/scripts/From Atera/Sending action to CNAJMSILT The action has timed out..ps1
+d47f65f5837b2afeab5e2caca631d04d  backups/Level2/scripts/From Atera/Set LAPS Password.ps1
+53b69348834aeef7c4eae62913cb4f1e  backups/Level2/scripts/From Atera/Set Time Zone to SA and Time Format.ps1
+c0f171f948e427965e2f5ffc075fe6a3  backups/Level2/scripts/From Atera/Set Timezone to Central Australia Standard Time.ps1
+b747871a0089496946f3739c40219677  backups/Level2/scripts/From Atera/Set screenconnect restart level for service.ps1
+2e18867b34777d76ef668ecbf5b72b6f  backups/Level2/scripts/From Atera/SetAtera to Start in safemode.ps1
+eaa71806cad99d4b98c0b21696b20f51  backups/Level2/scripts/From Atera/SetAteraAgentName (copy).ps1
+576740694688aac84df1b3742629b09d  backups/Level2/scripts/From Atera/Set_Sleep_to_45min.ps1
+dcaac107dbe262c993dc64d5d0bac449  backups/Level2/scripts/From Atera/SplashTop Restart (copy).ps1
+15aba2ed4269f1b792fda71bfdaba6d0  backups/Level2/scripts/From Atera/Start or Restart Screenconnect.ps1
+3f892954cf117df2424bb3ec74eeda08  backups/Level2/scripts/From Atera/System Report (copy).ps1
+0746f132a2afba3ea12282f751a5d145  backups/Level2/scripts/From Atera/USB CHECK.ps1
+18524b6011535f9b054cf976eaf73058  backups/Level2/scripts/From Atera/Uninstall Malwarebytes (copy).ps1
+4555c88895fa599031b3324857121e70  backups/Level2/scripts/From Atera/Uninstall Malwarebytes AMRI.ps1
+945caca03cc3437b0c4fc31694f24764  backups/Level2/scripts/From Atera/Unpin 'Mail' App (copy).ps1
+b2c23d061548dac5e9b1063a584d6a76  backups/Level2/scripts/From Atera/Weekly Maintenance (copy).ps1
+69e0aeb506cef5e86977951e9a08a122  backups/Level2/scripts/From Atera/Whitelabel Atera Agent on Add or Remove Programs (appwiz.cpl) (copy).ps1
+45b93568db9771e55756e50a13a2acb5  backups/Level2/scripts/From Atera/Whitelist Atera in Windows Defender (copy).ps1
+76db549f7aa2913aa1c710b481fe068f  backups/Level2/scripts/From Atera/Windows 11 Upgrade TPM and CPU Validation Bypass (copy).ps1
+f75d0e9f190d7a65b89da260fea8f185  backups/Level2/scripts/From Atera/Windows Defender Whitelist Atera Agent (copy).ps1
+0149991af1118d257719307c4b5052ac  backups/Level2/scripts/From Atera/Windows11-Taskbar-Left.ps1
+71a527a7ab2ff63f742dbb996e86d9e0  backups/Level2/scripts/From Atera/as-basic-popup-message.ps1
+00be6c805a3b33edb9510d1662a06ac9  backups/Level2/scripts/From Atera/backup_screenconnect_serverdata.ps1
+8201f940e48385571bd7cc6072eb5b2a  backups/Level2/scripts/From Atera/bitlocker_get_encryption_status (copy).ps1
+52827a25df47339cdf070f67651c09c5  backups/Level2/scripts/From Atera/cape divine level.ps1
+6153adf058580a5a66a6fb0c67b35a94  backups/Level2/scripts/From Atera/deny_windows11_upgrade_disable.ps1
+bc104f5dc9d4a78d41591e26e2ff2c44  backups/Level2/scripts/From Atera/deny_windows11_upgrade_enable (copy).ps1
+21458a8cfc1cf28cc602af9596b6c81b  backups/Level2/scripts/From Atera/do_ansible_user.ps1
+9b5659e6e141dc94e61b72bec3231bba  backups/Level2/scripts/From Atera/freeup (copy).ps1
+a3fd8b886e55903c18763b42e6f2d749  backups/Level2/scripts/From Atera/get-bitlocker-recovery.ps1
+e910eec0a60bf56c8840807d6007cb11  backups/Level2/scripts/From Atera/get-disk-powershell (copy).ps1
+b5e46a33005b302561bba4a306688953  backups/Level2/scripts/From Atera/install dns filter yattalunga.ps1
+e69d90be26e30358c408a5425e747e98  backups/Level2/scripts/From Atera/install level fracken.ps1
+7016ea29c180f157dacd8a99a1b7dee8  backups/Level2/scripts/From Atera/intex level install.ps1
+585d9b6b892f30e286fa326e7061582a  backups/Level2/scripts/From Atera/level bbb.ps1
+1edd7a4bc09a7e236c0fb620f477726c  backups/Level2/scripts/From Atera/ps7wrapper.ps1
+58856604405e69b7aabacb18fc1ba004  backups/Level2/scripts/From Atera/radrerp launche 25.ps1
+09ea4c7c5c042068684528805ed389c3  backups/Level2/scripts/From Atera/reset_password_for_local_user (copy).ps1
+4858838aa6b7e331945fa2c6593e8967  backups/Level2/scripts/From Atera/stop_cryptoprevent.ps1
+3815211c2782f8aa69e5e9fd23b34623  backups/Level2/scripts/From Atera/uninstall_syncro.ps1
+82a3850b704302d72edbdf082c25faf9  backups/Level2/scripts/From Atera/windows 11 troubleshoot (copy).ps1
+0da935b7278813000e0848893a05986a  backups/Level2/scripts/From Atera/wmi-list-shares.ps1
+55405dc41ded364fcc98d7ed09b00ef6  backups/Level2/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
+9a5f662417fc25d9610bd083cdae585a  backups/Level2/scripts/General/CN_Tools Folder.ps1
+d7e0242cf025e7e16327447d91f8c1a9  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
+b15eba497e6b0ce7fde7d961f6a81e61  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
+c374e35b74da5a7112d356101bfffa4c  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _ScanHealth.ps1
+42bd1e6387363c18c4e2d544d4171798  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _StartComponentCleanup.ps1
+51c06e2afd2325dbd49f9b9518f664c6  backups/Level2/scripts/General/Fixes/Remove-McAfee.ps1
+d4ecd953a851f56ddab5cd65998df811  backups/Level2/scripts/General/Fixes/Repair Windows Defender.ps1
+910593fa8980f57b2e5488da4ca44a67  backups/Level2/scripts/General/Fixes/SFC _SCANNOW.ps1
+320a6ccba15681d5d35ca40aea841a54  backups/Level2/scripts/General/Fixes/System File Checker.ps1
+606129626bda6cf2b826c897df82d02d  backups/Level2/scripts/General/Fixes/Windows 10 1909 Iterative updates.ps1
+fd1f24b22a36ada4d5eb820311a0188f  backups/Level2/scripts/General/Fixes/🙏Wake all devices in parent to level.io folder.ps1
+4fdde0051c0a3d35dbb0cfca6aef2a80  backups/Level2/scripts/General/Info Gathering/Check System Temperatures.ps1
+20903e606c99ec2b2406a1d2722b07c3  backups/Level2/scripts/General/Info Gathering/Get Screenconnect URL.ps1
+a3d9c763d82a1247b5d2ae4c639c7601  backups/Level2/scripts/General/Info Gathering/Support Request check.ps1
+6f88875c3bf43df4f050ed0e8abadd97  backups/Level2/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
+0b07ad0751e489af76dc2f73019bc7f4  backups/Level2/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
+996f6923a876b59802d6f28793a66ced  backups/Level2/scripts/General/POLICY/Deploy Popup Script.ps1
+5f206317e7a179e1e60c2edc54c1d9b3  backups/Level2/scripts/General/POLICY/Disable Outlook re-open old items.ps1
+4b7d20e8f318e2585704eca7930f01a9  backups/Level2/scripts/General/POLICY/Enable Logon_Logoff Audit logging.ps1
+25698797d09488c0b9f2ae60be7f822a  backups/Level2/scripts/General/POLICY/Enable WOL.ps1
+e9609b1b5a5d6878a157ef33deaf2510  backups/Level2/scripts/General/POLICY/INSTALL_ C__CN_Tools_unchecky_setup.exe.ps1
+8ba95a14588e7c31f62fb3b81d123dbb  backups/Level2/scripts/General/POLICY/NEEDS_CHECKPLUGINFROMCIPP.ps1
+a2071006549b70779105d6191991a9c9  backups/Level2/scripts/General/POLICY/Remove_ unchecky.ps1
+be6a33c0b8965dbc0a357c4ae7c6c735  backups/Level2/scripts/General/POLICY/SET_ Sleep revert.ps1
+a8e34579df0df9e752a62470a7623c67  backups/Level2/scripts/General/POLICY/SET_ Sleep to 6 hours.ps1
+d2df63fdda17940220b52469f929efd4  backups/Level2/scripts/General/POLICY/Set Date Format DD_MM_YYYY.ps1
+a604c27d8f9d367dc68ff16c907e2ddb  backups/Level2/scripts/General/POLICY/Set Outlook Exchange Connection Limit.ps1
+94534f2341570d0546f601f031cf10ed  backups/Level2/scripts/General/POLICY/Windows - Set Time Zone.ps1
+abe4d5f26de313a90b85f56409c34a36  backups/Level2/scripts/General/POLICY/Windows Monitor - Restart Required.ps1
+4281dc2433e27ee90b18010e41bcf1d3  backups/Level2/scripts/General/POLICY/ensure machine wakes up daily to run stuff.ps1
+f5504470ed93a8373ceaa056f6048ba1  backups/Level2/scripts/General/POLICY/⛔DNSFILTER.ps1
+9c98d517535fc53c8f01f106f51ac5a2  backups/Level2/scripts/General/POLICY/⛔SCREENCONNECT.ps1
+b2dd0f2d89df5459e2947190a01bcf81  backups/Level2/scripts/General/POLICY/🙏DNSFILTER.ps1
+d7d3129d6d59885546465d9439bd9434  backups/Level2/scripts/General/POLICY/🙏SCREENCONNECT.ps1
+90087166821383e3476a837005906787  backups/Level2/scripts/General/Popups/Generate Popup.ps1
+c39b0feb4982d7db75c918357412f594  backups/Level2/scripts/General/Popups/POPUP.ps1
+48a105d3b20cbbdb5d767779d4652080  backups/Level2/scripts/General/Restart Explorer as current user.ps1
+2512c2953da562611cb72b73c8aedcce  backups/Level2/scripts/General/Set up CN_Tools Folder.ps1
+085307be65d2df125906f47c261dcb78  backups/Level2/scripts/General/TESTING/Revert to First Restore Point.ps1
+77d3f8f5faee046d28db331c97b9d224  backups/Level2/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
+846344f9508a0d7afe84e4998289eb94  backups/Level2/scripts/General/Windows - Add a URL shortcut to users desktop.ps1
+9b9673ec9b7e1e3f3018ae7a6f95582d  backups/Level2/scripts/General/Windows Monitor - DNS Servers.ps1
+af44af9548566b0c2b665ee7c840ed3c  backups/Level2/scripts/Imported/AMRI Safe debloat.ps1
+4fd1269756f196683f580d30ecbc98f1  backups/Level2/scripts/Imported/Prompt User.ps1
+772459e40c9dbd24c9a3c53618a651b3  backups/Level2/scripts/Imported/REMOVE FOXIT.ps1
+439faf9e550d181be59c6e5a5d8c39f1  backups/Level2/scripts/Imported/Windows - Add Admin.ps1
+141e07c8b55aca085932aba9fe6df4a8  backups/Level2/scripts/Imported/Windows - Cleanup Disk Space.ps1
+7e620e881a923e3dbc1c5d22c92d0b51  backups/Level2/scripts/Imported/Windows - Disable Sleep on AC Power.ps1
+c5c23396f666caef22ab2f80c916d87d  backups/Level2/scripts/Imported/Windows - Failed Admin Login.ps1
+8ab92983ef5af19b31333eb719fb5cfb  backups/Level2/scripts/Imported/Windows - Gather Intel.ps1
+114f941ae7030ef635f5a23a16688db5  backups/Level2/scripts/Imported/Windows - Join Company Domain.ps1
+07f3f2c7ab0bff51b31e06480a7ce973  backups/Level2/scripts/Imported/Windows - Remove Bloatware.ps1
+6d85210013c5ef9d908babf620c17a65  backups/Level2/scripts/Imported/Windows - Set SSID.ps1
+b54308370a6ca5b788748e1fc68d8338  backups/Level2/scripts/Imported/Windows - Software Not Installed.ps1
+6cc53174286f3b1d672704ffddab157d  backups/Level2/scripts/Imported/Windows - Unauthorized Admins.ps1
+3def2e457a07616c8ab52b36c1daeebc  backups/Level2/scripts/Imported/Windows - Upgrade to Windows 11.ps1
+174bc791ef6123f51bcdbba7c2b9e67d  backups/Level2/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
+0f914f0fb7085d969478210c63cbb8b8  backups/Level2/scripts/Imported/Windows Monitor - Check Disk Errors.ps1
+de2bf0c6f75653ec64efbc527c3ed008  backups/Level2/scripts/Imported/Windows Monitor - Device Standards.ps1
+cf6928d1d5bc59519db8f47091df6cdd  backups/Level2/scripts/Imported/Windows Monitor - Event Log.ps1
+f0948378d5385e8661a2ce4133f41a7a  backups/Level2/scripts/Imported/Windows Monitor - Firewall.ps1
+3f6eba7dc5b0406892dbe0d691da5385  backups/Level2/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
+57d18ce09c6dfec3661253be801d9881  backups/Level2/scripts/Imported/Windows Monitor - System Time Check.ps1
+02c40d2df5d6a6d370f43f76d56116ed  backups/Level2/scripts/Imported/👀 - Windows - Unauthorised Software Installed.ps1
+dbb0c5fff3c5cb76fe66bc2e38091aca  backups/Level2/scripts/Install Bitwarden Extensions to chrome and edge.ps1
+abbdb97d85850826db59de43aeb46d02  backups/Level2/scripts/Low Profile Defender.ps1
+f61ea3678bb665c145855eb3ac1e4c2d  backups/Level2/scripts/POLICY_ Is Foxit installed_.ps1
+735750942d6cbac69f57f43186c4673f  backups/Level2/scripts/REMOVE FOXIT.ps1
+8e8c21752843350149090e559252fef0  backups/Level2/scripts/REMOVE_ Chrome Remote Desktop.ps1
+79b20e4580683b32a0da79f9f34f3b34  backups/Level2/scripts/Refresh Icon Cache.ps1
+f4e368821aeb0740322a620185ce1376  backups/Level2/scripts/Remove ScreenConnect Client (236d14eb86050829).ps1
+8770e81c1ea0aed3d7bf1eb431ba2cae  backups/Level2/scripts/Remove Teamviewer.ps1
+5f42382b670f1ef094950c89273dda02  backups/Level2/scripts/Remove Voyager Folders.ps1
+ec3dca416760afeee10fae4a5bb3497b  backups/Level2/scripts/Set Defender Exclusions.ps1
+770bcc1b6ac25a9a052703b422f9d6d7  backups/Level2/scripts/Set chrome as default.ps1
+88344e813b710005f1c1c79e59c3e01e  backups/Level2/scripts/Show Test Versions.ps1
+6de90e031d654ba87c74a9d707c89904  backups/Level2/scripts/Sleep after 1800 seconds..ps1
+45c95564881b864280d3037c5cb6b9b4  backups/Level2/scripts/System Uptime.ps1
+78a2307084259b43f9ccaa7da29c84c6  backups/Level2/scripts/Test PS Module install.ps1
+25971eb01331e46c886cbd1f60ed5821  backups/Level2/scripts/Test Show Versions.ps1
+f2f231262c9288868753d80258b3fb8c  backups/Level2/scripts/Uninstall Atera.ps1
+50a5dc84f5fefb9c72cef997be00f04f  backups/Level2/scripts/Verify SC Status.ps1
+fdd8184570f07d0a8d6f01abf200a092  backups/Level2/scripts/Wake On Lan and Power settings WOL.ps1
+1b665f4b9b486d2b4eb1521472d8e908  backups/Level2/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
+278817b15918ded5bfac0659ab3e014c  backups/Level2/scripts/inside quiet hours_.ps1
+a9f8882f804f8809b66516e86a5e783f  backups/Level2/scripts/is interactive sign in_.ps1
+6c6ec2b0f565ca69578e3f41baafd1aa  backups/Level2/scripts/level to screenconnect test.ps1
+d1a5df4a51ac566b30fb8b6062446977  backups/Level2/scripts/test sc session delete.ps1
+ac93a09854d446fd3853183687d2237a  backups/Level2/scripts/test uninstall for SC.ps1
+6059291621885604bb3fba9795902a5d  backups/Level2/scripts/uninstall level.ps1
+5095bf93fc13e91c81d8a00d7f7300d5  backups/Level2/scripts/⛔CIPP CHECK.ps1
+719b4fca685e4b4226f8ea772b499954  backups/Level2/scripts/⛔DROPBOX.ps1
+3e7851ca197c2a96a2aab2aa75014c8a  backups/Level2/scripts/👀DNSFILTER.ps1
+764eb9845b54be4139d905b1c49ef6da  backups/Level2/scripts/👀unchecky.ps1
+271de26506314db34e3d12bd26cf2a9a  backups/Level2/scripts/🙏CIPPCHECK.ps1
+b45c32def9b7861719d371d1ffb935ef  launchers/Alert/🔔Technician Alert Monitor.ps1
+8072ea1f4a6e430a9feb376b3910a6a3  launchers/Alert/🔔Wake tagged devices.ps1
+57fa0a69c7ca06a7f9045d7824686f50  launchers/Alert/🙏Wake all devices in Level group.ps1
+de3795e24566b1a6518a18244073092b  launchers/Config/⚙️COOLForge Cache Sync.ps1
+e2294156c4670229674f367b9d403249  launchers/Config/⚙️Configure Wake-on-LAN.ps1
+191764078887380551803402df128f03  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
+f80b8fff521885514079d894041ea023  launchers/Config/⚙️Set WiFi SSID.ps1
+ae2fed849d91585f998b6f9d922d663b  launchers/Config/🔧Prevent Sleep.ps1
+502ce94695220f6a56164bc6699e46a2  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
+f007a60e25a7c050eca85b9cee737258  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
+774222dee255072dc3c1032328fe13e3  launchers/Fix/🔧Fix Windows 10 Services.ps1
+2d8746b206319b2740d1596cef4e2c54  launchers/Fix/🔧Fix Windows 11 Services.ps1
+7e19d0dbea06868805355c3335f66bb2  launchers/Fix/🔧Fix Windows 7 Services.ps1
+d3ca69a10a00bdecfb64f40fda5a1308  launchers/Fix/🔧Fix Windows 8 Services.ps1
+82091702e71aea3a1ba7d11fd8f7a118  launchers/Fix/🔧Fix Windows 8.1 Services.ps1
+a1ead02b772b3c55585b52d2c9b4f4ae  launchers/Fix/🔧Fix Windows Location Services.ps1
+8d81cf7ad6ebf53e12d57413a6d4c552  launchers/Monitor/👀Check Windows Location Services.ps1
+ba8cd823e00fc0a8a4ca4cbb40552c21  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
+81e283bb48109271b60df5cbcc377e9b  launchers/Policy/Chrome/👀Chrome Location Services.ps1
+576e2f3447b4db5817bdfd1dcec09f58  launchers/Policy/Windows/👀Windows Location Services.ps1
+a472acfba177f270f14290b524e667dc  launchers/Policy/👀Hostname Mismatch.ps1
+6fad5a68cb7dae5132d860189708373b  launchers/Policy/👀bitwarden.ps1
+49c643c7c8b205d06cb498b283742da2  launchers/Policy/👀chrome.ps1
+2b03cadc82c041f61c08e3914cedcf25  launchers/Policy/👀cipp.ps1
+2f8de3289a85b15fb54a5c956c7d6caf  launchers/Policy/👀debug.ps1
+abccb6404da8c1eb23fd8175b141c579  launchers/Policy/👀dns.ps1
+44f3cd1cb9e29b2439dd67e081a8eec3  launchers/Policy/👀dnsfilter.ps1
+f73d4940ad9d3d3fa192b490aefd4d1d  launchers/Policy/👀huntress.ps1
+d2d0f62345d751c00142006ff4ddf5c9  launchers/Policy/👀level-monitor.ps1
+5fdfd33ebd97193152d8dcccee6cb28e  launchers/Policy/👀meshcentral.ps1
+7d5171d952c7cc70173d6ee17587c053  launchers/Policy/👀screenconnect.ps1
+b1516c66bcbc03912dce62534b203930  launchers/Policy/👀unchecky.ps1
+4b9b943e14412784f62a9f8fb54a2364  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+cc1fc5ec11cb5a0e8b2f60f7ea751990  launchers/Remove/⛔Force Remove Dropbox.ps1
+0c763bedc60167bd37b8b6ef7b570124  launchers/Remove/⛔Force Remove Foxit.ps1
+8a2ef7af39e20fc1747097670b427627  launchers/Remove/⛔Force Remove McAfee.ps1
+79bd06b991def60e667309615a40d80d  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+49512881c842ab04980a053cb2aba76e  launchers/Remove/⛔Remove All RATs.ps1
+5bd12ca1cc2da316faee03c098fd13b9  launchers/Test/👀Test Show Versions.ps1
+b54c076f80bf28acac0ceedf87bcc449  launchers/Test/👀Test Variable Output.ps1
+6a05973e60823798ae0036f390056eaa  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
+2e78b8c28b3fccb71cd33661538a5b74  launchers/Utility/⚙️Remove COOLForge Scratch Folder.ps1
+5e47c6a59b4002274ce2a7dd34ffeae5  launchers/Utility/⚙️Universal Disk Cleaner.ps1
+0e7c49425cdc0a183fed1f9b88aeda05  launchers/_template.ps1
+411b2736f9b6f7b28a884220c46e126d  modules/COOLForge-Common.psm1
+e0c78d0af59d223b679a01b6b1c25dd6  pre-release/Test-Syntax.ps1
+e058266dce34c287fcae6c9af89a6cd6  pre-release/Update-Launchers.ps1
+9f563c201e62efca1cbbce108dc7d38d  pre-release/Update-MD5SUMS.ps1
+dec00fbcc15ae5f1bbd36b2d5e926109  pre-release/Update-ScriptInventory.ps1
+474a2ee0a20ae5ed9d280f0fd2a1857f  pre-release/Validate-Release.ps1
+2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
+c6b4f96a451b75553768dba3845492a5  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 5389b1ec64d1d516b21c85be5b81541b  scripts/Check/👀Hostname Mismatch.ps1
-5489d0b3e325421a9b9037932458452f  backups/Level/scripts/Test Show Versions.ps1
-5489d0b3e325421a9b9037932458452f  backups/Level2/scripts/Test Show Versions.ps1
-5498aaecf26e531f185890e895e1037a  backups/Level/scripts/From Atera/intex level install.ps1
-5498aaecf26e531f185890e895e1037a  backups/Level2/scripts/From Atera/intex level install.ps1
-54e3fb449cd6724a059ad47ef4691ee5  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
-54e3fb449cd6724a059ad47ef4691ee5  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Anydesk.ps1
-57acf2eaf53134f977a526422bc976e8  start_here/Remove-ScratchFolder.ps1
-57c301e304a6683c032caa6ea6d6ac08  backups/Level/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
-57c301e304a6683c032caa6ea6d6ac08  backups/Level2/scripts/Debugging/WARNING_ Remove all standard user accounts.ps1
-582647c26327667e9e06764fffc8bea5  backups/Level/scripts/From Atera/Dr JA COOK LEVEL.ps1
-582647c26327667e9e06764fffc8bea5  backups/Level2/scripts/From Atera/Dr JA COOK LEVEL.ps1
-587ca98ec29430eb03d165a16b87ae91  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
-58ef1ec33889e22cd7df1e4b88e62412  start_here/Sync-COOLForgeCustomFields.ps1
-58f29a560dfbdb57b7f6d884dd6c8b5b  backups/Level/scripts/From Atera/Flush Cache (copy).ps1
-58f29a560dfbdb57b7f6d884dd6c8b5b  backups/Level2/scripts/From Atera/Flush Cache (copy).ps1
-598903103df862a840bb4ea8040bcebc  backups/Level/scripts/From Atera/Registry logging.ps1
-598903103df862a840bb4ea8040bcebc  backups/Level2/scripts/From Atera/Registry logging.ps1
-5a22e77030fb9da45901a5a11e243cc6  backups/Level/scripts/From Atera/Whitelabel Atera Agent on Add or Remove Programs (appwiz.cpl) (copy).ps1
-5a22e77030fb9da45901a5a11e243cc6  backups/Level2/scripts/From Atera/Whitelabel Atera Agent on Add or Remove Programs (appwiz.cpl) (copy).ps1
-5a4a02b7ee6ec49914e32e3a2b73f0d2  launchers/Fix/🔧Fix Windows 8.1 Services.ps1
-5b170413b9fe7729f600b7d01c33697c  backups/Level/scripts/General/CN_Tools Folder.ps1
-5b170413b9fe7729f600b7d01c33697c  backups/Level2/scripts/General/CN_Tools Folder.ps1
-5c8c28d71ada2246b71767a66af68326  backups/Level/scripts/System Uptime.ps1
-5c8c28d71ada2246b71767a66af68326  backups/Level2/scripts/System Uptime.ps1
-5c9cbf41a5791e56625a6a2778a8d73d  backups/Level/scripts/Debugging/FindHiddenUsers.ps1
-5c9cbf41a5791e56625a6a2778a8d73d  backups/Level2/scripts/Debugging/FindHiddenUsers.ps1
-5cf1af134006cc45657859dcdbf4b9e9  backups/Level/scripts/Imported/Windows - Remove Bloatware.ps1
-5cf1af134006cc45657859dcdbf4b9e9  backups/Level2/scripts/Imported/Windows - Remove Bloatware.ps1
-5cfaf5109460fefe380bed7d6b6c1310  backups/Level/scripts/From Atera/# Change the computer name in Windows Rename-Computer -newname _{[new_name]}_  # Restart the computer for rename to take effect if ($ToRestartTypeYes -eq 'yes') {     Restart-Computer -Force }.ps1
-5cfaf5109460fefe380bed7d6b6c1310  backups/Level2/scripts/From Atera/# Change the computer name in Windows Rename-Computer -newname _{[new_name]}_  # Restart the computer for rename to take effect if ($ToRestartTypeYes -eq 'yes') {     Restart-Computer -Force }.ps1
-5d45c7e9229b302dc63744748b53949e  backups/Level/scripts/REMOVE FOXIT.ps1
-5d45c7e9229b302dc63744748b53949e  backups/Level2/scripts/REMOVE FOXIT.ps1
-5dad4db87c68ed61353cf12d1616edd3  launchers/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-5e9aae0d072ccab44bb19423ca4927d0  backups/Level/scripts/Debugging/SET_ Default System Restore.ps1
-5e9aae0d072ccab44bb19423ca4927d0  backups/Level2/scripts/Debugging/SET_ Default System Restore.ps1
-5f455b947081da93fe3c8fde0a3e229b  validation/Generate-MD5SUMS.ps1
-5fbb6582eb37aabdcdfc6cb68a67f900  testing/how-i-got-here/get-import-mutation.ps1
-6143c71c294bb724903732e40cca8420  backups/Level/scripts/From Atera/Fully Remove any Malwarebytes install.ps1
-6143c71c294bb724903732e40cca8420  backups/Level2/scripts/From Atera/Fully Remove any Malwarebytes install.ps1
-614eb25164372f6dbdd58366deffa5e2  backups/Level/scripts/From Atera/Proper Whitelabel Atera Agent script.ps1
-614eb25164372f6dbdd58366deffa5e2  backups/Level2/scripts/From Atera/Proper Whitelabel Atera Agent script.ps1
-61a4895de5d629046f6219b5434ca944  standalone_scripts/Fix/🔧Prevent Sleep.ps1
-624bed0ab80a43540d05d2e3d65b347b  testing/Test-LevelApiCustomFields.ps1
-6296377e891091d6402482225fb4683a  start_here/Find-Field.ps1
-6307eb56eedb551081b2d4bce484afca  backups/Level/scripts/From Atera/Populate Agent DNS1 Custom Field with Customer DNS1 Custom Field.ps1
-6307eb56eedb551081b2d4bce484afca  backups/Level2/scripts/From Atera/Populate Agent DNS1 Custom Field with Customer DNS1 Custom Field.ps1
-63090177ae2fd799d091d4abebbd8536  backups/Level/scripts/From Atera/Download and Install Google Chrome.ps1
-63090177ae2fd799d091d4abebbd8536  backups/Level2/scripts/From Atera/Download and Install Google Chrome.ps1
-63b3cd31c148d0439a3284ef7083ee66  start_here/List-AllFields.ps1
-63d1bbb87079c2c570bbf2516a48b350  backups/Level/scripts/General/Set up CN_Tools Folder.ps1
-63d1bbb87079c2c570bbf2516a48b350  backups/Level2/scripts/General/Set up CN_Tools Folder.ps1
-64ecf37dd34d572b3d51e7d39b0d86d7  backups/Level/scripts/From Atera/Copy_Pristine_to_Sites_VoyagerWorkstationConfig.ps1
-64ecf37dd34d572b3d51e7d39b0d86d7  backups/Level2/scripts/From Atera/Copy_Pristine_to_Sites_VoyagerWorkstationConfig.ps1
-6511253572a74543f9aec1a429d772f5  start_here/Export-AnswerFile.ps1
-657ff15aeae7ffc6873d55bf2ab5b1d6  backups/Level/scripts/From Atera/Create group for Level.ps1
-657ff15aeae7ffc6873d55bf2ab5b1d6  backups/Level2/scripts/From Atera/Create group for Level.ps1
-65a37059549a679a6a8276e1e6f7d995  backups/Level/scripts/General/POLICY/Enable WOL.ps1
-65a37059549a679a6a8276e1e6f7d995  backups/Level2/scripts/General/POLICY/Enable WOL.ps1
-65cc5560110d39c85be3a9f14dbd4a5a  backups/Level/scripts/From Atera/Change_AteraAgent_Service_to_Auto (copy).ps1
-65cc5560110d39c85be3a9f14dbd4a5a  backups/Level2/scripts/From Atera/Change_AteraAgent_Service_to_Auto (copy).ps1
-679ca68804193eb231fa8bfe5d770e7b  backups/Level/scripts/From Atera/Empty Recycle Bin.ps1
-679ca68804193eb231fa8bfe5d770e7b  backups/Level2/scripts/From Atera/Empty Recycle Bin.ps1
-67abd52acdba45e9f315e4d80d043f13  start_here/Setup-COOLForge.ps1
-67bb4b6fc4bed06e561ab37dcd3cffd0  launchers/Alert/🔔Wake tagged devices.ps1
-67cfc15111591389bd6ac377e985682c  backups/Level/scripts/Verify SC Status.ps1
-67cfc15111591389bd6ac377e985682c  backups/Level2/scripts/Verify SC Status.ps1
-68108cde9f173774aaad1a1528c1f121  backups/Level/scripts/From Atera/Remove_Voyager_TempFiles2days.ps1
-68108cde9f173774aaad1a1528c1f121  backups/Level2/scripts/From Atera/Remove_Voyager_TempFiles2days.ps1
-68ac4d55cfc9bfe9c6daec4a74017263  backups/Level/scripts/From Atera/SWR - SET HOMEPAGE TO SHAREPOINT.ps1
-68ac4d55cfc9bfe9c6daec4a74017263  backups/Level2/scripts/From Atera/SWR - SET HOMEPAGE TO SHAREPOINT.ps1
-68d8f9d3d171a7bdb74bb8b49fbe35be  backups/Level/scripts/BASELINE SOFTWARE/⛔Huntress.ps1
-68d8f9d3d171a7bdb74bb8b49fbe35be  backups/Level2/scripts/BASELINE SOFTWARE/⛔Huntress.ps1
-68fe3773e7a233d3f5d214c3ee5429ef  validation/Create-New-Script.ps1
-69c4193cd695e9988ef67719eb0f7f6a  testing/fix-encoding.ps1
-6a770e1609a09b9e8efde06da5998602  backups/Level/scripts/inside quiet hours_.ps1
-6a770e1609a09b9e8efde06da5998602  backups/Level2/scripts/inside quiet hours_.ps1
-6ad8a30b9b680f2895848778c1db8854  backups/Level/scripts/Imported/Windows - Disable Sleep on AC Power.ps1
-6ad8a30b9b680f2895848778c1db8854  backups/Level2/scripts/Imported/Windows - Disable Sleep on AC Power.ps1
-6af2fd2a7eb493140bb76e019b53af39  backups/Level/scripts/General/POLICY/NEEDS_CHECKPLUGINFROMCIPP.ps1
-6af2fd2a7eb493140bb76e019b53af39  backups/Level2/scripts/General/POLICY/NEEDS_CHECKPLUGINFROMCIPP.ps1
-6b21940f65b2c6fe50fae1ab3f06c6e3  tools/Update-LauncherCaching.ps1
-6b6e14c9229033f9decaab6a35136d17  launchers/Test/👀Test Show Versions.ps1
-6b9e82a46fa9a0fd24fea9e1a6aceb28  backups/Level/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
-6b9e82a46fa9a0fd24fea9e1a6aceb28  backups/Level2/scripts/General/Info Gathering/Windows Monitor - USB Drive.ps1
-6c8ab03f7d6a06ffd65a6eb550c8af84  backups/Level/scripts/From Atera/Windows11-Taskbar-Left.ps1
-6c8ab03f7d6a06ffd65a6eb550c8af84  backups/Level2/scripts/From Atera/Windows11-Taskbar-Left.ps1
-6cfb7d9817be5041a913c109e1cd6689  backups/Level/scripts/Fix .net TLS versions.ps1
-6cfb7d9817be5041a913c109e1cd6689  backups/Level2/scripts/Fix .net TLS versions.ps1
-6ed1517c67347d17f430fb8e293dde20  start_here/Remove-LegacyWithPolicyEquiv.ps1
-6f4b027d23cca5850d56effdc78f5127  backups/Level/scripts/From Atera/ps7wrapper.ps1
-6f4b027d23cca5850d56effdc78f5127  backups/Level2/scripts/From Atera/ps7wrapper.ps1
-7070050eb1b4f3c1e79d319e2acb2746  backups/Level/scripts/From Atera/SWR Level.ps1
-7070050eb1b4f3c1e79d319e2acb2746  backups/Level2/scripts/From Atera/SWR Level.ps1
-70a00e18221fd34c859820e77393dade  launchers/Remove/⛔Force Remove Foxit.ps1
-7112c334745a2ebf58092fc81bcea3d4  launchers/Policy/👀unchecky.ps1
-719473edcd7fde4db3a1339748e5aa78  testing/how-i-got-here/Extract-LevelAutomationsFromHAR.ps1
-72768be910555e40f5da6d8f42f1e994  backups/Level/scripts/From Atera/Install Chocolatey (copy).ps1
-72768be910555e40f5da6d8f42f1e994  backups/Level2/scripts/From Atera/Install Chocolatey (copy).ps1
-728a7d5dae1b883415d84c15ac0321ea  standalone_scripts/Check/level-debug.ps1
-72e1f4308c135f7f9f9900e607343867  launchers/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-72ea45cd39f686753e262a28dfed48b1  backups/Level/scripts/AdelaideMRI/Set Hosts file for AdelaideMRI.ps1
-72ea45cd39f686753e262a28dfed48b1  backups/Level2/scripts/AdelaideMRI/Set Hosts file for AdelaideMRI.ps1
-73aadc04d84adf5d4c58c52f3d0dd399  backups/Level/scripts/uninstall level.ps1
-73aadc04d84adf5d4c58c52f3d0dd399  backups/Level2/scripts/uninstall level.ps1
-74160fe149f9c47468461eb7f21e28d3  backups/Level/scripts/Test PS Module install.ps1
-74160fe149f9c47468461eb7f21e28d3  backups/Level2/scripts/Test PS Module install.ps1
-74bd67b7213ab16a22deb176a0ce3ce4  backups/Level/scripts/General/Fixes/🙏Wake all devices in parent to level.io folder.ps1
-74bd67b7213ab16a22deb176a0ce3ce4  backups/Level2/scripts/General/Fixes/🙏Wake all devices in parent to level.io folder.ps1
-79c9ef132fb7c5c3d0fa0c27490bf9be  backups/Level/scripts/From Atera/Remove McAfee Agent.ps1
-79c9ef132fb7c5c3d0fa0c27490bf9be  backups/Level2/scripts/From Atera/Remove McAfee Agent.ps1
-7c6ec9068909dcd8bf22f569e728ed68  backups/Level/scripts/General/POLICY/⛔SCREENCONNECT.ps1
-7c6ec9068909dcd8bf22f569e728ed68  backups/Level2/scripts/General/POLICY/⛔SCREENCONNECT.ps1
-7cb23d43eb5bac3b6b25d9f3ac552c90  launchers/Test/👀Test Variable Output.ps1
-7d4202f988667b8c1355491c084f99ac  scripts/Remove/⛔Remove All RATs.ps1
-7d56842270efa3bcde5be0017701c997  backups/Level/scripts/From Atera/Weekly Maintenance (copy).ps1
-7d56842270efa3bcde5be0017701c997  backups/Level2/scripts/From Atera/Weekly Maintenance (copy).ps1
-7e73fad3d51ed8dd35cef348337a8c2b  backups/Level/scripts/General/POLICY/Disable Outlook re-open old items.ps1
-7e73fad3d51ed8dd35cef348337a8c2b  backups/Level2/scripts/General/POLICY/Disable Outlook re-open old items.ps1
-7e76db660bf59250cc190d247997b1fc  backups/Level/scripts/From Atera/Recreate Voyager from Pristine.ps1
-7e76db660bf59250cc190d247997b1fc  backups/Level2/scripts/From Atera/Recreate Voyager from Pristine.ps1
-7e8f94cfce17f2ee3d7ff9ebd082ca32  modules/COOLForge-Common.psm1
-7effff07d553bc5e088bc8e89d44b8a0  backups/Level/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
-7effff07d553bc5e088bc8e89d44b8a0  backups/Level2/scripts/AdelaideMRI/AMRI Deploy Background for desktop.ps1
-7fc0340454c8d474b053b62f1a1877a2  backups/Level/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
-7fc0340454c8d474b053b62f1a1877a2  backups/Level2/scripts/General/TESTING/Test alert to help.cool.net.au.ps1
-803e29f92dc0c92b4f08dc9e463130d3  tools/Clear-EmptyCustomFields.ps1
-80992b39185f8d4df68a9075741ee835  backups/Level/scripts/From Atera/Enable right click classic menu on Windows11 (copy).ps1
-80992b39185f8d4df68a9075741ee835  backups/Level2/scripts/From Atera/Enable right click classic menu on Windows11 (copy).ps1
-82738d5502757bfbde6027a0924add7b  backups/Level/scripts/From Atera/Check For and Remove Malwarebytes.ps1
-82738d5502757bfbde6027a0924add7b  backups/Level2/scripts/From Atera/Check For and Remove Malwarebytes.ps1
-829ddfd831300ae3101da06f8342dda9  backups/Level/scripts/Imported/AMRI Safe debloat.ps1
-829ddfd831300ae3101da06f8342dda9  backups/Level2/scripts/Imported/AMRI Safe debloat.ps1
-82d4e0a0674cd2a1521ee9a656539e89  backups/Level/scripts/From Atera/Delete Old Print Jobs (copy).ps1
-82d4e0a0674cd2a1521ee9a656539e89  backups/Level2/scripts/From Atera/Delete Old Print Jobs (copy).ps1
-834557bd53d26f96205d79189a86633a  backups/Level/scripts/AdelaideMRI/Extract Voyager to Programdata.ps1
-834557bd53d26f96205d79189a86633a  backups/Level2/scripts/AdelaideMRI/Extract Voyager to Programdata.ps1
-84270de1d7b3d49932a4d9a7fb674a69  backups/Level/scripts/Install Bitwarden Extensions to chrome and edge.ps1
-84270de1d7b3d49932a4d9a7fb674a69  backups/Level2/scripts/Install Bitwarden Extensions to chrome and edge.ps1
-847d342393b959b1aa6b8307bf35a20d  backups/Level/scripts/From Atera/PowerShell script to change every network adapter DNS to Google DNS.ps1
-847d342393b959b1aa6b8307bf35a20d  backups/Level2/scripts/From Atera/PowerShell script to change every network adapter DNS to Google DNS.ps1
-84af0633be7e8594628aa7707e21c616  pre-release/Validate-Release.ps1
-84e0dc0df3f6709394b2dc16b277679f  testing/check-launchers.ps1
-85be2feaf36b8a35a85c75787883e0e0  backups/Level/scripts/From Atera/Install FoxitReader from Chocolaty.ps1
-85be2feaf36b8a35a85c75787883e0e0  backups/Level2/scripts/From Atera/Install FoxitReader from Chocolaty.ps1
-86560bded0aa68b59cbee7cca7b1118d  backups/Level/scripts/From Atera/SplashTop Restart (copy).ps1
-86560bded0aa68b59cbee7cca7b1118d  backups/Level2/scripts/From Atera/SplashTop Restart (copy).ps1
+883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
+a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
+66dee256530be177a1fe5293bc8298be  scripts/Check/👀debug.ps1
+be32c5551bb37aae0645ae1da957e117  scripts/Configure/⚙️Configure Power Management for Workstation.ps1
+98a6f30aebccfe2e05f6ba7708865b07  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
+c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
+b864b261d353dadd9498220d97d8c4f1  scripts/Configure/⚙️Set WiFi SSID.ps1
+4b51c03078884653dc96c81483bd97fa  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+9e71bc81c1222cf9ede68b5f6f033d72  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
+2fac18f824de904e741007e6c9757e83  scripts/Fix/🔧Fix Windows 10 Services.ps1
+700e7d7153585ac93d22c73a446690f8  scripts/Fix/🔧Fix Windows 11 Services.ps1
+81661b4b31d5e2ec13ba91c102fe54d8  scripts/Fix/🔧Fix Windows 7 Services.ps1
+a7615ff10c4636a86d00bf8e2950f912  scripts/Fix/🔧Fix Windows 8 Services.ps1
+89c5b5fa66ed2c0c875c4cdd64d20616  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+09185ac0299ea9a803415b7086398e95  scripts/Fix/🔧Fix Windows Location Services.ps1
+d56e58ecff167c2bb794dae881eee554  scripts/Fix/🔧Prevent Sleep.ps1
+63c547479b61ddab57e5851c5aee3cba  scripts/Policy/Chrome/👀Chrome Location Services.ps1
+ce39c9d1b13a8ec8be52262da7669fb4  scripts/Policy/Windows/👀Windows Location Services.ps1
+dedc8a802d3010c3b7ba4647dbdd4a3a  scripts/Policy/👀bitwarden.ps1
+e6d075bdb31462ddf54cb4e14cdd5160  scripts/Policy/👀chrome.ps1
+d3c000b0accb16130a00ed8e6f28fb22  scripts/Policy/👀cipp.ps1
+0ba4fa943a9a669edef425be17b59c16  scripts/Policy/👀dns.ps1
+d5df12ce913fde9d03b655936bd3a336  scripts/Policy/👀dnsfilter.ps1
+cbe0cf75c89082f22dc7340ed296e5aa  scripts/Policy/👀huntress.ps1
+be95c4b919a17dc879e45af6dad196d4  scripts/Policy/👀level-monitor.ps1
+bf26f4d1a135b3c67c79476e356dd6ed  scripts/Policy/👀meshcentral.ps1
+cd4cd72dc2044d9c4dcf0c92cbd62ac5  scripts/Policy/👀screenconnect.ps1
+32787c4a9c96f67e6339f6352fc59ad2  scripts/Policy/👀unchecky.ps1
+18c19ee777d4ddc589f69b56d80a5c23  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
+f3a01a4026dfc007749e8fa0069a3c22  scripts/Remove/⛔Force Remove Dropbox.ps1
+1f4ebfc3f8661d3e3fc0746013497ddb  scripts/Remove/⛔Force Remove Foxit.ps1
+577e2f4fba6883502995b8dd19800c04  scripts/Remove/⛔Force Remove McAfee.ps1
+e3cc71bdf2deea62f16dd14c439fdb1e  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
+e681b781c7fa6ecd3f79e6e27718c018  scripts/Remove/⛔Remove All RATs.ps1
+01123ee5e8b4a330e8be72688c27208c  scripts/Utility/⚙️COOLForge Cache Sync.ps1
+fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 8706accfa29b33f237204118e36ed1f9  scripts/Utility/⚙️Remove COOLForge Scratch Folder.ps1
-8714fb4ef097e13d524455cd9fa3a246  backups/Level/scripts/From Atera/Resync Time (copy).ps1
-8714fb4ef097e13d524455cd9fa3a246  backups/Level2/scripts/From Atera/Resync Time (copy).ps1
-8754fff34cb08e1fb29f20dda1b0fa57  backups/Level/scripts/From Atera/windows 11 troubleshoot (copy).ps1
-8754fff34cb08e1fb29f20dda1b0fa57  backups/Level2/scripts/From Atera/windows 11 troubleshoot (copy).ps1
-87f7efdeb3a118d8c4d5da16a342f5f3  launchers/Fix/🔧Fix Windows 11 Services.ps1
-880d7733f16da7d09b0c777c81872073  backups/Level/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
-880d7733f16da7d09b0c777c81872073  backups/Level2/scripts/echo Y _CHKDSK C_ _F _V _R _offlinescanandfix.ps1
-8823b6781d52ca469ed02aa24157c180  backups/Level/scripts/General/Fixes/Remove-McAfee.ps1
-8823b6781d52ca469ed02aa24157c180  backups/Level2/scripts/General/Fixes/Remove-McAfee.ps1
-883b24fc932f59e8d2a7bb2115718aa6  testing/Test_AutoUpdate_Dev.ps1
-885025fa094a43499d14f07a350c58c2  testing/how-i-got-here/decode-id.ps1
-88689453f315993cd4e036b445c4044a  backups/Level/scripts/From Atera/Sending action to CNAJMSILT The action has timed out..ps1
-88689453f315993cd4e036b445c4044a  backups/Level2/scripts/From Atera/Sending action to CNAJMSILT The action has timed out..ps1
-88e3ce913709f126feba67cc7cc8eba3  backups/Level/scripts/Imported/Windows - Set SSID.ps1
-88e3ce913709f126feba67cc7cc8eba3  backups/Level2/scripts/Imported/Windows - Set SSID.ps1
-8a37eeb30c9b11c0c4cc88567039d290  start_here/Restore-LevelGroup.ps1
-8a6539541223fd8da748af536a728b62  tools/Send-LevelSupportQuestions.ps1
-8b3cc47ce382c8472131ae1bdf552dcb  testing/Test-HuntressOrgProvisioning.ps1
-8bfd5feb5c3b8f9994c0afee390245a1  launchers/Fix/🔧Fix Windows 7 Services.ps1
-8c306ec3bc61aa8e9960cb77d905db34  start_here/New-LevelClient.ps1
-8c56e25c883071c2c7237f75844f6fff  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
-8c829edc3e6659d826863cd1ef445a28  backups/Level/scripts/AdelaideMRI/Fixes/Fix the VoyagerWorkstationConfig.txt files.ps1
-8c829edc3e6659d826863cd1ef445a28  backups/Level2/scripts/AdelaideMRI/Fixes/Fix the VoyagerWorkstationConfig.txt files.ps1
-8d18760d5f90e7fe0d23135675f131fb  start_here/Get-ScreenConnectUrls.ps1
-8d8501c870be0fa356553f0ec9223997  backups/Level/scripts/AdelaideMRI/Fixes/Create Link to Voyager WebViewer on desktop.ps1
-8d8501c870be0fa356553f0ec9223997  backups/Level2/scripts/AdelaideMRI/Fixes/Create Link to Voyager WebViewer on desktop.ps1
-8e8e69250c3111d4e3d8142d0f0baf6b  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
-8e8e69250c3111d4e3d8142d0f0baf6b  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Non MSP screenconnect.ps1
-8f3a2cc2b3ad7ffc332e4220bf68ffd8  backups/Level/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
-8f3a2cc2b3ad7ffc332e4220bf68ffd8  backups/Level2/scripts/GATHER_INFORMATION/👀Check for Unauthorized Remote Access Tools.ps1
-8f80c59bfd8880cbde2903e7404fcabd  backups/Level/scripts/AdelaideMRI/Fixes/Debloat for AMRI.ps1
-8f80c59bfd8880cbde2903e7404fcabd  backups/Level2/scripts/AdelaideMRI/Fixes/Debloat for AMRI.ps1
-9151dc183ad15f9c701981c1602b94fa  backups/Level/scripts/From Atera/Set Time Zone to SA and Time Format.ps1
-9151dc183ad15f9c701981c1602b94fa  backups/Level2/scripts/From Atera/Set Time Zone to SA and Time Format.ps1
-92a7bec973a9ab89ed0f4a5938cafddd  launchers/Policy/👀dnsfilter.ps1
-92e7e470fb78510c4c9dbb29ccd0f346  backups/Level/scripts/From Atera/Populate Agent Custom Field with Customer Custom Field DNS1.ps1
-92e7e470fb78510c4c9dbb29ccd0f346  backups/Level2/scripts/From Atera/Populate Agent Custom Field with Customer Custom Field DNS1.ps1
-930751482405fae5b7b5b38c0294377c  validation/check-bom.ps1
-931beeaacadd33b26a5ff1f4e621b3d3  scripts/Fix/🔧Fix Windows 11 Services.ps1
-9386dd57372ef6a9a0fef892de926fd7  backups/Level/scripts/From Atera/Configure Power Settings for WIFI Network Adapters.ps1
-9386dd57372ef6a9a0fef892de926fd7  backups/Level2/scripts/From Atera/Configure Power Settings for WIFI Network Adapters.ps1
-954115479dada9aee6775e51b8520c48  backups/Level/scripts/From Atera/Run Windows Cleanup (copy).ps1
-954115479dada9aee6775e51b8520c48  backups/Level2/scripts/From Atera/Run Windows Cleanup (copy).ps1
-9577581f4b7d11442c65844e17be1764  scripts/Fix/🔧Fix Windows 10 Services.ps1
-95a619d66650c2926148d4254dfc2958  backups/Level/scripts/POLICY_ Is Foxit installed_.ps1
-95a619d66650c2926148d4254dfc2958  backups/Level2/scripts/POLICY_ Is Foxit installed_.ps1
-96b52bee1154b8f11e384e39e8cf35c6  backups/Level/scripts/General/Fixes/Windows 10 1909 Iterative updates.ps1
-96b52bee1154b8f11e384e39e8cf35c6  backups/Level2/scripts/General/Fixes/Windows 10 1909 Iterative updates.ps1
-98908e829ed5b4b4d1b2c34499bfbc7a  scripts/Check/👀Test Show Versions.ps1
-9948f9cc13187e28fcf03c63ebc40420  start_here/Backup-LevelAutomationsAndScripts.ps1
-9b70bc17fc362ad87ab12ee09d33913c  backups/Level/scripts/From Atera/Whitelist Atera in Windows Defender (copy).ps1
-9b70bc17fc362ad87ab12ee09d33913c  backups/Level2/scripts/From Atera/Whitelist Atera in Windows Defender (copy).ps1
-9c2329479fbfbae498da8473178fa1eb  launchers/Policy/👀meshcentral.ps1
-9c37c5cbf8283e6f3194d1f817b1d92a  testing/Analyze-LevelBackup.ps1
-9c3db167bf740ee377f7ac6800c8d7a4  backups/Level/scripts/From Atera/AMRI Delete Old Files in 'Studies' Folders.ps1
-9c3db167bf740ee377f7ac6800c8d7a4  backups/Level2/scripts/From Atera/AMRI Delete Old Files in 'Studies' Folders.ps1
-9c6f9b7671de75f9df0ac190229bc225  backups/Level/scripts/From Atera/SWR Printer Driver Downloads.ps1
-9c6f9b7671de75f9df0ac190229bc225  backups/Level2/scripts/From Atera/SWR Printer Driver Downloads.ps1
-9d18be5e959b9ebc4da850b99f7e2921  backups/Level/scripts/From Atera/Extend Outlook Storage Capabilities (copy).ps1
-9d18be5e959b9ebc4da850b99f7e2921  backups/Level2/scripts/From Atera/Extend Outlook Storage Capabilities (copy).ps1
-9d6d8cbb56994da285abe19886e6ca64  backups/Level/scripts/From Atera/MAC - Install Huntress.ps1
-9d6d8cbb56994da285abe19886e6ca64  backups/Level2/scripts/From Atera/MAC - Install Huntress.ps1
-9e3caaf8dfaeb0b26c38e307686f8ebc  COOLForge-Common.psm1
-9f12b59e347bb2cea851eae5356e0051  scripts/Remove/⛔Force Remove Foxit.ps1
-9f9f89a24a37360eb8ef6f42400982bd  backups/Level/scripts/Remove Voyager Folders.ps1
-9f9f89a24a37360eb8ef6f42400982bd  backups/Level2/scripts/Remove Voyager Folders.ps1
-a01ae4e6fb165187bfed5c95592baca2  tools/Test-CustomFieldCharacters.ps1
-a04bedbc14bc9a9967630679fe7b1273  launchers/Monitor/👀Check Windows Location Services.ps1
-a083a55ae755efd706edc73efd3a1456  validation/check-psscriptanalyzer.ps1
-a0e73e9d6bc566b0a5096885e59aeac0  backups/Level/scripts/From Atera/SWR_Deploy_DNSFILTER.ps1
-a0e73e9d6bc566b0a5096885e59aeac0  backups/Level2/scripts/From Atera/SWR_Deploy_DNSFILTER.ps1
-a10120ef9feb15cecf230d752448a032  backups/Level/scripts/⛔DROPBOX.ps1
-a10120ef9feb15cecf230d752448a032  backups/Level2/scripts/⛔DROPBOX.ps1
-a192dfa8901006316b1e484514ed0209  backups/Level/scripts/👀unchecky.ps1
-a192dfa8901006316b1e484514ed0209  backups/Level2/scripts/👀unchecky.ps1
-a200a842e4c45e596c14e33a3ca53f66  backups/Level/scripts/From Atera/Run Backblaze Uninstaller.ps1
-a200a842e4c45e596c14e33a3ca53f66  backups/Level2/scripts/From Atera/Run Backblaze Uninstaller.ps1
-a23d19ab8fd7904388f3b0a471ace682  backups/Level/scripts/From Atera/Retrieve Wi-Fi Passwords using PowerShell.ps1
-a23d19ab8fd7904388f3b0a471ace682  backups/Level2/scripts/From Atera/Retrieve Wi-Fi Passwords using PowerShell.ps1
-a30e1cf11c65e21111b953ac811d7d79  backups/Level/scripts/From Atera/USB CHECK.ps1
-a30e1cf11c65e21111b953ac811d7d79  backups/Level2/scripts/From Atera/USB CHECK.ps1
-a395fa8facadbbbb4e8d75c82e9f0246  backups/Level/scripts/From Atera/Uninstall Malwarebytes AMRI.ps1
-a395fa8facadbbbb4e8d75c82e9f0246  backups/Level2/scripts/From Atera/Uninstall Malwarebytes AMRI.ps1
-a3a0a40c033c76efbc31ccb138ad73b1  backups/Level/scripts/From Atera/deny_windows11_upgrade_disable.ps1
-a3a0a40c033c76efbc31ccb138ad73b1  backups/Level2/scripts/From Atera/deny_windows11_upgrade_disable.ps1
-a5941b69502ce1bb28208f1f3d451ba7  testing/New-ScriptFolderStructure.ps1
-a61f878686392ba61ae4e5176c6cb79f  backups/Level/scripts/From Atera/List all printers on local machine with port names.ps1
-a61f878686392ba61ae4e5176c6cb79f  backups/Level2/scripts/From Atera/List all printers on local machine with port names.ps1
-a72ccc2e71274d1b7cf255baae008d46  backups/Level/scripts/From Atera/Remove MalwareBytes.ps1
-a72ccc2e71274d1b7cf255baae008d46  backups/Level2/scripts/From Atera/Remove MalwareBytes.ps1
-a7498e1380bf7ee4f1205f9b640ef171  launchers/_template.ps1
-a75d9f8ddc61210967750f1b9ee096ee  backups/Level/scripts/From Atera/Cleanup Print Queue.ps1
-a75d9f8ddc61210967750f1b9ee096ee  backups/Level2/scripts/From Atera/Cleanup Print Queue.ps1
-a83017bc4f71120a98a969f28dfa4da3  backups/Level/scripts/From Atera/Branded Restart.ps1
-a83017bc4f71120a98a969f28dfa4da3  backups/Level2/scripts/From Atera/Branded Restart.ps1
-a83793f4c90f505a3340cf071461004a  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
-a83793f4c90f505a3340cf071461004a  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _CheckHealth.ps1
-a948d7e6501c6f7105a12432b42fb7ab  backups/Level/scripts/From Atera/SetAtera to Start in safemode.ps1
-a948d7e6501c6f7105a12432b42fb7ab  backups/Level2/scripts/From Atera/SetAtera to Start in safemode.ps1
-a96e74f61ce26754e7401bc37204a7dd  standalone_scripts/Remove/Remove-AllRATs-Standalone.ps1
-a987d513aa6d0e003a28c498a54f084e  testing/how-i-got-here/test-automation-query.ps1
-aa6641cd529bb2298ed5a623f2ffb233  backups/Level/scripts/Set Defender Exclusions.ps1
-aa6641cd529bb2298ed5a623f2ffb233  backups/Level2/scripts/Set Defender Exclusions.ps1
-aaf5c137e71240f68ff301f838d98b0f  backups/Level/scripts/Show Test Versions.ps1
-aaf5c137e71240f68ff301f838d98b0f  backups/Level2/scripts/Show Test Versions.ps1
-abf50fb1bbe3af8aa7623e988da9d997  backups/Level/scripts/General/POLICY/SET_ Sleep revert.ps1
-abf50fb1bbe3af8aa7623e988da9d997  backups/Level2/scripts/General/POLICY/SET_ Sleep revert.ps1
-ac1210c5aed3035128e5862ac3c8aa7e  backups/Level/scripts/From Atera/Download_Install_MSI_As_Administrator.ps1
-ac1210c5aed3035128e5862ac3c8aa7e  backups/Level2/scripts/From Atera/Download_Install_MSI_As_Administrator.ps1
-ac36def4173e8f584110f8ca8d6ca622  backups/Level/scripts/Debug Script.ps1
-ac36def4173e8f584110f8ca8d6ca622  backups/Level2/scripts/Debug Script.ps1
-ac47f48507ff1aa1df56c563be4e92e7  backups/Level/scripts/From Atera/install dns filter yattalunga.ps1
-ac47f48507ff1aa1df56c563be4e92e7  backups/Level2/scripts/From Atera/install dns filter yattalunga.ps1
-ad268d2607e92cfb7864aa95523ff927  backups/Level/scripts/From Atera/DeployPhonebookScript.ps1
-ad268d2607e92cfb7864aa95523ff927  backups/Level2/scripts/From Atera/DeployPhonebookScript.ps1
-adab0943c12ba683d5e7214ad355e3a0  backups/Level/scripts/From Atera/Download and Install ScreenConnect Client to Company.ps1
-adab0943c12ba683d5e7214ad355e3a0  backups/Level2/scripts/From Atera/Download and Install ScreenConnect Client to Company.ps1
-ae16043e1170564b68674ba76eb073d5  backups/Level/scripts/AdelaideMRI/extract voyager config files.ps1
-ae16043e1170564b68674ba76eb073d5  backups/Level2/scripts/AdelaideMRI/extract voyager config files.ps1
-ae4299200cf1234f66d3f97b09562f41  testing/how-i-got-here/get-automation-search.ps1
-ae4b4388e9ae8e806fdc6753e97c24d6  launchers/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-af11bd387fb991eb5b5cd58924db738a  standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
-b03fdcd247d27bf1f83e003876c5ddab  validation/check-syntax.ps1
-b04b15b5f1b4a12e4ef296039ca3c747  standalone_scripts/Remove/Check-SecurityBaseline.ps1
-b2587d8bd011f747f6a68081f37250fc  scripts/Check/👀Test Variable Output.ps1
-b258c71d253a57cb0ebc20bb97343caf  backups/Level/scripts/Deploy COOLNETWORKS Support tool.ps1
-b258c71d253a57cb0ebc20bb97343caf  backups/Level2/scripts/Deploy COOLNETWORKS Support tool.ps1
-b271080f84011320934ae6cc53830b7f  start_here/Get-FullDeviceLevelCustomFields.ps1
-b2980e81ac1e2b85d272ce96beab245e  testing/how-i-got-here/find-automation-queries.ps1
-b2b79b90dbe629319fc7150962c64b67  standalone_scripts/Check/Check-UnauthorizedRemoteAccessTools-Standalone.ps1
-b2c87901c75f4acd1b3e2d6fd976c2b8  scripts/Policy/Chrome/👀Chrome Location Services.ps1
-b2d48957e2ff3d53a9ea98fc197a1da2  backups/Level/scripts/DEBUG.ps1
-b2d48957e2ff3d53a9ea98fc197a1da2  backups/Level2/scripts/DEBUG.ps1
-b36a3751d65299ecb199daeae9595a8d  backups/Level/scripts/AdelaideMRI/Extract Webviewer.ps1
-b36a3751d65299ecb199daeae9595a8d  backups/Level2/scripts/AdelaideMRI/Extract Webviewer.ps1
-b3e011e942f9343c706a2ac218f2211a  backups/Level/scripts/General/POLICY/Remove_ unchecky.ps1
-b3e011e942f9343c706a2ac218f2211a  backups/Level2/scripts/General/POLICY/Remove_ unchecky.ps1
-b486981a131e67cbfb3f149f7006135e  testing/check-md5.ps1
-b5c5024b00def564d6e29c12b29537ae  scripts/Policy/👀chrome.ps1
-b5d33d76487ab0080b4391e8c521f176  backups/Level/scripts/General/POLICY/Enable Logon_Logoff Audit logging.ps1
-b5d33d76487ab0080b4391e8c521f176  backups/Level2/scripts/General/POLICY/Enable Logon_Logoff Audit logging.ps1
-b63b4cbbfa837af0623dacbb8f4afbdc  backups/Level/scripts/BASELINE SOFTWARE/🙏Huntress.ps1
-b63b4cbbfa837af0623dacbb8f4afbdc  backups/Level2/scripts/BASELINE SOFTWARE/🙏Huntress.ps1
-b6923b12db8a08a71b894383a3e5450e  backups/Level/scripts/General/TESTING/Revert to First Restore Point.ps1
-b6923b12db8a08a71b894383a3e5450e  backups/Level2/scripts/General/TESTING/Revert to First Restore Point.ps1
-b8e4c10a37ea64167efd5f7f5015b5c7  scripts/Policy/👀screenconnect.ps1
-ba59e99113bcae0b5dd8d6ff1287a5e5  backups/Level/scripts/⛔CIPP CHECK.ps1
-ba59e99113bcae0b5dd8d6ff1287a5e5  backups/Level2/scripts/⛔CIPP CHECK.ps1
-bacdfac4bfefd5f4603479bf454e921b  backups/Level/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
-bacdfac4bfefd5f4603479bf454e921b  backups/Level2/scripts/Imported/Windows 11 Upgrade - Hardware Check.ps1
-897eea239c857749c6e86e2ffa2004b7  scripts/Policy/👀level-monitor.ps1
-bc65925fa06e8ac0d63d82425de1d849  scripts/Utility/🙏Wake all devices in Level group.ps1
-bcb7582da929754e4439787fc8870bd1  launchers/Policy/👀bitwarden.ps1
-bd67385b2dd3444eb40986605923363d  backups/Level/scripts/From Atera/System Report (copy).ps1
-bd67385b2dd3444eb40986605923363d  backups/Level2/scripts/From Atera/System Report (copy).ps1
-bd80da37ebc28e07b9f3a6b3924edf15  backups/Level/scripts/From Atera/Get-recent-logins.ps1
-bd80da37ebc28e07b9f3a6b3924edf15  backups/Level2/scripts/From Atera/Get-recent-logins.ps1
-bd86d591ac8d550f852d70cf32c03b95  launchers/Utility/⚙️Universal Disk Cleaner.ps1
-bdb367a691aeb18c0f860b590ed6badd  backups/Level/scripts/General/POLICY/Deploy Popup Script.ps1
-bdb367a691aeb18c0f860b590ed6badd  backups/Level2/scripts/General/POLICY/Deploy Popup Script.ps1
-bde382e8a7e6bc98503bd96ab6fbedc6  testing/Test-ScreenConnectAPI.ps1
-be8614cefab0687892e17cb9b791210c  validation/check-launcher-fields.ps1
-bf0e05fd60905b4b7df9562defd25cd9  pre-release/Test-Syntax.ps1
-c119cc6f9522a24a9bb45c604460e1fa  start_here/Remove-DeprecatedFields.ps1
-c22707be25c3a942c3b239db7127a23a  backups/Level/scripts/General/Fixes/Repair Windows Defender.ps1
-c22707be25c3a942c3b239db7127a23a  backups/Level2/scripts/General/Fixes/Repair Windows Defender.ps1
-c2c032c4ce1dc464f1c72531130dcae4  backups/Level/scripts/From Atera/PreventIndexingOutlook (copy).ps1
-c2c032c4ce1dc464f1c72531130dcae4  backups/Level2/scripts/From Atera/PreventIndexingOutlook (copy).ps1
-c3e05324fc0e2ffca0ad9fc451faf31b  backups/Level/scripts/Debugging/👀Test Variable Output.ps1
-c3e05324fc0e2ffca0ad9fc451faf31b  backups/Level2/scripts/Debugging/👀Test Variable Output.ps1
-c4392fae263059643e7c2db525305dc1  backups/Level/scripts/From Atera/wmi-list-shares.ps1
-c4392fae263059643e7c2db525305dc1  backups/Level2/scripts/From Atera/wmi-list-shares.ps1
-c4c83058ba056d58a992595cb273526e  backups/Level/scripts/From Atera/bitlocker_get_encryption_status (copy).ps1
-c4c83058ba056d58a992595cb273526e  backups/Level2/scripts/From Atera/bitlocker_get_encryption_status (copy).ps1
-c4e2fa80e651d0157f6db9c7f4f41671  backups/Level/scripts/From Atera/Set screenconnect restart level for service.ps1
-c4e2fa80e651d0157f6db9c7f4f41671  backups/Level2/scripts/From Atera/Set screenconnect restart level for service.ps1
-c4ff9b2cc0b05d1cd82d36dc4957931b  start_here/Remove-DeprecatedByValue.ps1
-c5cec4d55f284051ae3d4b90b9ed5a9f  validation/Update-Launchers.ps1
-c72ed4de87bc7da1e5f121ed256b2b5b  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
-c7452075d6e8d39a1c4ba221d372f08b  start_here/Add-COOLForgeCustomField.ps1
-c862a9cc64ad6d67a258301c3672441d  backups/Level/scripts/From Atera/Remove Firefox.ps1
-c862a9cc64ad6d67a258301c3672441d  backups/Level2/scripts/From Atera/Remove Firefox.ps1
-c9a3dbdc26d81482be3ee6b1fd329d04  testing/how-i-got-here/get-auth-headers.ps1
-ca092dd2640d52ebd95df3c1f5dc4f82  start_here/Restore-AnswerFile.ps1
-ca9416ece08a12155a9caf845295f6d1  scripts/Policy/👀cipp.ps1
-cb2f6057d234b216c4a72920d7e1b199  tools/New-PolicyScript.ps1
-cbd2d7b6b432debbe2bcaabd7996c293  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _ScanHealth.ps1
-cbd2d7b6b432debbe2bcaabd7996c293  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _ScanHealth.ps1
-ccddd96666565e5a9f78fdf307ddb464  validation/check-definitions.ps1
-ccfe47fcb2b479329cbfaea4c92de7f3  backups/Level/scripts/From Atera/Increase Exchange Mailbox Access for Outlook 365.ps1
-ccfe47fcb2b479329cbfaea4c92de7f3  backups/Level2/scripts/From Atera/Increase Exchange Mailbox Access for Outlook 365.ps1
-cd02b5553a7490ed8dece99e89f8a758  backups/Level/scripts/Imported/Windows Monitor - Firewall.ps1
-cd02b5553a7490ed8dece99e89f8a758  backups/Level2/scripts/Imported/Windows Monitor - Firewall.ps1
-cd57ffda3d780ed27375314cc85041f1  launchers/Config/🔧Prevent Sleep.ps1
-cd9b9e444ba9534c8b735bfc3572feae  backups/Level/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
-cd9b9e444ba9534c8b735bfc3572feae  backups/Level2/scripts/ENFORCE POLICY/⛔Force Remove Rustdesk.ps1
-ce02849c1b902205791bd0eb45e34fe6  backups/Level/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
-ce02849c1b902205791bd0eb45e34fe6  backups/Level2/scripts/AdelaideMRI/AMIR Set Voyager Permissions.ps1
-cead2ba7bf6656d8742cbad4b85a8207  backups/Level/scripts/General/Popups/POPUP.ps1
-cead2ba7bf6656d8742cbad4b85a8207  backups/Level2/scripts/General/Popups/POPUP.ps1
-cf398345fc248edb6c651150b8a16dea  standalone_scripts/Fix/🔧Fix Windows 8 Services.ps1
-cf60f132864859897bb4f9dc8290216d  tools/Update-LauncherVersions.ps1
-cf8fdca42ac4cfe96b2c65087fd421c7  backups/Level/scripts/Imported/Windows - Upgrade to Windows 11.ps1
-cf8fdca42ac4cfe96b2c65087fd421c7  backups/Level2/scripts/Imported/Windows - Upgrade to Windows 11.ps1
-d093c017423c46a87dd44279c59ca54d  backups/Level/scripts/From Atera/MHS level.ps1
-d093c017423c46a87dd44279c59ca54d  backups/Level2/scripts/From Atera/MHS level.ps1
-d0a3c2ded8b80393a7a088220aa97687  backups/Level/scripts/Remove ScreenConnect Client (236d14eb86050829).ps1
-d0a3c2ded8b80393a7a088220aa97687  backups/Level2/scripts/Remove ScreenConnect Client (236d14eb86050829).ps1
-d0b9127105b04353cc58a506302f8a4a  scripts/Policy/👀meshcentral.ps1
-d1570accf767bbbc4a8bb1266a41d2e6  backups/Level/scripts/General/POLICY/⛔DNSFILTER.ps1
-d1570accf767bbbc4a8bb1266a41d2e6  backups/Level2/scripts/General/POLICY/⛔DNSFILTER.ps1
-d4377f96320b7c8b80f68fcaeb8c2988  scripts/Utility/🔔Technician Alert Monitor.ps1
-d49a5bd1d3694eeead4e397c95d385b3  backups/Level/scripts/From Atera/Kill RobloxPlayerBeta Process.ps1
-d49a5bd1d3694eeead4e397c95d385b3  backups/Level2/scripts/From Atera/Kill RobloxPlayerBeta Process.ps1
-d55b8c2c902e5c3e6bf6fdb5da509ccb  start_here/Backup-LevelGroup.ps1
-d650d2bf675e4c1a0ae3b12c4deb71e3  backups/Level/scripts/General/POLICY/INSTALL_ C__CN_Tools_unchecky_setup.exe.ps1
-d650d2bf675e4c1a0ae3b12c4deb71e3  backups/Level2/scripts/General/POLICY/INSTALL_ C__CN_Tools_unchecky_setup.exe.ps1
-d7164c0a7b969e89cb80768638efee1a  backups/Level/scripts/From Atera/Get_system_info.ps1
-d7164c0a7b969e89cb80768638efee1a  backups/Level2/scripts/From Atera/Get_system_info.ps1
-d891193fb346128a959204c8c50957b4  backups/Level/scripts/Imported/REMOVE FOXIT.ps1
-d891193fb346128a959204c8c50957b4  backups/Level2/scripts/Imported/REMOVE FOXIT.ps1
-d89bca8f9d25ee604d9d014fb6de3ced  templates/Slim-Launcher.ps1
-d917efbdb59115d15e2812da4f23e65c  backups/Level/scripts/Imported/Windows - Join Company Domain.ps1
-d917efbdb59115d15e2812da4f23e65c  backups/Level2/scripts/Imported/Windows - Join Company Domain.ps1
-da3e53e4dc61e8092df9ef89060636e9  backups/Level/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
-da3e53e4dc61e8092df9ef89060636e9  backups/Level2/scripts/AdelaideMRI/CLEAN_ Remove old Studies from Voyager.ps1
-dab9d3adb1acfb5287bce0a5b8cf44d7  scripts/Utility/⚙️COOLForge Cache Sync.ps1
-dc02b8edf2d29b898e84381c82f98913  backups/Level/scripts/General/Info Gathering/Check System Temperatures.ps1
-dc02b8edf2d29b898e84381c82f98913  backups/Level2/scripts/General/Info Gathering/Check System Temperatures.ps1
-dc1e6699ebd531ba7fa5eeda4e240d87  backups/Level/scripts/General/Info Gathering/Get Screenconnect URL.ps1
-dc1e6699ebd531ba7fa5eeda4e240d87  backups/Level2/scripts/General/Info Gathering/Get Screenconnect URL.ps1
-dc381d4c0cd9132a7349797a804f08d5  launchers/Policy/👀huntress.ps1
-de0d321fb0ddd0fc6ea9c9b59d6bebdf  backups/Level/scripts/From Atera/Reinstall Microsoft 365 and System Health Check.ps1
-de0d321fb0ddd0fc6ea9c9b59d6bebdf  backups/Level2/scripts/From Atera/Reinstall Microsoft 365 and System Health Check.ps1
-de0f23b45f08bf222b965ede9c1766eb  launchers/Monitor/👀Check for Unauthorized Remote Access Tools.ps1
-de1382762320935d608ce96d444d3d1d  backups/Level/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
-de1382762320935d608ce96d444d3d1d  backups/Level2/scripts/General/Fixes/DISM _Online _Cleanup-Image _RestoreHealth.ps1
-df91b8ff3cf9b36137d275c819c4d82a  backups/Level/scripts/From Atera/Rename Computer (copy).ps1
-df91b8ff3cf9b36137d275c819c4d82a  backups/Level2/scripts/From Atera/Rename Computer (copy).ps1
-e0035e2f3b7443448b172db71e59bae4  tools/Convert-LegacyLaunchers.ps1
-e019144815a6a989677d078dc2808f2b  backups/Level/scripts/From Atera/deny_windows11_upgrade_enable (copy).ps1
-e019144815a6a989677d078dc2808f2b  backups/Level2/scripts/From Atera/deny_windows11_upgrade_enable (copy).ps1
-e1a83579ea47946243d35d5464d8536f  backups/Level/scripts/From Atera/Disable All User and Admin Accounts.ps1
-e1a83579ea47946243d35d5464d8536f  backups/Level2/scripts/From Atera/Disable All User and Admin Accounts.ps1
-e1e8d7817a2a7173aa4605633571c5fa  backups/Level/scripts/From Atera/Reset Choco When not working.ps1
-e1e8d7817a2a7173aa4605633571c5fa  backups/Level2/scripts/From Atera/Reset Choco When not working.ps1
-e281960c87a8f04873e1f1573c0be0a8  tools/Restore-BOM.ps1
-e2ced4deac23b7fe26e4a63bbe8cf878  backups/Level/scripts/Sleep after 1800 seconds..ps1
-e2ced4deac23b7fe26e4a63bbe8cf878  backups/Level2/scripts/Sleep after 1800 seconds..ps1
-e45eded4d39ccaec89e9c8b5156f9bba  scripts/Policy/👀unchecky.ps1
-e471a903cd297be6f89c832f9fdbb15c  standalone_scripts/Remove/Remove-AnyDesk-Standalone.ps1
-e4b6ac485844b2862013ce2bc0bc6c61  launchers/Fix/🔧Fix Windows 8 Services.ps1
-e527b7161b4e52ab80ef626a964529d2  backups/Level/scripts/EXPORT_ Level folder path to registry.ps1
-e527b7161b4e52ab80ef626a964529d2  backups/Level2/scripts/EXPORT_ Level folder path to registry.ps1
-e70f0bffde10248cdfeed1b2991dcda4  backups/Level/scripts/From Atera/Uninstall Malwarebytes (copy).ps1
-e70f0bffde10248cdfeed1b2991dcda4  backups/Level2/scripts/From Atera/Uninstall Malwarebytes (copy).ps1
-e73929738d0ae9bb72c8217c39f1dd68  backups/Level/scripts/Imported/Windows Monitor - Event Log.ps1
-e73929738d0ae9bb72c8217c39f1dd68  backups/Level2/scripts/Imported/Windows Monitor - Event Log.ps1
-e7bf215775fdfd3e31185015b5575313  standalone_scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-e7e59f6ad10b369c189aa4ea8524175c  backups/Level/scripts/General/POLICY/🙏SCREENCONNECT.ps1
-e7e59f6ad10b369c189aa4ea8524175c  backups/Level2/scripts/General/POLICY/🙏SCREENCONNECT.ps1
-e81176b443695e209f52fe3eaaa953f5  backups/Level/scripts/Imported/Windows Monitor - System Time Check.ps1
-e81176b443695e209f52fe3eaaa953f5  backups/Level2/scripts/Imported/Windows Monitor - System Time Check.ps1
-e91829708d3985437f4a8748acf7ea34  backups/Level/scripts/Baseline configurations/Create Restore Point.ps1
-e91829708d3985437f4a8748acf7ea34  backups/Level2/scripts/Baseline configurations/Create Restore Point.ps1
-e97285c36ad77702d8ad1f900e8bd43a  backups/Level/scripts/Low Profile Defender.ps1
-e97285c36ad77702d8ad1f900e8bd43a  backups/Level2/scripts/Low Profile Defender.ps1
-e9930fd50e7d7c994ff3da17df4aa861  backups/Level/scripts/level to screenconnect test.ps1
-e9930fd50e7d7c994ff3da17df4aa861  backups/Level2/scripts/level to screenconnect test.ps1
-ea009e20b68583a15d462fb4a4c0c1b2  backups/Level/scripts/Imported/Prompt User.ps1
-ea009e20b68583a15d462fb4a4c0c1b2  backups/Level2/scripts/Imported/Prompt User.ps1
-ebce098d22313965ca8ca67a5dacec7c  backups/Level/scripts/Imported/Windows - Add Admin.ps1
-ebce098d22313965ca8ca67a5dacec7c  backups/Level2/scripts/Imported/Windows - Add Admin.ps1
-ecb2223bec8c1cb48bb69bcc088fc9b6  scripts/Remove/⛔Force Remove Adobe Creative Cloud.ps1
-ece9435459ee6a19693edef5837e99b2  templates/Policy_Launcher_Template.ps1
-ed2be27a15b764fbc96b192a6610b411  scripts/Fix/🔧Fix Windows Location Services.ps1
-ed3aa46a1200d4e3dc45fa02a33a470e  scripts/Fix/🔧Fix Windows 8 Services.ps1
-edae231a28333bb08e066c6b0ca202c9  launchers/Remove/⛔Force Remove Dropbox.ps1
+83caf93fbbb7060d66389e64a97f0805  scripts/Utility/⚙️Universal Disk Cleaner.ps1
+2e0ee849610dfc14e5c9269aea0795fe  scripts/Utility/🔔Technician Alert Monitor.ps1
+a6e36ed8452d4fd5642525388ae5d64a  scripts/Utility/🔔Wake tagged devices.ps1
+b3d1a58f2f8a7b84d0cfd52e08dfdcf8  scripts/Utility/🙏Wake all devices in Level group.ps1
+1c9c5a1aca031e9ffbb656ee7bd60008  standalone_scripts/Check/Check-UnauthorizedRemoteAccessTools-Standalone.ps1
+728a7d5dae1b883415d84c15ac0321ea  standalone_scripts/Check/level-debug.ps1
+fe272b580ede64b000f63e8a46b0f744  standalone_scripts/Check/level-monitor-test.ps1
+3d59217a0344e35c3e9925a4a78af4a9  standalone_scripts/Config/enable-ssh.ps1
 ee1c7f21643607dff0bce9ffddf147fd  standalone_scripts/Fix/Install-ScreenConnect-Standalone.ps1
-eead75b4d33ba7ba45b6afb73d9609d2  scripts/Fix/🔧Fix Windows 7 Services.ps1
-f027646f64cfddada14aea6c05765ec7  backups/Level/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
-f027646f64cfddada14aea6c05765ec7  backups/Level2/scripts/General/POLICY/Deploy COOLNETWORKS Logos for scripts.ps1
-f03e574a7191c60da274f7ae9dd62740  launchers/Alert/🔔Technician Alert Monitor.ps1
-f059ef861d41bca31000e8f65c92d275  backups/Level/scripts/Imported/Windows - Gather Intel.ps1
-f059ef861d41bca31000e8f65c92d275  backups/Level2/scripts/Imported/Windows - Gather Intel.ps1
-f23a8296acb35f530215d8e64c18e79d  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
-f2ecc5c4a4dbaa4ae2aa990007a178e6  scripts/Remove/⛔Force Remove McAfee.ps1
-f37074203d098b978a219abb8f45761f  scripts/Fix/🔧Fix Windows 8.1 Services.ps1
-f3e67395b836d7122d1ea8cb90c6aab9  backups/Level/scripts/From Atera/Level for BISSYCARE.ps1
-f3e67395b836d7122d1ea8cb90c6aab9  backups/Level2/scripts/From Atera/Level for BISSYCARE.ps1
-f3e95954b4ec1dbbc45dfa74fa44629b  backups/Level/scripts/Uninstall Atera.ps1
-f3e95954b4ec1dbbc45dfa74fa44629b  backups/Level2/scripts/Uninstall Atera.ps1
-f3ea9ee19b4597c47b85e40cfd752b99  backups/Level/scripts/Imported/Windows Monitor - Device Standards.ps1
-f3ea9ee19b4597c47b85e40cfd752b99  backups/Level2/scripts/Imported/Windows Monitor - Device Standards.ps1
-f4c36dc243a22329c7d6c5b4968eaa49  scripts/Utility/🔔Wake tagged devices.ps1
-f4c41eed0de5b0160d7e7b004dcaa75f  backups/Level/scripts/Baseline configurations/Create users.ps1
-f4c41eed0de5b0160d7e7b004dcaa75f  backups/Level2/scripts/Baseline configurations/Create users.ps1
-f57aee89fe910504c25bea43464369c7  backups/Level/scripts/From Atera/RADPAY Shortcut Creator.ps1
-f57aee89fe910504c25bea43464369c7  backups/Level2/scripts/From Atera/RADPAY Shortcut Creator.ps1
-f762403fa0a2870c1221fcc92523aa66  backups/Level/scripts/Imported/Windows - Failed Admin Login.ps1
-f762403fa0a2870c1221fcc92523aa66  backups/Level2/scripts/Imported/Windows - Failed Admin Login.ps1
-f90bcb51a28ee26a37a13db994f93387  backups/Level/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
-f90bcb51a28ee26a37a13db994f93387  backups/Level2/scripts/Imported/Windows Monitor - SMART Disk Check.ps1
-f92a7a436a20fe9a58392a339f72c8a4  backups/Level/scripts/From Atera/Set Timezone to Central Australia Standard Time.ps1
-f92a7a436a20fe9a58392a339f72c8a4  backups/Level2/scripts/From Atera/Set Timezone to Central Australia Standard Time.ps1
-f9d90185fc1cc758e13111510bb62f30  validation/check-orphans.ps1
-fa30830535ee38fba8342868a0a2e297  backups/Level/scripts/From Atera/install level fracken.ps1
-fa30830535ee38fba8342868a0a2e297  backups/Level2/scripts/From Atera/install level fracken.ps1
-fabdbbc7ec365b4fb2538761d51dce74  backups/Level/scripts/AdelaideMRI/SET_  background to phonebook.ps1
-fabdbbc7ec365b4fb2538761d51dce74  backups/Level2/scripts/AdelaideMRI/SET_  background to phonebook.ps1
-fbc89c26644b797a5c980ca15e1aa99f  backups/Level/scripts/AdelaideMRI/get host details from voyager installs.ps1
-fbc89c26644b797a5c980ca15e1aa99f  backups/Level2/scripts/AdelaideMRI/get host details from voyager installs.ps1
-fc1c7153f79773eec15b92ba7ae3ab5a  tools/Check-DNSFilterSystemPolicy.ps1
-fc85f7566149a67f4330a8399eb300ae  backups/Level/scripts/From Atera/Unpin 'Mail' App (copy).ps1
-fc85f7566149a67f4330a8399eb300ae  backups/Level2/scripts/From Atera/Unpin 'Mail' App (copy).ps1
-fd21e9c2d931f7cbde20855cab9dc641  backups/Level/scripts/General/POLICY/Windows Monitor - Restart Required.ps1
-fd21e9c2d931f7cbde20855cab9dc641  backups/Level2/scripts/General/POLICY/Windows Monitor - Restart Required.ps1
-fda9c1094c7961ee68989b22005b8ad0  backups/Level/scripts/👀DNSFILTER.ps1
-fda9c1094c7961ee68989b22005b8ad0  backups/Level2/scripts/👀DNSFILTER.ps1
-fdc4bfcfa95a218c9f4d30b9715bd263  backups/Level/scripts/From Atera/radrerp launche 25.ps1
-fdc4bfcfa95a218c9f4d30b9715bd263  backups/Level2/scripts/From Atera/radrerp launche 25.ps1
-fdce6792f3de8297ed50128e50a698a3  start_here/Reset-CustomFields.ps1
-fe901c5a4e45b396dbc3b874680d8b1e  launchers/Policy/Chrome/👀Chrome Location Services.ps1
-ff77ee20841322e6799d96d3906681fb  standalone_scripts/Fix/🔧Fix Windows 10 Services.ps1
+144817adf34224f531a02635a93f4525  standalone_scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
+9e28b1e1d89c1b2066a2f43d62a237b3  standalone_scripts/Fix/🔧Fix Windows 10 Services.ps1
+771fd611422db358c122f1140694a771  standalone_scripts/Fix/🔧Fix Windows 11 Services.ps1
+20c1fb2de6431ce9a16761fb4b31d4bc  standalone_scripts/Fix/🔧Fix Windows 7 Services.ps1
+13436a03fc48173b7726872f326f3c98  standalone_scripts/Fix/🔧Fix Windows 8 Services.ps1
+eb37bf0b6033a9297a2d54054358e424  standalone_scripts/Fix/🔧Fix Windows 8.1 Services.ps1
+33a18d5581f997fc88ea09b02d1dbef4  standalone_scripts/Fix/🔧Prevent Sleep.ps1
+cbaaa96a20cd7f2892d8766bdac4721e  standalone_scripts/Remove/Check-SecurityBaseline.ps1
+c91688ce601b05d062b52143b5c2a798  standalone_scripts/Remove/Remove-AllRATs-Standalone.ps1
+2be6e85b3c702d5d2e79bdc1f21f5931  standalone_scripts/Remove/Remove-AnyDesk-Standalone.ps1
+114fe162e0561d95553627ec1b88dcea  standalone_scripts/Remove/Remove-NonMspScreenConnect-Standalone.ps1
+b438681eb275179cde7d89303879b0b9  standalone_scripts/Utility/Wake-AllDevicesInFolder-Standalone.ps1
+bce0c1ea117483f32977ac98ed400e12  standalone_scripts/Utility/copy-family-folder.ps1
+2d520fc27f3c5b96d4b1fe701f835644  start_here/Add-COOLForgeCustomField.ps1
+dd7afc2c8d98c1456aa45547754052f0  start_here/Backup-COOLForgeCustomFields.ps1
+e2c053c73fc66dcb6c4a6c94e0a3248f  start_here/Backup-LevelAutomationsAndScripts.ps1
+8b15ffcdf0944b2cb47f55426b5444cf  start_here/Backup-LevelGroup.ps1
+346438b391aaa50e5b80aa40ed395ccf  start_here/Export-AnswerFile.ps1
+70ede1aa50b0883a3983a61ecc0090b2  start_here/Export-DeviceCustomFields.ps1
+8a9531b29bf3978aaa456acfddcab02d  start_here/Find-Field.ps1
+1f72fe85c8ead41cc20fe221bc5fcda6  start_here/Get-DeviceScreenConnectUrl.ps1
+65c3d96d60f989f816761fc1b8fe8864  start_here/Get-FullDeviceLevelCustomFields.ps1
+499aae2cc1e1b54d9c9682f54f2f9741  start_here/Get-ScreenConnectUrls.ps1
+c1f0f25c2f42d66926d2bef0a147a8d2  start_here/Get-StaleDevices.ps1
+eabbcfec74a1d2c2ad46a17647c9345b  start_here/List-AllFields.ps1
+787113b9d08c405925c78273931e1ca7  start_here/Mark-LegacyFields.ps1
+74de613e13cfd5ca49a245b9c82f2eb1  start_here/New-LevelClient.ps1
+fa1c378f96fde03552b003373e5feb1e  start_here/Remove-COOLForgeSetup.ps1
+8befb81cb9bdce37609a8118606347d4  start_here/Remove-DeprecatedByValue.ps1
+e35a22a3c93fe324a9c0f684f125137c  start_here/Remove-DeprecatedFields.ps1
+b4ae359d840e9e369c09be91c26898ad  start_here/Remove-LegacyWithPolicyEquiv.ps1
+57acf2eaf53134f977a526422bc976e8  start_here/Remove-ScratchFolder.ps1
+79761fd82868d012d860617422bb4975  start_here/Reset-CustomFields.ps1
+ab9ee621e593e2f6fcb1e9add8b8a01a  start_here/Restore-AnswerFile.ps1
+cbece715ba66a16532db77c62de2ace4  start_here/Restore-LevelGroup.ps1
+9284d8b6ef011d90b2439900ca637bfb  start_here/Setup-COOLForge.ps1
+3765015bf26dc7b42f1f5337cb9913d7  start_here/Sync-COOLForgeCustomFields.ps1
+b438681eb275179cde7d89303879b0b9  start_here/Wake-AllDevicesInFolder-Standalone.ps1
+4174c5bdb227b7cc81fd2624171d05e6  templates/Policy_Launcher_Template.ps1
+bb8eed857ffc5667ce52bc8b321cfbc3  templates/Script_Template.ps1
+2cfa94606ae01ed08ac9f44aef1200f5  templates/Slim-Launcher.ps1
+ecd72c70970c46e21d0c79e4f787629e  templates/SoftwarePolicy-Template.ps1
+a4e8d3753dc94a8ed78c1d216c423893  testing/Analyze-LevelBackup.ps1
+42b466e7421a5f8d55d4168dd6b3da48  testing/Generate-WorkflowCharts.ps1
+828dbfd533891a2eb532f5d1f5824cbb  testing/New-ScriptFolderStructure.ps1
+bcc7c195e0d0261e5673ccf0c58e88a8  testing/Test-HuntressOrgProvisioning.ps1
+633631c9954ed495c3fc9cb32dd9c5dd  testing/Test-LevelApiCustomFields.ps1
+5ad7dc4a1cf5e36de75a5b96053fc9f6  testing/Test-ScreenConnectAPI.ps1
+acfd66a7cc4dcfc3572928260f678904  testing/Test_AutoUpdate_Dev.ps1
+a908689d0d89e3c555d94b9914db8e33  testing/Test_From_Level.ps1
+2b9e70b4fb3dfc48901ef4e3dcde1ff8  testing/Test_Local.ps1
+f79c4f336317533680e784c22d05c381  testing/check-encoding.ps1
+ff9c1079750f4f60d06582f32ea86404  testing/check-launchers.ps1
+4e2c11bf415ee6b083ce8cb38022209c  testing/check-md5.ps1
+06b183d2726aef60adebe4d678f9a141  testing/fix-encoding.ps1
+f2bab17854ab6058894bf2f61ccb81e3  testing/how-i-got-here/Download-LevelScripts.ps1
+b2ccb3607790718c793198b1f15e4429  testing/how-i-got-here/Extract-LevelAutomationsFromHAR.ps1
+930d949aff100b23d758681bea153b7d  testing/how-i-got-here/Extract-LevelScriptsFromHAR.ps1
+a01b5a23b1e1362a966cc4f51396d57b  testing/how-i-got-here/decode-id.ps1
+470fa0abc57e726cbe2e093fd97bc650  testing/how-i-got-here/find-automation-queries.ps1
+05339876223e1c848f3b93434692c222  testing/how-i-got-here/get-allowedimport.ps1
+a497277669a508a3e01a1feb9f15bc56  testing/how-i-got-here/get-auth-headers.ps1
+a1e78a9531b4d6cbb3a86895f70a59a6  testing/how-i-got-here/get-automation-page.ps1
+c149a0e30b9d9f4dd59088b6365e95d9  testing/how-i-got-here/get-automation-search.ps1
+88d009e6e314e069f4a467a9d695dd1c  testing/how-i-got-here/get-import-mutation.ps1
+7fb156df0978dcbe40bb8c4d3bcf56cd  testing/how-i-got-here/test-automation-query.ps1
+97f8aa56bf828dd549960a70feaa34eb  testing/how-i-got-here/test-level-api.ps1
+97765fdaa152b4cf86711b8d07ce9c3f  testing/how-i-got-here/test-tags-query.ps1
+08c8659f6ac12557e896c95c53c1ffee  testing/regenerate-launchers.ps1
+f40b1c1d2dedc70acda2824b17bc5b36  testing/update-md5.ps1
+4e7279f3605a4cfca53205dfc9112d2d  tools/Check-DNSFilterSystemPolicy.ps1
+b094d4481ddd206f93a99679330c05c3  tools/Clear-EmptyCustomFields.ps1
+10534c552516593df22ba9ad0ed59817  tools/Convert-LegacyLaunchers.ps1
+a608fc1808b79d503e1e96314e6a8adb  tools/New-PolicyScript.ps1
+a22eac49fde6739697bda5a3148291df  tools/Restore-BOM.ps1
+50fcb8e4cbe727452edcc7fab9c3b838  tools/Send-LevelSupportQuestions.ps1
+d8d031450a5d8e6306a6c33e53542f79  tools/Test-CustomFieldCharacters.ps1
+9886e76db9776f97485deea88d1649e6  tools/Update-LauncherBOMFix.ps1
+200539ee3b797777eeb1be1ced3f5bff  tools/Update-LauncherCaching.ps1
+24c9ad37e156457925593254a3584bf4  tools/Update-LauncherVersions.ps1
+796685f85c46c674cd87666eb0351da6  tools/Update-MD5Sums.ps1
+3704f8ab23212c48d132dceb32d90888  validation/Create-New-Script.ps1
+b24e5fc2053bf0c258d9cf4d8d4d5766  validation/Generate-CustomFieldsConfig.ps1
+1705198b6a35decebca31aebad692d80  validation/Generate-MD5SUMS.ps1
+61fe6b30af1a0eaaeaa455563b279c36  validation/Update-Launchers.ps1
+68830157eeb0e1d8533ca4f3e9cf04e4  validation/check-all.ps1
+ca3c786a71a49ab98388bc54a7052250  validation/check-bom.ps1
+7648caa211a516f10d1fd48dbef0cc36  validation/check-definitions.ps1
+dc551c1ddf8d9375dcba2b15e283d82b  validation/check-emoji-corruption.ps1
+7dae8504afc173d03eb0b956cd1754d5  validation/check-launcher-fields.ps1
+c8ad58aa96f99bde18c316fa3cb8353c  validation/check-orphans.ps1
+278b1de1ec851d35a6cb5d97d9428150  validation/check-psscriptanalyzer.ps1
+4967c930b5e564678d04153e40f64d2b  validation/check-syntax.ps1
+0b6cba9b410ebdddbf9d6eb5893b6b71  wip/Install-ScreenConnect.ps1

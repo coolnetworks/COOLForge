@@ -121,6 +121,11 @@
       "displayName": "Bitwarden Browser Extension",
       "description": "Bitwarden password manager browser extension force-installed via Chrome and Edge ExtensionSettings policy.",
       "prerequisites": []
+    },
+    "wifi": {
+      "displayName": "WiFi Configuration",
+      "description": "WiFi SSID configuration for forcing managed devices onto a specific wireless network.",
+      "prerequisites": []
     }
   },
   "fields": {
@@ -508,6 +513,34 @@
         "valueOptions": ["pin", "install", "remove"],
         "valueFormat": "{value} | uses pin/install/remove (change to activate policy)",
         "prompt": "Bitwarden extension policy (install/remove/pin)"
+      }
+    ],
+    "wifi": [
+      {
+        "name": "policy_wifi_setup",
+        "description": "Enable WiFi profile setup and force-connect: yes/no. When 'yes', the script creates a WPA2PSK profile and connects to the target SSID.",
+        "legacyNames": [],
+        "adminOnly": false,
+        "required": false,
+        "default": "no",
+        "valueOptions": ["yes", "no"],
+        "prompt": "Enable WiFi SSID force-connect? (yes/no)"
+      },
+      {
+        "name": "policy_wifi_ssid",
+        "description": "Target WiFi SSID name to create a profile for and connect to.",
+        "legacyNames": ["ssid"],
+        "adminOnly": false,
+        "required": false,
+        "prompt": "WiFi SSID name"
+      },
+      {
+        "name": "policy_wifi_ssid_password",
+        "description": "WPA2 passphrase for the target WiFi SSID.",
+        "legacyNames": ["ssid_password"],
+        "adminOnly": true,
+        "required": false,
+        "prompt": "WiFi WPA2 passphrase (admin-only)"
       }
     ]
   }

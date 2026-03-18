@@ -25,6 +25,16 @@
     "version": "2026.01.31.02"
   },
   {
+    "scriptToRun": "⚙️Set WiFi SSID.ps1",
+    "launcherName": "Config/⚙️Set WiFi SSID.ps1",
+    "version": "2026.03.18.01",
+    "extraFields": [
+      { "var": "policy_wifi_setup", "cf": "cf_policy_wifi_setup" },
+      { "var": "policy_wifi_ssid", "cf": "cf_policy_wifi_ssid" },
+      { "var": "policy_wifi_ssid_password", "cf": "cf_policy_wifi_ssid_password" }
+    ]
+  },
+  {
     "scriptToRun": "⚙️Extract and Set ScreenConnect Device URL.ps1",
     "launcherName": "Config/⚙️Extract and Set ScreenConnect Device URL.ps1",
     "version": "2026.01.31.02"
