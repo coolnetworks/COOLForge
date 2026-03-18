@@ -14,7 +14,7 @@
     - No connection: Adds profile and attempts to connect
 
 .NOTES
-    Version:          2026.03.18.02
+    Version:          2026.03.18.03
     Target Platform:  Windows 10, Windows 11
     Exit Codes:       0 = Success | 1 = Failure (Alert)
 
@@ -27,7 +27,7 @@
 #>
 
 # Set WiFi SSID
-# Version: 2026.03.18.02
+# Version: 2026.03.18.03
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 
@@ -41,6 +41,36 @@ function Get-WlanState {
     $ssid = ($output | Select-String -Pattern '^\s+SSID\s+:\s+(.+)$' | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }) | Select-Object -First 1
     $state = ($output | Select-String -Pattern '^\s+State\s+:\s+(.+)$' | ForEach-Object { $_.Matches.Groups[1].Value.Trim() }) | Select-Object -First 1
     return @{ State = $state; SSID = $ssid }
+}
+
+# ============================================
+# AUTO-BOOTSTRAP: Ensure WiFi custom fields exist
+# ============================================
+if ($LevelApiKey) {
+    $WifiFields = @(
+        @{ Name = "policy_wifi_setup";          DefaultValue = "no";  Description = "Enable WiFi SSID force-connect (yes/no)" }
+        @{ Name = "policy_wifi_ssid";           DefaultValue = "";    Description = "Target WiFi SSID name" }
+        @{ Name = "policy_wifi_ssid_password";  DefaultValue = "";    Description = "WPA2 passphrase for target SSID" }
+    )
+
+    $FieldsCreated = 0
+    foreach ($Field in $WifiFields) {
+        $Existing = Find-LevelCustomField -ApiKey $LevelApiKey -FieldName $Field.Name
+        if (-not $Existing) {
+            Write-Host "[INFO] Creating custom field: $($Field.Name)"
+            $NewField = New-LevelCustomField -ApiKey $LevelApiKey -Name $Field.Name -DefaultValue $Field.DefaultValue
+            if ($NewField) {
+                if (-not [string]::IsNullOrWhiteSpace($Field.DefaultValue) -and $NewField.id) {
+                    $null = Set-LevelCustomFieldDefaultValue -ApiKey $LevelApiKey -FieldId $NewField.id -Value $Field.DefaultValue
+                }
+                Write-Host "[OK] Created custom field: $($Field.Name)"
+                $FieldsCreated++
+            }
+        }
+    }
+    if ($FieldsCreated -gt 0) {
+        Write-Host "[OK] WiFi infrastructure: $FieldsCreated fields created"
+    }
 }
 
 Write-Host "========================================"

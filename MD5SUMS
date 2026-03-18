@@ -517,7 +517,7 @@ b45c32def9b7861719d371d1ffb935ef  launchers/Alert/🔔Technician Alert Monitor.p
 de3795e24566b1a6518a18244073092b  launchers/Config/⚙️COOLForge Cache Sync.ps1
 e2294156c4670229674f367b9d403249  launchers/Config/⚙️Configure Wake-on-LAN.ps1
 191764078887380551803402df128f03  launchers/Config/⚙️Extract and Set ScreenConnect Device URL.ps1
-6863b6a43528341d94597b1b8c9d5fe5  launchers/Config/⚙️Set WiFi SSID.ps1
+2b988fa7690f9a9f2f3f9aed4d5a9b08  launchers/Config/⚙️Set WiFi SSID.ps1
 ae2fed849d91585f998b6f9d922d663b  launchers/Config/🔧Prevent Sleep.ps1
 502ce94695220f6a56164bc6699e46a2  launchers/Fix/🔧Enable System Restore and Create Restore Point.ps1
 f007a60e25a7c050eca85b9cee737258  launchers/Fix/🔧Ensure Windows Defender Enabled.ps1
@@ -570,7 +570,7 @@ a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
 be32c5551bb37aae0645ae1da957e117  scripts/Configure/⚙️Configure Power Management for Workstation.ps1
 98a6f30aebccfe2e05f6ba7708865b07  scripts/Configure/⚙️Configure Wake-on-LAN.ps1
 c21f8188c5d474ca8b5cd78d85d64e05  scripts/Configure/⚙️Extract and Set ScreenConnect Device URL.ps1
-f3528fec8b39cdf9e25ad6978587df96  scripts/Configure/⚙️Set WiFi SSID.ps1
+a7af3266e4601434c41800389604ca91  scripts/Configure/⚙️Set WiFi SSID.ps1
 4b51c03078884653dc96c81483bd97fa  scripts/Fix/🔧Enable System Restore and Create Restore Point.ps1
 9e71bc81c1222cf9ede68b5f6f033d72  scripts/Fix/🔧Ensure Windows Defender Enabled.ps1
 2fac18f824de904e741007e6c9757e83  scripts/Fix/🔧Fix Windows 10 Services.ps1
