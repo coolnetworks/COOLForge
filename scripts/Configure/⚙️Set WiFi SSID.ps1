@@ -14,7 +14,7 @@
     - No connection: Adds profile and attempts to connect
 
 .NOTES
-    Version:          2026.03.18.05
+    Version:          2026.03.18.06
     Target Platform:  Windows 10, Windows 11
     Exit Codes:       0 = Success | 1 = Failure (Alert)
 
@@ -27,7 +27,7 @@
 #>
 
 # Set WiFi SSID
-# Version: 2026.03.18.05
+# Version: 2026.03.18.06
 # Target: Level.io
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 
@@ -284,7 +284,17 @@ if ($onWifi) {
 
 Write-Host "[INFO] Connecting to '$SSID'..."
 $connectResult = netsh wlan connect name="$SSID" 2>&1
-Write-Host "  $connectResult"
+$connectString = ($connectResult | Out-String).Trim()
+Write-Host "  $connectString"
+
+# Detect location permission error
+if ($connectString -match 'location permission|Access is denied') {
+    Write-Host ""
+    Write-Host "[Alert] Location services still blocking WiFi commands after fix attempt"
+    Write-Host "[Alert] Run the Fix Windows Location Services script first, or enable manually:"
+    Write-Host "[Alert]   Settings > Privacy & Security > Location > Turn on"
+    exit 1
+}
 
 Write-Host "[INFO] Waiting 5 seconds for connection..."
 Start-Sleep -Seconds 5

@@ -10,7 +10,7 @@ $policy_wifi_ssid_password = "{{cf_policy_wifi_ssid_password}}"
     Slim Level.io Script Launcher - Downloads library, then delegates to Invoke-ScriptLauncher.
 
 .NOTES
-    Launcher Version: 2026.03.18.05
+    Launcher Version: 2026.03.18.06
     Target Platform:  Level.io RMM
 
     This slim launcher (~200 lines) replaces the full launcher (~660 lines).
@@ -23,7 +23,7 @@ $policy_wifi_ssid_password = "{{cf_policy_wifi_ssid_password}}"
     https://github.com/coolnetworks/COOLForge
 #>
 
-$LauncherVersion = "2026.03.18.05"
+$LauncherVersion = "2026.03.18.06"
 $LauncherName = "Config/⚙️Set WiFi SSID.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
