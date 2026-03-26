@@ -703,4 +703,4 @@ c8ad58aa96f99bde18c316fa3cb8353c  validation/check-orphans.ps1
 278b1de1ec851d35a6cb5d97d9428150  validation/check-psscriptanalyzer.ps1
 4967c930b5e564678d04153e40f64d2b  validation/check-syntax.ps1
 0b6cba9b410ebdddbf9d6eb5893b6b71  wip/Install-ScreenConnect.ps1
-caadd271433b3e6fcfe8ababdf7b1fe2  scripts/Policy/👀acrobat-pro.ps1
+c5e98a769197689f88004c6df3471043  scripts/Policy/👀acrobat-pro.ps1
