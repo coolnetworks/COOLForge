@@ -62,77 +62,77 @@ $Script:RATDefinitions = @(
     @{ Name = "AnyDesk"; Processes = @("AnyDesk*"); Services = @("AnyDesk*"); Paths = @("AnyDesk"); Priority = "High" }
     @{ Name = "TeamViewer"; Processes = @("TeamViewer*", "tv_w32*", "tv_x64*"); Services = @("TeamViewer*"); Paths = @("TeamViewer"); Priority = "High" }
     @{ Name = "RustDesk"; Processes = @("rustdesk*"); Services = @("rustdesk*", "RustDesk*"); Paths = @("RustDesk"); Priority = "High" }
-    @{ Name = "Splashtop"; Processes = @("SplashtopStreamer*", "Splashtop*", "strwinclt*", "SRManager*", "SRService*"); Services = @("Splashtop*", "SSUService*"); Paths = @("Splashtop"); Priority = "High" }
+    @{ Name = "Splashtop"; Processes = @("SRService*", "SRManager*", "SRServer*", "strwinclt*", "Splashtop*"); Services = @("SplashtopRemoteService", "SSUService*"); Paths = @("Splashtop"); Priority = "High" }
     @{ Name = "LogMeIn"; Processes = @("LogMeIn*", "LMI*"); Services = @("LogMeIn*", "LMI*"); Paths = @("LogMeIn"); Priority = "High" }
-    @{ Name = "GoToAssist"; Processes = @("GoTo*", "g2a*"); Services = @("GoTo*", "GoToAssist*"); Paths = @("GoTo", "GoToAssist"); Priority = "Medium" }
-    @{ Name = "GoToMyPC"; Processes = @("GoToMyPC*", "g2mpc*"); Services = @("GoToMyPC*"); Paths = @("GoToMyPC"); Priority = "Medium" }
-    @{ Name = "RemotePC"; Processes = @("RemotePC*", "RPCService*"); Services = @("RemotePC*"); Paths = @("RemotePC"); Priority = "Medium" }
-    @{ Name = "BeyondTrust"; Processes = @("bomgar*", "BeyondTrust*"); Services = @("bomgar*", "BeyondTrust*"); Paths = @("Bomgar", "BeyondTrust"); Priority = "Medium" }
-    @{ Name = "DWService"; Processes = @("dwagent*", "dwagsvc*"); Services = @("dwagent*", "DWAgent*"); Paths = @("DWAgent", "DWService"); Priority = "Medium" }
+    @{ Name = "GoToAssist"; Processes = @("g2ax_*", "g2aservice*", "GoTo*"); Services = @("GoTo*", "GoToAssist*"); Paths = @("GoToAssist", "Citrix\GoToAssist"); Priority = "Medium" }
+    @{ Name = "GoToMyPC"; Processes = @("g2tray*", "g2comm*", "g2svc*", "g2host*", "g2mainh*", "GoToMyPC*"); Services = @("GoToMyPC*"); Paths = @("GoToMyPC", "Citrix\GoToMyPC"); Priority = "Medium" }
+    @{ Name = "RemotePC"; Processes = @("RemotePC*", "RPCService*", "RPDUILaunch*", "RPCFirewall*"); Services = @("RPCService*", "RPCPerformanceService", "RemotePC*"); Paths = @("RemotePC"); Priority = "Medium" }
+    @{ Name = "BeyondTrust"; Processes = @("bomgar*", "BeyondTrust*", "sra-pin*"); Services = @("bomgar*", "BeyondTrust*"); Paths = @("Bomgar", "BeyondTrust", "bomgar-scc"); Priority = "Medium" }
+    @{ Name = "DWService"; Processes = @("dwagent*", "dwservice*"); Services = @("dwagent*", "DWAgent*"); Paths = @("DWAgent"); Priority = "Medium" }
 
     # VNC Variants
-    @{ Name = "RealVNC"; Processes = @("vncserver*", "vncviewer*", "winvnc*"); Services = @("vncserver", "RealVNC*"); Paths = @("RealVNC"); Priority = "Medium" }
-    @{ Name = "TightVNC"; Processes = @("tvnserver*", "tvnviewer*"); Services = @("tvnserver", "TightVNC*"); Paths = @("TightVNC"); Priority = "Medium" }
-    @{ Name = "UltraVNC"; Processes = @("winvnc*", "ultravnc*"); Services = @("uvnc*", "UltraVNC*"); Paths = @("UltraVNC", "uvnc"); Priority = "Medium" }
-    @{ Name = "TigerVNC"; Processes = @("vncserver", "x0vncserver*"); Services = @("TigerVNC*"); Paths = @("TigerVNC"); Priority = "Medium" }
+    @{ Name = "RealVNC"; Processes = @("vncserver*", "vncviewer*"); Services = @("vncserver"); Paths = @("RealVNC"); Priority = "Medium" }
+    @{ Name = "TightVNC"; Processes = @("tvnserver*", "tvnviewer*"); Services = @("tvnserver"); Paths = @("TightVNC"); Priority = "Medium" }
+    @{ Name = "UltraVNC"; Processes = @("winvnc*"); Services = @("uvnc*"); Paths = @("UltraVNC", "uvnc"); Priority = "Medium" }
+    @{ Name = "TigerVNC"; Processes = @("winvnc4*", "vncviewer*"); Services = @("WinVNC4"); Paths = @("TigerVNC"); Priority = "Medium" }
 
     # Other Remote Tools
-    @{ Name = "Radmin"; Processes = @("radmin*", "rserver*"); Services = @("radmin*", "rserver*"); Paths = @("Radmin"); Priority = "Medium" }
+    @{ Name = "Radmin"; Processes = @("radmin*", "RServer3*", "rserver*"); Services = @("radmin*", "RServer3*"); Paths = @("Radmin", "rserver30"); Priority = "Medium" }
     @{ Name = "Chrome Remote Desktop"; Processes = @("remoting_host*", "chromoting*"); Services = @("chromoting*", "Chrome Remote*"); Paths = @("Chrome Remote Desktop"); Priority = "Medium" }
     @{ Name = "Ammyy Admin"; Processes = @("AA_v*", "Ammyy*"); Services = @("Ammyy*"); Paths = @("Ammyy"); Priority = "Medium" }
-    @{ Name = "SimpleHelp"; Processes = @("SimpleHelp*"); Services = @("SimpleHelp*"); Paths = @("SimpleHelp"); Priority = "Medium" }
+    @{ Name = "SimpleHelp"; Processes = @("SimpleHelp*", "SimpleService*"); Services = @("SimpleHelp*", "Remote Access"); Paths = @("SimpleHelp", "JWrapper-Remote Access"); Priority = "Medium" }
     @{ Name = "Supremo"; Processes = @("Supremo*", "SupremoService*", "SupremoHelper*"); Services = @("Supremo*"); Paths = @("Supremo", "SupremoRemoteDesktop"); Priority = "Medium" }
-    @{ Name = "Zoho Assist"; Processes = @("ZohoMeeting*", "ZohoAssist*", "ZA_Connect*"); Services = @("Zoho*Assist*"); Paths = @("Zoho Assist", "ZohoMeeting"); Priority = "Medium" }
-    @{ Name = "ISL Online"; Processes = @("ISLLight*", "ISLAlwaysOn*"); Services = @("ISL*"); Paths = @("ISL Online", "ISLLight"); Priority = "Medium" }
+    @{ Name = "Zoho Assist"; Processes = @("ZohoMeeting*", "ZohoAssist*", "ZA_Connect*", "ZAService*", "ZMAgent*", "zohotray*"); Services = @("Zoho*Assist*"); Paths = @("ZohoMeeting"); Priority = "Medium" }
+    @{ Name = "ISL Online"; Processes = @("ISLLight*", "ISLAlwaysOn*", "ISLLightFast*", "ISLLightService*"); Services = @("ISL*"); Paths = @("ISL Online", "ISLLight"); Priority = "Medium" }
     @{ Name = "Parsec"; Processes = @("parsecd*", "pservice*"); Services = @("Parsec*"); Paths = @("Parsec"); Priority = "Low" }
-    @{ Name = "Meshcentral"; Processes = @("MeshAgent*", "meshagent*"); Services = @("Mesh Agent*", "MeshAgent*"); Paths = @("Mesh Agent", "MeshCentral"); Priority = "Medium" }
-    @{ Name = "Fleetdeck"; Processes = @("fleetdeck*"); Services = @("fleetdeck*"); Paths = @("Fleetdeck"); Priority = "Low" }
+    @{ Name = "Meshcentral"; Processes = @("MeshAgent*", "meshagent*"); Services = @("Mesh Agent*", "MeshAgent*"); Paths = @("Mesh Agent"); Priority = "Medium" }
+    @{ Name = "Fleetdeck"; Processes = @("fleetdeck*", "fleetdeck_agent_svc*"); Services = @("fleetdeck*", "fleetdeck_agent_svc*"); Paths = @("FleetDeck Agent"); Priority = "Low" }
     @{ Name = "Tactical RMM"; Processes = @("tacticalrmm*"); Services = @("tacticalrmm*"); Paths = @("TacticalAgent"); Priority = "Low" }
 
     # Additional Tools
     @{ Name = "UltraViewer"; Processes = @("UltraViewer*"); Services = @("UltraViewer*"); Paths = @("UltraViewer"); Priority = "Medium" }
     @{ Name = "ToDesk"; Processes = @("ToDesk*"); Services = @("ToDesk*"); Paths = @("ToDesk"); Priority = "Medium" }
-    @{ Name = "Sunlogin"; Processes = @("SunloginClient*", "slservice*"); Services = @("Sunlogin*"); Paths = @("Sunlogin", "Oray\SunLogin"); Priority = "Medium" }
+    @{ Name = "Sunlogin"; Processes = @("SunloginClient*"); Services = @("Sunlogin*"); Paths = @("Oray\SunLogin", "Sunlogin"); Priority = "Medium" }
     @{ Name = "HopToDesk"; Processes = @("HopToDesk*"); Services = @("HopToDesk*"); Paths = @("HopToDesk"); Priority = "Medium" }
     @{ Name = "AweSun"; Processes = @("AweSun*", "AweRay*"); Services = @("AweSun*"); Paths = @("AweSun", "AweRay"); Priority = "Medium" }
-    @{ Name = "Dameware"; Processes = @("DVLS*", "dwrcs*", "DameWare*"); Services = @("DameWare*", "DVLS*"); Paths = @("DameWare"); Priority = "Medium" }
-    @{ Name = "NetSupport"; Processes = @("client32*", "pcictlui*"); Services = @("NetSupport*"); Paths = @("NetSupport"); Priority = "Medium" }
-    @{ Name = "Remote Utilities"; Processes = @("rutserv*", "rfusclient*"); Services = @("rutserv*"); Paths = @("Remote Utilities"); Priority = "Medium" }
+    @{ Name = "Dameware"; Processes = @("dwrcs*", "DWRCST*", "BASEClient*", "BASupSrvcCnfg*"); Services = @("DameWare*"); Paths = @("DameWare", "dwrcs"); Priority = "Medium" }
+    @{ Name = "NetSupport"; Processes = @("client32*", "pcictlui*"); Services = @("Client32*", "NetSupport*"); Paths = @("NetSupport"); Priority = "Medium" }
+    @{ Name = "Remote Utilities"; Processes = @("rutserv*", "rfusclient*"); Services = @("RManService*", "rutserv*"); Paths = @("Remote Utilities"); Priority = "Medium" }
     @{ Name = "Getscreen.me"; Processes = @("getscreen*"); Services = @("getscreen*"); Paths = @("Getscreen"); Priority = "Low" }
     @{ Name = "Iperius Remote"; Processes = @("IperiusRemote*"); Services = @("IperiusRemote*"); Paths = @("Iperius"); Priority = "Low" }
-    @{ Name = "NoMachine"; Processes = @("nxserver*", "nxnode*", "nxd*"); Services = @("nxserver*", "NoMachine*"); Paths = @("NoMachine"); Priority = "Medium" }
-    @{ Name = "LiteManager"; Processes = @("ROMServer*", "ROMViewer*"); Services = @("LiteManager*", "ROMServer*"); Paths = @("LiteManager"); Priority = "Medium" }
+    @{ Name = "NoMachine"; Processes = @("nxd*", "nxservice*", "nxnode*", "nxserver*"); Services = @("nxservice*", "nxserver*"); Paths = @("NoMachine"); Priority = "Medium" }
+    @{ Name = "LiteManager"; Processes = @("ROMServer*", "ROMViewer*", "ROMFUSClient*"); Services = @("ROMService*"); Paths = @("LiteManager"); Priority = "Medium" }
     @{ Name = "Alpemix"; Processes = @("Alpemix*"); Services = @("Alpemix*"); Paths = @("Alpemix"); Priority = "Low" }
-    @{ Name = "ShowMyPC"; Processes = @("showmypc*", "smpc*"); Services = @("ShowMyPC*"); Paths = @("ShowMyPC"); Priority = "Low" }
-    @{ Name = "Aeroadmin"; Processes = @("AeroAdmin*"); Services = @("AeroAdmin*"); Paths = @("AeroAdmin"); Priority = "Low" }
-    @{ Name = "FastViewer"; Processes = @("FastViewer*"); Services = @("FastViewer*"); Paths = @("FastViewer"); Priority = "Low" }
-    @{ Name = "RayLink"; Processes = @("RayLink*"); Services = @("RayLink*"); Paths = @("RayLink"); Priority = "Low" }
+    @{ Name = "ShowMyPC"; Processes = @("showmypc*", "smpc*", "SMPCSrv*", "tvnserver*"); Services = @("tvnserver*", "TightVNC*"); Paths = @("ShowMyPC", "ShowMyPCService"); Priority = "Low" }
+    @{ Name = "Aeroadmin"; Processes = @("AeroAdmin*"); Services = @("AeroadminService*"); Paths = @("AeroAdmin"); Priority = "Low" }
+    @{ Name = "FastViewer"; Processes = @("FastRemoteService*", "FastViewer*"); Services = @("FastViewerRemoteservice*"); Paths = @("FastViewer", "Matrix42\Remote Control Host"); Priority = "Low" }
+    @{ Name = "RayLink"; Processes = @("RayLink*", "RayLinkCapturer*"); Services = @("RayLink*"); Paths = @("RayLink"); Priority = "Low" }
 
     # Tunneling Tools
-    @{ Name = "ZeroTier"; Processes = @("zerotier*"); Services = @("ZeroTier*"); Paths = @("ZeroTier"); Priority = "Low" }
+    @{ Name = "ZeroTier"; Processes = @("zerotier*"); Services = @("ZeroTierOneService*"); Paths = @("ZeroTier"); Priority = "Low" }
     @{ Name = "Tailscale"; Processes = @("tailscale*", "tailscaled*"); Services = @("Tailscale*"); Paths = @("Tailscale"); Priority = "Low" }
     @{ Name = "Ngrok"; Processes = @("ngrok*"); Services = @("ngrok*"); Paths = @("ngrok"); Priority = "Medium" }
-    @{ Name = "UrbanVPN"; Processes = @("UrbanVPN*", "urbanvpn*"); Services = @("UrbanVPN*", "urbanvpn*"); Paths = @("UrbanVPN", "urbanvpn"); Priority = "Medium" }
+    @{ Name = "UrbanVPN"; Processes = @("urbanvpn*", "urbanvpnserv*", "urban-vpn-service*"); Services = @("UrbanVPN*"); Paths = @("UrbanVPN"); Priority = "Medium" }
 
     # RMM Tools
-    @{ Name = "Action1"; Processes = @("action1*", "a1agent*"); Services = @("action1*"); Paths = @("Action1"); Priority = "Low" }
+    @{ Name = "Action1"; Processes = @("action1_agent*", "agent1_remote*"); Services = @("A1Agent*"); Paths = @("Action1"); Priority = "Low" }
     @{ Name = "Atera"; Processes = @("AteraAgent*"); Services = @("AteraAgent*"); Paths = @("Atera"); Priority = "Low" }
-    @{ Name = "N-able Take Control"; Processes = @("BASupSrvc*", "BASupApp*"); Services = @("BASupSrvc*"); Paths = @("BeAnywhere", "Take Control"); Priority = "Low" }
+    @{ Name = "N-able Take Control"; Processes = @("BASupSrvc*", "BASupApp*"); Services = @("BASupSrvc*", "BASupportExpress*"); Paths = @("BeAnywhere", "Take Control"); Priority = "Low" }
     @{ Name = "Datto RMM"; Processes = @("AEMAgent*", "CagService*"); Services = @("AEM*", "CagService*"); Paths = @("CentraStage", "Datto"); Priority = "Low" }
-    @{ Name = "NinjaRMM"; Processes = @("NinjaRMM*", "ninjarmm*"); Services = @("NinjaRMM*"); Paths = @("NinjaRMM", "NinjaMSP"); Priority = "Low" }
-    @{ Name = "ConnectWise Automate"; Processes = @("LTService*", "LTSvcMon*", "LabTech*"); Services = @("LTService*", "LabTech*"); Paths = @("LabTech", "ConnectWise\Automate"); Priority = "Low" }
-    @{ Name = "Kaseya"; Processes = @("agentmon*", "KaService*"); Services = @("Kaseya*", "KaService*"); Paths = @("Kaseya"); Priority = "Low" }
+    @{ Name = "NinjaRMM"; Processes = @("NinjaRMM*", "ninjarmm*"); Services = @("NinjaRMM*"); Paths = @("NinjaRMMAgent", "NinjaRMM"); Priority = "Low" }
+    @{ Name = "ConnectWise Automate"; Processes = @("LTSVC*", "LTSvcMon*", "LTService*", "LabTech*"); Services = @("LTService*", "LTSvcMon*"); Paths = @("LTSvc", "LabTech"); Priority = "Low" }
+    @{ Name = "Kaseya"; Processes = @("agentmon*", "KaUsrTsk*"); Services = @("Kaseya*"); Paths = @("Kaseya"); Priority = "Low" }
     @{ Name = "Pulseway"; Processes = @("PCMonitorSrv*", "Pulseway*"); Services = @("Pulseway*", "PCMonitor*"); Paths = @("Pulseway", "PCMonitor"); Priority = "Low" }
     @{ Name = "Syncro"; Processes = @("Syncro*", "Kabuto*"); Services = @("Syncro*", "Kabuto*"); Paths = @("Syncro", "Kabuto"); Priority = "Low" }
 
     # Newer Legitimate Tools (abused in attacks)
     @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("Dualmon*", "dualmon*", "dmserver*"); Paths = @("Dualmon"); Priority = "Medium" }
-    @{ Name = "GoTo Resolve"; Processes = @("GoToResolve*", "goto_resolve*"); Services = @("GoToResolve*"); Paths = @("GoTo Resolve", "GoToResolve"); Priority = "Medium" }
+    @{ Name = "GoTo Resolve"; Processes = @("GoToResolve*"); Services = @("GoToResolve*"); Paths = @("GoTo Resolve", "GoToResolve"); Priority = "Medium" }
     @{ Name = "Apache Guacamole Client"; Processes = @("guacd*", "guacamole*"); Services = @("guacd*", "guacamole*"); Paths = @("guacamole"); Priority = "Low" }
 
     # Known Malicious RATs (Critical Priority)
-    @{ Name = "TrustConnect RAT"; Processes = @("TrustConnect*", "trustconnect*"); Services = @("TrustConnect*"); Paths = @("TrustConnect", "TrustConnect Software"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "DocConnect RAT"; Processes = @("DocConnect*", "docconnect*"); Services = @("DocConnect*"); Paths = @("DocConnect"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "TrustConnect RAT"; Processes = @("TrustConnect*", "TrustConnectAgent*"); Services = @("TrustConnect*"); Paths = @("TrustConnect", "TrustConnect Software"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "DocConnect RAT"; Processes = @("DocConnect*"); Services = @("DocConnect*"); Paths = @("DocConnect", "SHIELD OS"); Priority = "Critical"; Malicious = $true }
     @{ Name = "XWorm RAT"; Processes = @("XWorm*", "xworm*"); Services = @("XWorm*"); Paths = @("XWorm"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Steaelite RAT"; Processes = @("Steaelite*", "steaelite*"); Services = @("Steaelite*"); Paths = @("Steaelite"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Remcos RAT"; Processes = @("remcos*"); Services = @("remcos*"); Paths = @("Remcos"); Priority = "Critical"; Malicious = $true }
