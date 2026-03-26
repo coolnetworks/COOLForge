@@ -20,6 +20,7 @@
     "Remove/⛔Force Remove Foxit.ps1": "2026.01.31.02",
     "Remove/⛔Force Remove McAfee.ps1": "2026.01.31.02",
     "Policy/👀cipp.ps1": "2026.01.31.02",
+    "Policy/👀acrobat-pro.ps1": "2026.03.26.01",
     "Policy/👀bitwarden.ps1": "2026.01.31.02",
     "Monitor/👀Check for Unauthorized Remote Access Tools.ps1": "2026.01.31.02",
     "Monitor/👀Check Windows Location Services.ps1": "2026.01.31.02",

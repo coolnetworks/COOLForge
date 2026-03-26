@@ -110,6 +110,17 @@
     "version": "2026.01.31.02"
   },
   {
+    "scriptToRun": "👀acrobat-pro.ps1",
+    "launcherName": "Policy/👀acrobat-pro.ps1",
+    "version": "2026.03.26.01",
+    "extraFields": [
+      {
+        "var": "policy_acrobat_pro",
+        "cf": "cf_policy_acrobat_pro"
+      }
+    ]
+  },
+  {
     "scriptToRun": "👀bitwarden.ps1",
     "launcherName": "Policy/👀bitwarden.ps1",
     "version": "2026.01.31.02",
@@ -261,6 +272,10 @@
       {
         "var": "policy_unchecky",
         "cf": "cf_policy_unchecky"
+      },
+      {
+        "var": "policy_unchecky_url",
+        "cf": "cf_policy_unchecky_url"
       }
     ]
   },
