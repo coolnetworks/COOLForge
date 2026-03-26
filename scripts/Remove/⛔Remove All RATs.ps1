@@ -67,7 +67,7 @@ $Script:RATDefinitions = @(
     @{ Name = "GoToAssist"; Processes = @("g2ax_*", "g2aservice*", "GoTo*"); Services = @("GoTo*", "GoToAssist*"); Paths = @("GoToAssist", "Citrix\GoToAssist"); Priority = "Medium" }
     @{ Name = "GoToMyPC"; Processes = @("g2tray*", "g2comm*", "g2svc*", "g2host*", "g2mainh*", "GoToMyPC*"); Services = @("GoToMyPC*"); Paths = @("GoToMyPC", "Citrix\GoToMyPC"); Priority = "Medium" }
     @{ Name = "RemotePC"; Processes = @("RemotePC*", "RPCService*", "RPDUILaunch*", "RPCFirewall*"); Services = @("RPCService*", "RPCPerformanceService", "RemotePC*"); Paths = @("RemotePC"); Priority = "Medium" }
-    @{ Name = "BeyondTrust"; Processes = @("bomgar*", "BeyondTrust*", "sra-pin*"); Services = @("bomgar*", "BeyondTrust*"); Paths = @("Bomgar", "BeyondTrust", "bomgar-scc"); Priority = "Medium" }
+    @{ Name = "BeyondTrust"; Processes = @("bomgar*", "BeyondTrust*", "sra-pin*"); Services = @("bomgar-scc*", "sra-pin*", "BeyondTrust*"); Paths = @("Bomgar", "BeyondTrust", "bomgar-scc"); Priority = "Medium" }
     @{ Name = "DWService"; Processes = @("dwagent*", "dwservice*"); Services = @("dwagent*", "DWAgent*"); Paths = @("DWAgent"); Priority = "Medium" }
 
     # VNC Variants
@@ -95,7 +95,7 @@ $Script:RATDefinitions = @(
     @{ Name = "Sunlogin"; Processes = @("SunloginClient*", "SunloginService*", "oray_service*"); Services = @("SunloginService", "oray_service"); Paths = @("Oray\SunLogin", "Sunlogin"); Priority = "Medium" }
     @{ Name = "HopToDesk"; Processes = @("HopToDesk*"); Services = @("HopToDesk*"); Paths = @("HopToDesk"); Priority = "Medium" }
     @{ Name = "AweSun"; Processes = @("AweSun*", "AweRay*"); Services = @("AweSun*"); Paths = @("AweSun", "AweRay"); Priority = "Medium" }
-    @{ Name = "Dameware"; Processes = @("dwrcs*", "DWRCST*", "BASEClient*", "BASupSrvcCnfg*"); Services = @("DameWare*"); Paths = @("DameWare", "dwrcs"); Priority = "Medium" }
+    @{ Name = "Dameware"; Processes = @("DWRCS*", "DWRCST*", "DamewareRemoteEverywhereAgent*"); Services = @("dwmrcs", "DameWare*"); Paths = @("DameWare", "dwrcs", "Dameware Remote Everywhere Agent"); Priority = "Medium" }
     @{ Name = "NetSupport"; Processes = @("client32*", "pcictlui*"); Services = @("Client32*", "NetSupport*"); Paths = @("NetSupport"); Priority = "Medium" }
     @{ Name = "Remote Utilities"; Processes = @("rutserv*", "rfusclient*"); Services = @("RManService*", "rutserv*"); Paths = @("Remote Utilities"); Priority = "Medium" }
     @{ Name = "Getscreen.me"; Processes = @("getscreen*"); Services = @("getscreen*"); Paths = @("Getscreen"); Priority = "Low" }
@@ -104,7 +104,7 @@ $Script:RATDefinitions = @(
     @{ Name = "LiteManager"; Processes = @("ROMServer*", "ROMViewer*", "ROMFUSClient*"); Services = @("ROMService*"); Paths = @("LiteManager"); Priority = "Medium" }
     @{ Name = "Alpemix"; Processes = @("Alpemix*"); Services = @("Alpemix*"); Paths = @("Alpemix"); Priority = "Low" }
     @{ Name = "ShowMyPC"; Processes = @("showmypc*", "smpc*", "SMPCSrv*", "tvnserver*"); Services = @("tvnserver*", "TightVNC*"); Paths = @("ShowMyPC", "ShowMyPCService"); Priority = "Low" }
-    @{ Name = "Aeroadmin"; Processes = @("AeroAdmin*"); Services = @("AeroadminService*"); Paths = @("AeroAdmin"); Priority = "Low" }
+    @{ Name = "Aeroadmin"; Processes = @("AeroAdmin*"); Services = @("AeroAdmin"); Paths = @("AeroAdmin"); Priority = "Low" }
     @{ Name = "FastViewer"; Processes = @("FastRemoteService*", "FastViewer*"); Services = @("FastViewerRemoteservice*"); Paths = @("FastViewer", "Matrix42\Remote Control Host"); Priority = "Low" }
     @{ Name = "RayLink"; Processes = @("RayLink*", "RayLinkCapturer*", "RayLinkService*"); Services = @("RayLinkService"); Paths = @("RayLink"); Priority = "Low" }
 
@@ -116,7 +116,7 @@ $Script:RATDefinitions = @(
 
     # RMM Tools
     @{ Name = "Action1"; Processes = @("action1_agent*", "agent1_remote*"); Services = @("A1Agent*"); Paths = @("Action1"); Priority = "Low" }
-    @{ Name = "Atera"; Processes = @("AteraAgent*"); Services = @("AteraAgent*"); Paths = @("Atera"); Priority = "Low" }
+    @{ Name = "Atera"; Processes = @("AteraAgent*", "AlphaAgent*", "TicketingTray*"); Services = @("AteraAgent*"); Paths = @("Atera", "ATERA Networks"); Priority = "Low" }
     @{ Name = "N-able Take Control"; Processes = @("BASupSrvc*", "BASupApp*"); Services = @("BASupSrvc*", "BASupportExpress*"); Paths = @("BeAnywhere", "Take Control"); Priority = "Low" }
     @{ Name = "Datto RMM"; Processes = @("AEMAgent*", "CagService*"); Services = @("AEM*", "CagService*"); Paths = @("CentraStage", "Datto"); Priority = "Low" }
     @{ Name = "NinjaRMM"; Processes = @("NinjaRMM*", "ninjarmm*"); Services = @("NinjaRMM*"); Paths = @("NinjaRMMAgent", "NinjaRMM"); Priority = "Low" }
@@ -126,7 +126,7 @@ $Script:RATDefinitions = @(
     @{ Name = "Syncro"; Processes = @("Syncro*", "Kabuto*"); Services = @("Syncro*", "Kabuto*"); Paths = @("Syncro", "Kabuto"); Priority = "Low" }
 
     # Newer Legitimate Tools (abused in attacks)
-    @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("Dualmon*", "dualmon*", "dmserver*"); Paths = @("Dualmon"); Priority = "Medium" }
+    @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("dmserver"); Paths = @("Dualmon"); Priority = "Medium" }
     @{ Name = "GoTo Resolve"; Processes = @("GoToResolve*"); Services = @("GoToResolve*"); Paths = @("GoTo Resolve", "GoToResolve"); Priority = "Medium" }
     @{ Name = "Apache Guacamole Client"; Processes = @("guacd*", "guacamole*"); Services = @("guacd*", "guacamole*"); Paths = @("guacamole"); Priority = "Low" }
 

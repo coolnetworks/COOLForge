@@ -297,7 +297,7 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "GoToAssist";        Processes = @("g2ax_*", "g2aservice*", "GoTo*"); Services = @("GoTo*", "GoToAssist*");         Paths = @("*\GoToAssist*", "*\Citrix\GoToAssist*") }
         @{ Name = "GoToMyPC";          Processes = @("g2tray*", "g2comm*", "g2svc*", "g2host*", "GoToMyPC*"); Services = @("GoToMyPC*"); Paths = @("*\GoToMyPC*", "*\Citrix\GoToMyPC*") }
         @{ Name = "RemotePC";          Processes = @("RemotePC*", "RPCService*", "RPDUILaunch*", "RPCFirewall*"); Services = @("RPCService*", "RPCPerformanceService", "RemotePC*"); Paths = @("*\RemotePC*") }
-        @{ Name = "BeyondTrust";       Processes = @("bomgar*", "BeyondTrust*", "sra-pin*"); Services = @("bomgar*", "BeyondTrust*"); Paths = @("*\Bomgar*", "*\BeyondTrust*", "*\bomgar-scc*") }
+        @{ Name = "BeyondTrust";       Processes = @("bomgar*", "BeyondTrust*", "sra-pin*"); Services = @("bomgar-scc*", "sra-pin*", "BeyondTrust*"); Paths = @("*\Bomgar*", "*\BeyondTrust*", "*\bomgar-scc*") }
         @{ Name = "DWService";         Processes = @("dwagent*", "dwservice*");        Services = @("dwagent*", "DWAgent*");          Paths = @("*\DWAgent*") }
         @{ Name = "RealVNC";           Processes = @("vncserver*", "vncviewer*");      Services = @("vncserver");                     Paths = @("*\RealVNC*") }
         @{ Name = "TightVNC";          Processes = @("tvnserver*", "tvnviewer*");      Services = @("tvnserver");                     Paths = @("*\TightVNC*") }
@@ -312,7 +312,7 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "ISL Online";        Processes = @("ISLLight*", "ISLAlwaysOn*", "ISLLightFast*", "ISLLightService*"); Services = @("ISL*"); Paths = @("*\ISL Online*", "*\ISLLight*") }
         @{ Name = "Parsec";            Processes = @("parsecd*", "pservice*");         Services = @("Parsec*");                       Paths = @("*\Parsec*") }
         @{ Name = "Action1";           Processes = @("action1_agent*", "agent1_remote*"); Services = @("A1Agent*");                    Paths = @("*\Action1*") }
-        @{ Name = "Atera";             Processes = @("AteraAgent*", "Atera*");         Services = @("AteraAgent*", "Atera*");         Paths = @("*\Atera*") }
+        @{ Name = "Atera";             Processes = @("AteraAgent*", "AlphaAgent*", "TicketingTray*"); Services = @("AteraAgent*"); Paths = @("*\Atera*", "*\ATERA Networks*") }
         @{ Name = "N-able Take Control"; Processes = @("BASupSrvc*", "BASupApp*", "TakeControl*"); Services = @("BASupSrvc*", "TakeControl*"); Paths = @("*\BeAnywhere*", "*\Take Control*", "*\N-able*") }
         @{ Name = "Datto RMM";         Processes = @("AEMAgent*", "CagService*");      Services = @("AEM*", "CagService*", "Datto*"); Paths = @("*\CentraStage*", "*\Datto*") }
         @{ Name = "NinjaRMM";          Processes = @("NinjaRMM*", "ninjarmm*");        Services = @("NinjaRMM*");                     Paths = @("*\NinjaRMMAgent*", "*\NinjaRMM*") }
@@ -360,7 +360,7 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "Oray";              Processes = @("oray*", "PHTunnel*");            Services = @("Oray*", "PHTunnel*");            Paths = @("*\Oray*") }
         @{ Name = "HopToDesk";         Processes = @("HopToDesk*");                    Services = @("HopToDesk*");                    Paths = @("*\HopToDesk*") }
         @{ Name = "AweRay/AweSun";     Processes = @("AweSun*", "AweRay*");            Services = @("AweSun*", "AweRay*");            Paths = @("*\AweSun*", "*\AweRay*") }
-        @{ Name = "Dameware";          Processes = @("dwrcs*", "DWRCST*", "BASEClient*", "BASupSrvcCnfg*"); Services = @("DameWare*"); Paths = @("*\DameWare*", "*\dwrcs*") }
+        @{ Name = "Dameware";          Processes = @("DWRCS*", "DWRCST*", "DamewareRemoteEverywhereAgent*"); Services = @("dwmrcs", "DameWare*"); Paths = @("*\DameWare*", "*\dwrcs*", "*\Dameware Remote Everywhere*") }
         @{ Name = "ConnectWise Automate"; Processes = @("LTSVC*", "LTSvcMon*", "LTService*", "LabTech*"); Services = @("LTService*", "LTSvcMon*"); Paths = @("*\LTSvc*", "*\LabTech*") }
         @{ Name = "SolarWinds RMM";    Processes = @("SolarWinds*", "Advanced*Monitor*", "Windows Agent*"); Services = @("SolarWinds*", "Advanced Monitoring*"); Paths = @("*\SolarWinds*", "*\Advanced Monitoring*") }
         @{ Name = "Comodo RMM";        Processes = @("ItsmRsp*", "CmdAgent*", "COMODO*"); Services = @("Comodo*", "ItsmRsp*", "CmdAgent*"); Paths = @("*\COMODO\*", "*\Comodo\*") }
@@ -376,7 +376,7 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "Tmate";             Processes = @("tmate*");                        Services = @();                                Paths = @("*\tmate*") }
         @{ Name = "Ngrok";             Processes = @("ngrok*");                        Services = @("ngrok*");                        Paths = @("*\ngrok*") }
         @{ Name = "LocalTunnel";       Processes = @("lt*", "localtunnel*");           Services = @();                                Paths = @("*\localtunnel*") }
-        @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("Dualmon*", "dualmon*", "dmserver*"); Paths = @("*\Dualmon*") }
+        @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("dmserver"); Paths = @("*\Dualmon*") }
         @{ Name = "GoTo Resolve";      Processes = @("GoToResolve*");                  Services = @("GoToResolve*");                  Paths = @("*\GoTo Resolve*", "*\GoToResolve*") }
 
         # Known Malicious RATs / C2 Frameworks (High Priority Detection)
