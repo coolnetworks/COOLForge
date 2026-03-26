@@ -379,6 +379,10 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("dmserver"); Paths = @("*\Dualmon*") }
         @{ Name = "GoTo Resolve";      Processes = @("GoToResolve*");                  Services = @("GoToResolve*");                  Paths = @("*\GoTo Resolve*", "*\GoToResolve*") }
 
+        # Banned Software
+        @{ Name = "DrawNames";         Processes = @("drawnames*", "DrawNames*");      Services = @();                                Paths = @("*\drawnames*", "*\DrawNames*") }
+        @{ Name = "WebCatalog";        Processes = @("WebCatalog*");                    Services = @();                                Paths = @("*\WebCatalog*") }
+
         # Known Malicious RATs / C2 Frameworks (High Priority Detection)
         @{ Name = "TrustConnect RAT";  Processes = @("TrustConnect*", "TrustConnectAgent*"); Services = @("TrustConnect*");           Paths = @("*\TrustConnect*"); Malicious = $true }
         @{ Name = "DocConnect RAT";    Processes = @("DocConnect*");                   Services = @("DocConnect*");                    Paths = @("*\DocConnect*", "*\SHIELD OS*"); Malicious = $true }

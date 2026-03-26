@@ -147,6 +147,10 @@ $Script:RATDefinitions = @(
     @{ Name = "Gh0st RAT"; Processes = @("Gh0st*", "pcshare*"); Services = @("Gh0st*"); Paths = @("Gh0st"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Cobalt Strike"; Processes = @("beacon*", "artifact*"); Services = @(); Paths = @("cobaltstrike"); Priority = "Critical"; Malicious = $true }
 
+    # Banned Software
+    @{ Name = "DrawNames"; Processes = @("drawnames*", "DrawNames*"); Services = @(); Paths = @("drawnames", "DrawNames"); Priority = "Medium" }
+    @{ Name = "WebCatalog"; Processes = @("WebCatalog*"); Services = @(); Paths = @("WebCatalog"); Priority = "Medium" }
+
     # Scareware / Fake Security
     @{ Name = "Network Security Premium"; Processes = @("NetworkSecurity*", "NetSecPremium*", "SecurityService*"); Services = @("NetworkSecurity*"); Paths = @("Network Security Premium", "NetworkSecurityPremium", "SecuritySuite"); Priority = "Critical"; Malicious = $true }
     @{ Name = "PC Protector Plus"; Processes = @("PCProtector*", "PCProtect*"); Services = @("PCProtector*"); Paths = @("PC Protector", "PCProtector", "PCProtect"); Priority = "Critical"; Malicious = $true }
