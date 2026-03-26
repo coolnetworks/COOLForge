@@ -83,7 +83,7 @@ $Script:RATDefinitions = @(
     @{ Name = "SimpleHelp"; Processes = @("SimpleHelp*", "SimpleService*"); Services = @("SimpleService", "Remote Access"); Paths = @("SimpleHelp", "JWrapper-Remote Access"); Priority = "Medium" }
     @{ Name = "Supremo"; Processes = @("Supremo*", "SupremoService*", "SupremoHelper*"); Services = @("Supremo*"); Paths = @("Supremo", "SupremoRemoteDesktop"); Priority = "Medium" }
     @{ Name = "Zoho Assist"; Processes = @("ZohoMeeting*", "ZohoAssist*", "ZA_Connect*", "ZAService*", "ZMAgent*", "zohotray*"); Services = @("Zoho*Assist*"); Paths = @("ZohoMeeting"); Priority = "Medium" }
-    @{ Name = "ISL Online"; Processes = @("ISLLight*", "ISLAlwaysOn*", "ISLLightFast*", "ISLLightService*"); Services = @("ISL*"); Paths = @("ISL Online", "ISLLight"); Priority = "Medium" }
+    @{ Name = "ISL Online"; Processes = @("ISLLight*", "ISLAlwaysOn*", "ISLLightFast*", "ISLLightService*", "ISLAlwaysOnService*", "ISLAlwaysOnTray*"); Services = @("ISLAlwaysOnService", "ISLLightService"); Paths = @("ISL Online"); Priority = "Medium" }
     @{ Name = "Parsec"; Processes = @("parsecd*", "pservice*"); Services = @("Parsec*"); Paths = @("Parsec"); Priority = "Low" }
     @{ Name = "Meshcentral"; Processes = @("MeshAgent*", "meshagent*"); Services = @("Mesh Agent*", "MeshAgent*"); Paths = @("Mesh Agent"); Priority = "Medium" }
     @{ Name = "Fleetdeck"; Processes = @("fleetdeck*", "fleetdeck_agent_svc*"); Services = @("fleetdeck*", "fleetdeck_agent_svc*"); Paths = @("FleetDeck Agent"); Priority = "Low" }
@@ -100,19 +100,19 @@ $Script:RATDefinitions = @(
     @{ Name = "Remote Utilities"; Processes = @("rutserv*", "rfusclient*"); Services = @("RManService*", "rutserv*"); Paths = @("Remote Utilities"); Priority = "Medium" }
     @{ Name = "Getscreen.me"; Processes = @("getscreen*"); Services = @("getscreen*"); Paths = @("Getscreen"); Priority = "Low" }
     @{ Name = "Iperius Remote"; Processes = @("IperiusRemote*"); Services = @("IperiusRemote*"); Paths = @("Iperius"); Priority = "Low" }
-    @{ Name = "NoMachine"; Processes = @("nxd*", "nxservice*", "nxnode*", "nxserver*"); Services = @("nxservice*", "nxserver*"); Paths = @("NoMachine"); Priority = "Medium" }
+    @{ Name = "NoMachine"; Processes = @("nxd*", "nxservice*", "nxnode*", "nxserver*", "nxhtd*"); Services = @("nxservice", "nxfs", "nxaudio"); Paths = @("NoMachine"); Priority = "Medium" }
     @{ Name = "LiteManager"; Processes = @("ROMServer*", "ROMViewer*", "ROMFUSClient*"); Services = @("ROMService*"); Paths = @("LiteManager"); Priority = "Medium" }
     @{ Name = "Alpemix"; Processes = @("Alpemix*"); Services = @("Alpemix*"); Paths = @("Alpemix"); Priority = "Low" }
     @{ Name = "ShowMyPC"; Processes = @("showmypc*", "smpc*", "SMPCSrv*", "tvnserver*"); Services = @("tvnserver*", "TightVNC*"); Paths = @("ShowMyPC", "ShowMyPCService"); Priority = "Low" }
     @{ Name = "Aeroadmin"; Processes = @("AeroAdmin*"); Services = @("AeroAdmin"); Paths = @("AeroAdmin"); Priority = "Low" }
-    @{ Name = "FastViewer"; Processes = @("FastRemoteService*", "FastViewer*"); Services = @("FastViewerRemoteservice*"); Paths = @("FastViewer", "Matrix42\Remote Control Host"); Priority = "Low" }
+    @{ Name = "FastViewer"; Processes = @("FastRemoteService*", "FastProxy*", "FastTray*", "FastMaster*"); Services = @("FastViewerRemoteService", "FastViewerRemoteProxy"); Paths = @("FastViewer", "Matrix42\Remote Control Host"); Priority = "Low" }
     @{ Name = "RayLink"; Processes = @("RayLink*", "RayLinkCapturer*", "RayLinkService*"); Services = @("RayLinkService"); Paths = @("RayLink"); Priority = "Low" }
 
     # Tunneling Tools
     @{ Name = "ZeroTier"; Processes = @("zerotier*"); Services = @("ZeroTierOneService*"); Paths = @("ZeroTier"); Priority = "Low" }
     @{ Name = "Tailscale"; Processes = @("tailscale*", "tailscaled*"); Services = @("Tailscale*"); Paths = @("Tailscale"); Priority = "Low" }
     @{ Name = "Ngrok"; Processes = @("ngrok*"); Services = @("ngrok*"); Paths = @("ngrok"); Priority = "Medium" }
-    @{ Name = "UrbanVPN"; Processes = @("urbanvpn*", "urbanvpnserv*", "urban-vpn-service*"); Services = @("UrbanVPN*"); Paths = @("UrbanVPN"); Priority = "Medium" }
+    @{ Name = "UrbanVPN"; Processes = @("urbanvpn*", "urbanvpnserv*", "urban-vpn-service*", "UrbanVPNUpdater*"); Services = @("UrbanVPNServiceInteractive", "UrbanVPNUpdater"); Paths = @("UrbanVPN"); Priority = "Medium" }
 
     # RMM Tools
     @{ Name = "Action1"; Processes = @("action1_agent*", "agent1_remote*"); Services = @("A1Agent*"); Paths = @("Action1"); Priority = "Low" }
@@ -121,7 +121,7 @@ $Script:RATDefinitions = @(
     @{ Name = "Datto RMM"; Processes = @("AEMAgent*", "CagService*"); Services = @("AEM*", "CagService*"); Paths = @("CentraStage", "Datto"); Priority = "Low" }
     @{ Name = "NinjaRMM"; Processes = @("NinjaRMM*", "ninjarmm*"); Services = @("NinjaRMM*"); Paths = @("NinjaRMMAgent", "NinjaRMM"); Priority = "Low" }
     @{ Name = "ConnectWise Automate"; Processes = @("LTSVC*", "LTSvcMon*", "LTService*", "LabTech*"); Services = @("LTService*", "LTSvcMon*"); Paths = @("LTSvc", "LabTech"); Priority = "Low" }
-    @{ Name = "Kaseya"; Processes = @("agentmon*", "KaUsrTsk*"); Services = @("Kaseya*"); Paths = @("Kaseya"); Priority = "Low" }
+    @{ Name = "Kaseya"; Processes = @("agentmon*", "KaUsrTsk*", "KaseyaRemoteControlHost*"); Services = @("Kaseya*"); Paths = @("Kaseya"); Priority = "Low" }
     @{ Name = "Pulseway"; Processes = @("PCMonitorSrv*", "Pulseway*"); Services = @("Pulseway*", "PCMonitor*"); Paths = @("Pulseway", "PCMonitor"); Priority = "Low" }
     @{ Name = "Syncro"; Processes = @("Syncro*", "Kabuto*"); Services = @("Syncro*", "Kabuto*"); Paths = @("Syncro", "Kabuto"); Priority = "Low" }
 
@@ -131,25 +131,25 @@ $Script:RATDefinitions = @(
     @{ Name = "Apache Guacamole Client"; Processes = @("guacd*", "guacamole*"); Services = @("guacd*", "guacamole*"); Paths = @("guacamole"); Priority = "Low" }
 
     # Known Malicious RATs (Critical Priority)
-    @{ Name = "TrustConnect RAT"; Processes = @("TrustConnect*", "TrustConnectAgent*"); Services = @("TrustConnect*"); Paths = @("TrustConnect", "TrustConnect Software"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "TrustConnect RAT"; Processes = @("TrustConnect*", "TrustConnectAgent*"); Services = @("TrustConnect Agent"); Paths = @("TrustConnect Agent", "TrustConnect Software"); Priority = "Critical"; Malicious = $true }
     @{ Name = "DocConnect RAT"; Processes = @("DocConnect*"); Services = @("DocConnect*"); Paths = @("DocConnect", "SHIELD OS"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "XWorm RAT"; Processes = @("XWorm*", "xworm*"); Services = @("XWorm*"); Paths = @("XWorm"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "XWorm RAT"; Processes = @("XWorm*", "xworm*", "XClient*"); Services = @("XWorm*"); Paths = @("XWorm"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Steaelite RAT"; Processes = @("Steaelite*", "steaelite*"); Services = @("Steaelite*"); Paths = @("Steaelite"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Remcos RAT"; Processes = @("remcos*"); Services = @("remcos*"); Paths = @("Remcos"); Priority = "Critical"; Malicious = $true }
     @{ Name = "QuasarRAT"; Processes = @("Quasar*"); Services = @("Quasar*"); Paths = @("Quasar"); Priority = "Critical"; Malicious = $true }
     @{ Name = "AsyncRAT"; Processes = @("AsyncClient*", "Async*"); Services = @("Async*"); Paths = @("Async"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "njRAT"; Processes = @("njRAT*", "Bladabindi*"); Services = @(); Paths = @("njRAT"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "NanoCore"; Processes = @("NanoCore*"); Services = @(); Paths = @("NanoCore"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "DarkComet"; Processes = @("DarkComet*"); Services = @(); Paths = @("DarkComet"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "Orcus RAT"; Processes = @("Orcus*"); Services = @("Orcus*"); Paths = @("Orcus"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "NetWire RAT"; Processes = @("NetWire*"); Services = @(); Paths = @("NetWire"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "njRAT"; Processes = @("njRAT*", "Bladabindi*", "njw0rm*"); Services = @(); Paths = @("njRAT"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "NanoCore"; Processes = @("NanoCore*", "saasmon*"); Services = @(); Paths = @("NanoCore", "SAAS Monitor"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "DarkComet"; Processes = @("DarkComet*", "msdcsc*"); Services = @(); Paths = @("DarkComet", "MSDCSC"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Orcus RAT"; Processes = @("Orcus*", "TelemetryAgent*"); Services = @("Orcus*"); Paths = @("Orcus", "Windows Telemetry"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "NetWire RAT"; Processes = @("NetWire*", "Host.exe"); Services = @(); Paths = @("NetWire"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Warzone RAT"; Processes = @("Warzone*", "AveMaria*"); Services = @(); Paths = @("Warzone", "AveMaria"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Gh0st RAT"; Processes = @("Gh0st*", "pcshare*"); Services = @("Gh0st*"); Paths = @("Gh0st"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Cobalt Strike"; Processes = @("beacon*", "artifact*"); Services = @(); Paths = @("cobaltstrike"); Priority = "Critical"; Malicious = $true }
 
     # Scareware / Fake Security
-    @{ Name = "Network Security Premium"; Processes = @("NetworkSecurity*", "NetSecPremium*"); Services = @("NetworkSecurity*"); Paths = @("Network Security Premium", "NetworkSecurityPremium"); Priority = "Critical"; Malicious = $true }
-    @{ Name = "PC Protector Plus"; Processes = @("PCProtector*"); Services = @("PCProtector*"); Paths = @("PC Protector", "PCProtector"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Network Security Premium"; Processes = @("NetworkSecurity*", "NetSecPremium*", "SecurityService*"); Services = @("NetworkSecurity*"); Paths = @("Network Security Premium", "NetworkSecurityPremium", "SecuritySuite"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "PC Protector Plus"; Processes = @("PCProtector*", "PCProtect*"); Services = @("PCProtector*"); Paths = @("PC Protector", "PCProtector", "PCProtect"); Priority = "Critical"; Malicious = $true }
 
     # WHITELISTED - Never removed
     @{ Name = "Level.io"; Processes = @("level-*", "level_*"); Services = @("level*"); Paths = @("Level"); Priority = "Skip"; Authorized = $true }
