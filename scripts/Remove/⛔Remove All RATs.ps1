@@ -62,7 +62,7 @@ $Script:RATDefinitions = @(
     @{ Name = "AnyDesk"; Processes = @("AnyDesk*"); Services = @("AnyDesk*"); Paths = @("AnyDesk"); Priority = "High" }
     @{ Name = "TeamViewer"; Processes = @("TeamViewer*", "tv_w32*", "tv_x64*"); Services = @("TeamViewer*"); Paths = @("TeamViewer"); Priority = "High" }
     @{ Name = "RustDesk"; Processes = @("rustdesk*"); Services = @("rustdesk*", "RustDesk*"); Paths = @("RustDesk"); Priority = "High" }
-    @{ Name = "Splashtop"; Processes = @("SRService*", "SRManager*", "SRServer*", "strwinclt*", "Splashtop*"); Services = @("SplashtopRemoteService", "SSUService*"); Paths = @("Splashtop"); Priority = "High" }
+    @{ Name = "Splashtop"; Processes = @("SRService*", "SRManager*", "SRServer*", "SRFeature*", "strwinclt*", "Splashtop*"); Services = @("SplashtopRemoteService", "SRService", "SSUService*"); Paths = @("Splashtop"); Priority = "High" }
     @{ Name = "LogMeIn"; Processes = @("LogMeIn*", "LMI*"); Services = @("LogMeIn*", "LMI*"); Paths = @("LogMeIn"); Priority = "High" }
     @{ Name = "GoToAssist"; Processes = @("g2ax_*", "g2aservice*", "GoTo*"); Services = @("GoTo*", "GoToAssist*"); Paths = @("GoToAssist", "Citrix\GoToAssist"); Priority = "Medium" }
     @{ Name = "GoToMyPC"; Processes = @("g2tray*", "g2comm*", "g2svc*", "g2host*", "g2mainh*", "GoToMyPC*"); Services = @("GoToMyPC*"); Paths = @("GoToMyPC", "Citrix\GoToMyPC"); Priority = "Medium" }
@@ -77,10 +77,10 @@ $Script:RATDefinitions = @(
     @{ Name = "TigerVNC"; Processes = @("winvnc4*", "vncviewer*"); Services = @("WinVNC4"); Paths = @("TigerVNC"); Priority = "Medium" }
 
     # Other Remote Tools
-    @{ Name = "Radmin"; Processes = @("radmin*", "RServer3*", "rserver*"); Services = @("radmin*", "RServer3*"); Paths = @("Radmin", "rserver30"); Priority = "Medium" }
+    @{ Name = "Radmin"; Processes = @("radmin*", "RServer3*", "rserver*"); Services = @("r_server", "RServer3*", "radmin*"); Paths = @("Radmin", "rserver30"); Priority = "Medium" }
     @{ Name = "Chrome Remote Desktop"; Processes = @("remoting_host*", "chromoting*"); Services = @("chromoting*", "Chrome Remote*"); Paths = @("Chrome Remote Desktop"); Priority = "Medium" }
     @{ Name = "Ammyy Admin"; Processes = @("AA_v*", "Ammyy*"); Services = @("Ammyy*"); Paths = @("Ammyy"); Priority = "Medium" }
-    @{ Name = "SimpleHelp"; Processes = @("SimpleHelp*", "SimpleService*"); Services = @("SimpleHelp*", "Remote Access"); Paths = @("SimpleHelp", "JWrapper-Remote Access"); Priority = "Medium" }
+    @{ Name = "SimpleHelp"; Processes = @("SimpleHelp*", "SimpleService*"); Services = @("SimpleService", "Remote Access"); Paths = @("SimpleHelp", "JWrapper-Remote Access"); Priority = "Medium" }
     @{ Name = "Supremo"; Processes = @("Supremo*", "SupremoService*", "SupremoHelper*"); Services = @("Supremo*"); Paths = @("Supremo", "SupremoRemoteDesktop"); Priority = "Medium" }
     @{ Name = "Zoho Assist"; Processes = @("ZohoMeeting*", "ZohoAssist*", "ZA_Connect*", "ZAService*", "ZMAgent*", "zohotray*"); Services = @("Zoho*Assist*"); Paths = @("ZohoMeeting"); Priority = "Medium" }
     @{ Name = "ISL Online"; Processes = @("ISLLight*", "ISLAlwaysOn*", "ISLLightFast*", "ISLLightService*"); Services = @("ISL*"); Paths = @("ISL Online", "ISLLight"); Priority = "Medium" }
@@ -92,7 +92,7 @@ $Script:RATDefinitions = @(
     # Additional Tools
     @{ Name = "UltraViewer"; Processes = @("UltraViewer*"); Services = @("UltraViewer*"); Paths = @("UltraViewer"); Priority = "Medium" }
     @{ Name = "ToDesk"; Processes = @("ToDesk*"); Services = @("ToDesk*"); Paths = @("ToDesk"); Priority = "Medium" }
-    @{ Name = "Sunlogin"; Processes = @("SunloginClient*"); Services = @("Sunlogin*"); Paths = @("Oray\SunLogin", "Sunlogin"); Priority = "Medium" }
+    @{ Name = "Sunlogin"; Processes = @("SunloginClient*", "SunloginService*", "oray_service*"); Services = @("SunloginService", "oray_service"); Paths = @("Oray\SunLogin", "Sunlogin"); Priority = "Medium" }
     @{ Name = "HopToDesk"; Processes = @("HopToDesk*"); Services = @("HopToDesk*"); Paths = @("HopToDesk"); Priority = "Medium" }
     @{ Name = "AweSun"; Processes = @("AweSun*", "AweRay*"); Services = @("AweSun*"); Paths = @("AweSun", "AweRay"); Priority = "Medium" }
     @{ Name = "Dameware"; Processes = @("dwrcs*", "DWRCST*", "BASEClient*", "BASupSrvcCnfg*"); Services = @("DameWare*"); Paths = @("DameWare", "dwrcs"); Priority = "Medium" }
@@ -106,7 +106,7 @@ $Script:RATDefinitions = @(
     @{ Name = "ShowMyPC"; Processes = @("showmypc*", "smpc*", "SMPCSrv*", "tvnserver*"); Services = @("tvnserver*", "TightVNC*"); Paths = @("ShowMyPC", "ShowMyPCService"); Priority = "Low" }
     @{ Name = "Aeroadmin"; Processes = @("AeroAdmin*"); Services = @("AeroadminService*"); Paths = @("AeroAdmin"); Priority = "Low" }
     @{ Name = "FastViewer"; Processes = @("FastRemoteService*", "FastViewer*"); Services = @("FastViewerRemoteservice*"); Paths = @("FastViewer", "Matrix42\Remote Control Host"); Priority = "Low" }
-    @{ Name = "RayLink"; Processes = @("RayLink*", "RayLinkCapturer*"); Services = @("RayLink*"); Paths = @("RayLink"); Priority = "Low" }
+    @{ Name = "RayLink"; Processes = @("RayLink*", "RayLinkCapturer*", "RayLinkService*"); Services = @("RayLinkService"); Paths = @("RayLink"); Priority = "Low" }
 
     # Tunneling Tools
     @{ Name = "ZeroTier"; Processes = @("zerotier*"); Services = @("ZeroTierOneService*"); Paths = @("ZeroTier"); Priority = "Low" }

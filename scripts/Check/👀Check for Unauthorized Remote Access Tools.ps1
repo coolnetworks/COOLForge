@@ -292,7 +292,7 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "TeamViewer";        Processes = @("TeamViewer", "TeamViewer*");     Services = @("TeamViewer", "TeamViewer*");     Paths = @("*\TeamViewer*") }
         @{ Name = "RustDesk";          Processes = @("rustdesk", "rustdesk*");         Services = @("rustdesk", "RustDesk*");         Paths = @("*\RustDesk*") }
         @{ Name = "ScreenConnect";     Processes = @("ScreenConnect*", "ConnectWiseControl*"); Services = @("ScreenConnect*", "ConnectWise*"); Paths = @("*\ScreenConnect*", "*\ConnectWise*Control*"); Whitelistable = $true }
-        @{ Name = "Splashtop";         Processes = @("SRService*", "SRManager*", "SRServer*", "strwinclt*", "Splashtop*"); Services = @("SplashtopRemoteService", "SSUService*"); Paths = @("*\Splashtop*") }
+        @{ Name = "Splashtop";         Processes = @("SRService*", "SRManager*", "SRServer*", "SRFeature*", "strwinclt*", "Splashtop*"); Services = @("SplashtopRemoteService", "SRService", "SSUService*"); Paths = @("*\Splashtop*") }
         @{ Name = "LogMeIn";           Processes = @("LogMeIn*", "LMI*");              Services = @("LogMeIn*", "LMI*");              Paths = @("*\LogMeIn*") }
         @{ Name = "GoToAssist";        Processes = @("g2ax_*", "g2aservice*", "GoTo*"); Services = @("GoTo*", "GoToAssist*");         Paths = @("*\GoToAssist*", "*\Citrix\GoToAssist*") }
         @{ Name = "GoToMyPC";          Processes = @("g2tray*", "g2comm*", "g2svc*", "g2host*", "GoToMyPC*"); Services = @("GoToMyPC*"); Paths = @("*\GoToMyPC*", "*\Citrix\GoToMyPC*") }
@@ -303,10 +303,10 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "TightVNC";          Processes = @("tvnserver*", "tvnviewer*");      Services = @("tvnserver");                     Paths = @("*\TightVNC*") }
         @{ Name = "UltraVNC";          Processes = @("winvnc*");                       Services = @("uvnc*");                         Paths = @("*\UltraVNC*", "*\uvnc*") }
         @{ Name = "TigerVNC";          Processes = @("winvnc4*", "vncviewer*");        Services = @("WinVNC4");                       Paths = @("*\TigerVNC*") }
-        @{ Name = "Radmin";            Processes = @("radmin*", "RServer3*", "rserver*"); Services = @("radmin*", "RServer3*");       Paths = @("*\Radmin*", "*\rserver30*") }
+        @{ Name = "Radmin";            Processes = @("radmin*", "RServer3*", "rserver*"); Services = @("r_server", "RServer3*", "radmin*"); Paths = @("*\Radmin*", "*\rserver30*") }
         @{ Name = "Chrome Remote Desktop"; Processes = @("remoting_host*", "chromoting*"); Services = @("chromoting*", "Chrome Remote*"); Paths = @("*\Chrome Remote Desktop*", "*\Google\Chrome Remote*") }
         @{ Name = "Ammyy Admin";       Processes = @("AA_v*", "Ammyy*");               Services = @("Ammyy*");                        Paths = @("*\Ammyy*") }
-        @{ Name = "SimpleHelp";        Processes = @("SimpleHelp*", "SimpleService*"); Services = @("SimpleHelp*", "Remote Access");  Paths = @("*\SimpleHelp*", "*\JWrapper-Remote Access*") }
+        @{ Name = "SimpleHelp";        Processes = @("SimpleHelp*", "SimpleService*"); Services = @("SimpleService", "Remote Access"); Paths = @("*\SimpleHelp*", "*\JWrapper-Remote Access*") }
         @{ Name = "Supremo";           Processes = @("Supremo*", "SupremoService*");   Services = @("Supremo*");                      Paths = @("*\Supremo*") }
         @{ Name = "Zoho Assist";       Processes = @("ZohoMeeting*", "ZohoAssist*", "ZA_Connect*", "ZAService*", "ZMAgent*", "zohotray*"); Services = @("Zoho*Assist*", "ZohoMeeting*"); Paths = @("*\ZohoMeeting*") }
         @{ Name = "ISL Online";        Processes = @("ISLLight*", "ISLAlwaysOn*", "ISLLightFast*", "ISLLightService*"); Services = @("ISL*"); Paths = @("*\ISL Online*", "*\ISLLight*") }
@@ -356,7 +356,7 @@ function Get-RemoteAccessToolDefinitions {
         # Additional Legitimate Remote Access Tools
         @{ Name = "UltraViewer";       Processes = @("UltraViewer*");                  Services = @("UltraViewer*");                  Paths = @("*\UltraViewer*") }
         @{ Name = "ToDesk";            Processes = @("ToDesk*", "ToDesk_Service*");    Services = @("ToDesk*");                       Paths = @("*\ToDesk*") }
-        @{ Name = "Sunlogin";          Processes = @("SunloginClient*");               Services = @("Sunlogin*", "SunloginService*"); Paths = @("*\Oray\SunLogin*", "*\Sunlogin*") }
+        @{ Name = "Sunlogin";          Processes = @("SunloginClient*", "SunloginService*", "oray_service*"); Services = @("SunloginService", "oray_service"); Paths = @("*\Oray\SunLogin*", "*\Sunlogin*") }
         @{ Name = "Oray";              Processes = @("oray*", "PHTunnel*");            Services = @("Oray*", "PHTunnel*");            Paths = @("*\Oray*") }
         @{ Name = "HopToDesk";         Processes = @("HopToDesk*");                    Services = @("HopToDesk*");                    Paths = @("*\HopToDesk*") }
         @{ Name = "AweRay/AweSun";     Processes = @("AweSun*", "AweRay*");            Services = @("AweSun*", "AweRay*");            Paths = @("*\AweSun*", "*\AweRay*") }

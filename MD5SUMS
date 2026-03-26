@@ -562,7 +562,7 @@ e058266dce34c287fcae6c9af89a6cd6  pre-release/Update-Launchers.ps1
 dec00fbcc15ae5f1bbd36b2d5e926109  pre-release/Update-ScriptInventory.ps1
 474a2ee0a20ae5ed9d280f0fd2a1857f  pre-release/Validate-Release.ps1
 2be22bf89c31ace89dcc37d901e74b36  scripts/Check/👀Check Windows Location Services.ps1
-8f5b4b162d5c8ba3410e0a568114908e  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
+be02df748e3499544bc7d760de82b830  scripts/Check/👀Check for Unauthorized Remote Access Tools.ps1
 5389b1ec64d1d516b21c85be5b81541b  scripts/Check/👀Hostname Mismatch.ps1
 883d01cf5c574d69a124dfe4d66eca02  scripts/Check/👀Test Show Versions.ps1
 a52c7cf6b860c5f08af3dc9c9cbebce7  scripts/Check/👀Test Variable Output.ps1
@@ -597,7 +597,7 @@ f3a01a4026dfc007749e8fa0069a3c22  scripts/Remove/⛔Force Remove Dropbox.ps1
 1f4ebfc3f8661d3e3fc0746013497ddb  scripts/Remove/⛔Force Remove Foxit.ps1
 577e2f4fba6883502995b8dd19800c04  scripts/Remove/⛔Force Remove McAfee.ps1
 e3cc71bdf2deea62f16dd14c439fdb1e  scripts/Remove/⛔Force Remove Non MSP ScreenConnect.ps1
-7b1930a58b4bbf83785347a305bedee7  scripts/Remove/⛔Remove All RATs.ps1
+5189a224e782005b5ff4574e80612022  scripts/Remove/⛔Remove All RATs.ps1
 01123ee5e8b4a330e8be72688c27208c  scripts/Utility/⚙️COOLForge Cache Sync.ps1
 fbee41c2eae0cbe70dd4b4860e4ba89b  scripts/Utility/⚙️Cleanup VoyagerPACS Studies.ps1
 8706accfa29b33f237204118e36ed1f9  scripts/Utility/⚙️Remove COOLForge Scratch Folder.ps1
