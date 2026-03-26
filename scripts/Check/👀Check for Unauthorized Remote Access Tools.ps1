@@ -376,7 +376,7 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "Tmate";             Processes = @("tmate*");                        Services = @();                                Paths = @("*\tmate*") }
         @{ Name = "Ngrok";             Processes = @("ngrok*");                        Services = @("ngrok*");                        Paths = @("*\ngrok*") }
         @{ Name = "LocalTunnel";       Processes = @("lt*", "localtunnel*");           Services = @();                                Paths = @("*\localtunnel*") }
-        @{ Name = "Dualmon Remote Access"; Processes = @("Dualmon*", "dualmon*");       Services = @("Dualmon*", "dualmon*");          Paths = @("*\Dualmon*") }
+        @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("Dualmon*", "dualmon*", "dmserver*"); Paths = @("*\Dualmon*") }
         @{ Name = "GoTo Resolve";      Processes = @("GoToResolve*", "goto_resolve*"); Services = @("GoToResolve*");                  Paths = @("*\GoTo Resolve*", "*\GoToResolve*") }
 
         # Known Malicious RATs / C2 Frameworks (High Priority Detection)

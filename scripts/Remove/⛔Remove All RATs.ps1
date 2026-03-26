@@ -126,7 +126,7 @@ $Script:RATDefinitions = @(
     @{ Name = "Syncro"; Processes = @("Syncro*", "Kabuto*"); Services = @("Syncro*", "Kabuto*"); Paths = @("Syncro", "Kabuto"); Priority = "Low" }
 
     # Newer Legitimate Tools (abused in attacks)
-    @{ Name = "Dualmon Remote Access"; Processes = @("Dualmon*", "dualmon*"); Services = @("Dualmon*", "dualmon*"); Paths = @("Dualmon", "Dualmon Remote Access"); Priority = "Medium" }
+    @{ Name = "Dualmon Remote Access"; Processes = @("dualmon*", "dmserver*", "dmrunas*", "dminstaller*"); Services = @("Dualmon*", "dualmon*", "dmserver*"); Paths = @("Dualmon"); Priority = "Medium" }
     @{ Name = "GoTo Resolve"; Processes = @("GoToResolve*", "goto_resolve*"); Services = @("GoToResolve*"); Paths = @("GoTo Resolve", "GoToResolve"); Priority = "Medium" }
     @{ Name = "Apache Guacamole Client"; Processes = @("guacd*", "guacamole*"); Services = @("guacd*", "guacamole*"); Paths = @("guacamole"); Priority = "Low" }
 
