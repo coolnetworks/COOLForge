@@ -32,7 +32,7 @@
     Falls back to winget if ODT is not available.
 
 .NOTES
-    Version:          2026.03.26.03
+    Version:          2026.03.26.04
     Target Platform:  Level.io RMM (via Script Launcher)
     Exit Codes:       0 = Success | 1 = Alert (Failure)
 
@@ -50,7 +50,7 @@
 #>
 
 # Software Policy - Adobe Acrobat Pro
-# Version: 2026.03.26.03
+# Version: 2026.03.26.04
 # Target: Level.io (via Script Launcher)
 # Exit 0 = Success | Exit 1 = Alert (Failure)
 #
@@ -252,10 +252,10 @@ function Install-AcrobatPro {
         'Referer' = 'https://www.adobe.com/'
     }
 
-    # Try multiple download URLs in order of reliability
+    # Try multiple download URLs - full installer (zip) first, MSP patch only for updates
     $DownloadUrls = @(
-        @{ Url = "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2500121223/AcrobatDCx64Upd2500121223.msp"; Type = "msp" },
-        @{ Url = "https://trials.adobe.com/AdobeProducts/APRO/Acrobat_HelpX/win32/Acrobat_DC_Web_x64_WWMUI.zip"; Type = "zip" }
+        @{ Url = "https://trials.adobe.com/AdobeProducts/APRO/Acrobat_HelpX/win32/Acrobat_DC_Web_x64_WWMUI.zip"; Type = "zip" },
+        @{ Url = "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2500121223/AcrobatDCx64Upd2500121223.msp"; Type = "msp" }
     )
 
     $ZipPath = Join-Path $InstallersFolder "Acrobat_DC_Web_x64_WWMUI.zip"
@@ -346,13 +346,15 @@ function Install-AcrobatPro {
     $ExtractPath = $null
 
     if ($DownloadType -eq "msp") {
-        # MSP patch file - apply via msiexec
-        # MSP requires base Acrobat to be installed; use as update if base exists
-        # For fresh install, we need the full bootstrapper - try zip method
-        Write-LevelLog "MSP downloaded - checking if base Acrobat is installed for patching..." -Level "INFO"
-
-        # For fresh installs, MSP alone won't work - need full installer
-        # Re-download as zip if possible, otherwise try MSP as standalone
+        # MSP is a patch - requires base Acrobat to already be installed
+        if (-not (Test-AcrobatProInstalled)) {
+            Write-Host "Alert: MSP patch downloaded but Acrobat Pro is not installed (required for patching)"
+            Write-Host "  The full installer (zip) was unavailable. MSP patches cannot do fresh installs."
+            Write-LevelLog "MSP requires base Acrobat - cannot fresh install with patch" -Level "ERROR"
+            Remove-Item $MspPath -Force -ErrorAction SilentlyContinue
+            return $false
+        }
+        Write-LevelLog "Applying MSP update patch..." -Level "INFO"
         $InstallerFile = $MspPath
         $InstallArgs = "/p `"$MspPath`" /qn /norestart EULA_ACCEPT=YES"
         $UseMsiexec = $true
@@ -531,7 +533,7 @@ function Remove-AcrobatPro {
 # ============================================================
 # MAIN SCRIPT LOGIC
 # ============================================================
-$ScriptVersion = "2026.03.26.03"
+$ScriptVersion = "2026.03.26.04"
 $ExitCode = 0
 
 $InvokeParams = @{ ScriptBlock = {
