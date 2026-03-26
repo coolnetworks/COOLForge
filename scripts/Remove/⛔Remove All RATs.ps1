@@ -125,7 +125,16 @@ $Script:RATDefinitions = @(
     @{ Name = "Pulseway"; Processes = @("PCMonitorSrv*", "Pulseway*"); Services = @("Pulseway*", "PCMonitor*"); Paths = @("Pulseway", "PCMonitor"); Priority = "Low" }
     @{ Name = "Syncro"; Processes = @("Syncro*", "Kabuto*"); Services = @("Syncro*", "Kabuto*"); Paths = @("Syncro", "Kabuto"); Priority = "Low" }
 
+    # Newer Legitimate Tools (abused in attacks)
+    @{ Name = "Dualmon Remote Access"; Processes = @("Dualmon*", "dualmon*"); Services = @("Dualmon*", "dualmon*"); Paths = @("Dualmon", "Dualmon Remote Access"); Priority = "Medium" }
+    @{ Name = "GoTo Resolve"; Processes = @("GoToResolve*", "goto_resolve*"); Services = @("GoToResolve*"); Paths = @("GoTo Resolve", "GoToResolve"); Priority = "Medium" }
+    @{ Name = "Apache Guacamole Client"; Processes = @("guacd*", "guacamole*"); Services = @("guacd*", "guacamole*"); Paths = @("guacamole"); Priority = "Low" }
+
     # Known Malicious RATs (Critical Priority)
+    @{ Name = "TrustConnect RAT"; Processes = @("TrustConnect*", "trustconnect*"); Services = @("TrustConnect*"); Paths = @("TrustConnect", "TrustConnect Software"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "DocConnect RAT"; Processes = @("DocConnect*", "docconnect*"); Services = @("DocConnect*"); Paths = @("DocConnect"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "XWorm RAT"; Processes = @("XWorm*", "xworm*"); Services = @("XWorm*"); Paths = @("XWorm"); Priority = "Critical"; Malicious = $true }
+    @{ Name = "Steaelite RAT"; Processes = @("Steaelite*", "steaelite*"); Services = @("Steaelite*"); Paths = @("Steaelite"); Priority = "Critical"; Malicious = $true }
     @{ Name = "Remcos RAT"; Processes = @("remcos*"); Services = @("remcos*"); Paths = @("Remcos"); Priority = "Critical"; Malicious = $true }
     @{ Name = "QuasarRAT"; Processes = @("Quasar*"); Services = @("Quasar*"); Paths = @("Quasar"); Priority = "Critical"; Malicious = $true }
     @{ Name = "AsyncRAT"; Processes = @("AsyncClient*", "Async*"); Services = @("Async*"); Paths = @("Async"); Priority = "Critical"; Malicious = $true }

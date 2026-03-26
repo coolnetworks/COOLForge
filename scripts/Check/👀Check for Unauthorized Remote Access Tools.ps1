@@ -376,8 +376,14 @@ function Get-RemoteAccessToolDefinitions {
         @{ Name = "Tmate";             Processes = @("tmate*");                        Services = @();                                Paths = @("*\tmate*") }
         @{ Name = "Ngrok";             Processes = @("ngrok*");                        Services = @("ngrok*");                        Paths = @("*\ngrok*") }
         @{ Name = "LocalTunnel";       Processes = @("lt*", "localtunnel*");           Services = @();                                Paths = @("*\localtunnel*") }
+        @{ Name = "Dualmon Remote Access"; Processes = @("Dualmon*", "dualmon*");       Services = @("Dualmon*", "dualmon*");          Paths = @("*\Dualmon*") }
+        @{ Name = "GoTo Resolve";      Processes = @("GoToResolve*", "goto_resolve*"); Services = @("GoToResolve*");                  Paths = @("*\GoTo Resolve*", "*\GoToResolve*") }
 
         # Known Malicious RATs / C2 Frameworks (High Priority Detection)
+        @{ Name = "TrustConnect RAT";  Processes = @("TrustConnect*", "trustconnect*"); Services = @("TrustConnect*");                Paths = @("*\TrustConnect*"); Malicious = $true }
+        @{ Name = "DocConnect RAT";    Processes = @("DocConnect*", "docconnect*");    Services = @("DocConnect*");                    Paths = @("*\DocConnect*"); Malicious = $true }
+        @{ Name = "XWorm RAT";         Processes = @("XWorm*", "xworm*");              Services = @("XWorm*");                        Paths = @("*\XWorm*"); Malicious = $true }
+        @{ Name = "Steaelite RAT";     Processes = @("Steaelite*", "steaelite*");      Services = @("Steaelite*");                    Paths = @("*\Steaelite*"); Malicious = $true }
         @{ Name = "Remcos RAT";        Processes = @("remcos*", "Remcos*");            Services = @("remcos*");                       Paths = @("*\Remcos*"); Malicious = $true }
         @{ Name = "QuasarRAT";         Processes = @("Quasar*", "Client.exe");         Services = @("Quasar*");                       Paths = @("*\Quasar*"); Malicious = $true }
         @{ Name = "AsyncRAT";          Processes = @("AsyncClient*", "Async*");        Services = @("Async*");                        Paths = @("*\Async*"); Malicious = $true }
